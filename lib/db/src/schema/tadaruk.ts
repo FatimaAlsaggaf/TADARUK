@@ -26,6 +26,7 @@ export const teamMembersTable = pgTable("tadaruk_team_members", {
   role: text("role").notNull(),
   initials: text("initials").notNull(),
   branchId: text("branch_id"),
+  authorizedBranchIds: text("authorized_branch_ids").array(),
   specialization: text("specialization"),
   available: boolean("available").notNull().default(true),
   active: boolean("active").notNull().default(true),

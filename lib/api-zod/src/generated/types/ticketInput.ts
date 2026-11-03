@@ -16,6 +16,7 @@ export interface TicketInput {
   priority: TicketInputPriority;
   specialization: string;
   location: string;
+  branchId?: string;
   /** @nullable */
   imageUrl?: string | null;
 }

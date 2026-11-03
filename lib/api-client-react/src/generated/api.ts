@@ -31,6 +31,9 @@ import type {
   ListKnowledgeParams,
   ListTicketsParams,
   Overview,
+  ReporterAccess,
+  ReporterBranch,
+  ReporterBranchAccessInput,
   Technician,
   TechnicianInput,
   TechnicianUpdate,
@@ -537,6 +540,249 @@ export function useGetOverview<TData = Awaited<ReturnType<typeof getOverview>>, 
 
 
 
+
+export const getListReporterBranchesUrl = () => {
+
+
+
+
+  return `/api/reporter/branches`
+}
+
+/**
+ * @summary List branches authorized for the signed-in reporter
+ */
+export const listReporterBranches = async ( options?: Parameters<typeof customFetch>[1]): Promise<ReporterBranch[]> => {
+
+  return customFetch<ReporterBranch[]>(getListReporterBranchesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListReporterBranchesQueryKey = () => {
+    return [
+    `/api/reporter/branches`
+    ] as const;
+    }
+
+
+export const getListReporterBranchesQueryOptions = <TData = Awaited<ReturnType<typeof listReporterBranches>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listReporterBranches>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListReporterBranchesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listReporterBranches>>> = ({ signal }) => listReporterBranches({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listReporterBranches>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListReporterBranchesQueryResult = NonNullable<Awaited<ReturnType<typeof listReporterBranches>>>
+export type ListReporterBranchesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List branches authorized for the signed-in reporter
+ */
+
+export function useListReporterBranches<TData = Awaited<ReturnType<typeof listReporterBranches>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listReporterBranches>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListReporterBranchesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListReporterAccessUrl = () => {
+
+
+
+
+  return `/api/reporter-access`
+}
+
+/**
+ * @summary List reporter branch permissions
+ */
+export const listReporterAccess = async ( options?: Parameters<typeof customFetch>[1]): Promise<ReporterAccess[]> => {
+
+  return customFetch<ReporterAccess[]>(getListReporterAccessUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListReporterAccessQueryKey = () => {
+    return [
+    `/api/reporter-access`
+    ] as const;
+    }
+
+
+export const getListReporterAccessQueryOptions = <TData = Awaited<ReturnType<typeof listReporterAccess>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listReporterAccess>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListReporterAccessQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listReporterAccess>>> = ({ signal }) => listReporterAccess({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listReporterAccess>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListReporterAccessQueryResult = NonNullable<Awaited<ReturnType<typeof listReporterAccess>>>
+export type ListReporterAccessQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List reporter branch permissions
+ */
+
+export function useListReporterAccess<TData = Awaited<ReturnType<typeof listReporterAccess>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listReporterAccess>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListReporterAccessQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateReporterAccessUrl = (reporterId: string,) => {
+
+
+
+
+  return `/api/reporter-access/${reporterId}`
+}
+
+/**
+ * @summary Update a reporter's permitted branches
+ */
+export const updateReporterAccess = async (reporterId: string,
+    reporterBranchAccessInput: ReporterBranchAccessInput, options?: Parameters<typeof customFetch>[1]): Promise<ReporterAccess> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ReporterAccess>(getUpdateReporterAccessUrl(reporterId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(reporterBranchAccessInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateReporterAccessMutationKey = () => ['updateReporterAccess'] as const;
+
+export const getUpdateReporterAccessMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateReporterAccess>>, TError,UpdateReporterAccessMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateReporterAccess>>, TError,UpdateReporterAccessMutationVariables, TContext> => {
+
+const mutationKey = getUpdateReporterAccessMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateReporterAccess>>, UpdateReporterAccessMutationVariables> = (props) => {
+          const {reporterId,data} = props ?? {};
+
+          return  updateReporterAccess(reporterId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateReporterAccessMutationResult = NonNullable<Awaited<ReturnType<typeof updateReporterAccess>>>
+    export type UpdateReporterAccessMutationBody = BodyType<ReporterBranchAccessInput>
+    export type UpdateReporterAccessMutationError = ErrorType<void>
+    export type UpdateReporterAccessMutationVariables = {reporterId: string;data: BodyType<ReporterBranchAccessInput>}
+
+    /**
+ * @summary Update a reporter's permitted branches
+ */
+export const useUpdateReporterAccess = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateReporterAccess>>, TError,UpdateReporterAccessMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateReporterAccess>>,
+        TError,
+        UpdateReporterAccessMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateReporterAccessMutationOptions(options));
+    }
 
 export const getAnalyzeTicketUrl = () => {
 

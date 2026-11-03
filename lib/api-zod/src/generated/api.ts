@@ -138,6 +138,46 @@ export const GetOverviewResponse = zod.object({
 
 
 /**
+ * @summary List branches authorized for the signed-in reporter
+ */
+export const ListReporterBranchesResponseItem = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "city": zod.string()
+})
+export const ListReporterBranchesResponse = zod.array(ListReporterBranchesResponseItem)
+
+
+/**
+ * @summary List reporter branch permissions
+ */
+export const ListReporterAccessResponseItem = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "branchIds": zod.array(zod.string())
+})
+export const ListReporterAccessResponse = zod.array(ListReporterAccessResponseItem)
+
+
+/**
+ * @summary Update a reporter's permitted branches
+ */
+export const UpdateReporterAccessParams = zod.object({
+  "reporterId": zod.coerce.string()
+})
+
+export const UpdateReporterAccessBody = zod.object({
+  "branchIds": zod.array(zod.string())
+})
+
+export const UpdateReporterAccessResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "branchIds": zod.array(zod.string())
+})
+
+
+/**
  * @summary Create a transparent demo ticket analysis
  */
 export const analyzeTicketBodyDescriptionMin = 4;
@@ -157,6 +197,7 @@ export const AnalyzeTicketResponse = zod.object({
   "priority": zod.enum(['urgent', 'high', 'medium', 'low']),
   "specialization": zod.string(),
   "location": zod.string(),
+  "needsClarification": zod.boolean(),
   "mode": zod.enum(['demo'])
 })
 
@@ -230,6 +271,7 @@ export const CreateTicketBody = zod.object({
   "priority": zod.enum(['urgent', 'high', 'medium', 'low']),
   "specialization": zod.string(),
   "location": zod.string(),
+  "branchId": zod.string().optional(),
   "imageUrl": zod.string().nullish()
 })
 

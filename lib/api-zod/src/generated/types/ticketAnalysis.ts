@@ -15,5 +15,6 @@ export interface TicketAnalysis {
   priority: TicketAnalysisPriority;
   specialization: string;
   location: string;
+  needsClarification: boolean;
   mode: TicketAnalysisMode;
 }

@@ -110,6 +110,12 @@
   line-height: 1.7;
 }
 
+.voice-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .voice-error {
   color: #a83e3a;
   font-size: 11px;
@@ -287,6 +293,10 @@
   background: #24354f;
 }
 
+.dark .voice-hint {
+  color: #b3c3d7;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .voice-button,
   .voice-cancel,
@@ -327,6 +337,37 @@
 
 .branch-icon {
   color: #238f8b;
+}
+
+.branch-switch-multi {
+  cursor: pointer;
+}
+
+.branch-switch-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.branch-switch-copy select {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  appearance: none;
+  background: transparent;
+  color: #1f3363;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.branch-switch-copy select option {
+  color: #1f3363;
+  background: #fff;
 }
 
 .side-link {
@@ -601,6 +642,12 @@
   color: #f5f8ff;
 }
 
+.dark .branch-switch-copy select,
+.dark .branch-switch-copy select option {
+  color: #f5f8ff;
+  background: #152b43;
+}
+
 .dark .branch-switch small,
 .dark .side-user small,
 .dark .side-help small {
@@ -704,8 +751,10 @@
   padding-block: 38px 58px;
   text-align: center;
 }
-.landing .hero-copy { width: 100%; max-width: 900px; margin-inline: auto; text-align: center; }
+.landing .hero-copy { position: relative; isolation: isolate; width: 100%; max-width: 900px; margin-inline: auto; text-align: center; }
 .landing .hero h1 {
+  position: relative;
+  z-index: 1;
   max-width: 900px;
   margin: 0 auto 11px;
   color: var(--landing-ink);
@@ -714,12 +763,33 @@
   letter-spacing: -.025em;
 }
 .landing .hero-sub {
+  position: relative;
+  z-index: 1;
   color: #526b83;
   font-family: 'Amiri', 'Noto Sans Arabic', serif;
   font-size: clamp(22px, 2.25vw, 27px);
   font-weight: 600;
   letter-spacing: 0;
   line-height: 1.65;
+}
+.hero-light-reveal {
+  position: absolute;
+  z-index: 0;
+  inset-inline: 8%;
+  top: 30%;
+  height: 54%;
+  border-radius: 50%;
+  background: linear-gradient(90deg, transparent, rgba(86, 244, 239, .045) 24%, rgba(86, 244, 239, .14) 50%, rgba(86, 244, 239, .045) 76%, transparent);
+  filter: blur(18px);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+@media (max-width: 760px) {
+  .hero-light-reveal { inset-inline: 6%; top: 32%; height: 48%; filter: blur(14px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-light-reveal { display: none !important; }
 }
 .hero-mark-stage {
   position: relative;

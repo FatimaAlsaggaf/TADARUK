@@ -137,6 +137,7 @@ async function seedDemoData(): Promise<void> {
 }
 
 export type DemoMember = typeof seedMembers[number];
+type AuthenticatedDemoMember = { id: string; role: string; branchId: string | null };
 
 export async function listDemoUsers() {
   await ensureDemoData();
@@ -188,7 +189,16 @@ export async function getBranch(branchId: string) {
   return branch;
 }
 
-export async function getVisibleTickets(member: DemoMember): Promise<TicketRecord[]> {
+export function getAuthorizedBranchIds(member: {
+  branchId: string | null;
+  authorizedBranchIds?: string[] | null;
+}): string[] {
+  const configured = member.authorizedBranchIds;
+  if (Array.isArray(configured)) return [...new Set(configured.filter(Boolean))];
+  return member.branchId ? [member.branchId] : [];
+}
+
+export async function getVisibleTickets(member: AuthenticatedDemoMember): Promise<TicketRecord[]> {
   await ensureDemoData();
   const filters = [eq(ticketsTable.organizationId, DEMO_ORGANIZATION)];
   if (member.role === "reporter") filters.push(eq(ticketsTable.reporterId, member.id));
@@ -196,7 +206,7 @@ export async function getVisibleTickets(member: DemoMember): Promise<TicketRecor
   return db.select().from(ticketsTable).where(and(...filters)).orderBy(desc(ticketsTable.createdAt));
 }
 
-export async function canSeeTicket(member: DemoMember, ticket: TicketRecord): Promise<boolean> {
+export async function canSeeTicket(member: AuthenticatedDemoMember, ticket: TicketRecord): Promise<boolean> {
   if (ticket.organizationId !== DEMO_ORGANIZATION) return false;
   if (member.role === "manager") return true;
   if (member.role === "reporter") return ticket.reporterId === member.id;
@@ -253,7 +263,7 @@ export async function toTicketView(ticket: TicketRecord) {
   };
 }
 
-export async function getVisibleTicket(member: DemoMember, ticketId: string) {
+export async function getVisibleTicket(member: AuthenticatedDemoMember, ticketId: string) {
   await ensureDemoData();
   const [ticket] = await db.select().from(ticketsTable).where(and(
     eq(ticketsTable.id, ticketId),

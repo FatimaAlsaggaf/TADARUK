@@ -1,1 +1,2 @@
 - [React Bits license](react-bits-license.md) — TADARUK may embed registry components in-app; do not redistribute them as standalone assets.
+- [Reporter demo uploads](reporter-demo-uploads.md) — Keep the Reporter flow on demo accounts; explain that photos stay in the current browser.

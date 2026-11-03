@@ -102,6 +102,22 @@ export interface BranchUpdate {
   active?: boolean;
 }
 
+export interface ReporterBranch {
+  id: string;
+  name: string;
+  city: string;
+}
+
+export interface ReporterAccess {
+  id: string;
+  name: string;
+  branchIds: string[];
+}
+
+export interface ReporterBranchAccessInput {
+  branchIds: string[];
+}
+
 export interface Technician {
   id: string;
   name: string;
@@ -237,6 +253,7 @@ export interface TicketAnalysis {
   priority: TicketAnalysisPriority;
   specialization: string;
   location: string;
+  needsClarification: boolean;
   mode: TicketAnalysisMode;
 }
 
@@ -259,6 +276,7 @@ export interface TicketInput {
   priority: TicketInputPriority;
   specialization: string;
   location: string;
+  branchId?: string;
   /** @nullable */
   imageUrl?: string | null;
 }

@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, asc, desc, eq, ne } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, ne } from "drizzle-orm";
 import { Router, type IRouter, type Request, type Response } from "express";
 import {
   AnalyzeTicketBody,
@@ -18,6 +18,8 @@ import {
   ListDemoUsersResponse,
   ListKnowledgeQueryParams,
   ListKnowledgeResponse,
+  ListReporterAccessResponse,
+  ListReporterBranchesResponse,
   ListTechniciansResponse,
   ListTicketsQueryParams,
   ListTicketsResponse,
@@ -29,6 +31,8 @@ import {
   UpdateBranchBody,
   UpdateBranchParams,
   UpdateBranchResponse,
+  UpdateReporterAccessBody,
+  UpdateReporterAccessResponse,
   UpdateTechnicianBody,
   UpdateTechnicianParams,
   UpdateTechnicianResponse,
@@ -46,6 +50,7 @@ import {
   DEMO_ACCOUNT_IDS,
   DEMO_ORGANIZATION,
   ensureDemoData,
+  getAuthorizedBranchIds,
   getBranch,
   getDemoMember,
   getDemoUserFromRequest,
@@ -66,7 +71,12 @@ const demoCookieOptions = {
 };
 
 async function requireMember(req: Request, res: Response) {
-  const member = await getDemoUserFromRequest(req);
+  const userId = req.signedCookies?.tadarukDemoUser as string | undefined;
+  if (!userId || !DEMO_ACCOUNT_IDS.some((id) => id === userId)) {
+    res.status(401).json({ error: "Select a demo account to continue." });
+    return undefined;
+  }
+  const member = await getMember(userId);
   if (!member) {
     res.status(401).json({ error: "Select a demo account to continue." });
     return undefined;
@@ -243,6 +253,89 @@ router.get("/overview", async (req, res): Promise<void> => {
   }
 });
 
+router.get("/reporter/branches", async (req, res): Promise<void> => {
+  try {
+    const member = await requireMember(req, res);
+    if (!member) return;
+    if (member.role !== "reporter") {
+      res.status(403).json({ error: "Only reporters can list their authorized branches." });
+      return;
+    }
+    const branchIds = getAuthorizedBranchIds(member);
+    const branches = branchIds.length
+      ? await db.select().from(branchesTable).where(and(
+          eq(branchesTable.organizationId, DEMO_ORGANIZATION),
+          eq(branchesTable.active, true),
+          inArray(branchesTable.id, branchIds),
+        )).orderBy(asc(branchesTable.name))
+      : [];
+    res.json(ListReporterBranchesResponse.parse(branches.map(({ id, name, city }) => ({ id, name, city }))));
+  } catch (error) {
+    res.status(500).json({ error: errorMessage(error) });
+  }
+});
+
+router.get("/reporter-access", async (req, res): Promise<void> => {
+  try {
+    const manager = await requireManager(req, res);
+    if (!manager) return;
+    const reporters = await db.select().from(teamMembersTable).where(and(
+      eq(teamMembersTable.organizationId, DEMO_ORGANIZATION),
+      eq(teamMembersTable.role, "reporter"),
+    )).orderBy(asc(teamMembersTable.name));
+    res.json(ListReporterAccessResponse.parse(reporters.map((reporter) => ({
+      id: reporter.id,
+      name: reporter.name,
+      branchIds: getAuthorizedBranchIds(reporter),
+    }))));
+  } catch (error) {
+    res.status(500).json({ error: errorMessage(error) });
+  }
+});
+
+router.put("/reporter-access/:reporterId", async (req, res): Promise<void> => {
+  const reporterId = typeof req.params.reporterId === "string" ? req.params.reporterId : "";
+  const parsed = UpdateReporterAccessBody.safeParse(req.body);
+  if (!reporterId || !parsed.success) {
+    res.status(400).json({ error: parsed.success ? "Reporter ID is required." : parsed.error.message });
+    return;
+  }
+  try {
+    const manager = await requireManager(req, res);
+    if (!manager) return;
+    const reporter = await getMember(reporterId);
+    if (!reporter || reporter.role !== "reporter") {
+      res.status(404).json({ error: "Reporter not found." });
+      return;
+    }
+    const branchIds = [...new Set(parsed.data.branchIds)];
+    const activeBranches = branchIds.length
+      ? await db.select({ id: branchesTable.id }).from(branchesTable).where(and(
+          eq(branchesTable.organizationId, DEMO_ORGANIZATION),
+          eq(branchesTable.active, true),
+          inArray(branchesTable.id, branchIds),
+        ))
+      : [];
+    if (activeBranches.length !== branchIds.length) {
+      res.status(400).json({ error: "Every authorized branch must be active and belong to this organization." });
+      return;
+    }
+    const [updated] = await db.update(teamMembersTable).set({
+      authorizedBranchIds: branchIds,
+    }).where(and(
+      eq(teamMembersTable.id, reporter.id),
+      eq(teamMembersTable.organizationId, DEMO_ORGANIZATION),
+    )).returning();
+    res.json(UpdateReporterAccessResponse.parse({
+      id: updated.id,
+      name: updated.name,
+      branchIds: getAuthorizedBranchIds(updated),
+    }));
+  } catch (error) {
+    res.status(500).json({ error: errorMessage(error) });
+  }
+});
+
 router.post("/tickets/analyze", async (req, res): Promise<void> => {
   const parsed = AnalyzeTicketBody.safeParse(req.body);
   if (!parsed.success) {
@@ -262,6 +355,19 @@ router.post("/tickets/analyze", async (req, res): Promise<void> => {
   const electricalTerms = ["كهرباء", "مصباح", "لمبة", "إنارة", "مقبس", "شرر", "electrical", "light", "socket", "power"];
   const plumbingTerms = ["تسرب", "ماء", "حوض", "صنبور", "مغسلة", "مواسير", "leak", "water", "sink", "pipe"];
   const has = (terms: string[]) => terms.some((term) => lower.includes(term));
+  const locationTerms: Array<[string, string[]]> = [
+    ["المطبخ", ["المطبخ", "المطبخ التحضيري", "kitchen"]],
+    ["صالة العملاء", ["صالة العملاء", "صالة الجلوس", "منطقة العملاء", "customer hall", "dining area"]],
+    ["المستودع", ["المستودع", "المخزن", "warehouse", "stockroom"]],
+    ["دورات المياه", ["دورات المياه", "دورة المياه", "الحمام", "الحمامات", "restroom", "bathroom", "toilet"]],
+    ["منطقة التحضير", ["منطقة التحضير", "prep area", "preparation area"]],
+    ["منطقة الاستلام", ["منطقة الاستلام", "نقطة الاستلام", "pickup area", "pickup point"]],
+  ];
+  const requestedLocation = parsed.data.location?.trim();
+  const extractedLocation = requestedLocation || locationTerms.find(([, terms]) =>
+    terms.some((term) => lower.includes(term.toLocaleLowerCase())),
+  )?.[0] || "";
+  const urgentIssue = has(["شرر", "حريق", "دخان", "تسرب غاز", "انزلاق", "urgent", "fire", "smoke", "gas leak"]);
   const specialization = has(coolingTerms)
     ? "cooling"
     : has(electricalTerms)
@@ -269,7 +375,7 @@ router.post("/tickets/analyze", async (req, res): Promise<void> => {
       : has(plumbingTerms)
         ? "plumbing"
         : "general";
-  const priority = has(["شرر", "حريق", "دخان", "تسرب غاز", "انزلاق", "urgent", "fire", "smoke", "gas leak"])
+  const priority = urgentIssue
     ? "urgent"
     : has(["تسرب", "ماء", "توقف", "عطل كامل", "leak", "not working"])
       ? "high"
@@ -285,7 +391,8 @@ router.post("/tickets/analyze", async (req, res): Promise<void> => {
     category,
     priority,
     specialization,
-    location: parsed.data.location?.trim() || "يحدد داخل الفرع",
+    location: extractedLocation || (urgentIssue ? "غير محدد" : ""),
+    needsClarification: !extractedLocation && !urgentIssue,
     mode: "demo",
   };
   res.json(AnalyzeTicketResponse.parse(response));
@@ -324,19 +431,27 @@ router.post("/tickets", async (req, res): Promise<void> => {
   try {
     const member = await requireMember(req, res);
     if (!member) return;
-    if (member.role !== "reporter" || !member.branchId) {
+    if (member.role !== "reporter") {
       res.status(403).json({ error: "Only reporters can create tickets." });
       return;
     }
-    const branch = await getBranch(member.branchId);
+    const authorizedBranchIds = getAuthorizedBranchIds(member);
+    const { branchId: requestedBranchId, ...ticketData } = parsed.data;
+    const branchId = requestedBranchId ??
+      (member.branchId && authorizedBranchIds.includes(member.branchId) ? member.branchId : authorizedBranchIds[0]);
+    if (!branchId || !authorizedBranchIds.includes(branchId)) {
+      res.status(403).json({ error: "This branch is not authorized for the reporter." });
+      return;
+    }
+    const branch = await getBranch(branchId);
     if (!branch?.active) {
-      res.status(400).json({ error: "The reporter's branch is inactive." });
+      res.status(400).json({ error: "The selected branch is inactive." });
       return;
     }
     const qualified = await db.select().from(teamMembersTable).where(and(
       eq(teamMembersTable.organizationId, DEMO_ORGANIZATION),
       eq(teamMembersTable.role, "technician"),
-      eq(teamMembersTable.branchId, member.branchId),
+      eq(teamMembersTable.branchId, branchId),
       eq(teamMembersTable.specialization, parsed.data.specialization),
       eq(teamMembersTable.available, true),
       eq(teamMembersTable.active, true),
@@ -357,11 +472,11 @@ router.post("/tickets", async (req, res): Promise<void> => {
       id,
       organizationId: DEMO_ORGANIZATION,
       number: `TDR-${randomUUID().slice(0, 5).toUpperCase()}`,
-      ...parsed.data,
-      imageUrl: parsed.data.imageUrl ?? null,
+      ...ticketData,
+      branchId,
+      imageUrl: ticketData.imageUrl ?? null,
       status: technician ? "new" : "review",
       reporterId: member.id,
-      branchId: member.branchId,
       technicianId: technician?.id ?? null,
       createdAt: now,
       updatedAt: now,

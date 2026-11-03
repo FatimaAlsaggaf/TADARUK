@@ -93,6 +93,64 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Overview"
+  /reporter/branches:
+    get:
+      operationId: listReporterBranches
+      tags: [tickets]
+      summary: List branches authorized for the signed-in reporter
+      responses:
+        "200":
+          description: Active authorized branches
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ReporterBranch"
+  /reporter-access:
+    get:
+      operationId: listReporterAccess
+      tags: [operations]
+      summary: List reporter branch permissions
+      responses:
+        "200":
+          description: Reporters and their permitted branch identifiers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ReporterAccess"
+  /reporter-access/{reporterId}:
+    put:
+      operationId: updateReporterAccess
+      tags: [operations]
+      summary: Update a reporter's permitted branches
+      parameters:
+        - name: reporterId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReporterBranchAccessInput"
+      responses:
+        "200":
+          description: Updated reporter branch permissions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReporterAccess"
+        "400":
+          description: Invalid or inactive branch
+        "403":
+          description: Manager access is required
+        "404":
+          description: Reporter not found
   /tickets/analyze:
     post:
       operationId: analyzeTicket
@@ -401,6 +459,29 @@ components:
         latitude: { type: ["number", "null"], minimum: -90, maximum: 90 }
         longitude: { type: ["number", "null"], minimum: -180, maximum: 180 }
         active: { type: boolean }
+    ReporterBranch:
+      type: object
+      required: [id, name, city]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        city: { type: string }
+    ReporterAccess:
+      type: object
+      required: [id, name, branchIds]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        branchIds:
+          type: array
+          items: { type: string }
+    ReporterBranchAccessInput:
+      type: object
+      required: [branchIds]
+      properties:
+        branchIds:
+          type: array
+          items: { type: string }
     Technician:
       type: object
       required: [id, name, initials, branchId, branchName, specialization, available, active, workload]
@@ -480,7 +561,7 @@ components:
         imageUrl: { type: string }
     TicketAnalysis:
       type: object
-      required: [title, description, category, priority, specialization, location, mode]
+      required: [title, description, category, priority, specialization, location, needsClarification, mode]
       properties:
         title: { type: string }
         description: { type: string }
@@ -488,6 +569,7 @@ components:
         priority: { type: string, enum: [urgent, high, medium, low] }
         specialization: { type: string }
         location: { type: string }
+        needsClarification: { type: boolean }
         mode: { type: string, enum: [demo] }
     TicketInput:
       type: object
@@ -499,6 +581,7 @@ components:
         priority: { type: string, enum: [urgent, high, medium, low] }
         specialization: { type: string }
         location: { type: string }
+        branchId: { type: string }
         imageUrl: { type: ["string", "null"] }
     TicketActionInput:
       type: object
