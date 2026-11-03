@@ -44,8 +44,8 @@ const classificationText = (value: string, lang: Lang) => {
 const dateText = (date: string, lang: Lang) => new Intl.DateTimeFormat(lang === 'ar' ? 'ar' : 'en', {day:'numeric',month:'short'}).format(new Date(date));
 const initialsColor = (name: string) => ['#d7f7f4','#e7ebfa','#fff0dc','#e1f0e6'][name.length % 4];
 
-function Brand({light=false}:{light?:boolean}) {
-  return <span className={`brand-lockup ${light?'light':''}`}><img className="brand-logo" src={`${import.meta.env.BASE_URL}brand-logo.png`} alt="TADARUK تدارك"/></span>;
+function Brand() {
+  return <span className="brand-lockup"><img className="brand-logo" src={`${import.meta.env.BASE_URL}brand-logo.png`} alt="TADARUK تدارك"/></span>;
 }
 type SpeechRecognitionLike = {
   lang: string;
@@ -204,8 +204,8 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
   if(!user)return <div className="workspace-loading"><div className="skeleton-bar"/><div className="skeleton-card"/></div>;
   const links=user.role==='manager'?[['/workspace','نظرة عامة','Overview',LayoutDashboard],['/workspace/tickets','البلاغات','Tickets',ClipboardList],['/workspace/technicians','الفنيون','Technicians',Users],['/workspace/branches','الفروع','Branches',Building2],['/workspace/knowledge','قاعدة المعرفة','Knowledge',BookOpen]]:user.role==='technician'?[['/workspace','مهامي','My tasks',Wrench],['/workspace/tickets','كل المهام','Tasks',ClipboardList]]:[['/workspace','الرئيسية','Home',LayoutDashboard],['/workspace/tickets/new','بلاغ جديد','New report',Plus],['/workspace/tickets','بلاغاتي','My reports',ClipboardList]];
   const active=(path:string)=>window.location.pathname===path;
-  return <div className="app-shell" dir={lang==='ar'?'rtl':'ltr'}>
-    <aside className={`sidebar ${mobile?'sidebar-open':''}`}><div className="side-brand"><Link href="/workspace"><Brand light/></Link><button className="mobile-close" onClick={()=>setMobile(false)}><X size={18}/></button></div>
+  return <div className={`app-shell ${user.role==='reporter'?'reporter-shell':''}`} dir={lang==='ar'?'rtl':'ltr'}>
+    <aside className={`sidebar ${mobile?'sidebar-open':''}`}><div className="side-brand"><Link href="/workspace"><Brand/></Link><button className="mobile-close" onClick={()=>setMobile(false)}><X size={18}/></button></div>
       <div className="branch-switch"><span className="branch-icon"><Building2 size={16}/></span><span><small>{tr(lang,'الموقع الحالي','CURRENT LOCATION')}</small><b>{user.branchName||tr(lang,'جميع الفروع','All branches')}</b></span><ChevronDown size={15}/></div>
       <nav className="side-nav">{links.map(([path,ar,en,Icon])=><Link key={path as string} href={path as string} onClick={()=>setMobile(false)} className={`side-link ${active(path as string)?'selected':''}`}><Icon size={19}/><span>{tr(lang,ar as string,en as string)}</span>{active(path as string)&&<span className="nav-active-mark"/>}</Link>)}</nav>
       <div className="side-bottom"><div className="side-help"><span><ShieldCheck size={17}/></span><b>{tr(lang,'كل شيء في مكانه','Everything in its place')}</b><small>{tr(lang,'سجل صيانة مشترك وواضح.','One clear, shared maintenance record.')}</small></div><div className="side-user"><Avatar name={user.name} initials={user.initials}/><span><b>{user.name}</b><small>{roleText(user.role,lang)}</small></span><button onClick={()=>setMenu(!menu)} aria-label="account menu"><ChevronDown size={16}/></button></div></div>
@@ -213,7 +213,12 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
     {mobile&&<button className="mobile-scrim" onClick={()=>setMobile(false)} aria-label="close navigation"/>}
     <div className="main-frame"><header className="topbar"><div className="topbar-title"><button className="mobile-menu" onClick={()=>setMobile(true)}><Menu size={20}/></button><span>{title}</span></div><div className="top-controls"><span className="connection"><i/> {tr(lang,'متصل','Connected')}</span><button onClick={()=>setLang(lang==='ar'?'en':'ar')} className="icon-control" aria-label="Switch language"><Languages size={18}/><span>{lang==='ar'?'EN':'ع'}</span></button><button onClick={()=>setDark(!dark)} className="icon-control" aria-label="Switch theme">{dark?<Sun size={18}/>:<Moon size={18}/>}</button><button className="top-avatar" onClick={()=>setMenu(!menu)}><Avatar name={user.name} initials={user.initials} size="sm"/></button>
       {menu&&<div className="account-menu"><div className="account-menu-head"><b>{user.name}</b><small>{roleText(user.role,lang)}</small></div><Link href="/demo" onClick={()=>setMenu(false)}><RotateCcw size={15}/>{tr(lang,'تبديل الحساب التجريبي','Switch demo account')}</Link><Link href="/" onClick={()=>setMenu(false)}><LogOut size={15}/>{tr(lang,'العودة للرئيسية','Back to landing')}</Link></div>}
-    </div></header><main className="workspace-content">{children}</main><footer className="workspace-footer"><Brand/><span>TADARUK · {tr(lang,'مساحة العمل','WORKSPACE')}</span></footer></div>
+    </div></header><main className="workspace-content">{children}</main><footer className="workspace-footer">
+      <Brand/>
+      <span className="workspace-footer-divider" aria-hidden="true"/>
+      <span className="workspace-footer-signature"><b>{tr(lang,'منصة تدارك للصيانة','TADARUK MAINTENANCE')}</b><small>{tr(lang,'بلاغ واضح. متابعة موثّقة.','Clear reports. Confirmed follow-through.')}</small></span>
+      <span className="workspace-footer-meta">{tr(lang,'سجل الصيانة التشغيلي','MAINTENANCE OPERATIONS')}</span>
+    </footer></div>
   </div>;
 }
 function PageTitle({eyebrow,title,description,action}:{eyebrow:string;title:string;description?:string;action?:ReactNode}) {
