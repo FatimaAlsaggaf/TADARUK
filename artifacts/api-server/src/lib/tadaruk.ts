@@ -61,6 +61,7 @@ async function seedDemoData(): Promise<void> {
       repairNotes: "تم استبدال الوصلة المطاطية وإحكام ربط الصمام.",
       cause: "تآكل الوصلة بسبب الاستخدام اليومي.",
       resolution: "تغيير الوصلة واختبار تدفق الماء لمدة خمس دقائق.",
+      imageUrl: "/demo-photos/ticket-demo-2401.jpg",
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 8),
     },
     {
@@ -79,6 +80,7 @@ async function seedDemoData(): Promise<void> {
       repairNotes: null,
       cause: null,
       resolution: null,
+      imageUrl: "/demo-photos/ticket-demo-2402.jpg",
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 3),
     },
     {
@@ -97,6 +99,7 @@ async function seedDemoData(): Promise<void> {
       repairNotes: null,
       cause: null,
       resolution: null,
+      imageUrl: "/demo-photos/ticket-demo-2403.jpg",
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
     },
     {
@@ -115,6 +118,7 @@ async function seedDemoData(): Promise<void> {
       repairNotes: null,
       cause: null,
       resolution: null,
+      imageUrl: "/demo-photos/ticket-demo-2404.jpg",
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 30),
     },
   ];
@@ -122,6 +126,13 @@ async function seedDemoData(): Promise<void> {
   await db.insert(ticketsTable).values(
     sampleTickets.map((ticket) => ({ ...ticket, organizationId: DEMO_ORGANIZATION })),
   ).onConflictDoNothing();
+  await Promise.all(sampleTickets.map((ticket) => db.update(ticketsTable)
+    .set({ imageUrl: ticket.imageUrl })
+    .where(and(
+      eq(ticketsTable.organizationId, DEMO_ORGANIZATION),
+      eq(ticketsTable.id, ticket.id),
+      isNull(ticketsTable.imageUrl),
+    ))));
 
   const existingEvents = await db.select({ total: count() }).from(ticketEventsTable)
     .where(eq(ticketEventsTable.organizationId, DEMO_ORGANIZATION));
