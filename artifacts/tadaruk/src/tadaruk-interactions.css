@@ -711,19 +711,35 @@
   background: #fff0f0;
 }
 
+.status-new .status-icon {
+  background: #d94a4a;
+}
+
 .status-review {
-  color: #a93636;
-  background: #fff0f0;
+  color: #92651e;
+  background: #fff5e5;
+}
+
+.status-review .status-icon {
+  background: #dba443;
 }
 
 .status-in_progress {
-  color: #a93636;
-  background: #fff0f0;
+  color: #2d6d79;
+  background: #e8f5f5;
+}
+
+.status-in_progress .status-icon {
+  background: #4eabb0;
 }
 
 .status-awaiting_confirmation {
-  color: #a93636;
-  background: #fff0f0;
+  color: #446695;
+  background: #eaf2ff;
+}
+
+.status-awaiting_confirmation .status-icon {
+  background: #6d8dc0;
 }
 
 .status-closed {
@@ -787,28 +803,52 @@
 }
 
 .dark .status-new,
-.dark .status-review,
-.dark .status-in_progress,
-.dark .status-awaiting_confirmation,
 .dark .priority-urgent {
   color: #ffc1c1;
   background: rgba(217, 74, 74, .16);
 }
 
+.dark .status-review,
 .dark .priority-high {
   color: #f5d28f;
   background: rgba(219, 164, 67, .16);
 }
 
+.dark .status-in_progress,
 .dark .priority-medium {
   color: #a6e4e2;
   background: rgba(78, 171, 176, .15);
+}
+
+.dark .status-awaiting_confirmation {
+  color: #c7d0fa;
+  background: rgba(109, 140, 192, .17);
 }
 
 .dark .status-closed,
 .dark .priority-low {
   color: #bbdfbb;
   background: rgba(96, 165, 101, .15);
+}
+
+.dark .status-new .status-icon {
+  background: #d94a4a;
+}
+
+.dark .status-review .status-icon {
+  background: #d49b3e;
+}
+
+.dark .status-in_progress .status-icon {
+  background: #4eabb0;
+}
+
+.dark .status-awaiting_confirmation .status-icon {
+  background: #7188c3;
+}
+
+.dark .status-closed .status-icon {
+  background: #60a565;
 }
 
 @media (max-width: 1100px) {
@@ -893,5 +933,104 @@
 
   .ticket-row .status-label {
     display: none;
+  }
+}
+
+/* Keep dashboard text and controls legible against the dark workspace. */
+.dark .app-shell {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+.dark .topbar,
+.dark .topbar-title,
+.dark .icon-control,
+.dark .mobile-menu,
+.dark .top-avatar {
+  color: #e4edf7;
+}
+
+.dark .icon-control:hover,
+.dark .mobile-menu:hover {
+  color: #56f4ef;
+  background: rgba(255, 255, 255, .07);
+}
+
+.dark .avatar {
+  border-color: rgba(222, 239, 255, .18);
+  background: #294056;
+  color: #a8e9e3;
+  box-shadow: none;
+}
+
+.dark .eyebrow {
+  color: #aebed2;
+}
+
+.dark .page-title p,
+.dark .ticket-summary small,
+.dark .ticket-number,
+.dark .ticket-date,
+.dark .detail-back,
+.dark .detail-description,
+.dark .detail-properties {
+  color: #b5c3d5;
+}
+
+.dark .ticket-summary b,
+.dark .panel-heading h2,
+.dark .page-title h1 {
+  color: #edf3fb;
+}
+
+.dark .metric-card > span {
+  color: #c0ccdc;
+}
+
+.dark .metric-card small {
+  color: #aab9cc;
+}
+
+.dark .resolved-callout {
+  border: 1px solid #315b61;
+  background: linear-gradient(145deg, #193d48 0%, #1b4a4d 100%);
+  color: #e4f4f2;
+}
+
+.dark .resolved-callout .callout-symbol {
+  background: #294d57;
+  color: #82e1d9;
+}
+
+.dark .resolved-callout > strong {
+  color: #a8e9e3;
+}
+
+.dark .resolved-callout p {
+  color: #c3d9da;
+}
+
+.dark .quick-links > a svg:first-child,
+.dark .panel-heading .text-link {
+  color: #78d9d3;
+}
+
+.dark .quick-links > a svg:last-child,
+.dark .empty-inline,
+.dark .empty-inline span {
+  color: #b2c0d2;
+}
+
+.dark .empty-inline > svg {
+  color: #78d9d3;
+}
+
+.dark .workspace-footer {
+  color: #9eafc4;
+}
+
+@media (max-width: 780px) {
+  .dark .topbar {
+    background: rgba(17, 28, 48, .94);
   }
 }
