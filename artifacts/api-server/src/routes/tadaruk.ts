@@ -43,6 +43,7 @@ import {
 } from "@workspace/db";
 import {
   addTicketEvent,
+  DEMO_ACCOUNT_IDS,
   DEMO_ORGANIZATION,
   ensureDemoData,
   getBranch,
@@ -128,9 +129,7 @@ async function technicianView(member: TeamMemberRecord) {
 router.get("/demo/users", async (_req, res): Promise<void> => {
   try {
     await ensureDemoData();
-    const users = await Promise.all(
-      ["demo-manager", "demo-reporter", "demo-reporter-other", "demo-tech"].map((id) => getDemoMember(id)),
-    );
+    const users = await Promise.all(DEMO_ACCOUNT_IDS.map((id) => getDemoMember(id)));
     const views = await Promise.all(users.filter((member) => member !== undefined).map(async (member) => {
       const branch = member.branchId ? await getBranch(member.branchId) : undefined;
       return {
@@ -176,7 +175,7 @@ router.put("/session", async (req, res): Promise<void> => {
   }
   try {
     const member = await getDemoMember(parsed.data.userId);
-    if (!member || !["demo-manager", "demo-reporter", "demo-reporter-other", "demo-tech"].includes(member.id)) {
+    if (!member || !DEMO_ACCOUNT_IDS.some((id) => id === member.id)) {
       res.status(400).json({ error: "Unknown demo account." });
       return;
     }

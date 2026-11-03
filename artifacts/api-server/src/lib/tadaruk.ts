@@ -11,6 +11,7 @@ import {
 import type { Request } from "express";
 
 export const DEMO_ORGANIZATION = "restaurant-demo";
+export const DEMO_ACCOUNT_IDS = ["demo-manager", "demo-reporter", "demo-tech"] as const;
 
 const seedBranches = [
   { id: "branch-olaya", name: "فرع العليا", city: "الرياض", address: "شارع التحلية" },
@@ -140,7 +141,7 @@ export type DemoMember = typeof seedMembers[number];
 export async function listDemoUsers() {
   await ensureDemoData();
   const selected = seedMembers.filter((member) =>
-    ["demo-manager", "demo-reporter", "demo-reporter-other", "demo-tech"].includes(member.id),
+    DEMO_ACCOUNT_IDS.some((id) => id === member.id),
   );
   return Promise.all(selected.map((member) => toDemoUser(member)));
 }
@@ -276,5 +277,6 @@ export async function addTicketEvent(
 
 export async function getDemoUserFromRequest(req: Request) {
   const userId = req.signedCookies?.tadarukDemoUser as string | undefined;
+  if (!userId || !DEMO_ACCOUNT_IDS.some((id) => id === userId)) return undefined;
   return getDemoMember(userId);
 }
