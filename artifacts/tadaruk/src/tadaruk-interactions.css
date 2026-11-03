@@ -1488,6 +1488,29 @@
   background: rgba(255, 132, 138, .12);
 }
 
+.sidebar .side-user .account-menu-signout {
+  color: #b23842;
+}
+
+.sidebar .side-user .account-menu-signout:hover:not(:disabled) {
+  color: #972d36;
+  background: rgba(178, 56, 66, .09);
+}
+
+.sidebar .side-user .account-menu-signout:disabled {
+  color: #b23842;
+}
+
+.dark .sidebar .side-user .account-menu-signout,
+.dark .sidebar .side-user .account-menu-signout:disabled {
+  color: #ff9a9e;
+}
+
+.dark .sidebar .side-user .account-menu-signout:hover:not(:disabled) {
+  color: #ffc1c4;
+  background: rgba(255, 132, 138, .12);
+}
+
 .dark .account-menu-error {
   color: #ffacb0;
 }
