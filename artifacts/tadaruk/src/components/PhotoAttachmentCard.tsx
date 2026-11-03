@@ -4,24 +4,29 @@ type PhotoAttachmentCardProps = {
   imageUrl: string;
   lang: 'ar' | 'en';
   onRemove?: () => void;
+  variant?: 'compact' | 'detail';
+  localOnly?: boolean;
 };
 
 export default function PhotoAttachmentCard({
   imageUrl,
   lang,
   onRemove,
+  variant = 'compact',
+  localOnly = false,
 }: PhotoAttachmentCardProps) {
   const isArabic = lang === 'ar';
 
   return (
     <article
-      className="photo-attachment-card"
+      className={`photo-attachment-card${variant === 'detail' ? ' photo-attachment-card--detail' : ''}`}
       aria-label={isArabic ? 'صورة البلاغ' : 'Report photo'}
     >
       <div className="photo-attachment-thumbnail">
         <img
           src={imageUrl}
           alt={isArabic ? 'معاينة صورة البلاغ' : 'Report photo preview'}
+          loading="lazy"
         />
       </div>
       <div className="photo-attachment-copy">
@@ -36,8 +41,8 @@ export default function PhotoAttachmentCard({
               ? 'جاهزة للإرسال مع البلاغ'
               : 'Ready to send with the report'
             : isArabic
-              ? 'مرفقة مع هذا البلاغ'
-              : 'Attached to this report'}
+              ? localOnly ? 'محفوظة في هذا المتصفح فقط' : 'مرفقة مع هذا البلاغ'
+              : localOnly ? 'Stored in this browser only' : 'Attached to this report'}
         </span>
       </div>
       {onRemove ? (
@@ -52,7 +57,9 @@ export default function PhotoAttachmentCard({
       ) : (
         <span className="photo-attachment-state">
           <CheckCircle2 size={15} aria-hidden="true" />
-          {isArabic ? 'مرفقة' : 'Attached'}
+          {localOnly
+            ? isArabic ? 'محلية' : 'Local'
+            : isArabic ? 'مرفقة' : 'Attached'}
         </span>
       )}
     </article>
