@@ -1258,3 +1258,252 @@
     background: rgba(17, 28, 48, .94);
   }
 }
+
+/* Focus, navigation, and process feedback: short and never action-blocking. */
+.account-menu {
+  transform-origin: top right;
+  will-change: transform, opacity;
+}
+
+.nav-lang,
+.side-link,
+.mobile-menu,
+.top-avatar {
+  transition: color .16s ease, background-color .16s ease, transform .16s ease;
+}
+
+.nav-lang {
+  border-radius: 8px;
+}
+
+.nav-lang:hover {
+  background: rgba(86, 244, 239, .1);
+}
+
+.ticket-row {
+  border-radius: 9px;
+  transition: background-color .16s ease, transform .16s ease, box-shadow .16s ease;
+}
+
+.ticket-row:focus-visible,
+.role-card:focus-visible,
+.nav-link:focus-visible,
+.side-link:focus-visible,
+.btn:focus-visible,
+.icon-control:focus-visible,
+.mobile-menu:focus-visible,
+.top-avatar:focus-visible,
+.edit-button:focus-visible,
+.availability-toggle:focus-visible {
+  outline: 3px solid rgba(86, 244, 239, .68);
+  outline-offset: 3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ticket-row:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(31, 51, 99, .045);
+  }
+}
+
+.step-counter {
+  transition: color .18s ease, background-color .18s ease, border-color .18s ease;
+}
+
+.step-counter.step-complete {
+  color: #287e72;
+  border-color: #b9e5dd;
+  background: #eff9f5;
+}
+
+.report-step {
+  transform-origin: top center;
+}
+
+.analysis-feedback,
+.action-feedback {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #54728a;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.analysis-feedback svg,
+.feedback-loader {
+  flex: none;
+  color: #4eaaa5;
+  animation: tadaruk-spin .9s linear infinite;
+}
+
+.action-feedback {
+  grid-column: 1 / -1;
+  padding: 9px 10px;
+  border: 1px solid #d5ebe6;
+  border-radius: 8px;
+  color: #39756f;
+  background: rgba(239, 249, 246, .88);
+}
+
+.action-feedback > svg:not(.feedback-loader) {
+  flex: none;
+  color: #4a9a7f;
+}
+
+.empty-inline,
+.empty-panel {
+  animation: tadaruk-state-in .24s cubic-bezier(.22,.72,.18,1) both;
+}
+
+.empty-inline {
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(247, 251, 250, .8), rgba(240, 247, 246, .55));
+}
+
+.empty-panel {
+  border-radius: 15px;
+  background-color: hsl(var(--card));
+}
+
+@keyframes tadaruk-state-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes tadaruk-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Word-level headline stays inside its semantic h1. */
+.landing #landing-title {
+  display: flex;
+  justify-content: center;
+}
+
+.landing-headline-words {
+  width: 100%;
+  justify-content: center;
+  direction: inherit;
+  text-align: center;
+  line-height: inherit;
+}
+
+.preview-reveal {
+  width: 100%;
+  max-width: 535px;
+  justify-self: center;
+}
+
+.product-preview {
+  width: 100%;
+  padding: clamp(21px, 3vw, 30px);
+  border: 1px solid rgba(31, 51, 99, .1);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, .9);
+  box-shadow: 0 24px 65px rgba(31, 51, 99, .085), inset 0 1px rgba(255, 255, 255, .9);
+}
+
+.role-grid > .role-card-spotlight {
+  width: 100%;
+  min-height: 285px;
+  padding: 0;
+  border-radius: 16px;
+  background-color: rgba(255, 255, 255, .4);
+  box-shadow: 0 12px 28px rgba(31, 51, 99, .055);
+}
+
+.role-card-spotlight:focus-within {
+  outline: 3px solid rgba(86, 244, 239, .45);
+  outline-offset: 3px;
+}
+
+.role-card {
+  width: 100%;
+  height: 100%;
+  border-color: rgba(31, 51, 99, .08);
+  background: rgba(255, 255, 255, .86);
+  transition: transform .18s ease, border-color .18s ease, background-color .18s ease;
+}
+
+.role-card:hover {
+  border-color: rgba(86, 196, 189, .55);
+  background: rgba(255, 255, 255, .92);
+  box-shadow: none;
+}
+
+.dark .step-counter.step-complete {
+  color: #a7e2d9;
+  border-color: rgba(118, 218, 221, .3);
+  background: rgba(86, 244, 239, .09);
+}
+
+.dark .analysis-feedback {
+  color: #b9c9d9;
+}
+
+.dark .analysis-feedback svg,
+.dark .feedback-loader {
+  color: #82d8d2;
+}
+
+.dark .action-feedback {
+  border-color: rgba(118, 218, 221, .25);
+  color: #bce3db;
+  background: rgba(39, 66, 78, .48);
+}
+
+.dark .action-feedback > svg:not(.feedback-loader) {
+  color: #83c9a4;
+}
+
+.dark .empty-inline {
+  background: linear-gradient(145deg, rgba(38, 62, 85, .72), rgba(24, 41, 64, .66));
+}
+
+.account-menu a:focus-visible {
+  outline: 2px solid #56c9c4;
+  outline-offset: -2px;
+}
+
+@media (max-width: 780px) {
+  .role-grid > .role-card-spotlight {
+    min-height: 195px;
+  }
+
+  .landing #landing-title {
+    display: block;
+  }
+
+  .landing-headline-words {
+    display: flex;
+  }
+
+  .action-feedback {
+    padding: 8px;
+    font-size: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticket-row,
+  .role-card,
+  .step-counter,
+  .side-link,
+  .sidebar,
+  .mobile-scrim,
+  .nav-lang,
+  .page-enter,
+  .skeleton-card,
+  .skeleton-bar,
+  .btn,
+  .account-menu,
+  .empty-inline,
+  .empty-panel,
+  .analysis-feedback svg,
+  .feedback-loader {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,1 @@
+- [React Bits license](react-bits-license.md) — TADARUK may embed registry components in-app; do not redistribute them as standalone assets.
