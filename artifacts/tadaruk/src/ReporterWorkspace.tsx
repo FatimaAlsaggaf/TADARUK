@@ -60,12 +60,11 @@ const classificationOptions: Array<[string, string, string]> = [
 const classificationLabel = (value: string, lang: ReporterLang) =>
   classificationOptions.find(([key]) => key === value)?.[lang === 'ar' ? 1 : 2] ?? value;
 
-function ReporterHeading({ eyebrow, title, description, action, lang }: {
+function ReporterHeading({ title, description, action, lang }: {
   eyebrow: string; title: string; description: string; action?: ReactNode; lang: ReporterLang;
 }) {
   return <div className="rw-heading">
     <div>
-      <div className="rw-kicker">{eyebrow}</div>
       <h1>{title}</h1>
       <p>{description}</p>
     </div>

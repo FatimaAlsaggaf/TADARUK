@@ -30,7 +30,7 @@
 .rw-heading { display:flex; align-items:flex-end; justify-content:space-between; gap:18px; margin-bottom:25px; }
 .rw-kicker { display:flex; align-items:center; gap:8px; color:var(--rw-muted); font-size:11px; font-weight:800; letter-spacing:.12em; }
 .rw-kicker::before { content:""; width:18px; height:2px; background:var(--rw-cyan); border-radius:4px; }
-.rw-heading h1 { margin:7px 0 5px; color:var(--rw-ink); font-size:clamp(27px,4vw,37px); line-height:1.25; letter-spacing:-.025em; }
+.rw-heading h1 { margin:0 0 5px; color:var(--rw-ink); font-size:clamp(27px,4vw,37px); line-height:1.25; letter-spacing:-.025em; }
 .rw-heading p { margin:0; max-width:600px; color:var(--rw-muted); font-size:14px; line-height:1.8; }
 .rw-button { min-height:44px; display:inline-flex; align-items:center; justify-content:center; gap:9px; border:1px solid transparent; border-radius:10px; padding:0 17px; background:var(--rw-navy); color:#f4fbfc; font-size:13px; font-weight:750; cursor:pointer; transition:transform .18s ease, background-color .18s ease, border-color .18s ease; }
 .rw-button:hover:not(:disabled) { transform:translateY(-2px); background:#245477; }

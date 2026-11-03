@@ -529,8 +529,8 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
     <div className="main-frame"><header className="topbar"><div className="topbar-title"><button className="mobile-menu" onClick={()=>setMobile(true)}><Menu size={20}/></button><span>{title}</span></div><div className="top-controls"><button onClick={()=>setLang(lang==='ar'?'en':'ar')} className="icon-control" aria-label={tr(lang,'تغيير اللغة','Switch language')}><Languages size={18}/><span>{lang==='ar'?'EN':'ع'}</span></button><SunMoonThemeToggle className="workspace-theme-toggle" theme={dark?'dark':'light'} onThemeChange={theme=>setDark(theme==='dark')} aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')} data-testid="theme-toggle-workspace" size={40} duration={860}/></div></header><main className="workspace-content">{children}</main></div>
   </div>;
 }
-function PageTitle({eyebrow,title,description,action}:{eyebrow:string;title:string;description?:string;action?:ReactNode}) {
-  return <div className="page-title"><div><div className="eyebrow">{eyebrow}</div><h1>{title}</h1>{description&&<p>{description}</p>}</div>{action&&<div className="page-title-action">{action}</div>}</div>;
+function PageTitle({title,description,action}:{eyebrow:string;title:string;description?:string;action?:ReactNode}) {
+  return <div className="page-title"><div><h1>{title}</h1>{description&&<p>{description}</p>}</div>{action&&<div className="page-title-action">{action}</div>}</div>;
 }
 type FaultCluster = { tickets: Ticket[]; branchName: string; location: string; title: string };
 const faultStopWords = new Set('في من على إلى عن مع هذا هذه ذلك التي الذي يوجد يوجد هناك عند عدم لا لم ما هو هي تم بسبب بشكل بعد قبل تحت فوق the a an and or in on at of to for with is are was were this that there from'.split(' '));
