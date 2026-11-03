@@ -23,6 +23,20 @@ export interface Ticket {
   reporterName: string;
   branchId: string;
   branchName: string;
+  branchCity: string;
+  branchAddress: string;
+  /**
+     * @minimum -90
+     * @maximum 90
+     * @nullable
+     */
+  branchLatitude: number | null;
+  /**
+     * @minimum -180
+     * @maximum 180
+     * @nullable
+     */
+  branchLongitude: number | null;
   /** @nullable */
   technicianId: string | null;
   /** @nullable */

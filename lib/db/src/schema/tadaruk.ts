@@ -1,5 +1,6 @@
 import {
   boolean,
+  doublePrecision,
   integer,
   pgTable,
   text,
@@ -12,6 +13,8 @@ export const branchesTable = pgTable("tadaruk_branches", {
   name: text("name").notNull(),
   city: text("city").notNull(),
   address: text("address").notNull().default(""),
+  latitude: doublePrecision("latitude"),
+  longitude: doublePrecision("longitude"),
   active: boolean("active").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

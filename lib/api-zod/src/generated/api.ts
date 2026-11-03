@@ -86,6 +86,14 @@ export const ClearDemoSessionResponse = zod.object({
 /**
  * @summary Get role-aware overview
  */
+export const getOverviewResponseRecentTicketsItemBranchLatitudeMin = -90;
+export const getOverviewResponseRecentTicketsItemBranchLatitudeMax = 90;
+
+export const getOverviewResponseRecentTicketsItemBranchLongitudeMin = -180;
+export const getOverviewResponseRecentTicketsItemBranchLongitudeMax = 180;
+
+
+
 export const GetOverviewResponse = zod.object({
   "openTickets": zod.number().int(),
   "urgentTickets": zod.number().int(),
@@ -106,6 +114,10 @@ export const GetOverviewResponse = zod.object({
   "reporterName": zod.string(),
   "branchId": zod.string(),
   "branchName": zod.string(),
+  "branchCity": zod.string(),
+  "branchAddress": zod.string(),
+  "branchLatitude": zod.number().min(getOverviewResponseRecentTicketsItemBranchLatitudeMin).max(getOverviewResponseRecentTicketsItemBranchLatitudeMax).nullable(),
+  "branchLongitude": zod.number().min(getOverviewResponseRecentTicketsItemBranchLongitudeMin).max(getOverviewResponseRecentTicketsItemBranchLongitudeMax).nullable(),
   "technicianId": zod.string().nullable(),
   "technicianName": zod.string().nullable(),
   "imageUrl": zod.string().nullable(),
@@ -157,6 +169,14 @@ export const ListTicketsQueryParams = zod.object({
   "search": zod.coerce.string().optional()
 })
 
+export const listTicketsResponseBranchLatitudeMin = -90;
+export const listTicketsResponseBranchLatitudeMax = 90;
+
+export const listTicketsResponseBranchLongitudeMin = -180;
+export const listTicketsResponseBranchLongitudeMax = 180;
+
+
+
 export const ListTicketsResponseItem = zod.object({
   "id": zod.string(),
   "number": zod.string(),
@@ -171,6 +191,10 @@ export const ListTicketsResponseItem = zod.object({
   "reporterName": zod.string(),
   "branchId": zod.string(),
   "branchName": zod.string(),
+  "branchCity": zod.string(),
+  "branchAddress": zod.string(),
+  "branchLatitude": zod.number().min(listTicketsResponseBranchLatitudeMin).max(listTicketsResponseBranchLatitudeMax).nullable(),
+  "branchLongitude": zod.number().min(listTicketsResponseBranchLongitudeMin).max(listTicketsResponseBranchLongitudeMax).nullable(),
   "technicianId": zod.string().nullable(),
   "technicianName": zod.string().nullable(),
   "imageUrl": zod.string().nullable(),
@@ -209,6 +233,14 @@ export const CreateTicketBody = zod.object({
   "imageUrl": zod.string().nullish()
 })
 
+export const createTicketResponseBranchLatitudeMin = -90;
+export const createTicketResponseBranchLatitudeMax = 90;
+
+export const createTicketResponseBranchLongitudeMin = -180;
+export const createTicketResponseBranchLongitudeMax = 180;
+
+
+
 export const CreateTicketResponse = zod.object({
   "id": zod.string(),
   "number": zod.string(),
@@ -223,6 +255,10 @@ export const CreateTicketResponse = zod.object({
   "reporterName": zod.string(),
   "branchId": zod.string(),
   "branchName": zod.string(),
+  "branchCity": zod.string(),
+  "branchAddress": zod.string(),
+  "branchLatitude": zod.number().min(createTicketResponseBranchLatitudeMin).max(createTicketResponseBranchLatitudeMax).nullable(),
+  "branchLongitude": zod.number().min(createTicketResponseBranchLongitudeMin).max(createTicketResponseBranchLongitudeMax).nullable(),
   "technicianId": zod.string().nullable(),
   "technicianName": zod.string().nullable(),
   "imageUrl": zod.string().nullable(),
@@ -248,6 +284,14 @@ export const GetTicketParams = zod.object({
   "ticketId": zod.coerce.string()
 })
 
+export const getTicketResponseBranchLatitudeMin = -90;
+export const getTicketResponseBranchLatitudeMax = 90;
+
+export const getTicketResponseBranchLongitudeMin = -180;
+export const getTicketResponseBranchLongitudeMax = 180;
+
+
+
 export const GetTicketResponse = zod.object({
   "id": zod.string(),
   "number": zod.string(),
@@ -262,6 +306,10 @@ export const GetTicketResponse = zod.object({
   "reporterName": zod.string(),
   "branchId": zod.string(),
   "branchName": zod.string(),
+  "branchCity": zod.string(),
+  "branchAddress": zod.string(),
+  "branchLatitude": zod.number().min(getTicketResponseBranchLatitudeMin).max(getTicketResponseBranchLatitudeMax).nullable(),
+  "branchLongitude": zod.number().min(getTicketResponseBranchLongitudeMin).max(getTicketResponseBranchLongitudeMax).nullable(),
   "technicianId": zod.string().nullable(),
   "technicianName": zod.string().nullable(),
   "imageUrl": zod.string().nullable(),
@@ -295,6 +343,14 @@ export const PerformTicketActionBody = zod.object({
   "technicianId": zod.string().optional()
 })
 
+export const performTicketActionResponseBranchLatitudeMin = -90;
+export const performTicketActionResponseBranchLatitudeMax = 90;
+
+export const performTicketActionResponseBranchLongitudeMin = -180;
+export const performTicketActionResponseBranchLongitudeMax = 180;
+
+
+
 export const PerformTicketActionResponse = zod.object({
   "id": zod.string(),
   "number": zod.string(),
@@ -309,6 +365,10 @@ export const PerformTicketActionResponse = zod.object({
   "reporterName": zod.string(),
   "branchId": zod.string(),
   "branchName": zod.string(),
+  "branchCity": zod.string(),
+  "branchAddress": zod.string(),
+  "branchLatitude": zod.number().min(performTicketActionResponseBranchLatitudeMin).max(performTicketActionResponseBranchLatitudeMax).nullable(),
+  "branchLongitude": zod.number().min(performTicketActionResponseBranchLongitudeMin).max(performTicketActionResponseBranchLongitudeMax).nullable(),
   "technicianId": zod.string().nullable(),
   "technicianName": zod.string().nullable(),
   "imageUrl": zod.string().nullable(),
@@ -330,11 +390,21 @@ export const PerformTicketActionResponse = zod.object({
 /**
  * @summary List restaurant branches
  */
+export const listBranchesResponseLatitudeMin = -90;
+export const listBranchesResponseLatitudeMax = 90;
+
+export const listBranchesResponseLongitudeMin = -180;
+export const listBranchesResponseLongitudeMax = 180;
+
+
+
 export const ListBranchesResponseItem = zod.object({
   "id": zod.string(),
   "name": zod.string(),
   "city": zod.string(),
-  "address": zod.string().optional(),
+  "address": zod.string(),
+  "latitude": zod.number().min(listBranchesResponseLatitudeMin).max(listBranchesResponseLatitudeMax).nullable(),
+  "longitude": zod.number().min(listBranchesResponseLongitudeMin).max(listBranchesResponseLongitudeMax).nullable(),
   "active": zod.boolean(),
   "openTickets": zod.number().int()
 })
@@ -348,19 +418,38 @@ export const createBranchBodyNameMin = 2;
 
 export const createBranchBodyCityMin = 2;
 
+export const createBranchBodyLatitudeMin = -90;
+export const createBranchBodyLatitudeMax = 90;
+
+export const createBranchBodyLongitudeMin = -180;
+export const createBranchBodyLongitudeMax = 180;
+
 
 
 export const CreateBranchBody = zod.object({
   "name": zod.string().min(createBranchBodyNameMin),
   "city": zod.string().min(createBranchBodyCityMin),
-  "address": zod.string()
+  "address": zod.string(),
+  "latitude": zod.number().min(createBranchBodyLatitudeMin).max(createBranchBodyLatitudeMax).nullish(),
+  "longitude": zod.number().min(createBranchBodyLongitudeMin).max(createBranchBodyLongitudeMax).nullish(),
+  "active": zod.boolean().optional()
 })
+
+export const createBranchResponseLatitudeMin = -90;
+export const createBranchResponseLatitudeMax = 90;
+
+export const createBranchResponseLongitudeMin = -180;
+export const createBranchResponseLongitudeMax = 180;
+
+
 
 export const CreateBranchResponse = zod.object({
   "id": zod.string(),
   "name": zod.string(),
   "city": zod.string(),
-  "address": zod.string().optional(),
+  "address": zod.string(),
+  "latitude": zod.number().min(createBranchResponseLatitudeMin).max(createBranchResponseLatitudeMax).nullable(),
+  "longitude": zod.number().min(createBranchResponseLongitudeMin).max(createBranchResponseLongitudeMax).nullable(),
   "active": zod.boolean(),
   "openTickets": zod.number().int()
 })
@@ -377,20 +466,38 @@ export const updateBranchBodyNameMin = 2;
 
 export const updateBranchBodyCityMin = 2;
 
+export const updateBranchBodyLatitudeMin = -90;
+export const updateBranchBodyLatitudeMax = 90;
+
+export const updateBranchBodyLongitudeMin = -180;
+export const updateBranchBodyLongitudeMax = 180;
+
 
 
 export const UpdateBranchBody = zod.object({
   "name": zod.string().min(updateBranchBodyNameMin).optional(),
   "city": zod.string().min(updateBranchBodyCityMin).optional(),
   "address": zod.string().optional(),
+  "latitude": zod.number().min(updateBranchBodyLatitudeMin).max(updateBranchBodyLatitudeMax).nullish(),
+  "longitude": zod.number().min(updateBranchBodyLongitudeMin).max(updateBranchBodyLongitudeMax).nullish(),
   "active": zod.boolean().optional()
 })
+
+export const updateBranchResponseLatitudeMin = -90;
+export const updateBranchResponseLatitudeMax = 90;
+
+export const updateBranchResponseLongitudeMin = -180;
+export const updateBranchResponseLongitudeMax = 180;
+
+
 
 export const UpdateBranchResponse = zod.object({
   "id": zod.string(),
   "name": zod.string(),
   "city": zod.string(),
-  "address": zod.string().optional(),
+  "address": zod.string(),
+  "latitude": zod.number().min(updateBranchResponseLatitudeMin).max(updateBranchResponseLatitudeMax).nullable(),
+  "longitude": zod.number().min(updateBranchResponseLongitudeMin).max(updateBranchResponseLongitudeMax).nullable(),
   "active": zod.boolean(),
   "openTickets": zod.number().int()
 })

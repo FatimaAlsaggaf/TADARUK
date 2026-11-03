@@ -99,9 +99,21 @@ async function branchView(branch: BranchRecord) {
     name: branch.name,
     city: branch.city,
     address: branch.address,
+    latitude: branch.latitude,
+    longitude: branch.longitude,
     active: branch.active,
     openTickets: branchTickets.length,
   };
+}
+
+function hasCompleteBranchCoordinates(body: unknown): boolean {
+  if (typeof body !== "object" || body === null) return false;
+  const input = body as Record<string, unknown>;
+  const hasLatitude = Object.hasOwn(input, "latitude");
+  const hasLongitude = Object.hasOwn(input, "longitude");
+  if (hasLatitude !== hasLongitude) return false;
+  if (!hasLatitude) return true;
+  return (input.latitude === null) === (input.longitude === null);
 }
 
 async function technicianView(member: TeamMemberRecord) {
@@ -493,6 +505,10 @@ router.post("/branches", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
+  if (!hasCompleteBranchCoordinates(req.body)) {
+    res.status(400).json({ error: "Latitude and longitude must be provided together." });
+    return;
+  }
   try {
     const manager = await requireManager(req, res);
     if (!manager) return;
@@ -500,7 +516,7 @@ router.post("/branches", async (req, res): Promise<void> => {
       id: `branch-${randomUUID()}`,
       organizationId: DEMO_ORGANIZATION,
       ...parsed.data,
-      active: true,
+      active: parsed.data.active ?? true,
     }).returning();
     res.status(201).json(CreateBranchResponse.parse(await branchView(branch)));
   } catch (error) {
@@ -513,6 +529,10 @@ router.patch("/branches/:branchId", async (req, res): Promise<void> => {
   const parsed = UpdateBranchBody.safeParse(req.body);
   if (!params.success || !parsed.success) {
     res.status(400).json({ error: params.error?.message ?? parsed.error?.message });
+    return;
+  }
+  if (!hasCompleteBranchCoordinates(req.body)) {
+    res.status(400).json({ error: "Latitude and longitude must be provided together." });
     return;
   }
   try {

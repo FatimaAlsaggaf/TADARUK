@@ -12,4 +12,17 @@ export interface BranchInput {
   /** @minLength 2 */
   city: string;
   address: string;
+  /**
+     * @minimum -90
+     * @maximum 90
+     * @nullable
+     */
+  latitude?: number | null;
+  /**
+     * @minimum -180
+     * @maximum 180
+     * @nullable
+     */
+  longitude?: number | null;
+  active?: boolean;
 }
