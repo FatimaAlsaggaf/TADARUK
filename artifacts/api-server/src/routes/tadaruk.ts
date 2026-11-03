@@ -196,6 +196,17 @@ router.put("/session", async (req, res): Promise<void> => {
   }
 });
 
+router.delete("/session", (_req, res): void => {
+  res.clearCookie("tadarukDemoUser", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    signed: true,
+    path: "/",
+  });
+  res.json(GetDemoSessionResponse.parse({ user: null }));
+});
+
 router.get("/overview", async (req, res): Promise<void> => {
   try {
     const member = await requireMember(req, res);

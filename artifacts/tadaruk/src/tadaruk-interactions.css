@@ -248,15 +248,56 @@
 }
 
 .side-user {
+  position: relative;
+  display: block;
   border-top-color: #d8e2ed;
+  padding: 15px 0 0;
 }
 
-.side-user button,
+.side-user-trigger {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 4px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #71819a;
+  text-align: start;
+  transition: color .16s ease, background-color .16s ease;
+}
+
+.side-user-trigger > span:nth-child(2) {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.side-user .side-user-trigger {
+  color: #71819a;
+}
+
+.side-user-trigger > svg:last-child {
+  flex: none;
+  transition: transform .16s ease;
+}
+
+.side-user-trigger[aria-expanded="true"] > svg:last-child {
+  transform: rotate(180deg);
+}
+
+.side-user-trigger:hover {
+  color: #1f3363;
+  background: rgba(31, 51, 99, .055);
+}
+
 .mobile-close {
   color: #71819a;
 }
 
-.side-user button:hover,
 .mobile-close:hover {
   color: #1f3363;
 }
@@ -457,14 +498,22 @@
   background: #56f4ef;
 }
 
-.dark .side-user button,
+.dark .side-user-trigger,
 .dark .mobile-close {
   color: #c7d4e5;
 }
 
-.dark .side-user button:hover,
+.dark .side-user .side-user-trigger {
+  color: #c7d4e5;
+}
+
+.dark .side-user-trigger:hover,
 .dark .mobile-close:hover {
   color: #fff;
+}
+
+.dark .side-user-trigger:hover {
+  background: rgba(221, 234, 247, .08);
 }
 
 .dark .reporter-shell .report-form {
@@ -1261,14 +1310,73 @@
 
 /* Focus, navigation, and process feedback: short and never action-blocking. */
 .account-menu {
-  transform-origin: top right;
+  transform-origin: bottom right;
   will-change: transform, opacity;
+}
+
+.sidebar .side-user .account-menu {
+  top: auto;
+  bottom: calc(100% + 10px);
+  inset-inline: 0;
+  width: auto;
+  max-height: min(60dvh, 360px);
+  overflow-y: auto;
+}
+
+.side-user-trigger:focus-visible,
+.account-menu-signout:focus-visible {
+  outline: 3px solid rgba(86, 244, 239, .68);
+  outline-offset: 3px;
+}
+
+.account-menu-signout {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 11px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #b23842;
+  font-size: 12px;
+  text-align: start;
+  transition: color .16s ease, background-color .16s ease;
+}
+
+.account-menu-signout:hover:not(:disabled) {
+  color: #972d36;
+  background: rgba(178, 56, 66, .09);
+}
+
+.account-menu-signout:disabled {
+  cursor: wait;
+  opacity: .65;
+}
+
+.account-menu-error {
+  margin: 6px 10px;
+  color: #b23842;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.dark .account-menu-signout {
+  color: #ff9a9e;
+}
+
+.dark .account-menu-signout:hover:not(:disabled) {
+  color: #ffc1c4;
+  background: rgba(255, 132, 138, .12);
+}
+
+.dark .account-menu-error {
+  color: #ffacb0;
 }
 
 .nav-lang,
 .side-link,
-.mobile-menu,
-.top-avatar {
+.mobile-menu {
   transition: color .16s ease, background-color .16s ease, transform .16s ease;
 }
 
@@ -1292,7 +1400,7 @@
 .btn:focus-visible,
 .icon-control:focus-visible,
 .mobile-menu:focus-visible,
-.top-avatar:focus-visible,
+.side-user-trigger:focus-visible,
 .edit-button:focus-visible,
 .availability-toggle:focus-visible {
   outline: 3px solid rgba(86, 244, 239, .68);

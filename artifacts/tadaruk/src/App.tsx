@@ -12,7 +12,7 @@ import {
   Mic, Square
 } from 'lucide-react';
 import {
-  useHealthCheck, useListDemoUsers, useGetDemoSession, useSelectDemoAccount, useGetOverview,
+  useHealthCheck, useListDemoUsers, useGetDemoSession, useSelectDemoAccount, useClearDemoSession, useGetOverview,
   useAnalyzeTicket, useListTickets, useCreateTicket, useGetTicket, usePerformTicketAction,
   useListBranches, useCreateBranch, useUpdateBranch, useListTechnicians, useCreateTechnician,
   useUpdateTechnician, useListKnowledge, getGetDemoSessionQueryKey, getGetOverviewQueryKey,
@@ -251,26 +251,24 @@ function usePrefs() {
 function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:ReactNode;title:string;lang:Lang;setLang:(x:Lang)=>void;dark:boolean;setDark:(x:boolean)=>void}) {
   const {data:session}=useGetDemoSession();
   const user=session?.user; const [,go]=useLocation(); const [menu,setMenu]=useState(false); const [mobile,setMobile]=useState(false);
+  const qc=useQueryClient();const logout=useClearDemoSession();
   const reduced=useReducedMotion()===true || (typeof window!=='undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true);
   useEffect(()=>{if(session && !user && window.location.pathname.startsWith('/workspace'))go('/demo');},[session,user,go]);
   if(!user)return <div className="workspace-loading"><div className="skeleton-bar"/><div className="skeleton-card"/></div>;
   const links=user.role==='manager'?[['/workspace','نظرة عامة','Overview',LayoutDashboard],['/workspace/tickets','البلاغات','Tickets',ClipboardList],['/workspace/technicians','الفنيون','Technicians',Users],['/workspace/branches','الفروع','Branches',Building2],['/workspace/knowledge','قاعدة المعرفة','Knowledge',BookOpen]]:user.role==='technician'?[['/workspace','مهامي','My tasks',Wrench],['/workspace/tickets','كل المهام','Tasks',ClipboardList]]:[['/workspace','الرئيسية','Home',LayoutDashboard],['/workspace/tickets/new','بلاغ جديد','New report',Plus],['/workspace/tickets','بلاغاتي','My reports',ClipboardList]];
+  const signOut=()=>logout.mutate(undefined,{onSuccess:()=>{qc.clear();setMenu(false);setMobile(false);go('/demo');}});
   const active=(path:string)=>window.location.pathname===path;
   return <div className={`app-shell ${user.role==='reporter'?'reporter-shell':''}`} dir={lang==='ar'?'rtl':'ltr'}>
     <aside className={`sidebar ${mobile?'sidebar-open':''}`}><div className="side-brand"><Link href="/workspace"><Brand darkMode={dark}/></Link><button className="mobile-close" onClick={()=>setMobile(false)}><X size={18}/></button></div>
       <div className="branch-switch"><span className="branch-icon"><Building2 size={16}/></span><span><small>{tr(lang,'الموقع الحالي','CURRENT LOCATION')}</small><b>{user.branchName||tr(lang,'جميع الفروع','All branches')}</b></span><ChevronDown size={15}/></div>
       <nav className="side-nav">{links.map(([path,ar,en,Icon])=><Link key={path as string} href={path as string} onClick={()=>setMobile(false)} className={`side-link ${active(path as string)?'selected':''}`}><Icon size={19}/><span>{tr(lang,ar as string,en as string)}</span>{active(path as string)&&<span className="nav-active-mark"/>}</Link>)}</nav>
-      <div className="side-bottom"><div className="side-help"><span><ShieldCheck size={17}/></span><b>{tr(lang,'كل شيء في مكانه','Everything in its place')}</b><small>{tr(lang,'سجل صيانة مشترك وواضح.','One clear, shared maintenance record.')}</small></div><div className="side-user"><Avatar name={user.name}/><span><b>{user.name}</b><small>{roleText(user.role,lang)}</small></span><button onClick={()=>setMenu(!menu)} aria-label={tr(lang,'قائمة الحساب','Account menu')} aria-expanded={menu} aria-controls="account-menu"><ChevronDown size={16}/></button></div></div>
+      <div className="side-bottom"><div className="side-help"><span><ShieldCheck size={17}/></span><b>{tr(lang,'كل شيء في مكانه','Everything in its place')}</b><small>{tr(lang,'سجل صيانة مشترك وواضح.','One clear, shared maintenance record.')}</small></div><div className="side-user">
+        <button className="side-user-trigger" onClick={()=>setMenu(!menu)} aria-label={tr(lang,'خيارات الملف الشخصي','Profile options')} aria-expanded={menu} aria-controls="account-menu"><Avatar name={user.name}/><span><b>{user.name}</b><small>{roleText(user.role,lang)}</small></span><ChevronDown size={16}/></button>
+        <AnimatePresence>{menu&&<motion.nav id="account-menu" className="account-menu" aria-label={tr(lang,'خيارات الحساب','Account options')} initial={reduced?false:{opacity:0,y:6}} animate={{opacity:1,y:0}} exit={reduced?{opacity:1}:{opacity:0,y:5}} transition={{duration:reduced?0:.16,ease:[.22,.72,.18,1]}}><div className="account-menu-head"><b>{user.name}</b><small>{roleText(user.role,lang)}</small></div><Link href="/demo" onClick={()=>{setMenu(false);setMobile(false);}}><RotateCcw size={15}/>{tr(lang,'تبديل الحساب','Switch account')}</Link>{logout.isError&&<p className="account-menu-error" role="alert">{tr(lang,'تعذر تسجيل الخروج، حاول مجدداً.','Could not sign out. Please try again.')}</p>}<button type="button" className="account-menu-signout" onClick={signOut} disabled={logout.isPending} aria-busy={logout.isPending}><LogOut size={15}/>{logout.isPending?tr(lang,'جارٍ تسجيل الخروج…','Signing out…'):tr(lang,'تسجيل الخروج','Sign out')}</button></motion.nav>}</AnimatePresence>
+      </div></div>
     </aside>
     <AnimatePresence>{mobile&&<motion.button type="button" className="mobile-scrim" onClick={()=>setMobile(false)} aria-label={tr(lang,'إغلاق القائمة','Close navigation')} initial={reduced?false:{opacity:0}} animate={{opacity:1}} exit={reduced?{opacity:1}:{opacity:0}} transition={{duration:reduced?0:.16}}/>}</AnimatePresence>
-    <div className="main-frame"><header className="topbar"><div className="topbar-title"><button className="mobile-menu" onClick={()=>setMobile(true)}><Menu size={20}/></button><span>{title}</span></div><div className="top-controls"><button onClick={()=>setLang(lang==='ar'?'en':'ar')} className="icon-control" aria-label={tr(lang,'تغيير اللغة','Switch language')}><Languages size={18}/><span>{lang==='ar'?'EN':'ع'}</span></button><button onClick={()=>setDark(!dark)} className="icon-control" aria-label={tr(lang,'تغيير المظهر','Switch theme')}>{dark?<Sun size={18}/>:<Moon size={18}/>}</button><button className="top-avatar" onClick={()=>setMenu(!menu)} aria-label={tr(lang,'قائمة الحساب','Account menu')} aria-expanded={menu} aria-controls="account-menu"><Avatar name={user.name} size="sm"/></button>
-      <AnimatePresence>{menu&&<motion.div id="account-menu" className="account-menu" initial={reduced?false:{opacity:0,y:-6}} animate={{opacity:1,y:0}} exit={reduced?{opacity:1}:{opacity:0,y:-4}} transition={{duration:reduced?0:.16,ease:[.22,.72,.18,1]}}><div className="account-menu-head"><b>{user.name}</b><small>{roleText(user.role,lang)}</small></div><Link href="/demo" onClick={()=>setMenu(false)}><RotateCcw size={15}/>{tr(lang,'تبديل الحساب التجريبي','Switch demo account')}</Link><Link href="/" onClick={()=>setMenu(false)}><LogOut size={15}/>{tr(lang,'العودة للرئيسية','Back to landing')}</Link></motion.div>}</AnimatePresence>
-    </div></header><main className="workspace-content">{children}</main><footer className="workspace-footer">
-      <Brand darkMode={dark}/>
-      <span className="workspace-footer-divider" aria-hidden="true"/>
-      <span className="workspace-footer-signature"><b>{tr(lang,'منصة تدارك للصيانة','TADARUK MAINTENANCE')}</b><small>{tr(lang,'بلاغ واضح. متابعة موثّقة.','Clear reports. Confirmed follow-through.')}</small></span>
-      <span className="workspace-footer-meta">{tr(lang,'سجل الصيانة التشغيلي','MAINTENANCE OPERATIONS')}</span>
-    </footer></div>
+    <div className="main-frame"><header className="topbar"><div className="topbar-title"><button className="mobile-menu" onClick={()=>setMobile(true)}><Menu size={20}/></button><span>{title}</span></div><div className="top-controls"><button onClick={()=>setLang(lang==='ar'?'en':'ar')} className="icon-control" aria-label={tr(lang,'تغيير اللغة','Switch language')}><Languages size={18}/><span>{lang==='ar'?'EN':'ع'}</span></button><button onClick={()=>setDark(!dark)} className="icon-control" aria-label={tr(lang,'تغيير المظهر','Switch theme')}>{dark?<Sun size={18}/>:<Moon size={18}/>}</button></div></header><main className="workspace-content">{children}</main></div>
   </div>;
 }
 function PageTitle({eyebrow,title,description,action}:{eyebrow:string;title:string;description?:string;action?:ReactNode}) {

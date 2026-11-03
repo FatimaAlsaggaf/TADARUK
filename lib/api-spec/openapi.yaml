@@ -70,6 +70,17 @@ paths:
                 $ref: "#/components/schemas/DemoSession"
         "400":
           description: Unknown demo account
+    delete:
+      operationId: clearDemoSession
+      tags: [demo]
+      summary: Log out of the active demo account
+      responses:
+        "200":
+          description: Demo session cleared
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DemoSession"
   /overview:
     get:
       operationId: getOverview

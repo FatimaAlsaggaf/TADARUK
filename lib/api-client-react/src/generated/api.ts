@@ -387,6 +387,80 @@ export const useSelectDemoAccount = <TError = ErrorType<void>,
       return useMutation(getSelectDemoAccountMutationOptions(options));
     }
 
+export const getClearDemoSessionUrl = () => {
+
+
+
+
+  return `/api/session`
+}
+
+/**
+ * @summary Log out of the active demo account
+ */
+export const clearDemoSession = async ( options?: Parameters<typeof customFetch>[1]): Promise<DemoSession> => {
+
+  return customFetch<DemoSession>(getClearDemoSessionUrl(),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getClearDemoSessionMutationKey = () => ['clearDemoSession'] as const;
+
+export const getClearDemoSessionMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clearDemoSession>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof clearDemoSession>>, TError,void, TContext> => {
+
+const mutationKey = getClearDemoSessionMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof clearDemoSession>>, void> = () => {
+
+
+          return  clearDemoSession(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ClearDemoSessionMutationResult = NonNullable<Awaited<ReturnType<typeof clearDemoSession>>>
+
+    export type ClearDemoSessionMutationError = ErrorType<unknown>
+
+
+    /**
+ * @summary Log out of the active demo account
+ */
+export const useClearDemoSession = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clearDemoSession>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof clearDemoSession>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getClearDemoSessionMutationOptions(options));
+    }
+
 export const getGetOverviewUrl = () => {
 
 

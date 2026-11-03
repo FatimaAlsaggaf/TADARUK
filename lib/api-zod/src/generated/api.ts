@@ -68,6 +68,22 @@ export const SelectDemoAccountResponse = zod.object({
 
 
 /**
+ * @summary Log out of the active demo account
+ */
+export const ClearDemoSessionResponse = zod.object({
+  "user": zod.union([zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "role": zod.enum(['manager', 'reporter', 'technician']),
+  "initials": zod.string(),
+  "branchId": zod.string().nullish(),
+  "branchName": zod.string().nullish(),
+  "specialization": zod.string().nullish()
+}),zod.null()])
+})
+
+
+/**
  * @summary Get role-aware overview
  */
 export const GetOverviewResponse = zod.object({
