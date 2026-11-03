@@ -443,15 +443,13 @@ function DemoPage({lang,setLang,dark,setDark}:{lang:Lang;setLang:(lang:Lang)=>vo
   return <main className="demo-page" dir={lang==='ar'?'rtl':'ltr'}>
     <header className="demo-top">
       <Link href="/" className="demo-brand" aria-label={tr(lang,'العودة إلى تدارك','Back to Tadaruk')} data-testid="link-demo-brand"><Brand darkMode={dark}/></Link>
-      <span>{tr(lang,'بيئة تجريبية آمنة','A guided demo environment')}</span>
       <div className="demo-actions">
         <Link href="/" className="demo-back-link" data-testid="link-demo-home"><BackIcon size={16}/><span>{tr(lang,'الرئيسية','Home')}</span></Link>
-        <button className="demo-language-toggle" type="button" onClick={()=>setLang(lang==='ar'?'en':'ar')} aria-label={tr(lang,'التبديل إلى الإنجليزية','Switch to Arabic')} data-testid="button-demo-language"><Languages size={16}/><span>{lang==='ar'?'EN':'عربي'}</span></button>
+        <button className="nav-lang" type="button" onClick={()=>setLang(lang==='ar'?'en':'ar')} aria-label={tr(lang,'التبديل إلى الإنجليزية','Switch to Arabic')} data-testid="button-demo-language"><Languages size={16}/><span>{lang==='ar'?'English':'العربية'}</span></button>
         <SunMoonThemeToggle className="demo-theme-toggle" theme={dark?'dark':'light'} onThemeChange={theme=>setDark(theme==='dark')} aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')} data-testid="theme-toggle-demo" size={40} duration={860}/>
       </div>
     </header>
     <section className="demo-content fade-up">
-      <div className="eyebrow"><span className="live-dot"/>TADARUK · {tr(lang,'تجربة','DEMO')}</div>
       <h1 className={lang==='ar'?'display-ar':''}>{tr(lang,'اختر نقطة البداية','Choose your point of view')}</h1>
       <p>{tr(lang,'ثلاثة أدوار، وسجل واحد يتابع البلاغ حتى إغلاقه.','Three roles, one record that follows a repair to closure.')}</p>
       {isLoading
