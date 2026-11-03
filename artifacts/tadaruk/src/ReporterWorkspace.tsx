@@ -15,6 +15,7 @@ import {
 } from '@workspace/api-client-react';
 import { AiVoiceInput } from '@/components/ui/ai-voice-input';
 import { TicketCancellationAction } from '@/components/TicketCancellationAction';
+import { TadarukSelect } from '@/components/TadarukSelect';
 import { ticketAnalysisAdapter, type TicketAnalysisRequest } from '@/services/ticket-analysis';
 import './reporter-workspace.css';
 
@@ -197,16 +198,16 @@ export function ReporterTicketsPage({ lang }: ReporterPageProps) {
           placeholder={text(lang, 'ابحث برقم البلاغ أو عنوانه', 'Search by report number or title')}
           aria-label={text(lang, 'ابحث في بلاغاتي', 'Search my reports')} data-testid="input-ticket-search"/>
       </label>
-      <label className="rw-filter" aria-label={text(lang, 'تصفية حسب الحالة', 'Filter by status')}>
-        <select value={status} onChange={event => setStatus(event.currentTarget.value)} data-testid="select-ticket-status">
-          <option value="">{text(lang, 'كل الحالات', 'All statuses')}</option>
-          <option value="new">{statusLabel('new', lang)}</option>
-          <option value="review">{statusLabel('review', lang)}</option>
-          <option value="in_progress">{statusLabel('in_progress', lang)}</option>
-          <option value="awaiting_confirmation">{statusLabel('awaiting_confirmation', lang)}</option>
-          <option value="closed">{statusLabel('closed', lang)}</option>
-        </select>
-      </label>
+      <div className="rw-filter">
+        <TadarukSelect value={status} onValueChange={setStatus} ariaLabel={text(lang, 'تصفية حسب الحالة', 'Filter by status')} dir={lang === 'ar' ? 'rtl' : 'ltr'} testId="select-ticket-status" options={[
+          { value: '', label: text(lang, 'كل الحالات', 'All statuses') },
+          { value: 'new', label: statusLabel('new', lang) },
+          { value: 'review', label: statusLabel('review', lang) },
+          { value: 'in_progress', label: statusLabel('in_progress', lang) },
+          { value: 'awaiting_confirmation', label: statusLabel('awaiting_confirmation', lang) },
+          { value: 'closed', label: statusLabel('closed', lang) },
+        ]}/>
+      </div>
     </div>
     {isLoading ? <TicketLoadingState/> : isError ? <div className="rw-error" role="alert" data-testid="state-reports-error">
       <CircleAlert size={19}/>
@@ -563,26 +564,26 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
           <textarea required minLength={4} value={reviewDescription} onChange={event => setReviewDescription(event.currentTarget.value)} data-testid="input-review-description"/>
           </label>
           <div className="rw-review-grid">
-            <label className="rw-field"><span>{text(lang, 'الفئة', 'Category')}</span>
-              <select required value={category} onChange={event => setCategory(event.currentTarget.value)} data-testid="input-review-category">
-                {category && !classificationOptions.some(([value]) => value === category) && <option value={category}>{category}</option>}
-                {classificationOptions.map(([value, ar, en]) => <option key={value} value={value}>{text(lang, ar, en)}</option>)}
-              </select>
-            </label>
-            <label className="rw-field"><span>{text(lang, 'الأولوية', 'Priority')}</span>
-              <select value={priority} onChange={event => setPriority(event.currentTarget.value as TicketPriority)} data-testid="select-review-priority">
-                <option value="urgent">{priorityLabel('urgent', lang)}</option>
-                <option value="high">{priorityLabel('high', lang)}</option>
-                <option value="medium">{priorityLabel('medium', lang)}</option>
-                <option value="low">{priorityLabel('low', lang)}</option>
-              </select>
-            </label>
-            <label className="rw-field"><span>{text(lang, 'التخصص', 'Specialization')}</span>
-              <select required value={specialization} onChange={event => setSpecialization(event.currentTarget.value)} data-testid="input-review-specialization">
-                {specialization && !classificationOptions.some(([value]) => value === specialization) && <option value={specialization}>{classificationLabel(specialization, lang)}</option>}
-                {classificationOptions.map(([value, ar, en]) => <option key={value} value={value}>{text(lang, ar, en)}</option>)}
-              </select>
-            </label>
+            <div className="rw-field"><span>{text(lang, 'الفئة', 'Category')}</span>
+              <TadarukSelect required value={category} onValueChange={setCategory} ariaLabel={text(lang, 'الفئة', 'Category')} dir={lang === 'ar' ? 'rtl' : 'ltr'} placeholder={text(lang, 'اختر الفئة', 'Choose a category')} testId="input-review-category" options={[
+                ...(category && !classificationOptions.some(([value]) => value === category) ? [{ value: category, label: category }] : []),
+                ...classificationOptions.map(([value, ar, en]) => ({ value, label: text(lang, ar, en) })),
+              ]}/>
+            </div>
+            <div className="rw-field"><span>{text(lang, 'الأولوية', 'Priority')}</span>
+              <TadarukSelect value={priority} onValueChange={value => setPriority(value as TicketPriority)} ariaLabel={text(lang, 'الأولوية', 'Priority')} dir={lang === 'ar' ? 'rtl' : 'ltr'} testId="select-review-priority" options={[
+                { value: 'urgent', label: priorityLabel('urgent', lang) },
+                { value: 'high', label: priorityLabel('high', lang) },
+                { value: 'medium', label: priorityLabel('medium', lang) },
+                { value: 'low', label: priorityLabel('low', lang) },
+              ]}/>
+            </div>
+            <div className="rw-field"><span>{text(lang, 'التخصص', 'Specialization')}</span>
+              <TadarukSelect required value={specialization} onValueChange={setSpecialization} ariaLabel={text(lang, 'التخصص', 'Specialization')} dir={lang === 'ar' ? 'rtl' : 'ltr'} placeholder={text(lang, 'اختر التخصص', 'Choose a specialization')} testId="input-review-specialization" options={[
+                ...(specialization && !classificationOptions.some(([value]) => value === specialization) ? [{ value: specialization, label: classificationLabel(specialization, lang) }] : []),
+                ...classificationOptions.map(([value, ar, en]) => ({ value, label: text(lang, ar, en) })),
+              ]}/>
+            </div>
             <label className="rw-field"><span>{text(lang, 'الموقع داخل الفرع', 'Location in the branch')}</span>
               <input required value={reviewLocation} onChange={event => setReviewLocation(event.currentTarget.value)} data-testid="input-review-location"/>
             </label>

@@ -1,0 +1,106 @@
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Anek+Latin:wght@400;500;600;700&family=Anek+Kannada:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap');
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222 52% 25%;
+  --border: 210 18% 89%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 52% 25%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 52% 25%;
+  --primary: 222 52% 25%;
+  --primary-foreground: 0 0% 100%;
+  --muted: 210 20% 96%;
+  --muted-foreground: 215 15% 48%;
+  --accent: 177 75% 88%;
+  --accent-foreground: 222 52% 25%;
+  --app-font-sans: 'Noto Sans Arabic', sans-serif;
+  --radius: .85rem;
+}
+
+.dark {
+  --background: 222 46% 13%;
+  --foreground: 210 25% 92%;
+  --border: 219 28% 28%;
+  --card: 222 39% 17%;
+  --card-foreground: 210 25% 92%;
+  --popover: 222 39% 17%;
+  --popover-foreground: 210 25% 92%;
+  --primary: 177 76% 66%;
+  --primary-foreground: 222 52% 18%;
+  --muted: 219 30% 21%;
+  --muted-foreground: 215 18% 68%;
+  --accent: 177 38% 24%;
+  --accent-foreground: 177 80% 78%;
+}
+
+.dropdown-extract {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  color: hsl(var(--foreground));
+  background:
+    radial-gradient(ellipse at 48% 0%, rgba(86, 244, 239, .11), transparent 52%),
+    hsl(var(--background));
+  font-family: 'Noto Sans Arabic', sans-serif;
+}
+
+.dropdown-extract-card {
+  width: min(100%, 480px);
+  padding: 28px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 18px;
+  background: hsl(var(--card));
+  box-shadow: 0 16px 40px rgba(31, 51, 99, .08);
+}
+
+.dropdown-extract-kicker {
+  color: #648398;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+
+.dropdown-extract-card h2 {
+  margin: 8px 0 6px;
+  font-size: 19px;
+}
+
+.dropdown-extract-card p {
+  margin: 0 0 22px;
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.dropdown-extract-filter {
+  display: flex;
+  height: 46px;
+  align-items: center;
+  gap: 9px;
+  padding: 0 13px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 9px;
+  background: hsl(var(--card));
+  color: #7788a0;
+}
+
+.dropdown-extract-filter select {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: hsl(var(--foreground));
+  font: inherit;
+  font-size: 12px;
+}
+
+.dark .dropdown-extract-card {
+  box-shadow: 0 18px 44px rgba(0, 0, 0, .22);
+}
+
+@media (max-width: 540px) {
+  .dropdown-extract { padding: 18px; }
+  .dropdown-extract-card { padding: 22px; }
+}
