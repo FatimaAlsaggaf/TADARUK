@@ -3913,3 +3913,21 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
     max-width: calc(100vw - 28px);
   }
 }
+
+/* Keep shared dialogs aligned with the active language, including portal content. */
+[data-slot="alert-dialog-content"]:dir(rtl) [data-slot="alert-dialog-header"],
+[data-slot="dialog-content"]:dir(rtl) [data-slot="dialog-header"] {
+  text-align: right;
+}
+
+@media (min-width: 640px) {
+  [data-slot="alert-dialog-content"]:dir(rtl) [data-slot="alert-dialog-footer"],
+  [data-slot="dialog-content"]:dir(rtl) [data-slot="dialog-footer"] {
+    flex-direction: row-reverse;
+  }
+}
+
+[data-slot="dialog-content"]:dir(rtl) > button:first-of-type {
+  right: auto;
+  left: 1rem;
+}
