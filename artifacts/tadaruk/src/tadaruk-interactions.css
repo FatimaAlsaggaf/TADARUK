@@ -510,6 +510,126 @@
   color: #dce6f3;
 }
 
+/* Landing hero: a quiet, precise reveal built around the supplied mark. */
+.landing {
+  --landing-paper: #f5f8f6;
+  --landing-ink: #1f3363;
+  --landing-muted: #62758a;
+  --landing-teal: #53bcb7;
+  min-height: 100dvh;
+  color: var(--landing-ink);
+  background: radial-gradient(ellipse at 50% 36%, rgba(220, 244, 240, .56), transparent 44%), var(--landing-paper);
+}
+.landing-nav { height: 82px; border-bottom-color: rgba(31, 51, 99, .09); }
+.landing .nav-lang { color: #63778d; }
+.landing .nav-lang:hover { color: var(--landing-ink); }
+.landing .btn-outline { border-color: rgba(31, 51, 99, .19); background: rgba(255, 255, 255, .45); }
+.landing .btn-outline:hover { border-color: #78c9c3; background: #eef9f6; }
+.landing .btn-primary { background: var(--landing-ink); box-shadow: 0 8px 18px rgba(31, 51, 99, .12); }
+.landing .btn-primary:hover { background: #2b4778; }
+.landing .hero {
+  display: flex;
+  min-height: max(660px, calc(100svh - 82px));
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding-block: 38px 58px;
+  text-align: center;
+}
+.landing .hero-copy { width: 100%; max-width: 900px; margin-inline: auto; text-align: center; }
+.landing .hero h1 {
+  max-width: 900px;
+  margin: 0 auto 11px;
+  color: var(--landing-ink);
+  font-size: clamp(46px, 5vw, 66px);
+  line-height: 1.35;
+  letter-spacing: -.025em;
+}
+.landing .hero-sub { color: var(--landing-muted); font-size: clamp(18px, 2vw, 22px); line-height: 1.7; }
+.landing .hero-cta { justify-content: center; margin-top: 27px; }
+.landing .hero-cta .btn { min-height: 52px; padding-inline: 22px; }
+.hero-mark-stage {
+  position: relative;
+  display: grid;
+  width: min(100%, 560px);
+  min-width: 0;
+  min-height: 0;
+  margin: 0 auto 15px;
+  place-items: center;
+  isolation: isolate;
+}
+.hero-mark { position: relative; z-index: 1; display: block; width: min(100%, 470px); height: auto; overflow: visible; }
+.mark-halo {
+  position: absolute;
+  z-index: 0;
+  width: min(82%, 390px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(83, 188, 183, .16);
+  border-radius: 50%;
+  transform: scale(.87);
+}
+.mark-halo::before, .mark-halo::after {
+  position: absolute;
+  inset: 9%;
+  border: 1px solid rgba(83, 188, 183, .12);
+  border-radius: 50%;
+  content: "";
+}
+.mark-halo::after { inset: 19%; border-style: dashed; opacity: .75; }
+.workflow-reveal { position: relative; padding-block: 42px 90px; }
+.workflow-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(83, 188, 183, .55) 18%, rgba(31, 51, 99, .16) 82%, transparent);
+  transform-origin: center;
+}
+.workflow-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; padding-top: 23px; }
+.workflow-step { display: flex; align-items: center; gap: 13px; min-width: 0; color: var(--landing-ink); font-size: 15px; font-weight: 700; }
+.workflow-index {
+  display: grid;
+  width: 31px;
+  height: 31px;
+  flex: 0 0 31px;
+  place-items: center;
+  border: 1px solid rgba(83, 188, 183, .34);
+  border-radius: 50%;
+  color: #348d89;
+  background: #eff8f5;
+  font: 600 10px 'Anek Kannada', sans-serif;
+}
+.workflow-step:not(:last-child)::after {
+  width: auto;
+  height: auto;
+  flex: 0 0 auto;
+  margin-inline-start: auto;
+  color: rgba(31, 51, 99, .42);
+  font-size: 14px;
+  font-weight: 500;
+  content: "←";
+}
+.landing[dir="ltr"] .workflow-step:not(:last-child)::after { content: "→"; }
+.landing .how { display: none; }
+
+@media (max-width: 780px) {
+  .landing-nav { height: 70px; }
+  .landing .hero {
+    min-height: max(650px, calc(100svh - 70px));
+    flex-direction: column;
+    padding-block: 27px 55px;
+  }
+  .hero-mark-stage { width: min(100%, 420px); min-height: 0; margin-bottom: 12px; }
+  .hero-mark { width: min(80vw, 340px); }
+  .mark-halo { width: min(78vw, 318px); }
+  .landing .hero-copy { width: 100%; max-width: 620px; margin-inline: auto; text-align: center; }
+  .landing .hero h1 { margin: 16px auto 10px; font-size: clamp(42px, 9.5vw, 61px); line-height: 1.37; }
+  .landing .hero-sub { font-size: 18px; }
+  .landing .hero-cta { justify-content: center; margin-top: 24px; }
+  .workflow-reveal { padding-block: 23px 62px; }
+  .workflow-steps { grid-template-columns: 1fr; gap: 0; padding-top: 13px; }
+  .workflow-step { min-height: 56px; font-size: 14px; }
+  .workflow-step:not(:last-child)::after { display: none; }
+}
+
 @media (max-width: 780px) {
   .workspace-footer {
     min-height: 60px;

@@ -1,6 +1,7 @@
 import { type ReactNode, type FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { Route, Switch, Link, useLocation, useParams } from 'wouter';
+import { motion, useReducedMotion } from 'framer-motion';
 import {
   Activity, ArrowDownLeft, ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, Building2, Check,
   CheckCircle2, ChevronDown, ClipboardList, Clock3, Filter, Languages, LayoutDashboard,
@@ -162,28 +163,46 @@ function TicketList({tickets,lang,empty='لا توجد بلاغات هنا بع�
   if (!tickets.length) return <div className="empty-inline"><ClipboardList size={23}/><b>{empty}</b><span>ستظهر البلاغات الجديدة هنا</span></div>;
   return <div className="ticket-list">{tickets.map(t=><TicketRow key={t.id} ticket={t} lang={lang}/>)}</div>;
 }
+function TadarukMark({reduced}:{reduced:boolean}) {
+  const bodyTransition={duration:reduced?0:.55,ease:[.22,.72,.18,1] as const,delay:reduced?0:1.28};
+  const firstTransition={duration:.9,ease:[.22,.72,.18,1] as const,delay:.12};
+  const secondTransition={duration:.9,ease:[.22,.72,.18,1] as const,delay:.3};
+  return <motion.svg className="hero-mark" viewBox="279 0 477 410" role="img" aria-label="TADARUK تدارك" initial={reduced?false:'hidden'} animate="visible">
+    <defs>
+      <linearGradient id="tadaruk-mark-gradient" x1="279.799" y1="146.019" x2="755.841" y2="146.019" gradientUnits="userSpaceOnUse">
+        <stop offset=".03" stopColor="#1E3263"/><stop offset=".17" stopColor="#1F3565"/><stop offset=".31" stopColor="#22416E"/><stop offset=".45" stopColor="#28557C"/><stop offset=".59" stopColor="#307190"/><stop offset=".73" stopColor="#3A95AA"/><stop offset=".86" stopColor="#47C0CA"/><stop offset="1" stopColor="#56F4EF"/>
+      </linearGradient>
+      <clipPath id="tadaruk-mark-clip"><rect x="279.799" width="476.042" height="409"/></clipPath>
+    </defs>
+    <motion.g variants={{hidden:{opacity:0},visible:{opacity:1,transition:bodyTransition}}}>
+      <g clipPath="url(#tadaruk-mark-clip)">
+        <path d="M723.359 0H312.3C294.347 0 279.799 14.5485 279.799 32.5015V72.0298C279.799 89.9828 294.347 104.531 312.3 104.531H373.859V292.058L424.868 130.996C429.856 115.24 444.484 104.531 461.011 104.531H723.359C741.312 104.531 755.86 89.9828 755.86 72.0298V32.5015C755.86 14.5485 741.312 0 723.359 0Z" fill="url(#tadaruk-mark-gradient)"/>
+        <path d="M372.731 332.358L363.804 313.415C361.251 307.972 355.768 304.508 349.75 304.508H312.281C294.328 304.508 279.779 319.057 279.779 337.01V376.538C279.779 394.491 294.328 409.039 312.281 409.039H723.339C741.292 409.039 755.841 394.491 755.841 376.538V337.01C755.841 319.057 741.292 304.508 723.339 304.508H661.78V116.962L610.772 278.024C605.784 293.78 591.156 304.488 574.628 304.488H385.795" fill="#1E3263"/>
+      </g>
+    </motion.g>
+    <motion.path d="M569.838 246.156H536.624V279.37H569.838V246.156Z" fill="#1E3263" initial={reduced?false:{opacity:0,x:-58,y:-48}} animate={reduced?{opacity:1,x:0,y:0}:{opacity:[0,1,1,1],x:[-58,-35,-12,0],y:[-48,-57,-20,0]}} transition={reduced?{duration:0}:firstTransition}/>
+    <motion.path d="M489.14 246.374H455.926V279.588H489.14V246.374Z" fill="#1E3263" initial={reduced?false:{opacity:0,x:60,y:44}} animate={reduced?{opacity:1,x:0,y:0}:{opacity:[0,1,1,1],x:[60,48,19,0],y:[44,22,8,0]}} transition={reduced?{duration:0}:secondTransition}/>
+  </motion.svg>;
+}
 function Landing({lang,setLang}:{lang:Lang;setLang:(x:Lang)=>void}) {
   const health=useHealthCheck();
+  const reduced=useReducedMotion()===true || (typeof window!=='undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true);
+  const copyTransition=(delay:number)=>reduced?{duration:0}:{duration:.58,delay,ease:[.22,.72,.18,1] as const};
+  const labels=lang==='ar'?['بلاغ جديد','تحليل ذكي','إسناد للفني','تم الإصلاح']:['New report','Smart analysis','Technician assigned','Repair confirmed'];
   return <main className="landing" dir={lang==='ar'?'rtl':'ltr'}>
     <header className="landing-nav wrap"><Link href="/" className="brand-link"><Brand/></Link><div className="nav-actions"><button className="nav-lang" onClick={()=>setLang(lang==='ar'?'en':'ar')}><Languages size={16}/>{lang==='ar'?'English':'العربية'}</button><Button href="/demo" kind="outline">{tr(lang,'دخول التجربة','Open the demo')}<ArrowUpRight size={17}/></Button></div></header>
-    <section className="hero wrap">
-      <div className="hero-copy fade-up"><div className="eyebrow"><span className="live-dot"/>{tr(lang,'سجل واحد. فريق كامل.','One shared record. A whole team.')}</div>
-        <h1 className={lang==='ar'?'display-ar':''}>{tr(lang,'كل بلاغ يستحق أن يُتدارك','Every issue deserves a clear next step')}</h1>
-        <p className="hero-sub">{tr(lang,'بلّغ. تابع. وتدارك.','Report it. Follow through. Put it right.')}</p>
-        <div className="hero-cta"><Button href="/demo">{tr(lang,'استكشف تدارك','Explore Tadaruk')}<ArrowLeft size={18}/></Button><a href="#how" className="text-link">{tr(lang,'كيف يعمل؟','How it works')}<ArrowDownLeft size={15}/></a></div>
-        <div className="hero-note"><ShieldCheck size={16}/>{tr(lang,'من أول ملاحظة إلى إصلاح موثّق','From the first observation to a confirmed repair')}</div>
-      </div>
-      <div className="hero-art fade-up" aria-label="Ticket workflow illustration">
-        <div className="art-orbit orbit-one"/><div className="art-orbit orbit-two"/>
-        <div className="message-card"><div className="message-top"><span className="mini-avatar">ن</span><span><b>{tr(lang,'ملاحظة من الفرع','A branch report')}</b><small>قبل ٤ دقائق · النخيل</small></span><span className="message-more">•••</span></div><p>{tr(lang,'المكيف في منطقة التحضير لا يبرّد جيداً.','The prep-area cooler is not cooling properly.')}</p><div className="photo-placeholder"><span><Wrench size={18}/></span><small>{tr(lang,'منطقة التحضير','Prep area')}</small></div></div>
-        <div className="flow-connector"><span/><span/><span/></div>
-        <div className="ticket-mini"><div className="ticket-mini-head"><span className="tag demo-tag">TDR-0284</span><span className="tag urgent-tag">{tr(lang,'عالٍ','High')}</span></div><strong>{tr(lang,'ضعف تبريد المكيف','Prep-area AC cooling issue')}</strong><div className="ticket-meta"><span><MapPin size={13}/>{tr(lang,'التحضير','Prep area')}</span><span><Wrench size={13}/>{tr(lang,'تكييف','Cooling')}</span></div><div className="ticket-assignee"><Avatar name="سالم العتيبي" size="sm"/><span><b>سالم العتيبي</b><small>{tr(lang,'تم الإسناد تلقائياً','Assigned automatically')}</small></span><CheckCircle2 size={17}/></div></div>
-        <div className="art-caption"><span className="caption-line"/>{tr(lang,'من رسالة مبعثرة إلى خطوة واضحة','From scattered message to clear action')}</div>
+    <section className="hero wrap" aria-labelledby="landing-title">
+      <div className="hero-mark-stage"><div className="mark-halo" aria-hidden="true"/><TadarukMark reduced={reduced}/></div>
+      <div className="hero-copy">
+        <motion.h1 id="landing-title" className={lang==='ar'?'display-ar':''} initial={reduced?false:{opacity:0,y:18}} animate={{opacity:1,y:0}} transition={copyTransition(1.85)}>{tr(lang,'كل بلاغ يستحق أن يُتدارك','Every issue deserves a clear next step')}</motion.h1>
+        <motion.p className="hero-sub" initial={reduced?false:{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={copyTransition(2.08)}>{tr(lang,'بلّغ. تابع. وتدارك.','Report it. Follow through. Put it right.')}</motion.p>
+        <motion.div className="hero-cta" initial={reduced?false:{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={copyTransition(2.31)}><Button href="/demo">{tr(lang,'استكشف تدارك','Explore Tadaruk')}<ArrowLeft size={18}/></Button></motion.div>
       </div>
     </section>
-    <section className="how wrap" id="how"><div className="section-kicker">{tr(lang,'طريقة تدارك','THE TADARUK WAY')}</div><div className="how-layout"><h2 className={lang==='ar'?'display-ar':''}>{tr(lang,'البلاغ لا يضيع بين الرسائل.','Nothing gets lost in the chat.')}</h2><div className="steps">
-      {[['01',tr(lang,'بلّغ','Report'),tr(lang,'وصف قصير وصورة إن لزم.','A short description, a photo if useful.')],['02',tr(lang,'تابع','Follow'),tr(lang,'الفني المناسب يعرف ما يحتاجه.','The right technician sees what they need.')],['03',tr(lang,'تدارك','Resolve'),tr(lang,'إصلاح مؤكد يصبح معرفة للفريق.','A confirmed fix becomes team knowledge.')]].map(([n,title,desc])=><div className="step" key={n}><span className="step-n">{n}</span><div><b>{title}</b><small>{desc}</small></div><ArrowLeft size={16}/></div>)}
-    </div></div></section>
+    <section className="workflow-reveal wrap" id="how" aria-label={tr(lang,'مسار البلاغ','Report workflow')}>
+      <motion.div className="workflow-rule" initial={reduced?false:{scaleX:0}} whileInView={{scaleX:1}} viewport={{once:true,amount:.55}} transition={reduced?{duration:0}:{duration:.8,ease:[.22,.72,.18,1]}}/>
+      <div className="workflow-steps">{labels.map((label,index)=><motion.div className="workflow-step" key={label} initial={reduced?false:{opacity:0,y:13}} whileInView={{opacity:1,y:0}} viewport={{once:true,amount:.55}} transition={reduced?{duration:0}:{duration:.48,delay:index*.11,ease:[.22,.72,.18,1]}}><span className="workflow-index">0{index+1}</span><span>{label}</span></motion.div>)}</div>
+    </section>
     <section className="landing-end wrap"><div><span className="eyebrow"><span className="live-dot"/>{health.isLoading?'جاري الاتصال':health.isError?'وضع العرض متاح':'جاهز للتجربة'}</span><h2 className={lang==='ar'?'display-ar':''}>{tr(lang,'ابدأ من البلاغ القادم.','Start with the next report.')}</h2></div><Button href="/demo">{tr(lang,'اختر حسابك','Choose an account')}<ArrowLeft size={17}/></Button></section>
     <footer className="landing-footer wrap"><Brand/><span>{tr(lang,'سجل واضح لصيانة أفضل.','A clearer record for better maintenance.')}</span><Link href="/demo">{tr(lang,'الدخول إلى العرض','Enter demo')}</Link></footer>
   </main>;
