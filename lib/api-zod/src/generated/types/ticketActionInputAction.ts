@@ -15,4 +15,5 @@ export const TicketActionInputAction = {
   confirm: 'confirm',
   reject: 'reject',
   reassign: 'reassign',
+  cancel: 'cancel',
 } as const;

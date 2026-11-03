@@ -109,7 +109,9 @@ export const GetOverviewResponse = zod.object({
   "priority": zod.enum(['urgent', 'high', 'medium', 'low']),
   "specialization": zod.string(),
   "location": zod.string(),
-  "status": zod.enum(['new', 'review', 'in_progress', 'awaiting_confirmation', 'closed']),
+  "status": zod.enum(['new', 'review', 'in_progress', 'awaiting_confirmation', 'closed', 'cancelled']),
+  "cancelledAt": zod.coerce.date().nullable(),
+  "cancelledBy": zod.string().nullable(),
   "reporterId": zod.string(),
   "reporterName": zod.string(),
   "branchId": zod.string(),
@@ -198,7 +200,7 @@ export const AnalyzeTicketResponse = zod.object({
   "specialization": zod.string(),
   "location": zod.string(),
   "needsClarification": zod.boolean(),
-  "mode": zod.enum(['demo'])
+  "mode": zod.enum(['demo', 'provider'])
 })
 
 
@@ -207,7 +209,8 @@ export const AnalyzeTicketResponse = zod.object({
  */
 export const ListTicketsQueryParams = zod.object({
   "status": zod.coerce.string().optional(),
-  "search": zod.coerce.string().optional()
+  "search": zod.coerce.string().optional(),
+  "branchId": zod.coerce.string().optional()
 })
 
 export const listTicketsResponseBranchLatitudeMin = -90;
@@ -227,7 +230,9 @@ export const ListTicketsResponseItem = zod.object({
   "priority": zod.enum(['urgent', 'high', 'medium', 'low']),
   "specialization": zod.string(),
   "location": zod.string(),
-  "status": zod.enum(['new', 'review', 'in_progress', 'awaiting_confirmation', 'closed']),
+  "status": zod.enum(['new', 'review', 'in_progress', 'awaiting_confirmation', 'closed', 'cancelled']),
+  "cancelledAt": zod.coerce.date().nullable(),
+  "cancelledBy": zod.string().nullable(),
   "reporterId": zod.string(),
   "reporterName": zod.string(),
   "branchId": zod.string(),
@@ -292,7 +297,9 @@ export const CreateTicketResponse = zod.object({
   "priority": zod.enum(['urgent', 'high', 'medium', 'low']),
   "specialization": zod.string(),
   "location": zod.string(),
-  "status": zod.enum(['new', 'review', 'in_progress', 'awaiting_confirmation', 'closed']),
+  "status": zod.enum(['new', 'review', 'in_progress', 'awaiting_confirmation', 'closed', 'cancelled']),
+  "cancelledAt": zod.coerce.date().nullable(),
+  "cancelledBy": zod.string().nullable(),
   "reporterId": zod.string(),
   "reporterName": zod.string(),
   "branchId": zod.string(),
@@ -343,7 +350,9 @@ export const GetTicketResponse = zod.object({
   "priority": zod.enum(['urgent', 'high', 'medium', 'low']),
   "specialization": zod.string(),
   "location": zod.string(),
-  "status": zod.enum(['new', 'review', 'in_progress', 'awaiting_confirmation', 'closed']),
+  "status": zod.enum(['new', 'review', 'in_progress', 'awaiting_confirmation', 'closed', 'cancelled']),
+  "cancelledAt": zod.coerce.date().nullable(),
+  "cancelledBy": zod.string().nullable(),
   "reporterId": zod.string(),
   "reporterName": zod.string(),
   "branchId": zod.string(),
@@ -378,7 +387,7 @@ export const PerformTicketActionParams = zod.object({
 })
 
 export const PerformTicketActionBody = zod.object({
-  "action": zod.enum(['start', 'complete', 'confirm', 'reject', 'reassign']),
+  "action": zod.enum(['start', 'complete', 'confirm', 'reject', 'reassign', 'cancel']),
   "note": zod.string().optional(),
   "cause": zod.string().optional(),
   "resolution": zod.string().optional(),
@@ -402,7 +411,9 @@ export const PerformTicketActionResponse = zod.object({
   "priority": zod.enum(['urgent', 'high', 'medium', 'low']),
   "specialization": zod.string(),
   "location": zod.string(),
-  "status": zod.enum(['new', 'review', 'in_progress', 'awaiting_confirmation', 'closed']),
+  "status": zod.enum(['new', 'review', 'in_progress', 'awaiting_confirmation', 'closed', 'cancelled']),
+  "cancelledAt": zod.coerce.date().nullable(),
+  "cancelledBy": zod.string().nullable(),
   "reporterId": zod.string(),
   "reporterName": zod.string(),
   "branchId": zod.string(),

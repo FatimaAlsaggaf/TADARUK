@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, asc, count, desc, eq } from "drizzle-orm";
+import { and, asc, count, desc, eq, isNull, ne } from "drizzle-orm";
 import {
   branchesTable,
   db,
@@ -198,9 +198,16 @@ export function getAuthorizedBranchIds(member: {
   return member.branchId ? [member.branchId] : [];
 }
 
-export async function getVisibleTickets(member: AuthenticatedDemoMember): Promise<TicketRecord[]> {
+export async function getVisibleTickets(
+  member: AuthenticatedDemoMember,
+  includeCancelled = false,
+): Promise<TicketRecord[]> {
   await ensureDemoData();
   const filters = [eq(ticketsTable.organizationId, DEMO_ORGANIZATION)];
+  if (!includeCancelled || member.role !== "manager") {
+    filters.push(isNull(ticketsTable.cancelledAt));
+    filters.push(ne(ticketsTable.status, "cancelled"));
+  }
   if (member.role === "reporter") filters.push(eq(ticketsTable.reporterId, member.id));
   if (member.role === "technician") filters.push(eq(ticketsTable.technicianId, member.id));
   return db.select().from(ticketsTable).where(and(...filters)).orderBy(desc(ticketsTable.createdAt));
@@ -243,6 +250,8 @@ export async function toTicketView(ticket: TicketRecord) {
     specialization: ticket.specialization,
     location: ticket.location,
     status: ticket.status,
+    cancelledAt: ticket.cancelledAt?.toISOString() ?? null,
+    cancelledBy: ticket.cancelledBy,
     reporterId: ticket.reporterId,
     reporterName: reporter?.name ?? "موظف الفرع",
     branchId: ticket.branchId,
@@ -270,6 +279,7 @@ export async function getVisibleTicket(member: AuthenticatedDemoMember, ticketId
     eq(ticketsTable.organizationId, DEMO_ORGANIZATION),
   )).limit(1);
   if (!ticket || !(await canSeeTicket(member, ticket))) return undefined;
+  if (ticket.cancelledAt && member.role === "technician") return undefined;
   return ticket;
 }
 

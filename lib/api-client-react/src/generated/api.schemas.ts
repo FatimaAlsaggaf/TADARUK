@@ -175,6 +175,7 @@ export const TicketStatus = {
   in_progress: 'in_progress',
   awaiting_confirmation: 'awaiting_confirmation',
   closed: 'closed',
+  cancelled: 'cancelled',
 } as const;
 
 export interface Ticket {
@@ -187,6 +188,10 @@ export interface Ticket {
   specialization: string;
   location: string;
   status: TicketStatus;
+  /** @nullable */
+  cancelledAt: string | null;
+  /** @nullable */
+  cancelledBy: string | null;
   reporterId: string;
   reporterName: string;
   branchId: string;
@@ -244,6 +249,7 @@ export type TicketAnalysisMode = typeof TicketAnalysisMode[keyof typeof TicketAn
 
 export const TicketAnalysisMode = {
   demo: 'demo',
+  provider: 'provider',
 } as const;
 
 export interface TicketAnalysis {
@@ -290,6 +296,7 @@ export const TicketActionInputAction = {
   confirm: 'confirm',
   reject: 'reject',
   reassign: 'reassign',
+  cancel: 'cancel',
 } as const;
 
 export interface TicketActionInput {
@@ -328,6 +335,7 @@ export interface KnowledgeEntry {
 export type ListTicketsParams = {
 status?: string;
 search?: string;
+branchId?: string;
 };
 
 export type ListKnowledgeParams = {

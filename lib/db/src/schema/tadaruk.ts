@@ -44,6 +44,8 @@ export const ticketsTable = pgTable("tadaruk_tickets", {
   specialization: text("specialization").notNull(),
   location: text("location").notNull(),
   status: text("status").notNull().default("new"),
+  cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+  cancelledBy: text("cancelled_by"),
   reporterId: text("reporter_id").notNull(),
   branchId: text("branch_id").notNull(),
   technicianId: text("technician_id"),

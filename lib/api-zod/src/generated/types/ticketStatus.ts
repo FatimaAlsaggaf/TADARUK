@@ -15,4 +15,5 @@ export const TicketStatus = {
   in_progress: 'in_progress',
   awaiting_confirmation: 'awaiting_confirmation',
   closed: 'closed',
+  cancelled: 'cancelled',
 } as const;

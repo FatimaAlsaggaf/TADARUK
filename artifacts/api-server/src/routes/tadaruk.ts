@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, asc, desc, eq, inArray, ne } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, ne } from "drizzle-orm";
 import { Router, type IRouter, type Request, type Response } from "express";
 import {
   AnalyzeTicketBody,
@@ -41,6 +41,7 @@ import {
   branchesTable,
   db,
   teamMembersTable,
+  ticketEventsTable,
   ticketsTable,
   type BranchRecord,
   type TeamMemberRecord,
@@ -103,6 +104,8 @@ async function branchView(branch: BranchRecord) {
     eq(ticketsTable.organizationId, DEMO_ORGANIZATION),
     eq(ticketsTable.branchId, branch.id),
     ne(ticketsTable.status, "closed"),
+    ne(ticketsTable.status, "cancelled"),
+    isNull(ticketsTable.cancelledAt),
   ));
   return {
     id: branch.id,
@@ -133,6 +136,8 @@ async function technicianView(member: TeamMemberRecord) {
       eq(ticketsTable.organizationId, DEMO_ORGANIZATION),
       eq(ticketsTable.technicianId, member.id),
       ne(ticketsTable.status, "closed"),
+      ne(ticketsTable.status, "cancelled"),
+      isNull(ticketsTable.cancelledAt),
     )),
   ]);
   return {
@@ -407,7 +412,17 @@ router.get("/tickets", async (req, res): Promise<void> => {
   try {
     const member = await requireMember(req, res);
     if (!member) return;
-    let tickets = await getVisibleTickets(member);
+    const includeCancelled = member.role === "manager" && parsed.data.status === "cancelled";
+    let tickets = await getVisibleTickets(member, includeCancelled);
+    if (parsed.data.branchId) {
+      if (member.role === "reporter" && !getAuthorizedBranchIds(member).includes(parsed.data.branchId)) {
+        res.status(403).json({ error: "This branch is not authorized for the reporter." });
+        return;
+      }
+      if (member.role === "manager" || member.role === "reporter") {
+        tickets = tickets.filter((ticket) => ticket.branchId === parsed.data.branchId);
+      }
+    }
     if (parsed.data.status) tickets = tickets.filter((ticket) => ticket.status === parsed.data.status);
     if (parsed.data.search) {
       const term = parsed.data.search.toLocaleLowerCase();
@@ -461,6 +476,8 @@ router.post("/tickets", async (req, res): Promise<void> => {
         eq(ticketsTable.organizationId, DEMO_ORGANIZATION),
         eq(ticketsTable.technicianId, technician.id),
         ne(ticketsTable.status, "closed"),
+        ne(ticketsTable.status, "cancelled"),
+        isNull(ticketsTable.cancelledAt),
       ));
       return { technician, workload: assignments.length };
     }));
@@ -529,6 +546,10 @@ router.post("/tickets/:ticketId/actions", async (req, res): Promise<void> => {
       return;
     }
     const action = parsed.data.action;
+    if (action !== "cancel" && (ticket.status === "cancelled" || ticket.cancelledAt)) {
+      res.status(409).json({ error: "Cancelled tickets cannot be changed." });
+      return;
+    }
     const now = new Date();
     let update: Partial<typeof ticketsTable.$inferInsert> = { updatedAt: now };
     let eventLabel = "";
@@ -573,6 +594,62 @@ router.post("/tickets/:ticketId/actions", async (req, res): Promise<void> => {
       }
       update.status = action === "confirm" ? "closed" : "in_progress";
       eventLabel = action === "confirm" ? "أكد المبلّغ نجاح الإصلاح" : "أعاد المبلّغ فتح البلاغ";
+    } else if (action === "cancel") {
+      let cancellationLabel = "";
+      let cancellationNote = parsed.data.note?.trim() || null;
+      const cancellationConditions = [
+        eq(ticketsTable.id, ticket.id),
+        eq(ticketsTable.organizationId, DEMO_ORGANIZATION),
+        isNull(ticketsTable.cancelledAt),
+      ];
+
+      if (member.role === "reporter") {
+        if (ticket.reporterId !== member.id) {
+          res.status(403).json({ error: "Only the reporting employee can cancel this ticket." });
+          return;
+        }
+        if (ticket.status !== "new") {
+          res.status(409).json({ error: "Only a new ticket that has not started may be cancelled." });
+          return;
+        }
+        const started = await db.select({ id: ticketEventsTable.id }).from(ticketEventsTable).where(and(
+          eq(ticketEventsTable.organizationId, DEMO_ORGANIZATION),
+          eq(ticketEventsTable.ticketId, ticket.id),
+          eq(ticketEventsTable.label, "بدأ الفني العمل"),
+        )).limit(1);
+        if (started.length) {
+          res.status(409).json({ error: "This ticket has already entered work and cannot be cancelled by the reporter." });
+          return;
+        }
+        cancellationConditions.push(eq(ticketsTable.status, "new"));
+        cancellationLabel = "ألغى المبلّغ البلاغ قبل بدء العمل";
+        cancellationNote ??= "إلغاء من المبلّغ";
+      } else if (member.role === "manager") {
+        if (ticket.status === "closed" || ticket.status === "cancelled" || ticket.cancelledAt) {
+          res.status(409).json({ error: "Closed or already-cancelled tickets cannot be cancelled." });
+          return;
+        }
+        cancellationConditions.push(ne(ticketsTable.status, "closed"));
+        cancellationLabel = "ألغى مدير العمليات البلاغ";
+        cancellationNote ??= "إلغاء إداري";
+      } else {
+        res.status(403).json({ error: "Technicians cannot cancel tickets." });
+        return;
+      }
+
+      const [cancelled] = await db.update(ticketsTable).set({
+        status: "cancelled",
+        cancelledAt: now,
+        cancelledBy: member.id,
+        updatedAt: now,
+      }).where(and(...cancellationConditions)).returning();
+      if (!cancelled) {
+        res.status(409).json({ error: "The ticket changed before it could be cancelled." });
+        return;
+      }
+      await addTicketEvent(ticket.id, member.id, cancellationLabel, cancellationNote);
+      res.json(PerformTicketActionResponse.parse(await toTicketView(cancelled)));
+      return;
     } else {
       const manager = await requireManager(req, res);
       if (!manager) return;
@@ -591,7 +668,13 @@ router.post("/tickets/:ticketId/actions", async (req, res): Promise<void> => {
     const [updated] = await db.update(ticketsTable).set(update).where(and(
       eq(ticketsTable.id, ticket.id),
       eq(ticketsTable.organizationId, DEMO_ORGANIZATION),
+      eq(ticketsTable.status, ticket.status),
+      isNull(ticketsTable.cancelledAt),
     )).returning();
+    if (!updated) {
+      res.status(409).json({ error: "The ticket changed before the action could be completed." });
+      return;
+    }
     await addTicketEvent(ticket.id, member.id, eventLabel, parsed.data.note ?? null);
     res.json(PerformTicketActionResponse.parse(await toTicketView(updated)));
   } catch (error) {
@@ -762,6 +845,7 @@ router.get("/knowledge", async (req, res): Promise<void> => {
     const closed = await db.select().from(ticketsTable).where(and(
       eq(ticketsTable.organizationId, DEMO_ORGANIZATION),
       eq(ticketsTable.status, "closed"),
+      isNull(ticketsTable.cancelledAt),
     )).orderBy(desc(ticketsTable.updatedAt));
     const filtered = closed.filter((ticket) =>
       (!parsed.data.category || ticket.category === parsed.data.category) &&

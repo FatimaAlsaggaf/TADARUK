@@ -11,4 +11,5 @@ export type TicketAnalysisMode = typeof TicketAnalysisMode[keyof typeof TicketAn
 
 export const TicketAnalysisMode = {
   demo: 'demo',
+  provider: 'provider',
 } as const;

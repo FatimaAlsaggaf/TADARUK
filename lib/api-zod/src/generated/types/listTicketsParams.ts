@@ -9,4 +9,5 @@
 export type ListTicketsParams = {
 status?: string;
 search?: string;
+branchId?: string;
 };

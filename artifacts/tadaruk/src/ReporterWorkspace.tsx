@@ -1,5 +1,5 @@
-import { type ComponentType, type FormEvent, type ReactNode, useEffect, useMemo, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { type FormEvent, type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useLocation } from 'wouter';
 import { motion, useReducedMotion } from 'motion/react';
 import {
@@ -9,17 +9,18 @@ import {
   Trash2, UserRound, Wrench, X
 } from 'lucide-react';
 import {
-  getGetOverviewQueryKey, getListTicketsQueryKey, useAnalyzeTicket, useCreateTicket, useListReporterBranches,
+  getGetOverviewQueryKey, getListTicketsQueryKey, useCreateTicket, useListReporterBranches,
   useGetOverview, useListTickets,
   type DemoUser, type ReporterBranch, type Ticket, type TicketAnalysis, type TicketInput, type TicketPriority
 } from '@workspace/api-client-react';
+import { AiVoiceInput } from '@/components/ui/ai-voice-input';
+import { TicketCancellationAction } from '@/components/TicketCancellationAction';
+import { ticketAnalysisAdapter, type TicketAnalysisRequest } from '@/services/ticket-analysis';
 import './reporter-workspace.css';
 
 type ReporterLang = 'ar' | 'en';
-type VoiceRecorderProps = { lang: ReporterLang; onTranscript: (text: string) => void };
 type ReporterPageProps = { lang: ReporterLang; user: DemoUser };
 type NewTicketPageProps = ReporterPageProps & {
-  VoiceRecorder: ComponentType<VoiceRecorderProps>;
   selectedBranchId: string;
 };
 
@@ -34,7 +35,8 @@ const statusLabel = (status: string, lang: ReporterLang) => {
     new: ['جديد', 'New'], review: ['قيد المراجعة', 'In review'],
     in_progress: ['جاري العمل', 'In progress'],
     awaiting_confirmation: ['بانتظار التأكيد', 'Awaiting confirmation'],
-    closed: ['مغلق', 'Closed']
+    closed: ['مغلق', 'Closed'],
+    cancelled: ['ملغي', 'Cancelled']
   };
   return labels[status]?.[lang === 'ar' ? 0 : 1] ?? status;
 };
@@ -48,6 +50,14 @@ const priorityLabel = (priority: string, lang: ReporterLang) => {
 const priorityClass = (priority: string) => `rw-priority rw-priority-${priority}`;
 const missingLocation = 'يحدد داخل الفرع';
 const locationChoices = ['المطبخ', 'صالة العملاء', 'المستودع', 'دورات المياه', 'مكان آخر'];
+const classificationOptions: Array<[string, string, string]> = [
+  ['cooling', 'تكييف وتبريد', 'Cooling'],
+  ['electrical', 'كهرباء وإنارة', 'Electrical'],
+  ['plumbing', 'سباكة ومياه', 'Plumbing'],
+  ['general', 'صيانة عامة', 'General maintenance'],
+];
+const classificationLabel = (value: string, lang: ReporterLang) =>
+  classificationOptions.find(([key]) => key === value)?.[lang === 'ar' ? 1 : 2] ?? value;
 
 function ReporterHeading({ eyebrow, title, description, action, lang }: {
   eyebrow: string; title: string; description: string; action?: ReactNode; lang: ReporterLang;
@@ -72,24 +82,34 @@ function ReporterTicketRows({ tickets, lang, emptyTitle, emptyDescription }: {
     <p>{emptyDescription}</p>
   </div>;
   return <div className="rw-ticket-list">
-    {tickets.map(ticket => <Link
-      href={`/workspace/tickets/${ticket.id}`}
-      key={ticket.id}
-      className="rw-ticket-link"
-      data-testid={`link-ticket-${ticket.id}`}
-      aria-label={text(lang, `فتح البلاغ ${ticket.number}: ${ticket.title}`, `Open report ${ticket.number}: ${ticket.title}`)}
-    >
-      <span className="rw-ticket-no" data-testid={`text-ticket-number-${ticket.id}`}>{ticket.number}</span>
-      <span className="rw-ticket-main">
-        <b data-testid={`text-ticket-title-${ticket.id}`}>{ticket.title}</b>
-         <small>{ticket.branchName}{ticket.location ? ` · ${ticket.location}` : ''}</small>
-         <span className="rw-ticket-technician"><span className="rw-tech-avatar"><UserRound size={13}/></span>{ticket.technicianName || text(lang, 'بانتظار الإسناد', 'Awaiting assignment')}</span>
-      </span>
-      <span className={priorityClass(ticket.priority)} data-testid={`text-ticket-priority-${ticket.id}`}>{priorityLabel(ticket.priority, lang)}</span>
-      <span className={`rw-status rw-status-${ticket.status}`} data-testid={`status-ticket-${ticket.id}`}>{statusLabel(ticket.status, lang)}</span>
-      <time className="rw-date" dateTime={ticket.createdAt} data-testid={`date-ticket-${ticket.id}`}>{dateLabel(ticket.createdAt, lang)}</time>
-      {rtl ? <ChevronLeft className="rw-arrow" size={16} aria-hidden="true"/> : <ChevronRight className="rw-arrow" size={16} aria-hidden="true"/>}
-    </Link>)}
+    {tickets.map(ticket => {
+      const StatusIcon = ticket.status === 'closed' ? CheckCircle2
+        : ticket.status === 'in_progress' ? Wrench
+        : ticket.status === 'review' || ticket.status === 'awaiting_confirmation' ? Clock3
+        : CircleAlert;
+      return <div className="rw-ticket-entry" key={ticket.id}>
+        <Link
+          href={`/workspace/tickets/${ticket.id}`}
+          className="rw-ticket-link"
+          data-testid={`link-ticket-${ticket.id}`}
+          aria-label={text(lang, `فتح البلاغ ${ticket.number}: ${ticket.title}`, `Open report ${ticket.number}: ${ticket.title}`)}
+        >
+          <span className="rw-ticket-no" data-testid={`text-ticket-number-${ticket.id}`}>{ticket.number}</span>
+          <span className="rw-ticket-main">
+            <b data-testid={`text-ticket-title-${ticket.id}`}>{ticket.title}</b>
+            <small>{ticket.branchName}{ticket.location ? ` · ${ticket.location}` : ''}</small>
+            <span className="rw-ticket-technician"><span className="rw-tech-avatar"><UserRound size={13}/></span>{ticket.technicianName || text(lang, 'بانتظار الإسناد', 'Awaiting assignment')}</span>
+          </span>
+          <span className={priorityClass(ticket.priority)} data-testid={`text-ticket-priority-${ticket.id}`}>{priorityLabel(ticket.priority, lang)}</span>
+          <span className={`rw-status rw-status-${ticket.status}`} data-testid={`status-ticket-${ticket.id}`}>
+            <StatusIcon size={13} aria-hidden="true"/>{statusLabel(ticket.status, lang)}
+          </span>
+          <time className="rw-date" dateTime={ticket.createdAt} data-testid={`date-ticket-${ticket.id}`}>{dateLabel(ticket.createdAt, lang)}</time>
+          {rtl ? <ChevronLeft className="rw-arrow" size={16} aria-hidden="true"/> : <ChevronRight className="rw-arrow" size={16} aria-hidden="true"/>}
+        </Link>
+        {ticket.status === 'new' && <TicketCancellationAction ticketId={ticket.id} ticketNumber={ticket.number} lang={lang}/>}
+      </div>;
+    })}
   </div>;
 }
 
@@ -228,7 +248,7 @@ async function fileToPreview(file: File, lang: ReporterLang): Promise<string> {
   return canvas.toDataURL('image/jpeg', .72);
 }
 
-export function ReporterNewTicketPage({ lang, user, VoiceRecorder, selectedBranchId }: NewTicketPageProps) {
+export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicketPageProps) {
   const { data: reporterBranches, isLoading: branchesLoading, isError: branchesError, refetch: refetchBranches } = useListReporterBranches();
   const allowedBranches = useMemo(() => reporterBranches ?? [], [reporterBranches]);
   const [description, setDescription] = useState('');
@@ -239,6 +259,9 @@ export function ReporterNewTicketPage({ lang, user, VoiceRecorder, selectedBranc
   const [locationWasClarified, setLocationWasClarified] = useState(false);
   const [photo, setPhoto] = useState('');
   const [photoError, setPhotoError] = useState('');
+  const [descriptionError, setDescriptionError] = useState('');
+  const [needsDescription, setNeedsDescription] = useState(false);
+  const descriptionInputRef = useRef<HTMLTextAreaElement | null>(null);
   const [photoSaveFailed, setPhotoSaveFailed] = useState(false);
   const [submittedTicket, setSubmittedTicket] = useState<{ id: string; number: string } | null>(null);
   const [analysis, setAnalysis] = useState<TicketAnalysis | null>(null);
@@ -249,7 +272,9 @@ export function ReporterNewTicketPage({ lang, user, VoiceRecorder, selectedBranc
   const [specialization, setSpecialization] = useState('');
   const [reviewLocation, setReviewLocation] = useState('');
   const reduced = useReducedMotion() === true;
-  const analyze = useAnalyzeTicket();
+  const analyze = useMutation({
+    mutationFn: (input: TicketAnalysisRequest) => ticketAnalysisAdapter.analyze(input),
+  });
   const create = useCreateTicket();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
@@ -293,10 +318,18 @@ export function ReporterNewTicketPage({ lang, user, VoiceRecorder, selectedBranc
   };
   const handleAnalyze = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const rawDescription = description.trim();
+    if (rawDescription.length < 4) {
+      if (!rawDescription && photo) setNeedsDescription(true);
+      else setDescriptionError(text(lang, 'اكتب وصفاً من أربع كلمات على الأقل أو سجّل وصفاً صوتياً.', 'Enter at least four characters or record a voice description.'));
+      return;
+    }
+    setNeedsDescription(false);
+    setDescriptionError('');
     const suppliedLocation = location.trim();
-    analyze.mutate({ data: { description: description.trim(), ...(suppliedLocation ? { location: suppliedLocation } : {}) } }, {
+    analyze.mutate({ description: rawDescription, locale: lang, ...(suppliedLocation ? { location: suppliedLocation } : {}) }, {
       onSuccess: suggestion => {
-        if ((!suggestion.location || suggestion.location === missingLocation) && !suppliedLocation) {
+        if ((suggestion.needsClarification || !suggestion.location || suggestion.location === missingLocation) && !suppliedLocation) {
           setSelectedLocation('');
           setOtherLocation('');
           setLocationWasClarified(true);
@@ -311,7 +344,8 @@ export function ReporterNewTicketPage({ lang, user, VoiceRecorder, selectedBranc
   const handleClarify = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!clarificationValue) return;
-    analyze.mutate({ data: { description: description.trim(), location: clarificationValue } }, {
+    setLocation(clarificationValue);
+    analyze.mutate({ description: description.trim(), location: clarificationValue, locale: lang }, {
       onSuccess: suggestion => beginReview(suggestion, clarificationValue)
     });
   };
@@ -321,7 +355,11 @@ export function ReporterNewTicketPage({ lang, user, VoiceRecorder, selectedBranc
     try { setPhoto(await fileToPreview(file, lang)); }
     catch (error) { setPhotoError(error instanceof Error ? error.message : text(lang, 'تعذر تجهيز الصورة.', 'Could not prepare the image.')); }
   };
-  const appendTranscript = (transcript: string) => setDescription(current => current ? `${current.trimEnd()} ${transcript}` : transcript);
+  const appendTranscript = (transcript: string) => {
+    setNeedsDescription(false);
+    setDescriptionError('');
+    setDescription(current => current ? `${current.trimEnd()} ${transcript}` : transcript);
+  };
   const backToCompose = () => {
     setAnalysis(null);
     setNeedsLocation(false);
@@ -394,31 +432,41 @@ export function ReporterNewTicketPage({ lang, user, VoiceRecorder, selectedBranc
         {renderBranchChoice()}
         <label className="rw-field">
           <span>{text(lang, 'وصف المشكلة', 'Describe the issue')} <span className="rw-field-hint">{text(lang, 'مطلوب', 'Required')}</span></span>
-          <textarea required minLength={4} value={description} onChange={event => setDescription(event.currentTarget.value)}
+          <textarea ref={descriptionInputRef} minLength={4} value={description} onChange={event => {
+            setDescription(event.currentTarget.value);
+            setNeedsDescription(false);
+            setDescriptionError('');
+          }}
             placeholder={text(lang, 'مثال: يوجد تسريب ماء بجانب حوض التحضير...', 'Example: There is a water leak beside the prep sink...')}
             data-testid="input-report-description"/>
         </label>
-        <div className="rw-voice"><VoiceRecorder lang={lang} onTranscript={appendTranscript}/></div>
-        <label className="rw-field">
-          <span>{text(lang, 'الموقع داخل الفرع', 'Location in the branch')} <span className="rw-field-hint">{text(lang, 'اختياري إذا لم تكن متأكداً', 'Optional if you are not sure')}</span></span>
-          <input value={location} onChange={event => setLocation(event.currentTarget.value)}
-            placeholder={text(lang, 'مثال: بجانب حوض التحضير', 'Example: beside the prep sink')}
-            data-testid="input-report-location"/>
-        </label>
+        <div className="rw-voice"><AiVoiceInput lang={lang} onTranscript={appendTranscript} onManualEntry={() => descriptionInputRef.current?.focus()}/></div>
+        {descriptionError && <p className="rw-inline-error" role="alert" data-testid="status-description-error">{descriptionError}</p>}
+        {needsDescription && <p className="rw-inline-error" role="alert" data-testid="status-photo-needs-description">
+          {text(lang, 'في العرض التجريبي لا يتم تحليل الصور تلقائياً. أضف وصفاً قصيراً للمشكلة أو سجّل وصفاً صوتياً.', 'In this demo, photos are not analyzed automatically. Add a short description of the issue or record a voice description.')}
+        </p>}
         <div className="rw-field">
           <span>{text(lang, 'صورة للمشكلة', 'A photo of the issue')} <span className="rw-field-hint">{text(lang, 'اختياري', 'Optional')}</span></span>
-          <div className="rw-photo-actions">
-            <label className="rw-button rw-button-secondary rw-upload" data-testid="button-upload-photo">
-              {photo ? <RotateCcw size={16}/> : <ImagePlus size={17}/>}
-              {text(lang, photo ? 'استبدال الصورة' : 'رفع صورة', photo ? 'Replace photo' : 'Upload photo')}
-              <input type="file" accept="image/*" aria-label={text(lang, 'اختيار صورة من الجهاز', 'Choose a photo from your device')}
-                data-testid="input-upload-photo" onChange={event => { const file = event.currentTarget.files?.[0]; event.currentTarget.value = ''; void setPhotoFromFile(file); }}/>
-            </label>
-            <label className="rw-button rw-button-quiet rw-upload" data-testid="button-capture-photo">
-              <Camera size={17}/>{text(lang, 'التقاط صورة', 'Take a photo')}
-              <input type="file" accept="image/*" capture="environment" aria-label={text(lang, 'التقاط صورة بالكاميرا', 'Take a photo with camera')}
-                data-testid="input-capture-photo" onChange={event => { const file = event.currentTarget.files?.[0]; event.currentTarget.value = ''; void setPhotoFromFile(file); }}/>
-            </label>
+          <div className="rw-photo-panel">
+            <div className="rw-photo-panel-copy">
+              <span><ImagePlus size={20}/></span>
+              <div><b>{text(lang, 'أرفق صورة للمشكلة', 'Attach an issue photo')}</b>
+                <small>{text(lang, 'اختر صورة أو التقطها بالكاميرا. تبقى في هذا المتصفح.', 'Choose a photo or take one. It stays in this browser.')}</small>
+              </div>
+            </div>
+            <div className="rw-photo-actions">
+              <label className="rw-button rw-button-secondary rw-upload" data-testid="button-upload-photo">
+                {photo ? <RotateCcw size={16}/> : <ImagePlus size={17}/>}
+                {text(lang, photo ? 'استبدال الصورة' : 'رفع صورة', photo ? 'Replace photo' : 'Upload photo')}
+                <input type="file" accept="image/*" aria-label={text(lang, 'اختيار صورة من الجهاز', 'Choose a photo from your device')}
+                  data-testid="input-upload-photo" onChange={event => { const file = event.currentTarget.files?.[0]; event.currentTarget.value = ''; void setPhotoFromFile(file); }}/>
+              </label>
+              <label className="rw-button rw-button-quiet rw-upload" data-testid="button-capture-photo">
+                <Camera size={17}/>{text(lang, 'التقاط صورة', 'Take a photo')}
+                <input type="file" accept="image/*" capture="environment" aria-label={text(lang, 'التقاط صورة بالكاميرا', 'Take a photo with camera')}
+                  data-testid="input-capture-photo" onChange={event => { const file = event.currentTarget.files?.[0]; event.currentTarget.value = ''; void setPhotoFromFile(file); }}/>
+              </label>
+            </div>
           </div>
           {photo && <div className="rw-photo-preview" data-testid="preview-report-photo">
             <img src={photo} alt={text(lang, 'معاينة صورة المشكلة', 'Issue photo preview')}/>
@@ -427,13 +475,12 @@ export function ReporterNewTicketPage({ lang, user, VoiceRecorder, selectedBranc
             </div>
           </div>}
           {photoError && <p className="rw-inline-error" role="alert" data-testid="status-photo-error">{photoError}</p>}
-          <span className="rw-field-hint">{text(lang, 'الصورة اختيارية وتُحفظ في هذا المتصفح بعد الإرسال.', 'The optional photo is saved in this browser after submission.')}</span>
         </div>
-        <div className="rw-demo-note"><Sparkles size={15}/><span><b>{text(lang, 'اقتراحات تجريبية', 'Demo suggestions')}</b> — {text(lang, 'ترتيب توضيحي فقط، وليس تحليلاً ذكياً. راجع التفاصيل قبل الإرسال.', 'A transparent demo heuristic, not AI. Review details before sending.')}</span></div>
+        <div className="rw-demo-note"><Sparkles size={15}/><span><b>{text(lang, 'تحليل تجريبي', 'Demo analysis')}</b> — {text(lang, 'اقتراحات ثابتة للتجربة فقط؛ لا يوجد مزود ذكاء اصطناعي متصل. راجع كل التفاصيل قبل الإرسال.', 'Deterministic test suggestions only; no AI provider is connected. Review every detail before sending.')}</span></div>
         {analyze.isError && <p className="rw-inline-error" role="alert" data-testid="status-analyze-error">{text(lang, 'تعذر تجهيز الاقتراحات. راجع الوصف وحاول مجدداً.', 'Could not prepare suggestions. Check the description and try again.')}</p>}
         <div className="rw-form-actions">
-          <button type="submit" className="rw-button" disabled={!canUseBranch || description.trim().length < 4 || analyze.isPending} data-testid="button-continue-report">
-            {analyze.isPending ? <span className="rw-busy"><LoaderCircle size={16}/>{text(lang, 'جارٍ ترتيب التفاصيل', 'Preparing details')}</span> : <>{text(lang, 'متابعة', 'Continue')}{nextIcon}</>}
+          <button type="submit" className="rw-button" disabled={!canUseBranch || (!description.trim() && !photo) || analyze.isPending} data-testid="button-continue-report">
+            {analyze.isPending ? <span className="rw-busy"><LoaderCircle size={16}/>{text(lang, 'جارٍ تحليل البلاغ…', 'Analyzing the report…')}</span> : <>{text(lang, 'تحليل البلاغ', 'Analyze report')}{nextIcon}</>}
           </button>
           <small>{text(lang, 'لن يُرسل البلاغ إلا بعد مراجعتك وتأكيدك.', 'Nothing is sent until you review and confirm.')}</small>
         </div>
@@ -502,7 +549,7 @@ export function ReporterNewTicketPage({ lang, user, VoiceRecorder, selectedBranc
             <p>{text(lang, 'عدّل ما يلزم. لن يصل البلاغ إلى الفريق حتى تضغط تأكيد وإرسال.', 'Edit anything you need. The team will not receive it until you confirm and send.')}</p>
           </div>
         </div>
-        <div className="rw-demo-note"><Sparkles size={15}/><span>{text(lang, 'هذه اقتراحات تجريبية مبنية على وصفك. تحقق منها وعدّلها كما تريد.', 'These are demo suggestions based on your description. Check and edit them as needed.')}</span></div>
+        <div className="rw-demo-note"><Sparkles size={15}/><span><b>{text(lang, 'تحليل تجريبي', 'Demo analysis')}</b> — {text(lang, 'اقتراحات ثابتة للتجربة فقط. تحقق من كل حقل وعدّله قبل الإرسال.', 'Deterministic test suggestions only. Review and edit every field before sending.')}</span></div>
         <div className="rw-ticket-preview-card" data-testid="card-review-ticket">
           <header className="rw-ticket-preview-head">
             <div><span>{text(lang, 'معاينة البلاغ', 'REPORT PREVIEW')}</span><b>{text(lang, 'طلب صيانة', 'Maintenance request')}</b></div>
@@ -517,7 +564,10 @@ export function ReporterNewTicketPage({ lang, user, VoiceRecorder, selectedBranc
           </label>
           <div className="rw-review-grid">
             <label className="rw-field"><span>{text(lang, 'الفئة', 'Category')}</span>
-              <input required value={category} onChange={event => setCategory(event.currentTarget.value)} data-testid="input-review-category"/>
+              <select required value={category} onChange={event => setCategory(event.currentTarget.value)} data-testid="input-review-category">
+                {category && !classificationOptions.some(([value]) => value === category) && <option value={category}>{category}</option>}
+                {classificationOptions.map(([value, ar, en]) => <option key={value} value={value}>{text(lang, ar, en)}</option>)}
+              </select>
             </label>
             <label className="rw-field"><span>{text(lang, 'الأولوية', 'Priority')}</span>
               <select value={priority} onChange={event => setPriority(event.currentTarget.value as TicketPriority)} data-testid="select-review-priority">
@@ -528,7 +578,10 @@ export function ReporterNewTicketPage({ lang, user, VoiceRecorder, selectedBranc
               </select>
             </label>
             <label className="rw-field"><span>{text(lang, 'التخصص', 'Specialization')}</span>
-              <input required value={specialization} onChange={event => setSpecialization(event.currentTarget.value)} data-testid="input-review-specialization"/>
+              <select required value={specialization} onChange={event => setSpecialization(event.currentTarget.value)} data-testid="input-review-specialization">
+                {specialization && !classificationOptions.some(([value]) => value === specialization) && <option value={specialization}>{classificationLabel(specialization, lang)}</option>}
+                {classificationOptions.map(([value, ar, en]) => <option key={value} value={value}>{text(lang, ar, en)}</option>)}
+              </select>
             </label>
             <label className="rw-field"><span>{text(lang, 'الموقع داخل الفرع', 'Location in the branch')}</span>
               <input required value={reviewLocation} onChange={event => setReviewLocation(event.currentTarget.value)} data-testid="input-review-location"/>

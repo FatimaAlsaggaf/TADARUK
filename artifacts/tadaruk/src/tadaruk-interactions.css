@@ -1931,3 +1931,41 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
 .dark .metric-pending .metric-card-icon{background:#554632;color:#f0ce8d}
 .dark .metric-confirm .metric-card-icon{background:#314c5a;color:#9bd8e3}
 @media(max-width:390px){.metric-card-head{font-size:11px}.metric-card-icon{width:32px;height:32px}}
+
+.status-cancelled{color:#814444;background:#f5ecec}
+.status-cancelled .status-icon{background:#9d5a5a}
+.dark .status-cancelled{color:#f1b3b3;background:rgba(178,73,73,.16)}
+.dark .status-cancelled .status-icon{background:#a95050}
+.ticket-cancel-trigger{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:8px 11px;border:1px solid #ebc7c7;border-radius:9px;background:#fff8f7;color:#a33434;font:700 12px 'Noto Sans Arabic',sans-serif;cursor:pointer;transition:background .16s ease,border-color .16s ease}
+.ticket-cancel-trigger:hover{border-color:#d89a9a;background:#fff0ef}
+.ticket-cancel-trigger:focus-visible,.ticket-cancel-confirm:focus-visible,.ticket-cancel-keep:focus-visible{outline:3px solid rgba(190,71,71,.32);outline-offset:2px}
+.ticket-cancel-dialog{border-color:hsl(var(--border));border-radius:16px;background:hsl(var(--background));color:hsl(var(--foreground));}
+.ticket-cancel-dialog [data-slot="alert-dialog-title"]{color:hsl(var(--foreground));font-size:19px}
+.ticket-cancel-dialog [data-slot="alert-dialog-description"]{color:hsl(var(--muted-foreground));font-size:13px;line-height:1.8}
+.ticket-cancel-confirm{display:inline-flex;align-items:center;gap:7px;background:#b63737!important;color:#fff!important}
+.ticket-cancel-confirm:hover:not(:disabled){background:#962f30!important}
+.ticket-cancel-confirm:disabled{opacity:.65}
+.ticket-cancel-keep{background:transparent!important;color:hsl(var(--foreground))!important}
+.ticket-cancel-keep:hover:not(:disabled){background:hsl(var(--muted))!important}
+.ticket-cancel-error{padding:9px 11px;border-radius:8px;background:#fff0ef;color:#a33434;font-size:12px;line-height:1.7}
+.cancelled-ticket-note{display:flex;align-items:center;gap:11px;padding:12px 14px;margin:10px 0;border:1px solid #ead1d1;border-radius:10px;background:#fbf3f3;color:#8b4444}
+.cancelled-ticket-note>span{display:flex;flex-direction:column;gap:3px}
+.cancelled-ticket-note small{color:#8b7474}
+.voice-live-status{color:#687891}
+.voice-success{color:#36774e}
+.voice-manual-entry{font:700 11px 'Noto Sans Arabic',sans-serif}
+.voice-wave-busy{opacity:.72}
+.dark .ticket-cancel-trigger{border-color:#704447;background:#37282c;color:#f2aaaa}
+.dark .ticket-cancel-trigger:hover{border-color:#a45a5d;background:#442c31}
+.dark .ticket-cancel-error{background:rgba(190,71,71,.15);color:#f1aaaa}
+.dark .cancelled-ticket-note{border-color:#614047;background:#332a32;color:#efb3b3}
+.dark .cancelled-ticket-note small{color:#c79a9a}
+.dark .voice-button,.dark .voice-cancel{border-color:#3b4b62;background:#1b2a42;color:#d5e2f0}
+.dark .voice-active{border-color:#78444b!important;background:#3a292f!important;color:#f1aaaa!important}
+.dark .voice-wave{background:#1c3043}
+.dark .voice-wave i{background:#64c8c2}
+.dark .voice-live-status{color:#a6b6c8}
+.dark .voice-success{color:#9ddbb1}
+.dark .voice-error{color:#f1aaaa}
+@media(max-width:680px){.ticket-cancel-trigger{min-height:36px;padding:7px}.ticket-cancel-trigger span{display:none}.ticket-cancel-dialog{width:calc(100vw - 24px);padding:22px 19px}}
+@media(prefers-reduced-motion:reduce){.ticket-cancel-trigger,.voice-wave i{transition:none!important}}

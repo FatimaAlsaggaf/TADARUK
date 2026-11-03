@@ -19,6 +19,10 @@ export interface Ticket {
   specialization: string;
   location: string;
   status: TicketStatus;
+  /** @nullable */
+  cancelledAt: Date | null;
+  /** @nullable */
+  cancelledBy: string | null;
   reporterId: string;
   reporterName: string;
   branchId: string;

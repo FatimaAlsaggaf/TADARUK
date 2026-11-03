@@ -185,6 +185,10 @@ paths:
           in: query
           schema:
             type: string
+        - name: branchId
+          in: query
+          schema:
+            type: string
       responses:
         "200":
           description: Visible tickets
@@ -233,6 +237,8 @@ paths:
                 $ref: "#/components/schemas/Ticket"
         "404":
           description: Ticket not found or not visible
+        "409":
+          description: Ticket state prevents cancellation
   /tickets/{ticketId}/actions:
     post:
       operationId: performTicketAction
@@ -522,7 +528,7 @@ components:
         createdAt: { type: string, format: date-time }
     Ticket:
       type: object
-      required: [id, number, title, description, category, priority, specialization, location, status, reporterId, reporterName, branchId, branchName, branchCity, branchAddress, branchLatitude, branchLongitude, technicianId, technicianName, imageUrl, repairNotes, cause, resolution, createdAt, updatedAt, history]
+      required: [id, number, title, description, category, priority, specialization, location, status, cancelledAt, cancelledBy, reporterId, reporterName, branchId, branchName, branchCity, branchAddress, branchLatitude, branchLongitude, technicianId, technicianName, imageUrl, repairNotes, cause, resolution, createdAt, updatedAt, history]
       properties:
         id: { type: string }
         number: { type: string }
@@ -532,7 +538,9 @@ components:
         priority: { type: string, enum: [urgent, high, medium, low] }
         specialization: { type: string }
         location: { type: string }
-        status: { type: string, enum: [new, review, in_progress, awaiting_confirmation, closed] }
+        status: { type: string, enum: [new, review, in_progress, awaiting_confirmation, closed, cancelled] }
+        cancelledAt: { type: ["string", "null"], format: date-time }
+        cancelledBy: { type: ["string", "null"] }
         reporterId: { type: string }
         reporterName: { type: string }
         branchId: { type: string }
@@ -570,7 +578,7 @@ components:
         specialization: { type: string }
         location: { type: string }
         needsClarification: { type: boolean }
-        mode: { type: string, enum: [demo] }
+        mode: { type: string, enum: [demo, provider] }
     TicketInput:
       type: object
       required: [title, description, category, priority, specialization, location]
@@ -587,7 +595,7 @@ components:
       type: object
       required: [action]
       properties:
-        action: { type: string, enum: [start, complete, confirm, reject, reassign] }
+        action: { type: string, enum: [start, complete, confirm, reject, reassign, cancel] }
         note: { type: string }
         cause: { type: string }
         resolution: { type: string }
