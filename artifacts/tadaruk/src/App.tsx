@@ -47,6 +47,14 @@ const roleText = (role?: string, lang: Lang = 'ar') => {
   const roles: Record<string, [string,string]> = { manager:['مدير العمليات','Operations manager'], reporter:['المبلّغ','Reporter'], technician:['الفني','Technician'] };
   return roles[role || '']?.[lang === 'ar' ? 0 : 1] || '';
 };
+const roleSummary = (role: string | undefined, lang: Lang) => {
+  const summaries: Record<string, [string, string]> = {
+    manager: ['إدارة الفروع ومتابعة سير العمل', 'Oversee branches and daily operations'],
+    reporter: ['تسجيل البلاغات ومتابعة حالتها', 'Create reports and track their status'],
+    technician: ['استلام المهام وتحديث تقدم الإصلاح', 'Handle tasks and update repair progress']
+  };
+  return summaries[role || '']?.[lang === 'ar' ? 0 : 1] || '';
+};
 const statusText = (status: string, lang: Lang) => {
   const m: Record<string,[string,string]> = {new:['جديد','New'],review:['قيد المراجعة','In review'],in_progress:['جاري العمل','In progress'],awaiting_confirmation:['بانتظار التأكيد','Awaiting confirmation'],closed:['مغلق','Closed'],cancelled:['ملغي','Cancelled']};
   return m[status]?.[lang === 'ar' ? 0 : 1] || status;
@@ -426,15 +434,51 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
     </footer>
   </main>;
 }
-function DemoPage({lang,dark,setDark}:{lang:Lang;dark:boolean;setDark:(dark:boolean)=>void}) {
+function DemoPage({lang,setLang,dark,setDark}:{lang:Lang;setLang:(lang:Lang)=>void;dark:boolean;setDark:(dark:boolean)=>void}) {
   const {data:users,isLoading,isError,refetch}=useListDemoUsers();
   const select=useSelectDemoAccount(); const [,go]=useLocation();
   const enter=(userId:string)=>select.mutate({data:{userId}},{onSuccess:()=>{void qc.invalidateQueries({queryKey:getGetDemoSessionQueryKey()});go('/workspace');}});
-  return <main className="demo-page" dir={lang==='ar'?'rtl':'ltr'}><header className="demo-top"><Link href="/"><Brand darkMode={dark}/></Link><span>{tr(lang,'بيئة تجريبية آمنة','A guided demo environment')}</span><SunMoonThemeToggle className="demo-theme-toggle" theme={dark?'dark':'light'} onThemeChange={theme=>setDark(theme==='dark')} aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')} data-testid="theme-toggle-demo" size={40} duration={860}/></header><section className="demo-content fade-up"><div className="eyebrow"><span className="live-dot"/>TADARUK · {tr(lang,'تجربة','DEMO')}</div><h1 className={lang==='ar'?'display-ar':''}>{tr(lang,'اختر نقطة البداية','Choose your point of view')}</h1><p>{tr(lang,'ثلاثة أدوار، وسجل واحد يتابع البلاغ حتى إغلاقه.','Three roles, one record that follows a repair to closure.')}</p>
-    {isLoading?<div className="role-grid"><div className="skeleton-card"/><div className="skeleton-card"/><div className="skeleton-card"/></div>:isError?<State title="تعذر تحميل الحسابات" detail="تحقق من اتصال الخدمة ثم حاول مجدداً" retry={()=>void refetch()}/>:<div className="role-grid">{(users||[]).map((user,index)=><SpotlightCard className="role-card-spotlight" key={user.id} theme={dark?'dark':'light'} spotlightColor="rgba(86, 244, 239, .88)" intensity={.25} borderGlow={.42} softness={.82} spotlightSize={220} proximity={64} smoothing={.34} flare={false}><button type="button" className={`role-card role-${user.role}`} onClick={()=>enter(user.id)} disabled={select.isPending} data-testid={`select-role-${user.role}`}><span className="role-card-top"><span className="role-index">0{index+1}</span><ArrowUpRight size={18}/></span><Avatar name={user.name} size="lg"/><span className="role-title">{roleText(user.role,lang)}</span><b>{user.name}</b><small>{user.branchName || tr(lang,'جميع الفروع','All branches')}{user.specialization?` · ${user.specialization}`:''}</small><span className="role-cta">{select.isPending?'جارٍ الدخول':tr(lang,'الدخول بهذا الحساب','Enter as this user')}<ArrowLeft size={15}/></span></button></SpotlightCard>)}</div>}
-    {select.isError&&<p className="inline-error">لم نتمكن من فتح الحساب. حاول مرة أخرى.</p>}
-    <Link href="/" className="back-link"><ArrowRight size={16}/>{tr(lang,'العودة للرئيسية','Back to home')}</Link>
-  </section></main>;
+  const BackIcon=lang==='ar'?ArrowRight:ArrowLeft;
+  const EnterIcon=lang==='ar'?ArrowLeft:ArrowRight;
+  return <main className="demo-page" dir={lang==='ar'?'rtl':'ltr'}>
+    <header className="demo-top">
+      <Link href="/" className="demo-brand" aria-label={tr(lang,'العودة إلى تدارك','Back to Tadaruk')} data-testid="link-demo-brand"><Brand darkMode={dark}/></Link>
+      <span>{tr(lang,'بيئة تجريبية آمنة','A guided demo environment')}</span>
+      <div className="demo-actions">
+        <Link href="/" className="demo-back-link" data-testid="link-demo-home"><BackIcon size={16}/><span>{tr(lang,'الرئيسية','Home')}</span></Link>
+        <button className="demo-language-toggle" type="button" onClick={()=>setLang(lang==='ar'?'en':'ar')} aria-label={tr(lang,'التبديل إلى الإنجليزية','Switch to Arabic')} data-testid="button-demo-language"><Languages size={16}/><span>{lang==='ar'?'EN':'عربي'}</span></button>
+        <SunMoonThemeToggle className="demo-theme-toggle" theme={dark?'dark':'light'} onThemeChange={theme=>setDark(theme==='dark')} aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')} data-testid="theme-toggle-demo" size={40} duration={860}/>
+      </div>
+    </header>
+    <section className="demo-content fade-up">
+      <div className="eyebrow"><span className="live-dot"/>TADARUK · {tr(lang,'تجربة','DEMO')}</div>
+      <h1 className={lang==='ar'?'display-ar':''}>{tr(lang,'اختر نقطة البداية','Choose your point of view')}</h1>
+      <p>{tr(lang,'ثلاثة أدوار، وسجل واحد يتابع البلاغ حتى إغلاقه.','Three roles, one record that follows a repair to closure.')}</p>
+      {isLoading
+        ? <div className="role-grid"><div className="skeleton-card"/><div className="skeleton-card"/><div className="skeleton-card"/></div>
+        : isError
+          ? <State title={tr(lang,'تعذر تحميل الحسابات','Could not load demo accounts')} detail={tr(lang,'تحقق من اتصال الخدمة ثم حاول مجدداً','Check your connection and try again.')} retry={()=>void refetch()}/>
+          : <div className="role-grid">{(users||[]).map(user=>{
+              const RoleIcon=user.role==='manager'?Building2:user.role==='technician'?Wrench:ClipboardList;
+              const branch=[user.branchName || tr(lang,'جميع الفروع','All branches'),user.specialization].filter(Boolean).join(' · ');
+              return <SpotlightCard className="role-card-spotlight" key={user.id} theme={dark?'dark':'light'} spotlightColor="rgba(86, 244, 239, .88)" intensity={.16} borderGlow={.24} softness={.9} spotlightSize={240} proximity={72} smoothing={.4} flare={false}>
+                <button type="button" className={`role-card role-${user.role}`} onClick={()=>enter(user.id)} disabled={select.isPending} aria-busy={select.isPending} data-testid={`select-role-${user.role}`}>
+                  <span className="role-card-top">
+                    <span className={`role-title role-badge role-badge-${user.role}`}>{roleText(user.role,lang)}</span>
+                    <span className={`role-icon role-icon-${user.role}`} aria-hidden="true"><RoleIcon size={22} strokeWidth={1.8}/></span>
+                  </span>
+                  <span className="role-card-user">
+                    <b data-testid={`text-role-name-${user.id}`}>{user.name}</b>
+                    <span className="role-summary">{roleSummary(user.role,lang)}</span>
+                    <small>{branch}</small>
+                  </span>
+                  <span className="role-cta"><span>{select.isPending?tr(lang,'جارٍ الدخول…','Entering…'):tr(lang,'الدخول بهذا الحساب','Enter as this user')}</span><EnterIcon size={16}/></span>
+                </button>
+              </SpotlightCard>;
+            })}</div>}
+      {select.isError&&<p className="inline-error" role="alert">{tr(lang,'لم نتمكن من فتح الحساب. حاول مرة أخرى.','Could not open this account. Please try again.')}</p>}
+    </section>
+  </main>;
 }
 function usePrefs() {
   const [lang,setLangState]=useState<Lang>(()=>(localStorage.getItem('tadaruk-lang') as Lang)||'ar');
@@ -634,7 +678,7 @@ function WorkspaceRouter({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)
 }
 function AppRoutes() {
   const prefs=usePrefs();
-  return <Switch><Route path="/"><Landing lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route path="/demo"><DemoPage lang={prefs.lang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route path="/workspace/*"><WorkspaceRouter {...prefs}/></Route><Route path="/workspace"><WorkspaceRouter {...prefs}/></Route><Route component={NotFound}/></Switch>;
+  return <Switch><Route path="/"><Landing lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route path="/demo"><DemoPage lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route path="/workspace/*"><WorkspaceRouter {...prefs}/></Route><Route path="/workspace"><WorkspaceRouter {...prefs}/></Route><Route component={NotFound}/></Switch>;
 }
 function App() { return <QueryClientProvider client={qc}><AppRoutes/></QueryClientProvider>; }
 export default App;
