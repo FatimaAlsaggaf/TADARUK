@@ -345,7 +345,7 @@ function WorkspaceRouter({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)
 }
 function AppRoutes() {
   const prefs=usePrefs();
-  return <Switch><Route path="/"><Landing lang={prefs.lang} setLang={prefs.setLang}/></Route><Route path="/demo"><DemoPage lang={prefs.lang}/></Route><Route path="/workspace/:rest*"><WorkspaceRouter {...prefs}/></Route><Route path="/workspace"><WorkspaceRouter {...prefs}/></Route><Route component={NotFound}/></Switch>;
+  return <Switch><Route path="/"><Landing lang={prefs.lang} setLang={prefs.setLang}/></Route><Route path="/demo"><DemoPage lang={prefs.lang}/></Route><Route path="/workspace/*"><WorkspaceRouter {...prefs}/></Route><Route path="/workspace"><WorkspaceRouter {...prefs}/></Route><Route component={NotFound}/></Switch>;
 }
 function App() { return <QueryClientProvider client={qc}><AppRoutes/></QueryClientProvider>; }
 export default App;
