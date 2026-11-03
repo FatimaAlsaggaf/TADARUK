@@ -1,29 +1,30 @@
 .brand-lockup {
   display: inline-flex;
   align-items: center;
-  overflow: hidden;
-  background: #fff;
-  border-radius: 5px;
+  overflow: visible;
+  background: transparent;
+  border-radius: 0;
 }
 
 .brand-lockup > img.brand-logo {
   display: block;
-  width: 154px;
+  width: 178px;
+  max-width: 100%;
   height: auto;
   object-fit: contain;
 }
 
 .brand-lockup.light {
-  padding: 3px;
+  padding: 4px;
   background: #fff;
 }
 
 .side-brand .brand-lockup > img.brand-logo {
-  width: 172px;
+  width: 184px;
 }
 
 .workspace-footer .brand-lockup > img.brand-logo {
-  width: 112px;
+  width: 126px;
 }
 
 .voice-capture {

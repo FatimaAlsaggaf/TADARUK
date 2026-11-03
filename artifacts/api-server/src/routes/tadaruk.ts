@@ -129,7 +129,7 @@ router.get("/demo/users", async (_req, res): Promise<void> => {
   try {
     await ensureDemoData();
     const users = await Promise.all(
-      ["demo-manager", "demo-reporter", "demo-tech"].map((id) => getDemoMember(id)),
+      ["demo-manager", "demo-reporter", "demo-reporter-other", "demo-tech"].map((id) => getDemoMember(id)),
     );
     const views = await Promise.all(users.filter((member) => member !== undefined).map(async (member) => {
       const branch = member.branchId ? await getBranch(member.branchId) : undefined;
@@ -176,7 +176,7 @@ router.put("/session", async (req, res): Promise<void> => {
   }
   try {
     const member = await getDemoMember(parsed.data.userId);
-    if (!member || !["demo-manager", "demo-reporter", "demo-tech"].includes(member.id)) {
+    if (!member || !["demo-manager", "demo-reporter", "demo-reporter-other", "demo-tech"].includes(member.id)) {
       res.status(400).json({ error: "Unknown demo account." });
       return;
     }

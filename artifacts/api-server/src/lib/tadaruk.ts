@@ -140,7 +140,7 @@ export type DemoMember = typeof seedMembers[number];
 export async function listDemoUsers() {
   await ensureDemoData();
   const selected = seedMembers.filter((member) =>
-    ["demo-manager", "demo-reporter", "demo-tech"].includes(member.id),
+    ["demo-manager", "demo-reporter", "demo-reporter-other", "demo-tech"].includes(member.id),
   );
   return Promise.all(selected.map((member) => toDemoUser(member)));
 }
