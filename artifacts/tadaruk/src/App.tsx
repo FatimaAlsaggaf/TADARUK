@@ -276,50 +276,129 @@ function TadarukMark({reduced}:{reduced:boolean}) {
     <motion.path d="M489.14 246.374H455.926V279.588H489.14V246.374Z" fill="#1E3263" initial={reduced?false:{opacity:0,x:60,y:44}} animate={reduced?{opacity:1,x:0,y:0}:{opacity:[0,1,1,1],x:[60,48,19,0],y:[44,22,8,0]}} transition={reduced?{duration:0}:secondTransition}/>
   </motion.svg>;
 }
-function Landing({lang,setLang}:{lang:Lang;setLang:(x:Lang)=>void}) {
+function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;dark:boolean;setDark:(x:boolean)=>void}) {
   const health=useHealthCheck();
   const reduced=useReducedMotion()===true || (typeof window!=='undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true);
   const [headlineDone,setHeadlineDone]=useState(reduced);
+  const [mobileOpen,setMobileOpen]=useState(false);
+  const [activeSection,setActiveSection]=useState('top');
+  const [roadmapProgress,setRoadmapProgress]=useState(reduced?3:-1);
+  const roadmapRef=useRef<HTMLElement|null>(null);
+  const sectionIds=['top','how','impact','final'];
+  const sectionLabels=lang==='ar'?['الرئيسية','رحلة البلاغ','الأثر','استكشف']:['Home','The journey','The impact','Explore'];
   useEffect(()=>{if(reduced)setHeadlineDone(true);},[reduced]);
+  useEffect(()=>{
+    const sections=sectionIds.map(id=>document.getElementById(id)).filter((node):node is HTMLElement=>Boolean(node));
+    const observer=new IntersectionObserver(entries=>{
+      const visible=entries.filter(entry=>entry.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
+      if(visible)setActiveSection(visible.target.id);
+    },{rootMargin:'-22% 0px -58% 0px',threshold:[0,.15,.35,.6]});
+    sections.forEach(section=>observer.observe(section));
+    return ()=>observer.disconnect();
+  },[]);
+  useEffect(()=>{
+    if(reduced){setRoadmapProgress(3);return;}
+    const section=roadmapRef.current;
+    if(!section)return;
+    let timers:number[]=[];
+    const observer=new IntersectionObserver(([entry])=>{
+      if(entry.isIntersecting){
+        setRoadmapProgress(0);
+        timers=[1,2,3].map((step)=>window.setTimeout(()=>setRoadmapProgress(step),450+step*560));
+        observer.disconnect();
+      }
+    },{threshold:.28});
+    observer.observe(section);
+    return ()=>{observer.disconnect();timers.forEach(window.clearTimeout);};
+  },[reduced]);
+  const goToSection=(id:string)=>{
+    setMobileOpen(false);
+    const target=document.getElementById(id);
+    if(target)window.scrollTo({top:target.getBoundingClientRect().top+window.scrollY-86,behavior:reduced?'auto':'smooth'});
+  };
   const labels=lang==='ar'?['بلاغ جديد','تحليل ذكي','إسناد للفني','تم الإصلاح']:['New report','Smart analysis','Technician assigned','Repair confirmed'];
-  const benefits=lang==='ar'?['بلاغ أسرع','فرز ذكي','إسناد تلقائي','متابعة واضحة']:['Faster reports','Smart triage','Automatic assignment','Clear follow-up'];
+  const impact=lang==='ar'?[
+    ['بلاغات لا تضيع','كل بلاغ في سجل واحد.'],
+    ['مسؤولية واضحة','كل مهمة لها مسؤول وحالة.'],
+    ['متابعة من مكان واحد','اعرف حالة البلاغ بوضوح.'],
+    ['معرفة تتراكم','حلول الأعطال السابقة متاحة للرجوع إليها.']
+  ]:[
+    ['Nothing gets lost','Every report has one clear record.'],
+    ['Ownership is clear','Every task has an owner and a status.'],
+    ['One place to follow','See where every report stands.'],
+    ['Knowledge carries forward','Past repair guidance stays available.']
+  ];
+  const impactIcons=[ClipboardList,Users,Activity,BookOpen];
+  const closeMenu=()=>setMobileOpen(false);
   return <main className="landing" dir={lang==='ar'?'rtl':'ltr'}>
-    <header className="landing-nav wrap"><div className="nav-actions"><button className="nav-lang" onClick={()=>setLang(lang==='ar'?'en':'ar')}><Languages size={16}/>{lang==='ar'?'English':'العربية'}</button><Button href="/demo" kind="outline">{tr(lang,'دخول التجربة','Open the demo')}<ArrowUpRight size={17}/></Button></div></header>
-    <section className="hero wrap" aria-labelledby="landing-title">
+    <header className="landing-nav wrap">
+      <Link href="/" className="landing-brand" aria-label="TADARUK home" onClick={closeMenu}><Brand darkMode={dark}/></Link>
+      <nav className={`landing-links ${mobileOpen?'is-open':''}`} aria-label={tr(lang,'التنقل الرئيسي','Main navigation')}>
+        {sectionIds.map((id,index)=><button key={id} className={`landing-nav-link ${activeSection===id?'is-active':''}`} onClick={()=>goToSection(id)} aria-current={activeSection===id?'location':undefined}>{sectionLabels[index]}</button>)}
+      </nav>
+      <div className="nav-actions">
+        <button className="nav-lang" onClick={()=>setLang(lang==='ar'?'en':'ar')} aria-label={tr(lang,'التبديل إلى الإنجليزية','Switch to Arabic')}><Languages size={16}/><span>{lang==='ar'?'English':'العربية'}</span></button>
+        <button className="landing-theme" onClick={()=>setDark(!dark)} aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')}>{dark?<Sun size={17}/>:<Moon size={17}/>}</button>
+        <button className="landing-menu-toggle" onClick={()=>setMobileOpen(!mobileOpen)} aria-expanded={mobileOpen} aria-label={mobileOpen?tr(lang,'إغلاق القائمة','Close menu'):tr(lang,'فتح القائمة','Open menu')}>{mobileOpen?<X size={20}/>:<Menu size={20}/>}</button>
+      </div>
+    </header>
+    <section className="hero wrap" id="top" aria-labelledby="landing-title">
       <div className="hero-mark-stage"><div className="mark-halo" aria-hidden="true"/><TadarukMark reduced={reduced}/></div>
       <div className="hero-copy">
         <motion.div className="hero-light-reveal" aria-hidden="true" initial={reduced?false:{opacity:0,x:'-28%',scaleX:.62}} animate={reduced?{opacity:0,x:0,scaleX:1}:{opacity:[0,.2,0],x:['-28%','0%','28%'],scaleX:[.62,1,.62]}} transition={reduced?{duration:0}:{duration:.95,delay:1.84,ease:[.22,.72,.18,1]}}/>
-        <h1 id="landing-title" className={lang==='ar'?'display-ar':''}><BlurText text={tr(lang,'كل بلاغ يستحق أن يُتدارك','Every issue deserves a clear next step')} animateBy="words" trigger="load" startDelay={reduced?0:1880} reducedMotion={reduced} delay={70} stepDuration={.22} animationFrom={{opacity:0,y:12}} animationTo={[{opacity:.82,y:-1},{opacity:1,y:0}]} easing={[.22,.72,.18,1]} className="landing-headline-words" onAnimationComplete={()=>setHeadlineDone(true)}/></h1>
-        <motion.p className="hero-sub" initial={false} animate={headlineDone?{opacity:1,y:0}:{opacity:0,y:8}} transition={reduced?{duration:0}:{duration:.42,ease:[.22,.72,.18,1]}}>{tr(lang,'بلّغ. تابع. وتدارك.','Report it. Follow through. Put it right.')}</motion.p>
+        <h1 id="landing-title" className={lang==='ar'?'display-ar':''}><BlurText text={tr(lang,'كل بلاغ يستحق أن يُتدارك','Every report deserves to be put right')} animateBy="words" trigger="load" startDelay={reduced?0:1880} reducedMotion={reduced} delay={70} stepDuration={.22} animationFrom={{opacity:0,y:12}} animationTo={[{opacity:.82,y:-1},{opacity:1,y:0}]} easing={[.22,.72,.18,1]} className="landing-headline-words" onAnimationComplete={()=>setHeadlineDone(true)}/></h1>
+        <motion.p className="hero-sub" initial={false} animate={headlineDone?{opacity:1,y:0}:{opacity:0,y:8}} transition={reduced?{duration:0}:{duration:.42,ease:[.22,.72,.18,1]}}>{tr(lang,'بلّغ. تابع. وتدارك.','Report. Follow through. Put it right.')}</motion.p>
       </div>
     </section>
-    <section className="workflow-reveal wrap" id="how" aria-label={tr(lang,'مسار البلاغ','Report workflow')}>
+    <section className="workflow-reveal wrap" id="how" ref={roadmapRef} aria-label={tr(lang,'مسار البلاغ','Report workflow')}>
       <motion.div className="workflow-heading" initial={reduced?false:{opacity:0,y:12}} whileInView={{opacity:1,y:0}} viewport={{once:true,amount:.45}} transition={reduced?{duration:0}:{duration:.48,ease:[.22,.72,.18,1]}}>
         <span className="eyebrow">{tr(lang,'كيف يعمل','HOW IT WORKS')}</span>
         <h2 className={lang==='ar'?'display-ar':''}>{tr(lang,'من البلاغ إلى الإصلاح','From report to repair')}</h2>
       </motion.div>
-      <motion.div className="workflow-rule" initial={reduced?false:{scaleX:0}} whileInView={{scaleX:1}} viewport={{once:true,amount:.55}} transition={reduced?{duration:0}:{duration:.8,ease:[.22,.72,.18,1]}}/>
-      <div className="workflow-steps">{labels.map((label,index)=><motion.div className="workflow-step" key={label} initial={reduced?false:{opacity:0,y:13}} whileInView={{opacity:1,y:0}} viewport={{once:true,amount:.55}} transition={reduced?{duration:0}:{duration:.48,delay:index*.11,ease:[.22,.72,.18,1]}}><span className="workflow-index">0{index+1}</span><span className="workflow-label">{label}</span></motion.div>)}</div>
-    </section>
-    <section className="landing-explain wrap" aria-labelledby="explain-title">
-      <motion.div className="preview-reveal" initial={reduced?false:{opacity:0,y:18}} whileInView={{opacity:1,y:0}} viewport={{once:true,amount:.3}} transition={reduced?{duration:0}:{duration:.55,ease:[.22,.72,.18,1]}}>
-      <SpotlightCard className="product-preview" role="group" theme="light" spotlightColor="rgba(86, 244, 239, .88)" intensity={.34} borderGlow={.48} softness={.78} spotlightSize={250} proximity={72} smoothing={.34} flare={false} aria-label={tr(lang,'معاينة بلاغ صيانة','Maintenance report preview')}>
-        <div className="preview-top"><span className="preview-overline">{tr(lang,'بلاغ صيانة','MAINTENANCE REPORT')}</span><span className="preview-state"><i/>{tr(lang,'قيد المتابعة','In progress')}</span></div>
-        <div className="preview-ticket-title"><span className="preview-icon"><Wrench size={19}/></span><div><b>{tr(lang,'ضعف تبريد المكيف','Air conditioning issue')}</b><small>{tr(lang,'فرع النخيل · منطقة التحضير','Al Nakheel branch · Prep area')}</small></div></div>
-        <div className="preview-progress"><span className="preview-progress-line"/><span className="preview-progress-step complete"><Check size={13}/></span><span className="preview-progress-step current"><i/></span><span className="preview-progress-step"/></div>
-        <div className="preview-footer"><span className="preview-assignee"><span className="preview-avatar">س</span><span><b>{tr(lang,'سالم العتيبي','Salem Alotaibi')}</b><small>{tr(lang,'فني تكييف','Cooling technician')}</small></span></span><span className="preview-check"><CheckCircle2 size={18}/></span></div>
-      </SpotlightCard>
-      </motion.div>
-      <div className="explain-copy">
-        <motion.div initial={reduced?false:{opacity:0,y:14}} whileInView={{opacity:1,y:0}} viewport={{once:true,amount:.3}} transition={reduced?{duration:0}:{duration:.48,ease:[.22,.72,.18,1]}}>
-          <span className="eyebrow">{tr(lang,'لماذا تدارك','WHY TADARUK')}</span>
-          <h2 id="explain-title" className={lang==='ar'?'display-ar':''}>{tr(lang,'كل خطوة واضحة.','Every step, clear.')}</h2>
-        </motion.div>
-        <ul className="benefit-list">{benefits.map((item,index)=><motion.li key={item} initial={reduced?false:{opacity:0,x:lang==='ar'?10:-10}} whileInView={{opacity:1,x:0}} viewport={{once:true,amount:.3}} transition={reduced?{duration:0}:{duration:.4,delay:index*.07,ease:[.22,.72,.18,1]}}><span className="benefit-index">0{index+1}</span><span>{item}</span><ArrowLeft size={15}/></motion.li>)}</ul>
+      <div className={`roadmap ${roadmapProgress>=0?'has-started':''}`} data-progress={roadmapProgress}>
+        <svg className="roadmap-path roadmap-path-desktop" viewBox="0 0 1000 220" preserveAspectRatio="none" aria-hidden="true">
+          <defs><linearGradient id="roadmap-gradient" x1="0" x2="1"><stop offset="0" stopColor="#1e3263"/><stop offset=".52" stopColor="#4d9aa8"/><stop offset="1" stopColor="#56c9c4"/></linearGradient></defs>
+          <motion.path className="roadmap-track" d="M55 126 C185 126 176 55 315 65 S445 178 575 132 S770 47 945 88" pathLength="1" initial={{pathLength:reduced?1:0}} animate={{pathLength:roadmapProgress>=0?1:0}} transition={reduced?{duration:0}:{duration:2.6,ease:[.22,.72,.18,1]}}/>
+          <motion.path className="roadmap-glint" d="M55 126 C185 126 176 55 315 65 S445 178 575 132 S770 47 945 88" pathLength="1" initial={{pathLength:0,opacity:0}} animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.14,0],pathOffset:[0,.86,1],opacity:[0,.9,0]}:{pathLength:0,opacity:0}} transition={{duration:2.4,ease:'linear'}}/>
+        </svg>
+        <svg className="roadmap-path roadmap-path-mobile" viewBox="0 0 80 620" preserveAspectRatio="none" aria-hidden="true">
+          <defs><linearGradient id="roadmap-gradient-mobile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1e3263"/><stop offset=".52" stopColor="#4d9aa8"/><stop offset="1" stopColor="#56c9c4"/></linearGradient></defs>
+          <motion.path className="roadmap-track" d="M39 20 C39 105 13 105 39 190 S65 275 39 360 S13 445 39 600" pathLength="1" initial={{pathLength:reduced?1:0}} animate={{pathLength:roadmapProgress>=0?1:0}} transition={reduced?{duration:0}:{duration:2.6,ease:[.22,.72,.18,1]}}/>
+        </svg>
+        <div className="workflow-steps">{labels.map((label,index)=>{
+          const StepIcon=[ClipboardList,Activity,Wrench,CheckCircle2][index];
+          return <motion.div className={`workflow-step ${roadmapProgress>=index?'is-reached':''} ${roadmapProgress===index?'is-current':''}`} key={label} initial={reduced?false:{opacity:0,y:12}} animate={roadmapProgress>=0?{opacity:1,y:0}:{opacity:0,y:12}} transition={reduced?{duration:0}:{duration:.45,delay:index*.13,ease:[.22,.72,.18,1]}}>
+            <span className="workflow-node"><StepIcon size={23} strokeWidth={1.7}/></span>
+            <span className="workflow-index">0{index+1}</span><span className="workflow-label">{label}</span>
+          </motion.div>;
+        })}</div>
       </div>
     </section>
-    <section className="landing-end wrap"><div><span className="eyebrow"><span className="live-dot"/>{health.isLoading?'جاري الاتصال':health.isError?'وضع العرض متاح':tr(lang,'جاهز للتجربة','READY TO EXPLORE')}</span><h2 className={lang==='ar'?'display-ar':''}>{tr(lang,'ابدأ من البلاغ القادم.','Start with the next report.')}</h2></div><Button href="/demo">{tr(lang,'استكشف تدارك','Explore Tadaruk')}<ArrowLeft size={17}/></Button></section>
-    <footer className="landing-footer wrap"><Brand/><span>{tr(lang,'سجل واضح لصيانة أفضل.','A clearer record for better maintenance.')}</span><Link href="/demo">{tr(lang,'الدخول إلى العرض','Enter demo')}</Link></footer>
+    <section className="landing-impact wrap" id="impact" aria-labelledby="impact-title">
+      <div className="impact-heading">
+        <motion.div initial={reduced?false:{opacity:0,y:14}} whileInView={{opacity:1,y:0}} viewport={{once:true,amount:.4}} transition={reduced?{duration:0}:{duration:.5,ease:[.22,.72,.18,1]}}>
+          <span className="eyebrow">{tr(lang,'نتيجة العمل المنظم','THE DIFFERENCE')}</span>
+          <h2 id="impact-title" className={lang==='ar'?'display-ar':''}>{tr(lang,'أثر تدارك على منشأتك','A clearer picture of maintenance')}</h2>
+        </motion.div>
+        <p>{tr(lang,'سجل واحد يجمع البلاغ والمسؤولية وخطوات الإصلاح، لتبقى الصورة واضحة للجميع.','One record brings reports, ownership and repair progress together, so everyone can see what happens next.')}</p>
+      </div>
+      <div className="impact-grid">{impact.map(([title,copy],index)=>{
+        const ImpactIcon=impactIcons[index];
+        return <motion.article className={`impact-card impact-card-${index+1}`} key={title} initial={reduced?false:{opacity:0,y:16}} whileInView={{opacity:1,y:0}} viewport={{once:true,amount:.22}} transition={reduced?{duration:0}:{duration:.46,delay:index*.09,ease:[.22,.72,.18,1]}}>
+          <span className="impact-icon"><ImpactIcon size={21} strokeWidth={1.7}/></span><span className="impact-index">0{index+1}</span>
+          <h3>{title}</h3><p>{copy}</p>
+        </motion.article>;
+      })}</div>
+    </section>
+    <section className="landing-end wrap" id="final">
+      <div><span className="eyebrow"><span className="live-dot"/>{health.isLoading?tr(lang,'جارٍ الاتصال','CONNECTING'):health.isError?tr(lang,'العرض متاح','DEMO AVAILABLE'):tr(lang,'من البلاغ إلى الإصلاح','REPORT TO REPAIR')}</span><h2 className={lang==='ar'?'display-ar':''}>{tr(lang,'جاهز تبدأ مع تدارك؟','Ready to start with Tadaruk?')}</h2><p>{tr(lang,'من أول بلاغ إلى آخر خطوة، كل شيء أوضح.','From the first report to the final step, everything is clearer.')}</p></div>
+      <Button href="/demo">{tr(lang,'استكشف تدارك','Explore Tadaruk')}<ArrowLeft size={17}/></Button>
+    </section>
+    <footer className="landing-footer wrap">
+      <div className="footer-brand"><Brand darkMode={dark}/><p>{tr(lang,'منصة عربية تجمع بلاغات الصيانة ومسؤوليتها وتقدمها في سجل واضح.','An Arabic-first platform keeping maintenance reports, ownership and progress in one clear record.')}</p></div>
+      <nav className="footer-links" aria-label={tr(lang,'روابط الصفحة','Page links')}>{sectionIds.slice(1,3).map((id,index)=><button key={id} onClick={()=>goToSection(id)}>{sectionLabels[index+1]}</button>)}</nav>
+      <div className="footer-meta"><button className="nav-lang" onClick={()=>setLang(lang==='ar'?'en':'ar')}><Languages size={15}/>{lang==='ar'?'English':'العربية'}</button><span>© {new Date().getFullYear()} TADARUK</span></div>
+    </footer>
   </main>;
 }
 function DemoPage({lang}:{lang:Lang}) {
@@ -530,7 +609,7 @@ function WorkspaceRouter({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)
 }
 function AppRoutes() {
   const prefs=usePrefs();
-  return <Switch><Route path="/"><Landing lang={prefs.lang} setLang={prefs.setLang}/></Route><Route path="/demo"><DemoPage lang={prefs.lang}/></Route><Route path="/workspace/*"><WorkspaceRouter {...prefs}/></Route><Route path="/workspace"><WorkspaceRouter {...prefs}/></Route><Route component={NotFound}/></Switch>;
+  return <Switch><Route path="/"><Landing lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route path="/demo"><DemoPage lang={prefs.lang}/></Route><Route path="/workspace/*"><WorkspaceRouter {...prefs}/></Route><Route path="/workspace"><WorkspaceRouter {...prefs}/></Route><Route component={NotFound}/></Switch>;
 }
 function App() { return <QueryClientProvider client={qc}><AppRoutes/></QueryClientProvider>; }
 export default App;
