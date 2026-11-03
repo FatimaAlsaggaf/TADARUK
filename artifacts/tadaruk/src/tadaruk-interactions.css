@@ -586,3 +586,312 @@
   display: block;
   flex: none;
 }
+
+/* A quieter workspace frame with fewer hard dividers. */
+.sidebar,
+.dark .sidebar {
+  border-inline-end: 0;
+  box-shadow: none;
+}
+
+.topbar {
+  background: rgba(247, 249, 251, .88);
+  border-bottom: 0;
+  backdrop-filter: blur(16px);
+}
+
+.dark .topbar {
+  background: rgba(17, 28, 48, .82);
+}
+
+.top-controls {
+  gap: 11px;
+}
+
+.connection {
+  display: none !important;
+}
+
+/* Equal dashboard cards and clearer supporting text. */
+.overview-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.metric-lead,
+.metric-card {
+  min-height: 142px;
+  border-radius: 16px;
+}
+
+.metric-lead {
+  grid-column: auto;
+}
+
+.metric-card {
+  align-items: flex-start;
+  padding: 19px;
+}
+
+.metric-label,
+.metric-card > span {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.metric-card strong {
+  font-size: 36px;
+}
+
+.metric-card small {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.page-title p {
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.panel-heading h2 {
+  font-size: 21px;
+  line-height: 1.4;
+}
+
+.panel-heading .eyebrow {
+  font-size: 11px;
+}
+
+.ticket-row {
+  grid-template-columns: 76px minmax(160px, 1fr) 112px 146px 72px 16px;
+  gap: 9px;
+  min-height: 74px;
+  padding-block: 14px;
+}
+
+.ticket-summary b {
+  font-size: 14px;
+}
+
+.ticket-summary small {
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.ticket-number,
+.ticket-date {
+  font-size: 11px;
+}
+
+/* Status uses a circular, status-specific icon; new reports are red. */
+.status-pill {
+  justify-content: flex-start;
+  gap: 7px;
+  border-radius: 999px;
+  padding: 4px 10px 4px 4px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.status-icon {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  color: #fff;
+  background: #d94a4a;
+}
+
+.status-new {
+  color: #a93636;
+  background: #fff0f0;
+}
+
+.status-review {
+  color: #a93636;
+  background: #fff0f0;
+}
+
+.status-in_progress {
+  color: #a93636;
+  background: #fff0f0;
+}
+
+.status-awaiting_confirmation {
+  color: #a93636;
+  background: #fff0f0;
+}
+
+.status-closed {
+  color: #467242;
+  background: #edf6ed;
+}
+
+.status-closed .status-icon {
+  background: #60a565;
+}
+
+.priority-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: max-content;
+  max-width: 100%;
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.priority-urgent {
+  color: #ae3535;
+  background: #fff0f0;
+}
+
+.priority-urgent svg {
+  color: #d94a4a;
+}
+
+.priority-high {
+  color: #95620f;
+  background: #fff4df;
+}
+
+.priority-high svg {
+  color: #d69328;
+}
+
+.priority-medium {
+  color: #2f7480;
+  background: #e9f6f6;
+}
+
+.priority-medium svg {
+  color: #48a8ad;
+}
+
+.priority-low {
+  color: #61738c;
+  background: #edf1f7;
+}
+
+.priority-low svg {
+  color: #7d91ac;
+}
+
+.dark .status-new,
+.dark .status-review,
+.dark .status-in_progress,
+.dark .status-awaiting_confirmation,
+.dark .priority-urgent {
+  color: #ffc1c1;
+  background: rgba(217, 74, 74, .16);
+}
+
+.dark .priority-high {
+  color: #f5d28f;
+  background: rgba(219, 164, 67, .16);
+}
+
+.dark .priority-medium {
+  color: #a6e4e2;
+  background: rgba(78, 171, 176, .15);
+}
+
+.dark .status-closed,
+.dark .priority-low {
+  color: #bbdfbb;
+  background: rgba(96, 165, 101, .15);
+}
+
+@media (max-width: 1100px) {
+  .overview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .metric-lead {
+    grid-column: span 2;
+  }
+
+  .ticket-row {
+    grid-template-columns: 60px minmax(120px, 1fr) 96px 132px 58px 14px;
+    gap: 7px;
+  }
+}
+
+@media (max-width: 780px) {
+  .page-title p {
+    font-size: 14px;
+  }
+
+  .metric-lead,
+  .metric-card {
+    min-height: 120px;
+  }
+
+  .metric-card {
+    padding: 14px;
+  }
+
+  .metric-card strong {
+    font-size: 30px;
+  }
+
+  .metric-card small {
+    font-size: 11px;
+  }
+
+  .ticket-row {
+    grid-template-columns: 48px minmax(0, 1fr) auto 14px;
+  }
+
+  .ticket-row .priority-badge,
+  .ticket-row .ticket-date {
+    display: none;
+  }
+
+  .ticket-row .status-pill {
+    padding: 4px 7px 4px 4px;
+    font-size: 11px;
+  }
+
+  .ticket-summary b {
+    font-size: 13px;
+  }
+
+  .ticket-summary small {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 390px) {
+  .ticket-row {
+    grid-template-columns: 42px minmax(0, 1fr) 28px 12px;
+  }
+
+  .ticket-row .status-pill {
+    display: inline-flex;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: transparent;
+    font-size: 0;
+  }
+
+  .ticket-row .status-icon {
+    width: 27px;
+    height: 27px;
+  }
+
+  .ticket-row .status-label {
+    display: none;
+  }
+}
