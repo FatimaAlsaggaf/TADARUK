@@ -1,0 +1,731 @@
+# TADARUK | تدارك
+## Build an Exceptional Arabic AI-Powered Maintenance Platform From Scratch
+
+You are a senior product designer, creative director, UX architect, and full-stack engineer.
+
+I want you to design and build a completely NEW application called **TADARUK | تدارك**.
+
+This is a competition project, and its visual design, user experience, and functionality must be exceptional.
+
+**I want to see your creativity. Do not copy a conventional dashboard template.**
+
+Think like a top-tier product design studio creating a beautiful, real-world SaaS product.
+
+Your priorities are:
+
+1. Exceptional UI/UX.
+2. Beautiful simplicity.
+3. Clear user journeys.
+4. Large, readable typography.
+5. Memorable but restrained motion.
+6. Excellent mobile responsiveness.
+7. Fully functional end-to-end workflows.
+
+Do not build a static mockup.
+
+---
+
+# 1. Understand TADARUK
+
+TADARUK is an intelligent maintenance reporting and management platform.
+
+It helps organizations replace scattered WhatsApp messages and Excel files with structured maintenance tickets.
+
+Our initial demonstration focuses on a restaurant chain with multiple branches.
+
+Each organization has its own employees, branches, technicians, and maintenance data.
+
+TADARUK does not provide external technicians.
+
+### How TADARUK works
+
+1. An employee discovers a maintenance issue.
+2. The employee uploads a photo and describes the problem using text or voice.
+3. Voice recording is transcribed into editable text.
+4. AI analyzes the description and image and creates a structured maintenance ticket.
+5. The employee reviews and confirms the ticket.
+6. The system automatically assigns the ticket to the appropriate technician based on branch, specialization, and availability.
+7. The technician receives and handles the issue.
+8. The technician documents the solution through text or voice.
+9. The reporting employee confirms that the repair is successful.
+10. The report closes and its resolution becomes part of the organization's knowledge base.
+
+The manager supervises all operations and manages technicians and branches.
+
+The manager does not need to manually approve or assign every ticket.
+
+This is the core product concept. Build the entire experience around it.
+
+---
+
+# 2. Official visual identity
+
+I am attaching TADARUK's official Brand Guidelines PDF.
+
+READ IT CAREFULLY BEFORE DESIGNING.
+
+Use the actual official logo from the provided files.
+
+If a clean logo asset is missing, request an SVG or transparent PNG rather than inventing a replacement.
+
+Official colors:
+
+- Navy: #1F3363
+- Cyan: #56F4EF
+- Soft cyan: #76DADD
+- Light gray: #F4F4F4
+- Neutral gray: #D9D9D9
+- White: #FFFFFF
+
+Use white as the primary light-mode background.
+
+Use gray only where it improves visual separation.
+
+Use cyan for selective accents and interaction.
+
+Do not make the interface washed out, overly gray, or filled with colorful borders.
+
+### Typography
+
+Official fonts:
+
+- Amiri: prominent Arabic headings only.
+- Noto Sans Arabic: body text, navigation, buttons, forms, and interface elements.
+- Anek Kannada: English brand typography.
+
+Typography MUST be large, clear, and comfortable.
+
+Suggested desktop typography:
+- Hero heading: 56–72px.
+- Page heading: 30–36px.
+- Section heading: 22–28px.
+- Body text: 16–18px.
+- Navigation: 16–17px.
+- Buttons: 16px.
+
+Use responsive typography on mobile.
+
+Never make everything tiny to fit more elements onto the screen.
+
+Follow the attached brand guidelines for logo spacing, icon style, corner radii, and contrast.
+
+---
+
+# 3. Creative design direction
+
+I want a design that feels:
+
+- Premium.
+- Beautiful.
+- Clean.
+- Modern.
+- Friendly.
+- Elegant.
+- Memorable.
+- Extremely intuitive.
+
+The interface must feel professionally art-directed, not automatically generated.
+
+Avoid:
+
+- Generic SaaS templates.
+- Excessively large empty cards.
+- Tiny typography.
+- Huge blank margins.
+- Repetitive KPI cards.
+- Too much explanatory text.
+- Overcomplicated dashboards.
+- Excessive borders.
+- Random decorative elements.
+- Unnecessary gradients.
+- Overly technical English labels.
+- Too many icons and badges.
+
+Use purposeful whitespace, excellent typography, and thoughtful compositions.
+
+Don't simply create a collection of rectangles.
+
+Give each page a distinct but cohesive structure.
+
+You have creative freedom to choose the best layout and interaction patterns.
+
+---
+
+# 4. Landing Page — the visual centerpiece
+
+This page should be extraordinary in its simplicity.
+
+Reference for the feeling of simplicity and polish:
+https://itqannn.netlify.app/
+
+Use the reference only if accessible. Do not copy its branding.
+
+### IMPORTANT — MINIMAL CONTENT
+
+I DO NOT want:
+- FAQ sections.
+- Long feature lists.
+- Testimonials.
+- Pricing tables.
+- Statistics.
+- Endless marketing sections.
+- Repetitive descriptions.
+- Paragraph-heavy content.
+
+The landing page should be short, visually beautiful, and easy to understand in seconds.
+
+### Hero content
+
+Main heading:
+
+**كل بلاغ يستحق أن يُتدارك**
+
+Short subtitle:
+
+**بلّغ. تابع. وتدارك.**
+
+Primary CTA:
+
+**استكشف تدارك**
+
+Secondary CTA, only if useful:
+
+**كيف يعمل؟**
+
+### Creative hero
+
+Invent an original interactive visual concept showing the transformation of an issue into a structured ticket.
+
+For example:
+
+A compact maintenance report appears → AI organizes it → a technician receives it → a completion indicator appears.
+
+Use subtle animated transitions.
+
+The hero should feel alive and elegant.
+
+No excessive 3D graphics, generic laptop mockups, or unrelated floating icons.
+
+The visual must communicate the actual product.
+
+### Landing page structure
+
+Keep it minimal:
+
+1. Navbar.
+2. Hero.
+3. One beautiful interactive workflow section.
+4. Final CTA and small footer.
+
+You may use a small preview of the three roles only if it meaningfully improves the story.
+
+Do not add unnecessary sections just to fill space.
+
+### Motion
+
+Use elegant animations:
+- Soft entrance transitions.
+- Smooth scrolling.
+- Purposeful micro-interactions.
+- Animated ticket transformation.
+- Subtle hover feedback.
+
+Respect reduced-motion settings.
+
+The landing page must remain fast and responsive.
+
+---
+
+# 5. Beautiful demo account entry
+
+Create a dedicated demo entrance:
+
+/demo
+
+Design it as a premium account-selection experience.
+
+Three beautifully designed account cards:
+
+- الإدارة
+- المبلّغ
+- الفني
+
+Each card should have:
+- Professional demo avatar.
+- User name.
+- Role.
+- Short action to enter.
+
+Do not show long descriptions.
+
+After selection, the user enters a fully separate role-based workspace.
+
+Do not use a global role-switching bar on every page.
+
+Provide a small and clear "تبديل الحساب" option in the account menu for demo use.
+
+---
+
+# 6. Unified application shell
+
+All three workspaces should feel like one cohesive product.
+
+### Desktop
+
+Use a polished right-side sidebar in Arabic.
+
+The sidebar should be around 250–280px wide.
+
+Include the official logo prominently.
+
+Use a simple top navbar with:
+- Current page.
+- Profile avatar.
+- Language switcher.
+- Light/Dark mode switcher.
+- Account menu.
+
+Make the main content area fluid and responsive.
+
+Avoid narrow centered dashboards with huge unused margins.
+
+### Mobile
+
+Replace the desktop sidebar with a mobile-appropriate navigation experience.
+
+Use a drawer or bottom navigation where suitable.
+
+Ensure all screens are beautiful at 360–430px widths.
+
+Do not merely shrink the desktop interface.
+
+### Languages and themes
+
+Support:
+- Arabic / English.
+- RTL / LTR.
+- Light / Dark mode.
+
+Arabic is the default.
+
+Translate all functional interface labels, forms, status messages, and navigation.
+
+Persist user preferences.
+
+Dark mode must use a thoughtfully designed navy-based dark palette.
+
+---
+
+# 7. Reporter workspace — simplicity first
+
+The reporter is an ordinary employee who notices an issue.
+
+Their experience must be exceptionally simple.
+
+### Reporter navigation
+
+- الرئيسية
+- بلاغ جديد
+- بلاغاتي
+
+### Reporter homepage
+
+Create an attractive, welcoming interface.
+
+Include:
+- Short greeting with avatar.
+- Prominent "بلاغ جديد" action.
+- Reports awaiting confirmation.
+- Personal recent reports.
+
+Avoid unnecessary KPI dashboards.
+
+The reporter must see ONLY tickets they personally submitted.
+
+Do not expose other employees' reports, even from the same branch.
+
+Apply this restriction on the server, including direct ticket URLs.
+
+### New report flow
+
+Make the experience short and beautiful.
+
+Step 1:
+Upload an issue photo and enter or record a description.
+
+Step 2:
+AI analyzes the input and displays a beautifully organized ticket.
+
+Step 3:
+Reporter reviews, edits if necessary, and confirms.
+
+Then the system automatically creates and assigns the ticket.
+
+Do not ask the reporter to:
+- Select a technician.
+- Set a technical specialization.
+- Manage priorities manually.
+- Configure a branch.
+
+The branch is determined by the user's account.
+
+The reporter can add the precise location within the branch.
+
+### Voice recording
+
+Create a delightful voice-recording experience.
+
+Use:
+- A clear microphone button.
+- Real audio-responsive waveform.
+- Timer.
+- Stop/cancel actions.
+- Short transcription feedback.
+- Editable transcription.
+
+Prevent duplication caused by repeated speech recognition events.
+
+Do not remove genuine repetitions.
+
+Handle permissions and errors.
+
+### AI-generated ticket
+
+The AI should produce:
+- Short issue title.
+- Structured description.
+- Category.
+- Priority.
+- Required specialization.
+- Location.
+
+Priority levels:
+- طارئ
+- عالٍ
+- متوسط
+- منخفض
+
+Clearly identify AI suggestions and allow corrections.
+
+### My reports
+
+Use elegant, readable cards.
+
+Each card shows:
+- Short title.
+- Status.
+- Priority.
+- Ticket number.
+- Technician name/avatar.
+- Date.
+
+Open full information in a dedicated details page.
+
+The reporter can confirm whether the repair was successful.
+
+---
+
+# 8. Technician workspace — task-focused design
+
+The technician should have a practical mobile-first experience.
+
+### Navigation
+
+- مهامي
+- جاري العمل
+- المكتملة
+
+### Home
+
+Show:
+- Short greeting.
+- Important assigned tasks.
+- Clear next actions.
+- Compact task filters.
+
+Avoid giant profile banners and oversized empty-state cards.
+
+### Task card
+
+Each task should show:
+- Issue title.
+- Branch.
+- Priority.
+- Status.
+- Submission date.
+- Next action.
+
+Use concise visual hierarchy.
+
+### Task details
+
+Provide:
+- Issue photo.
+- Description.
+- Location.
+- Status.
+- Timeline.
+- Repair notes.
+- Voice/text documentation.
+- Completion action.
+
+### Workflow
+
+The technician:
+1. Receives an assigned ticket.
+2. Reviews it.
+3. Starts work.
+4. Documents the repair.
+5. Submits completion.
+
+Completion moves the ticket to "بانتظار التأكيد".
+
+It is not closed until the reporter confirms the repair.
+
+### Knowledge capture
+
+Allow the technician to describe the resolution simply, using text or voice.
+
+Store:
+- Issue.
+- Cause, if known.
+- Actions taken.
+- Resolution.
+- Date.
+- Related ticket.
+
+Make documentation easy rather than bureaucratic.
+
+---
+
+# 9. Manager workspace — elegant operations dashboard
+
+The manager manages all maintenance operations.
+
+Navigation:
+
+- نظرة عامة
+- البلاغات
+- الفنيون
+- الفروع
+- قاعدة المعرفة
+
+### Overview
+
+Create a beautifully organized dashboard.
+
+Show only the most important information:
+- Open tickets.
+- Urgent tickets.
+- Unassigned exceptions.
+- Tickets awaiting confirmation.
+- Issues requiring attention.
+
+Use a refined mix of indicators, operational lists, and relevant actions.
+
+Do not put every table and metric on the homepage.
+
+### Reports
+
+Allow:
+- Search.
+- Filters.
+- Ticket detail viewing.
+- Assignment review.
+- Manual reassignment when necessary.
+- Status history.
+
+### Technicians
+
+Allow:
+- Add technician.
+- Edit technician.
+- Assign branch.
+- Define specialization.
+- Set availability.
+- View current workload.
+
+Use professional avatars in technician profiles.
+
+### Branches
+
+Allow:
+- Add and edit branches.
+- View branch maintenance activity.
+- Associate technicians with branches.
+
+### Knowledge base
+
+Display a beautiful searchable collection of confirmed maintenance resolutions.
+
+Each entry links to its original ticket.
+
+Support category and branch filters.
+
+Future AI suggestions using similar previous repairs are out of scope for the initial prototype.
+
+---
+
+# 10. Automatic assignment — critical business logic
+
+After the reporter confirms the AI-generated ticket:
+
+1. Identify the required specialization.
+2. Read the branch from the reporter's profile.
+3. Find active technicians assigned to that branch.
+4. Match specialization.
+5. Consider current workload.
+6. Automatically assign the ticket.
+7. Notify the technician in the application.
+8. Record the assignment.
+
+If no qualified technician is available:
+- Save the ticket.
+- Set assignment as pending.
+- Notify the manager.
+
+Do not fabricate an assignment.
+
+The manager handles exceptions, not every ordinary ticket.
+
+---
+
+# 11. Status lifecycle
+
+Use consistent ticket statuses:
+
+- جديد
+- قيد المراجعة
+- جاري العمل
+- بانتظار التأكيد
+- مغلق
+
+After technician completion, the reporter can:
+- Confirm successful repair.
+- Reject the repair as unresolved.
+
+If confirmed, close the ticket and publish the resolution to the internal knowledge base.
+
+If rejected, reopen the existing ticket for follow-up and preserve its history.
+
+---
+
+# 12. Professional avatars
+
+Use attractive, consistent placeholder avatars for demo accounts.
+
+Avatars should appear in:
+- Account selection.
+- Navbar profile.
+- Technician directory.
+- Assigned technician details.
+- Activity history where useful.
+
+Use professional, cohesive imagery or illustrations.
+
+Do not use random stock photos.
+
+Provide initials fallback.
+
+Do not misrepresent fictional avatars as real employees.
+
+---
+
+# 13. Technical implementation
+
+Build a real working full-stack web application.
+
+Use a maintainable modern stack compatible with Replit.
+
+Recommended:
+- React.
+- TypeScript.
+- Tailwind CSS.
+- Motion.
+- Lucide icons.
+- Backend API and persistent database.
+
+Use proper routing, shared application data, and server-side authorization.
+
+Each organization must be isolated from other organizations.
+
+Reporter accesses only their own tickets.
+
+Technician accesses only tickets assigned to them.
+
+Manager accesses authorized organizational data.
+
+Store API keys securely on the server.
+
+Use real AI and speech transcription integrations when available.
+
+If credentials are not configured, provide clearly labeled demo behavior rather than pretending real AI is active.
+
+Ensure microphone recording and image uploads work where browser permissions allow.
+
+---
+
+# 14. Competition demo
+
+Create realistic demo users for one fictional restaurant business.
+
+The demo should demonstrate:
+
+1. Reporter creates a maintenance report.
+2. AI generates a ticket.
+3. Reporter confirms.
+4. System assigns the technician automatically.
+5. Technician receives the task.
+6. Technician updates status.
+7. Technician documents repair.
+8. Reporter confirms completion.
+9. Ticket is closed.
+10. Manager sees the completed record in the knowledge base.
+
+All three accounts must share the same data.
+
+The complete demonstration should be easy to understand and perform in a few minutes.
+
+---
+
+# 15. Final quality assurance
+
+Before declaring completion, verify:
+
+- Landing page is short, beautiful, and animated.
+- Official branding is correctly applied.
+- Logo is clear and large enough.
+- Fonts are readable.
+- Reporter experience is extremely simple.
+- Technician experience is practical.
+- Manager experience is well organized.
+- Role separation works.
+- Avatars are consistent.
+- Arabic and English work.
+- Light and Dark modes work.
+- Desktop layout uses available space.
+- Mobile navigation is excellent.
+- No overflowing elements.
+- No unnecessarily small text.
+- No generic repetitive dashboards.
+- No excessive marketing content.
+- All buttons and routes work.
+- AI analysis and automatic assignment are functional or transparently demonstrated.
+- Report ownership and access controls work.
+- Full ticket lifecycle works.
+
+## FINAL INSTRUCTION
+
+I want you to surprise me with the quality and originality of the design.
+
+Do not copy existing TADARUK implementations.
+
+Do not overdesign or add unnecessary content.
+
+Think deeply about the product and create an interface that is visually distinctive, beautiful, effortless to navigate, and genuinely useful.
+
+The landing page should immediately impress, while the application itself should feel calm, professional, intuitive, and extremely well crafted.
+
+**Beautiful simplicity is more important than visual complexity.**
+
+Build the entire project, not just a presentation or a static prototype.

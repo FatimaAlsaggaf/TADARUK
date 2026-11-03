@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "TADARUK | تدارك"
+description = "An Arabic-first maintenance reporting and management platform for restaurant teams. Employees submit structured issues, technicians resolve assigned work, and managers oversee branches, assignments, and confirmed repair knowledge."
+version = "1.0.0"
+id = "artifacts/tadaruk"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23636
+
+[services.development]
+run = "pnpm --filter @workspace/tadaruk run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/tadaruk", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/tadaruk/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23636"
+BASE_PATH = "/"

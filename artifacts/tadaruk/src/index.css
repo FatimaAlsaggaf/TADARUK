@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Anek+Kannada:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap');
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@plugin "@tailwindcss/typography";
+@custom-variant dark (&:is(.dark *));
+@theme inline {
+  --color-background:hsl(var(--background));--color-foreground:hsl(var(--foreground));--color-border:hsl(var(--border));--color-input:hsl(var(--input));--color-ring:hsl(var(--ring));
+  --color-card:hsl(var(--card));--color-card-foreground:hsl(var(--card-foreground));--color-card-border:hsl(var(--card-border));
+  --color-popover:hsl(var(--popover));--color-popover-foreground:hsl(var(--popover-foreground));--color-popover-border:hsl(var(--popover-border));
+  --color-primary:hsl(var(--primary));--color-primary-foreground:hsl(var(--primary-foreground));--color-secondary:hsl(var(--secondary));--color-secondary-foreground:hsl(var(--secondary-foreground));
+  --color-muted:hsl(var(--muted));--color-muted-foreground:hsl(var(--muted-foreground));--color-accent:hsl(var(--accent));--color-accent-foreground:hsl(var(--accent-foreground));
+  --color-destructive:hsl(var(--destructive));--color-destructive-foreground:hsl(var(--destructive-foreground));--color-sidebar:hsl(var(--sidebar));--color-sidebar-foreground:hsl(var(--sidebar-foreground));--color-sidebar-border:hsl(var(--sidebar-border));--color-sidebar-accent:hsl(var(--sidebar-accent));--color-sidebar-accent-foreground:hsl(var(--sidebar-accent-foreground));--font-sans:var(--app-font-sans);--radius-lg:var(--radius);--radius-xl:calc(var(--radius) + 4px)
+}
+:root {
+ --background:0 0% 100%;--foreground:222 52% 25%;--border:210 18% 89%;--card:0 0% 100%;--card-foreground:222 52% 25%;--card-border:210 18% 90%;
+ --sidebar:222 52% 25%;--sidebar-foreground:0 0% 100%;--sidebar-border:222 42% 32%;--sidebar-primary:177 86% 65%;--sidebar-primary-foreground:222 52% 25%;--sidebar-accent:222 42% 32%;--sidebar-accent-foreground:0 0% 100%;
+ --popover:0 0% 100%;--popover-foreground:222 52% 25%;--popover-border:210 18% 88%;--primary:222 52% 25%;--primary-foreground:0 0% 100%;--secondary:177 65% 90%;--secondary-foreground:222 52% 25%;
+ --muted:210 20% 96%;--muted-foreground:215 15% 48%;--accent:177 75% 88%;--accent-foreground:222 52% 25%;--destructive:0 67% 53%;--destructive-foreground:0 0% 100%;--input:210 18% 88%;--ring:177 66% 56%;
+ --chart-1:222 52% 25%;--chart-2:177 66% 56%;--chart-3:194 42% 63%;--chart-4:35 75% 65%;--chart-5:0 67% 53%;--app-font-sans:'Noto Sans Arabic',sans-serif;--app-font-serif:'Amiri',serif;--app-font-mono:'Anek Kannada',sans-serif;--radius:.85rem;
+ --button-outline:rgba(31,51,99,.12);--badge-outline:rgba(31,51,99,.08);--elevate-1:rgba(31,51,99,.035);--elevate-2:rgba(31,51,99,.075);--shadow:0 12px 32px rgba(31,51,99,.07);--spacing:.25rem
+}
+.dark {
+ --background:222 46% 13%;--foreground:210 25% 92%;--border:219 28% 28%;--card:222 39% 17%;--card-foreground:210 25% 92%;--card-border:219 28% 28%;
+ --sidebar:222 51% 10%;--sidebar-foreground:210 25% 92%;--sidebar-border:219 28% 22%;--sidebar-primary:177 86% 65%;--sidebar-primary-foreground:222 52% 18%;--sidebar-accent:222 36% 19%;--sidebar-accent-foreground:210 25% 92%;
+ --popover:222 39% 17%;--popover-foreground:210 25% 92%;--popover-border:219 28% 28%;--primary:177 76% 66%;--primary-foreground:222 52% 18%;--secondary:219 30% 25%;--secondary-foreground:210 25% 92%;--muted:219 30% 21%;--muted-foreground:215 18% 68%;--accent:177 38% 24%;--accent-foreground:177 80% 78%;
+ --destructive:0 58% 58%;--destructive-foreground:0 0% 100%;--input:219 28% 31%;--ring:177 66% 56%;--chart-1:177 66% 56%;--chart-2:194 42% 63%;--chart-3:35 75% 65%;--chart-4:222 52% 70%;--chart-5:0 67% 62%;--button-outline:rgba(255,255,255,.12);--badge-outline:rgba(255,255,255,.08);--elevate-1:rgba(255,255,255,.035);--elevate-2:rgba(255,255,255,.075)
+}
+@layer base{*{@apply border-border}body{@apply antialiased bg-background text-foreground;font-family:var(--app-font-sans)}}
+.display-ar{font-family:'Amiri',serif}.brand-en{font-family:'Anek Kannada',sans-serif;letter-spacing:.025em}.fade-up{animation:rise .55s both cubic-bezier(.2,.7,.2,1)}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}.wave span{display:block;width:3px;border-radius:4px;background:#56F4EF;animation:wave 900ms ease-in-out infinite alternate}@keyframes wave{to{transform:scaleY(.35);opacity:.6}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}

@@ -3,20 +3,21 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: TADARUK maintenance operations API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: demo
+  - name: tickets
+  - name: operations
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +25,308 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /demo/users:
+    get:
+      operationId: listDemoUsers
+      tags: [demo]
+      summary: List demo accounts
+      responses:
+        "200":
+          description: Available demo accounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DemoUser"
+  /session:
+    get:
+      operationId: getDemoSession
+      tags: [demo]
+      summary: Get active demo account
+      responses:
+        "200":
+          description: Active demo account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DemoSession"
+    put:
+      operationId: selectDemoAccount
+      tags: [demo]
+      summary: Select a demo account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DemoSessionInput"
+      responses:
+        "200":
+          description: Selected demo account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DemoSession"
+        "400":
+          description: Unknown demo account
+  /overview:
+    get:
+      operationId: getOverview
+      tags: [operations]
+      summary: Get role-aware overview
+      responses:
+        "200":
+          description: Dashboard summary and recent tickets
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Overview"
+  /tickets/analyze:
+    post:
+      operationId: analyzeTicket
+      tags: [tickets]
+      summary: Create a transparent demo ticket analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TicketAnalysisInput"
+      responses:
+        "200":
+          description: Suggested ticket fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TicketAnalysis"
+        "400":
+          description: Description is required
+  /tickets:
+    get:
+      operationId: listTickets
+      tags: [tickets]
+      summary: List tickets visible to current demo account
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Visible tickets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Ticket"
+    post:
+      operationId: createTicket
+      tags: [tickets]
+      summary: Confirm and create a maintenance ticket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TicketInput"
+      responses:
+        "201":
+          description: Created and automatically assigned ticket
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticket"
+        "400":
+          description: Invalid ticket data
+  /tickets/{ticketId}:
+    get:
+      operationId: getTicket
+      tags: [tickets]
+      summary: Get an authorized ticket and its history
+      parameters:
+        - name: ticketId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Ticket details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticket"
+        "404":
+          description: Ticket not found or not visible
+  /tickets/{ticketId}/actions:
+    post:
+      operationId: performTicketAction
+      tags: [tickets]
+      summary: Perform a role-authorized workflow action
+      parameters:
+        - name: ticketId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TicketActionInput"
+      responses:
+        "200":
+          description: Updated ticket
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticket"
+        "400":
+          description: Invalid action for ticket state
+        "403":
+          description: Action not allowed for this role
+        "404":
+          description: Ticket not found or not visible
+  /branches:
+    get:
+      operationId: listBranches
+      tags: [operations]
+      summary: List restaurant branches
+      responses:
+        "200":
+          description: Branch directory
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Branch"
+    post:
+      operationId: createBranch
+      tags: [operations]
+      summary: Create a branch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BranchInput"
+      responses:
+        "201":
+          description: Created branch
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Branch"
+  /branches/{branchId}:
+    patch:
+      operationId: updateBranch
+      tags: [operations]
+      summary: Update a branch
+      parameters:
+        - name: branchId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BranchUpdate"
+      responses:
+        "200":
+          description: Updated branch
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Branch"
+  /technicians:
+    get:
+      operationId: listTechnicians
+      tags: [operations]
+      summary: List technicians and workload
+      responses:
+        "200":
+          description: Technician directory
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Technician"
+    post:
+      operationId: createTechnician
+      tags: [operations]
+      summary: Add a technician
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TechnicianInput"
+      responses:
+        "201":
+          description: Created technician
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Technician"
+  /technicians/{technicianId}:
+    patch:
+      operationId: updateTechnician
+      tags: [operations]
+      summary: Update a technician
+      parameters:
+        - name: technicianId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TechnicianUpdate"
+      responses:
+        "200":
+          description: Updated technician
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Technician"
+  /knowledge:
+    get:
+      operationId: listKnowledge
+      tags: [operations]
+      summary: List confirmed repair knowledge
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: branchId
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Confirmed maintenance resolutions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/KnowledgeEntry"
 components:
   schemas:
     HealthStatus:
@@ -31,6 +334,183 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
-
+      required: [status]
+    DemoUser:
+      type: object
+      required: [id, name, role, initials]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        role: { type: string, enum: [manager, reporter, technician] }
+        initials: { type: string }
+        branchId: { type: ["string", "null"] }
+        branchName: { type: ["string", "null"] }
+        specialization: { type: ["string", "null"] }
+    DemoSession:
+      type: object
+      required: [user]
+      properties:
+        user:
+          oneOf:
+            - $ref: "#/components/schemas/DemoUser"
+            - type: "null"
+    DemoSessionInput:
+      type: object
+      required: [userId]
+      properties:
+        userId: { type: string }
+    Branch:
+      type: object
+      required: [id, name, city, active, openTickets]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        city: { type: string }
+        address: { type: string }
+        active: { type: boolean }
+        openTickets: { type: integer }
+    BranchInput:
+      type: object
+      required: [name, city, address]
+      properties:
+        name: { type: string, minLength: 2 }
+        city: { type: string, minLength: 2 }
+        address: { type: string }
+    BranchUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 2 }
+        city: { type: string, minLength: 2 }
+        address: { type: string }
+        active: { type: boolean }
+    Technician:
+      type: object
+      required: [id, name, initials, branchId, branchName, specialization, available, active, workload]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        initials: { type: string }
+        branchId: { type: string }
+        branchName: { type: string }
+        specialization: { type: string }
+        available: { type: boolean }
+        active: { type: boolean }
+        workload: { type: integer }
+    TechnicianInput:
+      type: object
+      required: [name, branchId, specialization]
+      properties:
+        name: { type: string, minLength: 2 }
+        branchId: { type: string }
+        specialization: { type: string }
+        available: { type: boolean }
+    TechnicianUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 2 }
+        branchId: { type: string }
+        specialization: { type: string }
+        available: { type: boolean }
+        active: { type: boolean }
+    TicketEvent:
+      type: object
+      required: [id, label, actorName, createdAt]
+      properties:
+        id: { type: string }
+        label: { type: string }
+        actorName: { type: string }
+        note: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+    Ticket:
+      type: object
+      required: [id, number, title, description, category, priority, specialization, location, status, reporterId, reporterName, branchId, branchName, technicianId, technicianName, imageUrl, repairNotes, cause, resolution, createdAt, updatedAt, history]
+      properties:
+        id: { type: string }
+        number: { type: string }
+        title: { type: string }
+        description: { type: string }
+        category: { type: string }
+        priority: { type: string, enum: [urgent, high, medium, low] }
+        specialization: { type: string }
+        location: { type: string }
+        status: { type: string, enum: [new, review, in_progress, awaiting_confirmation, closed] }
+        reporterId: { type: string }
+        reporterName: { type: string }
+        branchId: { type: string }
+        branchName: { type: string }
+        technicianId: { type: ["string", "null"] }
+        technicianName: { type: ["string", "null"] }
+        imageUrl: { type: ["string", "null"] }
+        repairNotes: { type: ["string", "null"] }
+        cause: { type: ["string", "null"] }
+        resolution: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        history:
+          type: array
+          items: { $ref: "#/components/schemas/TicketEvent" }
+    TicketAnalysisInput:
+      type: object
+      required: [description]
+      properties:
+        description: { type: string, minLength: 4 }
+        location: { type: string }
+        imageUrl: { type: string }
+    TicketAnalysis:
+      type: object
+      required: [title, description, category, priority, specialization, location, mode]
+      properties:
+        title: { type: string }
+        description: { type: string }
+        category: { type: string }
+        priority: { type: string, enum: [urgent, high, medium, low] }
+        specialization: { type: string }
+        location: { type: string }
+        mode: { type: string, enum: [demo] }
+    TicketInput:
+      type: object
+      required: [title, description, category, priority, specialization, location]
+      properties:
+        title: { type: string, minLength: 3 }
+        description: { type: string, minLength: 4 }
+        category: { type: string }
+        priority: { type: string, enum: [urgent, high, medium, low] }
+        specialization: { type: string }
+        location: { type: string }
+        imageUrl: { type: ["string", "null"] }
+    TicketActionInput:
+      type: object
+      required: [action]
+      properties:
+        action: { type: string, enum: [start, complete, confirm, reject, reassign] }
+        note: { type: string }
+        cause: { type: string }
+        resolution: { type: string }
+        technicianId: { type: string }
+    Overview:
+      type: object
+      required: [openTickets, urgentTickets, pendingAssignment, awaitingConfirmation, resolvedThisMonth, recentTickets]
+      properties:
+        openTickets: { type: integer }
+        urgentTickets: { type: integer }
+        pendingAssignment: { type: integer }
+        awaitingConfirmation: { type: integer }
+        resolvedThisMonth: { type: integer }
+        recentTickets:
+          type: array
+          items: { $ref: "#/components/schemas/Ticket" }
+    KnowledgeEntry:
+      type: object
+      required: [id, ticketId, ticketNumber, title, category, branchId, branchName, technicianName, cause, resolution, createdAt]
+      properties:
+        id: { type: string }
+        ticketId: { type: string }
+        ticketNumber: { type: string }
+        title: { type: string }
+        category: { type: string }
+        branchId: { type: string }
+        branchName: { type: string }
+        technicianName: { type: string }
+        cause: { type: ["string", "null"] }
+        resolution: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
