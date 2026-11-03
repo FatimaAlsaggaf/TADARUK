@@ -357,13 +357,14 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
       </motion.div>
       <div className={`roadmap ${roadmapProgress>=0?'has-started':''}`} data-progress={roadmapProgress}>
         <svg className="roadmap-path roadmap-path-desktop" viewBox="0 0 1000 220" preserveAspectRatio="none" aria-hidden="true">
-          <defs><linearGradient id="roadmap-gradient" x1="0" x2="1"><stop offset="0" stopColor="#1e3263"/><stop offset=".52" stopColor="#4d9aa8"/><stop offset="1" stopColor="#56c9c4"/></linearGradient></defs>
-          <motion.path className="roadmap-track" d="M55 126 C185 126 176 55 315 65 S445 178 575 132 S770 47 945 88" pathLength="1" initial={{pathLength:reduced?1:0}} animate={{pathLength:roadmapProgress>=0?1:0}} transition={reduced?{duration:0}:{duration:2.6,ease:[.22,.72,.18,1]}}/>
-          <motion.path className="roadmap-glint" d="M55 126 C185 126 176 55 315 65 S445 178 575 132 S770 47 945 88" pathLength="1" initial={{pathLength:0,opacity:0}} animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.14,0],pathOffset:[0,.86,1],opacity:[0,.9,0]}:{pathLength:0,opacity:0}} transition={{duration:2.4,ease:'linear'}}/>
+          <defs><linearGradient id="roadmap-gradient" x1="0" x2="1"><stop offset="0" stopColor={dark?'#6f8ba3':'#1e3263'}/><stop offset=".52" stopColor={dark?'#75aeb4':'#4d9aa8'}/><stop offset="1" stopColor={dark?'#71d0c9':'#56c9c4'}/></linearGradient></defs>
+          <motion.path className="roadmap-track" d="M55 126 C185 126 176 42 315 45 S445 178 575 132 S748 82 810 104 S850 112 885 106" pathLength="1" initial={{pathLength:reduced?1:0}} animate={{pathLength:roadmapProgress>=0?1:0}} transition={reduced?{duration:0}:{duration:2.6,ease:[.22,.72,.18,1]}}/>
+          <motion.path className="roadmap-glint" d="M55 126 C185 126 176 42 315 45 S445 178 575 132 S748 82 810 104 S850 112 885 106" pathLength="1" initial={{pathLength:0,opacity:0}} animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.14,0],pathOffset:[0,.86,1],opacity:[0,.9,0]}:{pathLength:0,opacity:0}} transition={{duration:2.4,ease:'linear'}}/>
         </svg>
-        <svg className="roadmap-path roadmap-path-mobile" viewBox="0 0 80 620" preserveAspectRatio="none" aria-hidden="true">
-          <defs><linearGradient id="roadmap-gradient-mobile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1e3263"/><stop offset=".52" stopColor="#4d9aa8"/><stop offset="1" stopColor="#56c9c4"/></linearGradient></defs>
-          <motion.path className="roadmap-track" d="M39 20 C39 105 13 105 39 190 S65 275 39 360 S13 445 39 600" pathLength="1" initial={{pathLength:reduced?1:0}} animate={{pathLength:roadmapProgress>=0?1:0}} transition={reduced?{duration:0}:{duration:2.6,ease:[.22,.72,.18,1]}}/>
+        <svg className="roadmap-path roadmap-path-mobile" viewBox="0 0 80 520" preserveAspectRatio="none" aria-hidden="true">
+          <defs><linearGradient id="roadmap-gradient-mobile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={dark?'#6f8ba3':'#1e3263'}/><stop offset=".52" stopColor={dark?'#75aeb4':'#4d9aa8'}/><stop offset="1" stopColor={dark?'#71d0c9':'#56c9c4'}/></linearGradient></defs>
+          <motion.path className="roadmap-track" d="M33 33 C33 82 9 124 33 172 S57 258 33 310 S9 376 33 449" pathLength="1" initial={{pathLength:reduced?1:0}} animate={{pathLength:roadmapProgress>=0?1:0}} transition={reduced?{duration:0}:{duration:2.6,ease:[.22,.72,.18,1]}}/>
+          <motion.path className="roadmap-glint" d="M33 33 C33 82 9 124 33 172 S57 258 33 310 S9 376 33 449" pathLength="1" initial={{pathLength:0,opacity:0}} animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.14,0],pathOffset:[0,.86,1],opacity:[0,.9,0]}:{pathLength:0,opacity:0}} transition={{duration:2.4,ease:'linear'}}/>
         </svg>
         <div className="workflow-steps">{labels.map((label,index)=>{
           const StepIcon=[ClipboardList,Activity,Wrench,CheckCircle2][index];
@@ -385,6 +386,12 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
       <div className="impact-grid">{impact.map(([title,copy],index)=>{
         const ImpactIcon=impactIcons[index];
         return <motion.article className={`impact-card impact-card-${index+1}`} key={title} initial={reduced?false:{opacity:0,y:16}} whileInView={{opacity:1,y:0}} viewport={{once:true,amount:.22}} transition={reduced?{duration:0}:{duration:.46,delay:index*.09,ease:[.22,.72,.18,1]}}>
+          <div className={`impact-visual impact-visual-${index+1}`} aria-hidden="true">
+            {index===0&&<><i className="report-fragment fragment-a"/><i className="report-fragment fragment-b"/><i className="report-fragment fragment-c"/><span className="report-record"><i/><i/><i/></span></>}
+            {index===1&&<><span className="task-owner-link"/><span className="task-chip"><i/><i/></span><span className="owner-chip"><i/></span></>}
+            {index===2&&<><span className="progress-rail"><i/></span><span className="progress-steps"><i/><i/><i/><i/></span><span className="progress-caption"><i/><i/></span></>}
+            {index===3&&<><span className="knowledge-sheet sheet-back"><i/><i/></span><span className="knowledge-sheet sheet-front"><i/><i/><i/></span><span className="knowledge-scan"/></>}
+          </div>
           <span className="impact-icon"><ImpactIcon size={21} strokeWidth={1.7}/></span><span className="impact-index">0{index+1}</span>
           <h3>{title}</h3><p>{copy}</p>
         </motion.article>;
