@@ -9,7 +9,7 @@ import {
   Activity, ArrowDownLeft, ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, Building2, Check,
   CheckCircle2, ChevronDown, ClipboardList, Clock3, Filter, Languages, LayoutDashboard,
   MapPin, Menu, Plus, Search, Settings2, ShieldCheck, Users, Wrench, X, CircleAlert,
-  LogOut, UserRound, RotateCcw, ChevronLeft, LoaderCircle, MapPinned,
+  LogOut, UserRound, RotateCcw, Repeat2, ChevronLeft, LoaderCircle, MapPinned,
   Mic, Square
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -487,7 +487,7 @@ function usePrefs() {
 }
 function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:ReactNode;title:string;lang:Lang;setLang:(x:Lang)=>void;dark:boolean;setDark:(x:boolean)=>void}) {
   const {data:session}=useGetDemoSession();
-  const user=session?.user; const [,go]=useLocation(); const [menu,setMenu]=useState(false); const [mobile,setMobile]=useState(false);
+  const user=session?.user; const [location,go]=useLocation(); const [menu,setMenu]=useState(false); const [mobile,setMobile]=useState(false);
   const branchContext=useContext(ReporterBranchContext);
   const qc=useQueryClient();const logout=useClearDemoSession();
   const reduced=useReducedMotion()===true || (typeof window!=='undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true);
@@ -495,7 +495,9 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
   if(!user)return <div className="workspace-loading"><div className="skeleton-bar"/><div className="skeleton-card"/></div>;
   const links=user.role==='manager'?[['/workspace','نظرة عامة','Overview',LayoutDashboard],['/workspace/tickets','البلاغات','Tickets',ClipboardList],['/workspace/technicians','الفنيون','Technicians',Users],['/workspace/branches','الفروع','Branches',Building2],['/workspace/knowledge','قاعدة المعرفة','Knowledge',BookOpen]]:user.role==='technician'?[['/workspace','مهامي','My tasks',Wrench],['/workspace/tickets','كل المهام','Tasks',ClipboardList]]:[['/workspace','الرئيسية','Home',LayoutDashboard],['/workspace/tickets/new','بلاغ جديد','New report',Plus],['/workspace/tickets','بلاغاتي','My reports',ClipboardList]];
   const signOut=()=>logout.mutate(undefined,{onSuccess:()=>{qc.clear();setMenu(false);setMobile(false);go('/demo');}});
-  const active=(path:string)=>window.location.pathname===path;
+  const matchingLink=links.map(([path])=>path as string)
+    .filter(path=>path==='/workspace'?location===path:location===path||location.startsWith(`${path}/`))
+    .sort((left,right)=>right.length-left.length)[0];
   const reporterBranches=branchContext?.branches||[];
   const selectedBranch=reporterBranches.find(branch=>branch.id===branchContext?.selectedBranchId)
     ||reporterBranches.find(branch=>branch.id===user.branchId)
@@ -510,7 +512,13 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
       {user.role==='reporter'&&reporterBranches.length>1
         ?<label className="branch-switch branch-switch-multi" data-testid="field-sidebar-branch"><span className="branch-icon"><Building2 size={16}/></span><span className="branch-switch-copy"><small>{tr(lang,'الموقع الحالي','CURRENT LOCATION')}</small><select value={branchContext?.selectedBranchId||selectedBranch?.id||''} onChange={event=>branchContext?.selectBranch(event.currentTarget.value)} aria-label={tr(lang,'اختيار الفرع المصرح به','Choose an authorized branch')} data-testid="select-sidebar-branch">{reporterBranches.map(branch=><option key={branch.id} value={branch.id}>{branch.name}</option>)}</select></span><ChevronDown size={15}/></label>
         :<div className="branch-switch" data-testid={user.role==='reporter'?'text-sidebar-branch':'branch-indicator'}><span className="branch-icon"><Building2 size={16}/></span><span><small>{tr(lang,'الموقع الحالي','CURRENT LOCATION')}</small><b>{user.role==='reporter'?branchLabel:user.branchName||tr(lang,'جميع الفروع','All branches')}</b></span></div>}
-      <nav className="side-nav">{links.map(([path,ar,en,Icon])=><Link key={path as string} href={path as string} onClick={()=>setMobile(false)} className={`side-link ${active(path as string)?'selected':''}`}><Icon size={19}/><span>{tr(lang,ar as string,en as string)}</span>{active(path as string)&&<span className="nav-active-mark"/>}</Link>)}</nav>
+      <nav className="side-nav">{links.map(([path,ar,en,Icon])=>{
+        const selected=matchingLink===path;
+        return <Link key={path as string} href={path as string} onClick={()=>setMobile(false)} className={`side-link ${selected?'selected':''}`} aria-current={selected?'page':undefined}>
+          {selected&&<motion.span className="nav-shared-indicator" layoutId="workspace-nav-indicator" transition={reduced?{duration:0}:{duration:.3,ease:[.22,.72,.18,1]}}><span className="nav-active-mark"/></motion.span>}
+          <Icon size={19}/><span>{tr(lang,ar as string,en as string)}</span>
+        </Link>;
+      })}</nav>
       <div className="side-bottom"><div className="side-user">
         <button className="side-user-trigger" onClick={()=>setMenu(!menu)} aria-label={tr(lang,'خيارات الملف الشخصي','Profile options')} aria-expanded={menu} aria-controls="account-menu"><Avatar name={user.name}/><span><b>{user.name}</b><small>{roleText(user.role,lang)}</small></span><ChevronDown size={16}/></button>
         <AnimatePresence>{menu&&<motion.nav id="account-menu" className="account-menu" aria-label={tr(lang,'خيارات الحساب','Account options')} initial={reduced?false:{opacity:0,y:6}} animate={{opacity:1,y:0}} exit={reduced?{opacity:1}:{opacity:0,y:5}} transition={{duration:reduced?0:.16,ease:[.22,.72,.18,1]}}><div className="account-menu-head"><b>{user.name}</b><small>{roleText(user.role,lang)}</small></div><Link href="/demo" onClick={()=>{setMenu(false);setMobile(false);}}><RotateCcw size={15}/>{tr(lang,'تبديل الحساب','Switch account')}</Link>{logout.isError&&<p className="account-menu-error" role="alert">{tr(lang,'تعذر تسجيل الخروج، حاول مجدداً.','Could not sign out. Please try again.')}</p>}<button type="button" className="account-menu-signout" onClick={signOut} disabled={logout.isPending} aria-busy={logout.isPending}><LogOut size={15}/>{logout.isPending?tr(lang,'جارٍ تسجيل الخروج…','Signing out…'):tr(lang,'تسجيل الخروج','Sign out')}</button></motion.nav>}</AnimatePresence>
@@ -523,8 +531,81 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
 function PageTitle({eyebrow,title,description,action}:{eyebrow:string;title:string;description?:string;action?:ReactNode}) {
   return <div className="page-title"><div><div className="eyebrow">{eyebrow}</div><h1>{title}</h1>{description&&<p>{description}</p>}</div>{action&&<div className="page-title-action">{action}</div>}</div>;
 }
+type FaultCluster = { tickets: Ticket[]; branchName: string; location: string; title: string };
+const faultStopWords = new Set('في من على إلى عن مع هذا هذه ذلك التي الذي يوجد يوجد هناك عند عدم لا لم ما هو هي تم بسبب بشكل بعد قبل تحت فوق the a an and or in on at of to for with is are was were this that there from'.split(' '));
+function normalizeFaultText(value:string) {
+  return value.normalize('NFKD').replace(/[\u064B-\u065F\u0670]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي')
+    .replace(/[ـ]/g,'').toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim().replace(/\s+/g,' ');
+}
+function faultTerms(ticket:Ticket) {
+  return new Set(normalizeFaultText(`${ticket.title} ${ticket.description}`).split(' ')
+    .filter(term=>term.length>2&&!faultStopWords.has(term)&&! /^\d+$/.test(term)));
+}
+function buildFaultClusters(tickets:Ticket[]):FaultCluster[] {
+  const now=Date.now();
+  const cutoff=now-30*24*60*60*1000;
+  const eligible=tickets.filter(ticket=>{
+    const createdAt=Date.parse(ticket.createdAt);
+    return ticket.status!=='cancelled'&&Number.isFinite(createdAt)&&createdAt>=cutoff&&createdAt<=now;
+  });
+  const byLocation=new Map<string,Ticket[]>();
+  eligible.forEach(ticket=>{
+    const location=normalizeFaultText(ticket.location);
+    if(!location||!ticket.branchId)return;
+    const key=`${ticket.branchId}::${ticket.category}::${location}`;
+    byLocation.set(key,[...(byLocation.get(key)||[]),ticket]);
+  });
+  const clusters:FaultCluster[]=[];
+  byLocation.forEach(group=>{
+    const ordered=[...group].sort((a,b)=>Date.parse(b.createdAt)-Date.parse(a.createdAt));
+    const remaining=new Set(ordered);
+    while(remaining.size){
+      const seed=remaining.values().next().value as Ticket;
+      remaining.delete(seed);
+      const members=[seed];
+      const seedTerms=faultTerms(seed);
+      for(const candidate of [...remaining]){
+        const terms=faultTerms(candidate);
+        const overlap=[...seedTerms].filter(term=>terms.has(term)).length;
+        const ratio=overlap/Math.max(1,Math.min(seedTerms.size,terms.size));
+        if(overlap>=2&&ratio>=.28){
+          members.push(candidate);
+          remaining.delete(candidate);
+        }
+      }
+      if(members.length>1){
+        clusters.push({tickets:members,branchName:seed.branchName,location:seed.location,title:seed.title});
+      }
+    }
+  });
+  return clusters.sort((a,b)=>b.tickets.length-a.tickets.length||Date.parse(b.tickets[0].createdAt)-Date.parse(a.tickets[0].createdAt));
+}
+function FrequentFaults({tickets,isLoading,isError,retry,lang}:{tickets:Ticket[];isLoading:boolean;isError:boolean;retry:()=>void;lang:Lang}) {
+  const clusters=useMemo(()=>buildFaultClusters(tickets),[tickets]);
+  const [selected,setSelected]=useState<FaultCluster|null>(null);
+  return <section className="panel frequent-faults" data-testid="section-frequent-faults">
+    <div className="panel-heading"><div><span className="eyebrow">{tr(lang,'رصد من سجل البلاغات','FROM THE TICKET REGISTER')}</span><h2 className="fault-heading"><span className="fault-heading-icon" aria-hidden="true"><Repeat2 size={15}/></span>{tr(lang,'الأعطال المتكررة','Frequent faults')}</h2></div><span className="fault-window">{tr(lang,'آخر ٣٠ يوماً','LAST 30 DAYS')}</span></div>
+    {isLoading?<div className="fault-loading" aria-label={tr(lang,'جاري تحميل البلاغات','Loading tickets')}><i/><i/><i/></div>
+      :isError?<div className="fault-state fault-error" role="alert"><b>{tr(lang,'تعذر تحميل بيانات الأعطال','Could not load fault data')}</b><p>{tr(lang,'تحقق من الاتصال ثم أعد المحاولة.','Check your connection and try again.')}</p><button type="button" onClick={retry} data-testid="button-retry-faults">{tr(lang,'إعادة المحاولة','Try again')} <RotateCcw size={14}/></button></div>
+      :!clusters.length?<div className="fault-empty" role="status"><span className="fault-empty-icon"><Activity size={19}/></span><div><b>{tr(lang,'لم تظهر أنماط تكرار واضحة بعد','No clear recurring patterns found yet')}</b><p>{tr(lang,'ستظهر هنا البلاغات المتشابهة في الفرع والموقع خلال آخر ٣٠ يوماً.','Similar reports from the same branch and location will appear here when found.')}</p></div></div>
+      :<div className="fault-cluster-list">{clusters.slice(0,2).map((cluster,index)=><article className="fault-cluster" key={`${cluster.tickets[0].id}-${index}`}>
+        <div className="fault-cluster-top"><span className="fault-pattern-tag">{tr(lang,'احتمال تكرار','POSSIBLE RECURRENCE')}</span><b>{cluster.tickets.length} {tr(lang,'بلاغات','reports')}</b></div>
+        <h3>{cluster.title}</h3><p className="fault-location"><Building2 size={14}/>{cluster.branchName}<span aria-hidden="true">·</span>{cluster.location}</p>
+        <p className="fault-observation">{tr(lang,'تكرار الوصف في الموقع نفسه قد يشير إلى ضرورة فحص السبب المشترك.','Repeated descriptions at the same location may warrant checking for a shared cause.')}</p>
+        <button type="button" className="fault-inspect" onClick={()=>setSelected(cluster)} aria-haspopup="dialog" data-testid={`button-inspect-fault-${cluster.tickets[0].id}`}>{tr(lang,'استعراض البلاغات المرتبطة','Inspect related tickets')}<ArrowLeft size={15}/></button>
+      </article>)}</div>}
+    <Dialog open={Boolean(selected)} onOpenChange={open=>{if(!open)setSelected(null);}}>
+      <DialogContent className="fault-dialog" dir={lang==='ar'?'rtl':'ltr'}>
+        <DialogHeader><DialogTitle>{tr(lang,'البلاغات المرتبطة','Related tickets')}</DialogTitle><DialogDescription>{selected?`${selected.branchName} · ${selected.location}`:''}</DialogDescription></DialogHeader>
+        {selected&&<div className="fault-dialog-list">{selected.tickets.map(ticket=><Link href={`/workspace/tickets/${ticket.id}`} key={ticket.id} className="fault-ticket-link" onClick={()=>setSelected(null)} data-testid={`link-related-ticket-${ticket.id}`}>
+          <span><b>{ticket.title}</b><small>{ticket.number} · {dateText(ticket.createdAt,lang)}</small></span><StatusBadge status={ticket.status} lang={lang}/><ArrowLeft size={15}/>
+        </Link>)}</div>}
+      </DialogContent>
+    </Dialog>
+  </section>;
+}
 function OverviewPage({lang,user}:{lang:Lang;user:DemoUser}) {
-  const {data:overview,isLoading,isError,refetch}=useGetOverview(); const {data:tickets}=useListTickets();
+  const {data:overview,isLoading,isError,refetch}=useGetOverview(); const {data:tickets,isLoading:ticketsLoading,isError:ticketsError,refetch:refetchTickets}=useListTickets();
   const manager=user.role==='manager',tech=user.role==='technician';
   const title=manager?tr(lang,'نظرة عامة','Overview'):tech?tr(lang,'مهامي اليوم','My work today'):tr(lang,'مرحباً، '+user.name.split(' ')[0],'Welcome, '+user.name.split(' ')[0]);
   if(isLoading)return <State title={tr(lang,'جاري ترتيب مساحة العمل','Loading your workspace')} loading/>;
@@ -532,7 +613,7 @@ function OverviewPage({lang,user}:{lang:Lang;user:DemoUser}) {
   const own=(tickets||[]).slice(0,4);
   return <div className="page-enter"><PageTitle eyebrow={manager?tr(lang,'العمليات · ٠١','OPERATIONS / 01'):tr(lang,'مساحة العمل','YOUR WORKSPACE')} title={title} description={manager?tr(lang,'كل بلاغ واضح، وكل خطوة لها صاحب.','Every report has an owner and a clear next step.'):tech?tr(lang,'ابدأ بالأولوية، وسجّل ما أصلحته للفريق.','Start with the highest priority and record the repair.'):tr(lang,'أخبرنا بما يحتاج إلى عناية. سنبقيك على اطلاع حتى يكتمل الإصلاح.','Tell us what needs attention. We will keep you updated through resolution.')}/>
      {manager?<><div className="overview-grid"><div className="metric-lead metric-open"><div className="metric-lead-head"><span className="metric-label">{tr(lang,'البلاغات المفتوحة','Open tickets')}</span><span className="metric-lead-icon" aria-hidden="true"><Activity size={21}/></span></div><strong>{overview?.openTickets??0}</strong><span className="metric-foot"><Building2 size={16}/>{tr(lang,'عبر جميع الفروع','Across all branches')}</span></div><div className="metric-card metric-urgent"><div className="metric-card-head"><span>{tr(lang,'طارئة','Urgent')}</span><span className="metric-card-icon" aria-hidden="true"><CircleAlert size={20}/></span></div><strong>{overview?.urgentTickets??0}</strong><small>{tr(lang,'تحتاج إلى متابعة سريعة','Needs prompt follow-up')}</small></div><div className="metric-card metric-pending"><div className="metric-card-head"><span>{tr(lang,'بانتظار الإسناد','Awaiting assignment')}</span><span className="metric-card-icon" aria-hidden="true"><Users size={20}/></span></div><strong>{overview?.pendingAssignment??0}</strong><small>{tr(lang,'تحتاج إلى توجيه','Needs routing')}</small></div><div className="metric-card metric-confirm"><div className="metric-card-head"><span>{tr(lang,'بانتظار التأكيد','Awaiting confirmation')}</span><span className="metric-card-icon" aria-hidden="true"><Clock3 size={20}/></span></div><strong>{overview?.awaitingConfirmation??0}</strong><small>{tr(lang,'تنتظر المبلّغ','Waiting on reporter')}</small></div></div>
-      <div className="dashboard-columns"><section className="panel activity-panel"><div className="panel-heading"><div><span className="eyebrow">{tr(lang,'سجل البلاغات المباشر','LIVE REGISTER')}</span><h2>{tr(lang,'آخر البلاغات','Recent tickets')}</h2></div><Link href="/workspace/tickets" className="text-link">{tr(lang,'كل البلاغات','All tickets')} <ArrowLeft size={15}/></Link></div><TicketList tickets={overview?.recentTickets||[]} lang={lang}/></section><aside className="ops-aside"><section className="resolved-callout"><span className="callout-symbol"><Check size={19}/></span><small>{tr(lang,'هذا الشهر','This month')}</small><strong>{overview?.resolvedThisMonth??0}</strong><b>{tr(lang,'إصلاحاً مؤكداً','Confirmed repairs')}</b><p>{tr(lang,'كل حل موثق يجعل الاستجابة التالية أذكى.','A documented fix helps the team respond faster next time.')}</p></section><section className="quick-links"><span className="eyebrow">{tr(lang,'إدارة العمليات','OPERATIONS')}</span><Link href="/workspace/technicians"><Users size={17}/>{tr(lang,'الفنيون','Technicians')} <ArrowLeft size={14}/></Link><Link href="/workspace/branches"><Building2 size={17}/>{tr(lang,'الفروع','Branches')} <ArrowLeft size={14}/></Link><Link href="/workspace/knowledge"><BookOpen size={17}/>{tr(lang,'قاعدة المعرفة','Knowledge base')} <ArrowLeft size={14}/></Link></section></aside></div></>:<div className="personal-layout"><section className="personal-feature"><div className="personal-feature-copy"><span className="eyebrow">{tech?tr(lang,'قائمة المهام','TASK QUEUE'):tr(lang,'صيانة أوضح','MAINTENANCE, MADE SIMPLE')}</span><h2 className={lang==='ar'?'display-ar':''}>{tech?tr(lang,'ما الذي يحتاج إليك الآن؟','What needs your attention?'):tr(lang,'بلاغك يصل إلى الشخص المناسب.','Your report reaches the right person.')}</h2><p>{tech?tr(lang,'البلاغات المسندة إليك مرتبة لتبدأ العمل دون بحث.','Your assigned tickets are organized so you can get started.'):tr(lang,'وصف واضح كافٍ. سنرتب البلاغ ونتابعه معك.','A clear description is enough. We will route and track the report.')}</p><Button href={tech?'/workspace/tickets':'/workspace/tickets/new'} kind="outline">{tech?tr(lang,'افتح قائمة المهام','Open task list'):tr(lang,'ابدأ بلاغاً جديداً','Create a report')}<ArrowLeft size={16}/></Button></div><div className="feature-mark"><Wrench size={34}/><span/></div></section><section className="panel personal-tickets"><div className="panel-heading"><div><span className="eyebrow">{tr(lang,tech?'مسندة إليك':'بلاغاتي',tech?'ASSIGNED TO YOU':'YOUR REPORTS')}</span><h2>{tech?tr(lang,'المهام الأخيرة','Recent tasks'):tr(lang,'بلاغاتي الأخيرة','Recent reports')}</h2></div><Link href="/workspace/tickets" className="text-link">{tr(lang,'عرض الكل','View all')} <ArrowLeft size={15}/></Link></div><TicketList tickets={own} lang={lang} empty={tech?tr(lang,'لا توجد مهام مسندة إليك','No tasks assigned to you'):tr(lang,'لم ترسل بلاغاً بعد','You have not submitted a report yet')}/></section></div>}
+       <div className="dashboard-columns"><section className="panel activity-panel"><div className="panel-heading"><div><span className="eyebrow">{tr(lang,'سجل البلاغات المباشر','LIVE REGISTER')}</span><h2>{tr(lang,'آخر البلاغات','Recent tickets')}</h2></div><Link href="/workspace/tickets" className="text-link">{tr(lang,'كل البلاغات','All tickets')} <ArrowLeft size={15}/></Link></div><TicketList tickets={overview?.recentTickets||[]} lang={lang}/></section><aside className="ops-aside"><section className="resolved-callout"><span className="callout-symbol"><Check size={19}/></span><small>{tr(lang,'هذا الشهر','This month')}</small><strong>{overview?.resolvedThisMonth??0}</strong><b>{tr(lang,'إصلاحاً مؤكداً','Confirmed repairs')}</b><p>{tr(lang,'كل حل موثق يجعل الاستجابة التالية أذكى.','A documented fix helps the team respond faster next time.')}</p></section><FrequentFaults tickets={tickets||[]} isLoading={ticketsLoading} isError={ticketsError} retry={()=>void refetchTickets()} lang={lang}/></aside></div></>:<div className="personal-layout"><section className="personal-feature"><div className="personal-feature-copy"><span className="eyebrow">{tech?tr(lang,'قائمة المهام','TASK QUEUE'):tr(lang,'صيانة أوضح','MAINTENANCE, MADE SIMPLE')}</span><h2 className={lang==='ar'?'display-ar':''}>{tech?tr(lang,'ما الذي يحتاج إليك الآن؟','What needs your attention?'):tr(lang,'بلاغك يصل إلى الشخص المناسب.','Your report reaches the right person.')}</h2><p>{tech?tr(lang,'البلاغات المسندة إليك مرتبة لتبدأ العمل دون بحث.','Your assigned tickets are organized so you can get started.'):tr(lang,'وصف واضح كافٍ. سنرتب البلاغ ونتابعه معك.','A clear description is enough. We will route and track the report.')}</p><Button href={tech?'/workspace/tickets':'/workspace/tickets/new'} kind="outline">{tech?tr(lang,'افتح قائمة المهام','Open task list'):tr(lang,'ابدأ بلاغاً جديداً','Create a report')}<ArrowLeft size={16}/></Button></div><div className="feature-mark"><Wrench size={34}/><span/></div></section><section className="panel personal-tickets"><div className="panel-heading"><div><span className="eyebrow">{tr(lang,tech?'مسندة إليك':'بلاغاتي',tech?'ASSIGNED TO YOU':'YOUR REPORTS')}</span><h2>{tech?tr(lang,'المهام الأخيرة','Recent tasks'):tr(lang,'بلاغاتي الأخيرة','Recent reports')}</h2></div><Link href="/workspace/tickets" className="text-link">{tr(lang,'عرض الكل','View all')} <ArrowLeft size={15}/></Link></div><TicketList tickets={own} lang={lang} empty={tech?tr(lang,'لا توجد مهام مسندة إليك','No tasks assigned to you'):tr(lang,'لم ترسل بلاغاً بعد','You have not submitted a report yet')}/></section></div>}
   </div>;
 }
 function TicketsPage({lang,user}:{lang:Lang;user:DemoUser}) {
@@ -642,7 +723,7 @@ function Modal({title,children,close,description}:{title:string;children:ReactNo
   return <Dialog open onOpenChange={open=>{if(!open)close();}}><DialogContent className="modal-card modal-radix"><DialogHeader className="modal-head"><DialogTitle>{title}</DialogTitle>{description&&<DialogDescription>{description}</DialogDescription>}</DialogHeader>{children}</DialogContent></Dialog>;
 }
 function WorkspaceRouter({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;dark:boolean;setDark:(x:boolean)=>void}) {
-  const {data:session}=useGetDemoSession();const user=session?.user;
+  const {data:session}=useGetDemoSession();const user=session?.user;const [location]=useLocation();
   const branchQuery=useListReporterBranches({query:{enabled:user?.role==='reporter',queryKey:getListReporterBranchesQueryKey()}});
   const reporterBranches=user?.role==='reporter'?(branchQuery.data||[]):[];
   const [selectedBranchId,setSelectedBranchId]=useState('');
@@ -663,20 +744,39 @@ function WorkspaceRouter({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)
     if(user?.role==='reporter'){try{localStorage.setItem(`tadaruk:selected-branch:${user.id}`,branchId);}catch{}}
   };
   const branchStatus=branchQuery.isError?'error':branchQuery.isSuccess?'success':'loading';
-  return <ReporterBranchContext.Provider value={{branches:reporterBranches,selectedBranchId,selectBranch,status:branchStatus}}><Switch>
-    <Route path="/workspace"><WorkspaceShell title={tr(lang,'نظرة عامة','Overview')} lang={lang} setLang={setLang} dark={dark} setDark={setDark}>{user?user.role==='reporter'?<ReporterHomePage lang={lang} user={user}/>:<OverviewPage lang={lang} user={user}/>:<State title={tr(lang,'جاري استعادة الحساب','Restoring account')} loading/>}</WorkspaceShell></Route>
-    <Route path="/workspace/tickets/new"><WorkspaceShell title={tr(lang,'بلاغ جديد','New report')} lang={lang} setLang={setLang} dark={dark} setDark={setDark}>{user?.role==='reporter'?<ReporterNewTicketPage lang={lang} user={user} selectedBranchId={selectedBranchId}/>:user?<State title={tr(lang,'إنشاء البلاغات متاح للمبلّغ فقط','Only reporters can create tickets')}/>:<State title={tr(lang,'جاري استعادة الحساب','Restoring account')} loading/>}</WorkspaceShell></Route>
-    <Route path="/workspace/tickets/:ticketId"><WorkspaceShell title={tr(lang,'تفاصيل البلاغ','Ticket details')} lang={lang} setLang={setLang} dark={dark} setDark={setDark}>{user?<TicketDetail lang={lang} user={user}/>:<State title={tr(lang,'جاري استعادة الحساب','Restoring account')} loading/>}</WorkspaceShell></Route>
-    <Route path="/workspace/tickets"><WorkspaceShell title={tr(lang,'البلاغات','Tickets')} lang={lang} setLang={setLang} dark={dark} setDark={setDark}>{user?user.role==='reporter'?<ReporterTicketsPage lang={lang} user={user}/>:<TicketsPage lang={lang} user={user}/>:<State title={tr(lang,'جاري استعادة الحساب','Restoring account')} loading/>}</WorkspaceShell></Route>
-    <Route path="/workspace/technicians"><WorkspaceShell title={tr(lang,'الفنيون','Technicians')} lang={lang} setLang={setLang} dark={dark} setDark={setDark}>{user?.role==='manager'?<TechniciansPage lang={lang}/>:<State title={tr(lang,'هذه الصفحة متاحة لمدير العمليات فقط','This page is for operations managers only')}/>}</WorkspaceShell></Route>
-    <Route path="/workspace/branches"><WorkspaceShell title={tr(lang,'الفروع','Branches')} lang={lang} setLang={setLang} dark={dark} setDark={setDark}>{user?.role==='manager'?<BranchesPage lang={lang}/>:<State title={tr(lang,'هذه الصفحة متاحة لمدير العمليات فقط','This page is for operations managers only')}/>}</WorkspaceShell></Route>
-    <Route path="/workspace/knowledge"><WorkspaceShell title={tr(lang,'قاعدة المعرفة','Knowledge base')} lang={lang} setLang={setLang} dark={dark} setDark={setDark}>{user?.role==='manager'?<KnowledgePage lang={lang}/>:<State title={tr(lang,'هذه الصفحة متاحة لمدير العمليات فقط','This page is for operations managers only')}/>}</WorkspaceShell></Route>
-    <Route component={NotFound}/>
-  </Switch></ReporterBranchContext.Provider>;
+  const normalizedLocation=location.replace(/\/+$/,'')||'/';
+  const title=normalizedLocation==='/workspace'
+    ?user?.role==='manager'?tr(lang,'نظرة عامة','Overview'):user?.role==='technician'?tr(lang,'مهامي','My tasks'):tr(lang,'الرئيسية','Home')
+    :normalizedLocation==='/workspace/tickets/new'?tr(lang,'بلاغ جديد','New report')
+      :normalizedLocation==='/workspace/tickets'?tr(lang,'البلاغات','Tickets')
+        :normalizedLocation.startsWith('/workspace/tickets/')?tr(lang,'تفاصيل البلاغ','Ticket details')
+          :normalizedLocation==='/workspace/technicians'?tr(lang,'الفنيون','Technicians')
+            :normalizedLocation==='/workspace/branches'?tr(lang,'الفروع','Branches')
+              :normalizedLocation==='/workspace/knowledge'?tr(lang,'قاعدة المعرفة','Knowledge base')
+                :tr(lang,'مساحة العمل','Workspace');
+  return <ReporterBranchContext.Provider value={{branches:reporterBranches,selectedBranchId,selectBranch,status:branchStatus}}>
+    <WorkspaceShell title={title} lang={lang} setLang={setLang} dark={dark} setDark={setDark}>
+      <Switch>
+        <Route path="/workspace">{user?user.role==='reporter'?<ReporterHomePage lang={lang} user={user}/>:<OverviewPage lang={lang} user={user}/>:<State title={tr(lang,'جاري استعادة الحساب','Restoring account')} loading/>}</Route>
+        <Route path="/workspace/tickets/new">{user?.role==='reporter'?<ReporterNewTicketPage lang={lang} user={user} selectedBranchId={selectedBranchId}/>:user?<State title={tr(lang,'إنشاء البلاغات متاح للمبلّغ فقط','Only reporters can create tickets')}/>:<State title={tr(lang,'جاري استعادة الحساب','Restoring account')} loading/>}</Route>
+        <Route path="/workspace/tickets/:ticketId">{user?<TicketDetail lang={lang} user={user}/>:<State title={tr(lang,'جاري استعادة الحساب','Restoring account')} loading/>}</Route>
+        <Route path="/workspace/tickets">{user?user.role==='reporter'?<ReporterTicketsPage lang={lang} user={user}/>:<TicketsPage lang={lang} user={user}/>:<State title={tr(lang,'جاري استعادة الحساب','Restoring account')} loading/>}</Route>
+        <Route path="/workspace/technicians">{user?.role==='manager'?<TechniciansPage lang={lang}/>:<State title={tr(lang,'هذه الصفحة متاحة لمدير العمليات فقط','This page is for operations managers only')}/>}</Route>
+        <Route path="/workspace/branches">{user?.role==='manager'?<BranchesPage lang={lang}/>:<State title={tr(lang,'هذه الصفحة متاحة لمدير العمليات فقط','This page is for operations managers only')}/>}</Route>
+        <Route path="/workspace/knowledge">{user?.role==='manager'?<KnowledgePage lang={lang}/>:<State title={tr(lang,'هذه الصفحة متاحة لمدير العمليات فقط','This page is for operations managers only')}/>}</Route>
+        <Route component={NotFound}/>
+      </Switch>
+    </WorkspaceShell>
+  </ReporterBranchContext.Provider>;
 }
 function AppRoutes() {
   const prefs=usePrefs();
-  return <Switch><Route path="/"><Landing lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route path="/demo"><DemoPage lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route path="/workspace/*"><WorkspaceRouter {...prefs}/></Route><Route path="/workspace"><WorkspaceRouter {...prefs}/></Route><Route component={NotFound}/></Switch>;
+  const [location]=useLocation();
+  const path=location.replace(/\/+$/,'')||'/';
+  const workspaceRoutes=['/workspace','/workspace/tickets','/workspace/tickets/new','/workspace/technicians','/workspace/branches','/workspace/knowledge'];
+  const isTicketDetail=/^\/workspace\/tickets\/[^/]+$/.test(path)&&path!=='/workspace/tickets/new';
+  if(workspaceRoutes.includes(path)||isTicketDetail)return <WorkspaceRouter {...prefs}/>;
+  return <Switch><Route path="/"><Landing lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route path="/demo"><DemoPage lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route component={NotFound}/></Switch>;
 }
 function App() { return <QueryClientProvider client={qc}><AppRoutes/></QueryClientProvider>; }
 export default App;

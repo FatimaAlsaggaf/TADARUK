@@ -724,6 +724,387 @@
   color: #dce6f3;
 }
 
+/* Shared branch marker: the square and building glyph shift as one calm blue cue. */
+.branch-icon {
+  flex: 0 0 30px;
+  background: #e4eff7;
+  color: #2f6488;
+}
+
+.dark .branch-icon {
+  background: #243e59;
+  color: #a8c9e3;
+}
+
+/* A single shared surface carries the active state and its edge marker. */
+.side-link {
+  isolation: isolate;
+  transition: color 300ms cubic-bezier(.22,.72,.18,1);
+}
+
+.side-link > svg,
+.side-link > span:not(.nav-shared-indicator) {
+  position: relative;
+  z-index: 1;
+  transition: color 300ms cubic-bezier(.22,.72,.18,1);
+}
+
+.side-link.selected {
+  background: transparent;
+  color: #1f3363;
+}
+
+.side-link.selected svg {
+  color: #2f6488;
+}
+
+.nav-shared-indicator {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  border-radius: 9px;
+  background: #dcecf0;
+  pointer-events: none;
+}
+
+.nav-active-mark {
+  position: absolute;
+  inset-block: 12px;
+  inset-inline-start: 0;
+  width: 3px;
+  height: auto;
+  border-radius: 4px;
+  background: #2f7890;
+}
+
+.dark .side-link.selected {
+  background: transparent;
+  color: #f5f8ff;
+}
+
+.dark .side-link.selected svg {
+  color: #a8c9e3;
+}
+
+.dark .nav-shared-indicator {
+  background: #28415a;
+}
+
+.dark .nav-active-mark {
+  background: #a8c9e3;
+}
+
+.frequent-faults {
+  padding: 17px 15px;
+}
+
+.frequent-faults .panel-heading {
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.frequent-faults .panel-heading h2 {
+  margin-top: 4px;
+  font-size: 17px;
+}
+
+.fault-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fault-heading-icon {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  place-items: center;
+  border: 1px solid #dbe8eb;
+  border-radius: 7px;
+  color: #4e8190;
+  background: #eef5f6;
+}
+
+.fault-window {
+  flex: none;
+  padding: 6px 8px;
+  border: 1px solid #dfe9ed;
+  border-radius: 7px;
+  color: #71859a;
+  background: #f6f9fa;
+  font: 600 8px 'Anek Kannada', 'Noto Sans Arabic', sans-serif;
+  letter-spacing: .04em;
+}
+
+.fault-empty {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: 132px;
+  padding: 16px 3px 5px;
+}
+
+.fault-empty-icon {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  place-items: center;
+  border: 1px solid #d9e9eb;
+  border-radius: 9px;
+  color: #4d8591;
+  background: #eef5f5;
+}
+
+.fault-empty b,
+.fault-state b {
+  display: block;
+  color: #344d6b;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.fault-empty p,
+.fault-state p {
+  margin: 5px 0 0;
+  color: #8290a1;
+  font-size: 10px;
+  line-height: 1.8;
+}
+
+.fault-cluster-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.fault-cluster {
+  padding: 12px 0 13px;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.fault-cluster-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.fault-pattern-tag {
+  padding: 5px 7px;
+  border-radius: 5px;
+  color: #537681;
+  background: #eaf2f2;
+  font: 700 8px 'Anek Kannada', 'Noto Sans Arabic', sans-serif;
+  letter-spacing: .025em;
+}
+
+.fault-cluster-top > b {
+  color: #75869a;
+  font: 600 10px 'Anek Kannada', 'Noto Sans Arabic', sans-serif;
+}
+
+.fault-cluster h3 {
+  margin: 9px 0 5px;
+  color: hsl(var(--foreground));
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.fault-location {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  color: #71849a;
+  font-size: 9px;
+  line-height: 1.7;
+}
+
+.fault-location svg {
+  flex: none;
+  color: #548296;
+}
+
+.fault-observation {
+  margin: 8px 0 9px;
+  color: #8391a1;
+  font-size: 9px;
+  line-height: 1.8;
+}
+
+.fault-inspect {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  color: #39778b;
+  background: transparent;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.fault-inspect:hover {
+  color: #245a72;
+}
+
+.fault-loading {
+  display: flex;
+  min-height: 132px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 9px;
+}
+
+.fault-loading i {
+  display: block;
+  width: 100%;
+  height: 9px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #edf2f4 25%, #f7f9fa 48%, #edf2f4 72%);
+  background-size: 220% 100%;
+  animation: shimmer 1.45s ease-in-out infinite;
+}
+
+.fault-loading i:nth-child(2) { width: 77%; }
+.fault-loading i:nth-child(3) { width: 54%; }
+
+.fault-state {
+  min-height: 132px;
+  padding: 16px 3px 7px;
+}
+
+.fault-error b {
+  color: #925752;
+}
+
+.fault-error button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 11px;
+  padding: 6px 8px;
+  border: 1px solid #ead8d5;
+  border-radius: 7px;
+  color: #87534f;
+  background: #fffafa;
+  font-size: 10px;
+}
+
+.fault-dialog {
+  max-width: 560px;
+}
+
+.fault-dialog-list {
+  display: flex;
+  flex-direction: column;
+  margin-top: 4px;
+}
+
+.fault-ticket-link {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 63px;
+  padding: 10px 2px;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.fault-ticket-link > span:first-child {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.fault-ticket-link b {
+  overflow: hidden;
+  color: hsl(var(--foreground));
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fault-ticket-link small {
+  color: hsl(var(--muted-foreground));
+  font-size: 10px;
+}
+
+.fault-ticket-link > svg:last-child {
+  flex: none;
+  color: #7890a4;
+}
+
+.dark .fault-window {
+  border-color: #3a4e64;
+  color: #b3c4d2;
+  background: #1c2e43;
+}
+
+.dark .fault-empty-icon {
+  border-color: #36515f;
+  color: #a0c6d4;
+  background: #233b4b;
+}
+
+.dark .fault-heading-icon {
+  border-color: #3a5668;
+  color: #a8c9e3;
+  background: #243e59;
+}
+
+.dark .fault-empty b,
+.dark .fault-state b {
+  color: #e0e8f0;
+}
+
+.dark .fault-empty p,
+.dark .fault-state p,
+.dark .fault-location,
+.dark .fault-observation,
+.dark .fault-cluster-top > b {
+  color: #a5b6c6;
+}
+
+.dark .fault-error b { color: #edb7b1; }
+
+.dark .fault-pattern-tag {
+  color: #b7d0d6;
+  background: #263e4c;
+}
+
+.dark .fault-inspect {
+  color: #9bc9d8;
+}
+
+.dark .fault-error button {
+  border-color: #684947;
+  color: #f0bcb5;
+  background: #342b32;
+}
+
+.fault-inspect:focus-visible,
+.fault-error button:focus-visible,
+.fault-ticket-link:focus-visible {
+  outline: 2px solid #4f939b;
+  outline-offset: 3px;
+}
+
+@media (max-width: 980px) {
+  .frequent-faults { padding: 15px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .side-link,
+  .side-link > svg,
+  .side-link > span:not(.nav-shared-indicator) {
+    transition: none !important;
+  }
+  .fault-loading i { animation: none; }
+}
+
 /* Landing hero: a quiet, precise reveal built around the supplied mark. */
 .landing {
   --landing-paper: #f5f8f6;
