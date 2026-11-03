@@ -8,7 +8,7 @@ import PhotoAttachmentCard from '@/components/PhotoAttachmentCard';
 import {
   Activity, ArrowDownLeft, ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, Building2, Check,
   CheckCircle2, ChevronDown, ClipboardList, Clock3, Filter, Languages, LayoutDashboard,
-  MapPin, Menu, Moon, Plus, Search, Settings2, ShieldCheck, Sun, Users, Wrench, X, CircleAlert,
+  MapPin, Menu, Plus, Search, Settings2, ShieldCheck, Users, Wrench, X, CircleAlert,
   LogOut, UserRound, RotateCcw, ChevronLeft, LoaderCircle, MapPinned,
   Mic, Square
 } from 'lucide-react';
@@ -29,6 +29,7 @@ import NotFound from '@/pages/not-found';
 import { ReporterHomePage, ReporterNewTicketPage, ReporterTicketsPage } from '@/ReporterWorkspace';
 import ReporterAccessPanel from '@/ReporterAccessPanel';
 import { TicketCancellationAction } from '@/components/TicketCancellationAction';
+import SunMoonThemeToggle from '@/components/ui/sun-moon-theme-toggle';
 import './tadaruk.css';
 import './tadaruk-interactions.css';
 
@@ -281,6 +282,7 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
   const reduced=useReducedMotion()===true || (typeof window!=='undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true);
   const [headlineDone,setHeadlineDone]=useState(reduced);
   const [mobileOpen,setMobileOpen]=useState(false);
+  const [dividerPulse,setDividerPulse]=useState(0);
   const [activeSection,setActiveSection]=useState('top');
   const [roadmapProgress,setRoadmapProgress]=useState(reduced?3:-1);
   const roadmapRef=useRef<HTMLElement|null>(null);
@@ -304,7 +306,7 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
     const observer=new IntersectionObserver(([entry])=>{
       if(entry.isIntersecting){
         setRoadmapProgress(0);
-        timers=[1,2,3].map((step)=>window.setTimeout(()=>setRoadmapProgress(step),450+step*560));
+        timers=[1,2,3].map((step)=>window.setTimeout(()=>setRoadmapProgress(step),step*1450));
         observer.disconnect();
       }
     },{threshold:.28});
@@ -314,7 +316,10 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
   const goToSection=(id:string)=>{
     setMobileOpen(false);
     const target=document.getElementById(id);
-    if(target)window.scrollTo({top:target.getBoundingClientRect().top+window.scrollY-86,behavior:reduced?'auto':'smooth'});
+    if(target){
+      setDividerPulse(pulse=>pulse+1);
+      window.scrollTo({top:target.getBoundingClientRect().top+window.scrollY-86,behavior:reduced?'auto':'smooth'});
+    }
   };
   const labels=lang==='ar'?['بلاغ جديد','تحليل ذكي','إسناد للفني','تم الإصلاح']:['New report','Smart analysis','Technician assigned','Repair confirmed'];
   const impact=lang==='ar'?[
@@ -338,8 +343,21 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
       </nav>
       <div className="nav-actions">
         <button className="nav-lang" onClick={()=>setLang(lang==='ar'?'en':'ar')} aria-label={tr(lang,'التبديل إلى الإنجليزية','Switch to Arabic')}><Languages size={16}/><span>{lang==='ar'?'English':'العربية'}</span></button>
-        <button className="landing-theme" onClick={()=>setDark(!dark)} aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')}>{dark?<Sun size={17}/>:<Moon size={17}/>}</button>
+        <SunMoonThemeToggle
+          className="landing-theme-toggle"
+          theme={dark?'dark':'light'}
+          onThemeChange={theme=>setDark(theme==='dark')}
+          aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')}
+          data-testid="theme-toggle-landing"
+          size={40}
+          duration={860}
+        />
         <button className="landing-menu-toggle" onClick={()=>setMobileOpen(!mobileOpen)} aria-expanded={mobileOpen} aria-label={mobileOpen?tr(lang,'إغلاق القائمة','Close menu'):tr(lang,'فتح القائمة','Open menu')}>{mobileOpen?<X size={20}/>:<Menu size={20}/>}</button>
+      </div>
+      <div className="landing-nav-divider" aria-hidden="true">
+        <span className="landing-nav-divider-track"/>
+        <span className="landing-nav-divider-reveal"/>
+        <span key={dividerPulse} className={`landing-nav-divider-pulse ${dividerPulse?'is-active':''}`}/>
       </div>
     </header>
     <section className="hero wrap" id="top" aria-labelledby="landing-title">
@@ -358,13 +376,13 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
       <div className={`roadmap ${roadmapProgress>=0?'has-started':''}`} data-progress={roadmapProgress}>
         <svg className="roadmap-path roadmap-path-desktop" viewBox="0 0 1000 220" preserveAspectRatio="none" aria-hidden="true">
           <defs><linearGradient id="roadmap-gradient" x1="0" x2="1"><stop offset="0" stopColor={dark?'#6f8ba3':'#1e3263'}/><stop offset=".52" stopColor={dark?'#75aeb4':'#4d9aa8'}/><stop offset="1" stopColor={dark?'#71d0c9':'#56c9c4'}/></linearGradient></defs>
-          <motion.path className="roadmap-track" d="M55 126 C185 126 176 42 315 45 S445 178 575 132 S748 82 810 104 S850 112 885 106" pathLength="1" initial={{pathLength:reduced?1:0}} animate={{pathLength:roadmapProgress>=0?1:0}} transition={reduced?{duration:0}:{duration:2.6,ease:[.22,.72,.18,1]}}/>
-          <motion.path className="roadmap-glint" d="M55 126 C185 126 176 42 315 45 S445 178 575 132 S748 82 810 104 S850 112 885 106" pathLength="1" initial={{pathLength:0,opacity:0}} animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.14,0],pathOffset:[0,.86,1],opacity:[0,.9,0]}:{pathLength:0,opacity:0}} transition={{duration:2.4,ease:'linear'}}/>
+          <motion.path className="roadmap-track" d="M55 126 C185 126 176 42 315 45 S445 178 575 132 S748 82 810 104 S870 112 905 106" pathLength="1" initial={{pathLength:reduced?1:0}} animate={{pathLength:roadmapProgress>=0?1:0}} transition={reduced?{duration:0}:{duration:4.7,ease:[.42,0,.58,1]}}/>
+          <motion.path className="roadmap-glint" d="M55 126 C185 126 176 42 315 45 S445 178 575 132 S748 82 810 104 S870 112 905 106" pathLength="1" initial={{pathLength:0,opacity:0}} animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.12,0],pathOffset:[0,.88,1],opacity:[0,.82,0]}:{pathLength:0,opacity:0}} transition={reduced?{duration:0}:{duration:4.7,ease:[.42,0,.58,1]}}/>
         </svg>
         <svg className="roadmap-path roadmap-path-mobile" viewBox="0 0 80 520" preserveAspectRatio="none" aria-hidden="true">
           <defs><linearGradient id="roadmap-gradient-mobile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={dark?'#6f8ba3':'#1e3263'}/><stop offset=".52" stopColor={dark?'#75aeb4':'#4d9aa8'}/><stop offset="1" stopColor={dark?'#71d0c9':'#56c9c4'}/></linearGradient></defs>
-          <motion.path className="roadmap-track" d="M33 33 C33 82 9 124 33 172 S57 258 33 310 S9 376 33 449" pathLength="1" initial={{pathLength:reduced?1:0}} animate={{pathLength:roadmapProgress>=0?1:0}} transition={reduced?{duration:0}:{duration:2.6,ease:[.22,.72,.18,1]}}/>
-          <motion.path className="roadmap-glint" d="M33 33 C33 82 9 124 33 172 S57 258 33 310 S9 376 33 449" pathLength="1" initial={{pathLength:0,opacity:0}} animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.14,0],pathOffset:[0,.86,1],opacity:[0,.9,0]}:{pathLength:0,opacity:0}} transition={{duration:2.4,ease:'linear'}}/>
+          <motion.path className="roadmap-track" d="M37 33 C37 82 13 124 37 172 S61 258 37 310 S13 376 37 449" pathLength="1" initial={{pathLength:reduced?1:0}} animate={{pathLength:roadmapProgress>=0?1:0}} transition={reduced?{duration:0}:{duration:4.7,ease:[.42,0,.58,1]}}/>
+          <motion.path className="roadmap-glint" d="M37 33 C37 82 13 124 37 172 S61 258 37 310 S13 376 37 449" pathLength="1" initial={{pathLength:0,opacity:0}} animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.12,0],pathOffset:[0,.88,1],opacity:[0,.82,0]}:{pathLength:0,opacity:0}} transition={reduced?{duration:0}:{duration:4.7,ease:[.42,0,.58,1]}}/>
         </svg>
         <div className="workflow-steps">{labels.map((label,index)=>{
           const StepIcon=[ClipboardList,Activity,Wrench,CheckCircle2][index];
@@ -408,12 +426,12 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
     </footer>
   </main>;
 }
-function DemoPage({lang}:{lang:Lang}) {
+function DemoPage({lang,dark,setDark}:{lang:Lang;dark:boolean;setDark:(dark:boolean)=>void}) {
   const {data:users,isLoading,isError,refetch}=useListDemoUsers();
   const select=useSelectDemoAccount(); const [,go]=useLocation();
   const enter=(userId:string)=>select.mutate({data:{userId}},{onSuccess:()=>{void qc.invalidateQueries({queryKey:getGetDemoSessionQueryKey()});go('/workspace');}});
-  return <main className="demo-page" dir={lang==='ar'?'rtl':'ltr'}><header className="demo-top"><Link href="/"><Brand/></Link><span>{tr(lang,'بيئة تجريبية آمنة','A guided demo environment')}</span></header><section className="demo-content fade-up"><div className="eyebrow"><span className="live-dot"/>TADARUK · {tr(lang,'تجربة','DEMO')}</div><h1 className={lang==='ar'?'display-ar':''}>{tr(lang,'اختر نقطة البداية','Choose your point of view')}</h1><p>{tr(lang,'ثلاثة أدوار، وسجل واحد يتابع البلاغ حتى إغلاقه.','Three roles, one record that follows a repair to closure.')}</p>
-    {isLoading?<div className="role-grid"><div className="skeleton-card"/><div className="skeleton-card"/><div className="skeleton-card"/></div>:isError?<State title="تعذر تحميل الحسابات" detail="تحقق من اتصال الخدمة ثم حاول مجدداً" retry={()=>void refetch()}/>:<div className="role-grid">{(users||[]).map((user,index)=><SpotlightCard className="role-card-spotlight" key={user.id} theme="light" spotlightColor="rgba(86, 244, 239, .88)" intensity={.25} borderGlow={.42} softness={.82} spotlightSize={220} proximity={64} smoothing={.34} flare={false}><button type="button" className={`role-card role-${user.role}`} onClick={()=>enter(user.id)} disabled={select.isPending} data-testid={`select-role-${user.role}`}><span className="role-card-top"><span className="role-index">0{index+1}</span><ArrowUpRight size={18}/></span><Avatar name={user.name} size="lg"/><span className="role-title">{roleText(user.role,lang)}</span><b>{user.name}</b><small>{user.branchName || tr(lang,'جميع الفروع','All branches')}{user.specialization?` · ${user.specialization}`:''}</small><span className="role-cta">{select.isPending?'جارٍ الدخول':tr(lang,'الدخول بهذا الحساب','Enter as this user')}<ArrowLeft size={15}/></span></button></SpotlightCard>)}</div>}
+  return <main className="demo-page" dir={lang==='ar'?'rtl':'ltr'}><header className="demo-top"><Link href="/"><Brand darkMode={dark}/></Link><span>{tr(lang,'بيئة تجريبية آمنة','A guided demo environment')}</span><SunMoonThemeToggle className="demo-theme-toggle" theme={dark?'dark':'light'} onThemeChange={theme=>setDark(theme==='dark')} aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')} data-testid="theme-toggle-demo" size={40} duration={860}/></header><section className="demo-content fade-up"><div className="eyebrow"><span className="live-dot"/>TADARUK · {tr(lang,'تجربة','DEMO')}</div><h1 className={lang==='ar'?'display-ar':''}>{tr(lang,'اختر نقطة البداية','Choose your point of view')}</h1><p>{tr(lang,'ثلاثة أدوار، وسجل واحد يتابع البلاغ حتى إغلاقه.','Three roles, one record that follows a repair to closure.')}</p>
+    {isLoading?<div className="role-grid"><div className="skeleton-card"/><div className="skeleton-card"/><div className="skeleton-card"/></div>:isError?<State title="تعذر تحميل الحسابات" detail="تحقق من اتصال الخدمة ثم حاول مجدداً" retry={()=>void refetch()}/>:<div className="role-grid">{(users||[]).map((user,index)=><SpotlightCard className="role-card-spotlight" key={user.id} theme={dark?'dark':'light'} spotlightColor="rgba(86, 244, 239, .88)" intensity={.25} borderGlow={.42} softness={.82} spotlightSize={220} proximity={64} smoothing={.34} flare={false}><button type="button" className={`role-card role-${user.role}`} onClick={()=>enter(user.id)} disabled={select.isPending} data-testid={`select-role-${user.role}`}><span className="role-card-top"><span className="role-index">0{index+1}</span><ArrowUpRight size={18}/></span><Avatar name={user.name} size="lg"/><span className="role-title">{roleText(user.role,lang)}</span><b>{user.name}</b><small>{user.branchName || tr(lang,'جميع الفروع','All branches')}{user.specialization?` · ${user.specialization}`:''}</small><span className="role-cta">{select.isPending?'جارٍ الدخول':tr(lang,'الدخول بهذا الحساب','Enter as this user')}<ArrowLeft size={15}/></span></button></SpotlightCard>)}</div>}
     {select.isError&&<p className="inline-error">لم نتمكن من فتح الحساب. حاول مرة أخرى.</p>}
     <Link href="/" className="back-link"><ArrowRight size={16}/>{tr(lang,'العودة للرئيسية','Back to home')}</Link>
   </section></main>;
@@ -457,7 +475,7 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
       </div></div>
     </aside>
     <AnimatePresence>{mobile&&<motion.button type="button" className="mobile-scrim" onClick={()=>setMobile(false)} aria-label={tr(lang,'إغلاق القائمة','Close navigation')} initial={reduced?false:{opacity:0}} animate={{opacity:1}} exit={reduced?{opacity:1}:{opacity:0}} transition={{duration:reduced?0:.16}}/>}</AnimatePresence>
-    <div className="main-frame"><header className="topbar"><div className="topbar-title"><button className="mobile-menu" onClick={()=>setMobile(true)}><Menu size={20}/></button><span>{title}</span></div><div className="top-controls"><button onClick={()=>setLang(lang==='ar'?'en':'ar')} className="icon-control" aria-label={tr(lang,'تغيير اللغة','Switch language')}><Languages size={18}/><span>{lang==='ar'?'EN':'ع'}</span></button><button onClick={()=>setDark(!dark)} className="icon-control" aria-label={tr(lang,'تغيير المظهر','Switch theme')}>{dark?<Sun size={18}/>:<Moon size={18}/>}</button></div></header><main className="workspace-content">{children}</main></div>
+    <div className="main-frame"><header className="topbar"><div className="topbar-title"><button className="mobile-menu" onClick={()=>setMobile(true)}><Menu size={20}/></button><span>{title}</span></div><div className="top-controls"><button onClick={()=>setLang(lang==='ar'?'en':'ar')} className="icon-control" aria-label={tr(lang,'تغيير اللغة','Switch language')}><Languages size={18}/><span>{lang==='ar'?'EN':'ع'}</span></button><SunMoonThemeToggle className="workspace-theme-toggle" theme={dark?'dark':'light'} onThemeChange={theme=>setDark(theme==='dark')} aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')} data-testid="theme-toggle-workspace" size={40} duration={860}/></div></header><main className="workspace-content">{children}</main></div>
   </div>;
 }
 function PageTitle({eyebrow,title,description,action}:{eyebrow:string;title:string;description?:string;action?:ReactNode}) {
@@ -616,7 +634,7 @@ function WorkspaceRouter({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)
 }
 function AppRoutes() {
   const prefs=usePrefs();
-  return <Switch><Route path="/"><Landing lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route path="/demo"><DemoPage lang={prefs.lang}/></Route><Route path="/workspace/*"><WorkspaceRouter {...prefs}/></Route><Route path="/workspace"><WorkspaceRouter {...prefs}/></Route><Route component={NotFound}/></Switch>;
+  return <Switch><Route path="/"><Landing lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route path="/demo"><DemoPage lang={prefs.lang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route path="/workspace/*"><WorkspaceRouter {...prefs}/></Route><Route path="/workspace"><WorkspaceRouter {...prefs}/></Route><Route component={NotFound}/></Switch>;
 }
 function App() { return <QueryClientProvider client={qc}><AppRoutes/></QueryClientProvider>; }
 export default App;
