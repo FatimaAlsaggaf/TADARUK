@@ -189,21 +189,40 @@ function Landing({lang,setLang}:{lang:Lang;setLang:(x:Lang)=>void}) {
   const reduced=useReducedMotion()===true || (typeof window!=='undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true);
   const copyTransition=(delay:number)=>reduced?{duration:0}:{duration:.58,delay,ease:[.22,.72,.18,1] as const};
   const labels=lang==='ar'?['بلاغ جديد','تحليل ذكي','إسناد للفني','تم الإصلاح']:['New report','Smart analysis','Technician assigned','Repair confirmed'];
+  const benefits=lang==='ar'?['بلاغ أسرع','فرز ذكي','إسناد تلقائي','متابعة واضحة']:['Faster reports','Smart triage','Automatic assignment','Clear follow-up'];
   return <main className="landing" dir={lang==='ar'?'rtl':'ltr'}>
-    <header className="landing-nav wrap"><Link href="/" className="brand-link"><Brand/></Link><div className="nav-actions"><button className="nav-lang" onClick={()=>setLang(lang==='ar'?'en':'ar')}><Languages size={16}/>{lang==='ar'?'English':'العربية'}</button><Button href="/demo" kind="outline">{tr(lang,'دخول التجربة','Open the demo')}<ArrowUpRight size={17}/></Button></div></header>
+    <header className="landing-nav wrap"><div className="nav-actions"><button className="nav-lang" onClick={()=>setLang(lang==='ar'?'en':'ar')}><Languages size={16}/>{lang==='ar'?'English':'العربية'}</button><Button href="/demo" kind="outline">{tr(lang,'دخول التجربة','Open the demo')}<ArrowUpRight size={17}/></Button></div></header>
     <section className="hero wrap" aria-labelledby="landing-title">
       <div className="hero-mark-stage"><div className="mark-halo" aria-hidden="true"/><TadarukMark reduced={reduced}/></div>
       <div className="hero-copy">
         <motion.h1 id="landing-title" className={lang==='ar'?'display-ar':''} initial={reduced?false:{opacity:0,y:18}} animate={{opacity:1,y:0}} transition={copyTransition(1.85)}>{tr(lang,'كل بلاغ يستحق أن يُتدارك','Every issue deserves a clear next step')}</motion.h1>
         <motion.p className="hero-sub" initial={reduced?false:{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={copyTransition(2.08)}>{tr(lang,'بلّغ. تابع. وتدارك.','Report it. Follow through. Put it right.')}</motion.p>
-        <motion.div className="hero-cta" initial={reduced?false:{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={copyTransition(2.31)}><Button href="/demo">{tr(lang,'استكشف تدارك','Explore Tadaruk')}<ArrowLeft size={18}/></Button></motion.div>
       </div>
     </section>
     <section className="workflow-reveal wrap" id="how" aria-label={tr(lang,'مسار البلاغ','Report workflow')}>
+      <motion.div className="workflow-heading" initial={reduced?false:{opacity:0,y:12}} whileInView={{opacity:1,y:0}} viewport={{once:true,amount:.45}} transition={reduced?{duration:0}:{duration:.48,ease:[.22,.72,.18,1]}}>
+        <span className="eyebrow">{tr(lang,'كيف يعمل','HOW IT WORKS')}</span>
+        <h2 className={lang==='ar'?'display-ar':''}>{tr(lang,'من البلاغ إلى الإصلاح','From report to repair')}</h2>
+      </motion.div>
       <motion.div className="workflow-rule" initial={reduced?false:{scaleX:0}} whileInView={{scaleX:1}} viewport={{once:true,amount:.55}} transition={reduced?{duration:0}:{duration:.8,ease:[.22,.72,.18,1]}}/>
-      <div className="workflow-steps">{labels.map((label,index)=><motion.div className="workflow-step" key={label} initial={reduced?false:{opacity:0,y:13}} whileInView={{opacity:1,y:0}} viewport={{once:true,amount:.55}} transition={reduced?{duration:0}:{duration:.48,delay:index*.11,ease:[.22,.72,.18,1]}}><span className="workflow-index">0{index+1}</span><span>{label}</span></motion.div>)}</div>
+      <div className="workflow-steps">{labels.map((label,index)=><motion.div className="workflow-step" key={label} initial={reduced?false:{opacity:0,y:13}} whileInView={{opacity:1,y:0}} viewport={{once:true,amount:.55}} transition={reduced?{duration:0}:{duration:.48,delay:index*.11,ease:[.22,.72,.18,1]}}><span className="workflow-index">0{index+1}</span><span className="workflow-label">{label}</span></motion.div>)}</div>
     </section>
-    <section className="landing-end wrap"><div><span className="eyebrow"><span className="live-dot"/>{health.isLoading?'جاري الاتصال':health.isError?'وضع العرض متاح':'جاهز للتجربة'}</span><h2 className={lang==='ar'?'display-ar':''}>{tr(lang,'ابدأ من البلاغ القادم.','Start with the next report.')}</h2></div><Button href="/demo">{tr(lang,'اختر حسابك','Choose an account')}<ArrowLeft size={17}/></Button></section>
+    <section className="landing-explain wrap" aria-labelledby="explain-title">
+      <motion.div className="product-preview" initial={reduced?false:{opacity:0,y:18}} whileInView={{opacity:1,y:0}} viewport={{once:true,amount:.3}} transition={reduced?{duration:0}:{duration:.55,ease:[.22,.72,.18,1]}} aria-label={tr(lang,'معاينة بلاغ صيانة','Maintenance report preview')}>
+        <div className="preview-top"><span className="preview-overline">{tr(lang,'بلاغ صيانة','MAINTENANCE REPORT')}</span><span className="preview-state"><i/>{tr(lang,'قيد المتابعة','In progress')}</span></div>
+        <div className="preview-ticket-title"><span className="preview-icon"><Wrench size={19}/></span><div><b>{tr(lang,'ضعف تبريد المكيف','Air conditioning issue')}</b><small>{tr(lang,'فرع النخيل · منطقة التحضير','Al Nakheel branch · Prep area')}</small></div></div>
+        <div className="preview-progress"><span className="preview-progress-line"/><span className="preview-progress-step complete"><Check size={13}/></span><span className="preview-progress-step current"><i/></span><span className="preview-progress-step"/></div>
+        <div className="preview-footer"><span className="preview-assignee"><span className="preview-avatar">س</span><span><b>{tr(lang,'سالم العتيبي','Salem Alotaibi')}</b><small>{tr(lang,'فني تكييف','Cooling technician')}</small></span></span><span className="preview-check"><CheckCircle2 size={18}/></span></div>
+      </motion.div>
+      <div className="explain-copy">
+        <motion.div initial={reduced?false:{opacity:0,y:14}} whileInView={{opacity:1,y:0}} viewport={{once:true,amount:.3}} transition={reduced?{duration:0}:{duration:.48,ease:[.22,.72,.18,1]}}>
+          <span className="eyebrow">{tr(lang,'لماذا تدارك','WHY TADARUK')}</span>
+          <h2 id="explain-title" className={lang==='ar'?'display-ar':''}>{tr(lang,'كل خطوة واضحة.','Every step, clear.')}</h2>
+        </motion.div>
+        <ul className="benefit-list">{benefits.map((item,index)=><motion.li key={item} initial={reduced?false:{opacity:0,x:lang==='ar'?10:-10}} whileInView={{opacity:1,x:0}} viewport={{once:true,amount:.3}} transition={reduced?{duration:0}:{duration:.4,delay:index*.07,ease:[.22,.72,.18,1]}}><span className="benefit-index">0{index+1}</span><span>{item}</span><ArrowLeft size={15}/></motion.li>)}</ul>
+      </div>
+    </section>
+    <section className="landing-end wrap"><div><span className="eyebrow"><span className="live-dot"/>{health.isLoading?'جاري الاتصال':health.isError?'وضع العرض متاح':tr(lang,'جاهز للتجربة','READY TO EXPLORE')}</span><h2 className={lang==='ar'?'display-ar':''}>{tr(lang,'ابدأ من البلاغ القادم.','Start with the next report.')}</h2></div><Button href="/demo">{tr(lang,'استكشف تدارك','Explore Tadaruk')}<ArrowLeft size={17}/></Button></section>
     <footer className="landing-footer wrap"><Brand/><span>{tr(lang,'سجل واضح لصيانة أفضل.','A clearer record for better maintenance.')}</span><Link href="/demo">{tr(lang,'الدخول إلى العرض','Enter demo')}</Link></footer>
   </main>;
 }
