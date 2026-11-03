@@ -28,6 +28,7 @@ export const teamMembersTable = pgTable("tadaruk_team_members", {
   branchId: text("branch_id"),
   authorizedBranchIds: text("authorized_branch_ids").array(),
   specialization: text("specialization"),
+  phone: text("phone"),
   available: boolean("available").notNull().default(true),
   active: boolean("active").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

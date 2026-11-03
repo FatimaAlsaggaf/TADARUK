@@ -1,0 +1,14 @@
+.technician-phone-input{position:relative}
+.technician-phone-input>svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#44a8a4;pointer-events:none}
+.technician-phone-input input{width:100%;direction:ltr;text-align:left;padding-left:40px!important}
+.technician-phone{width:100%;min-height:40px;padding:6px 9px;display:flex;align-items:center;gap:9px;border:1px solid hsl(var(--border));border-radius:10px;background:linear-gradient(110deg,#e9f8f6,hsl(var(--card)));color:#236e73;font-size:12px;font-weight:700;transition:border-color .18s ease,background .18s ease,transform .18s ease}
+.technician-phone svg{flex:none;width:27px;height:27px;padding:6px;border-radius:8px;background:#d7f1ee;color:#278f8d}
+.technician-phone b{direction:ltr;margin-inline-start:auto;unicode-bidi:plaintext}
+.technician-phone:hover{border-color:#74cfca;background:#e0f7f5;transform:translateY(-1px)}
+.technician-phone-missing{width:100%;min-height:40px;padding:6px 9px;display:flex;align-items:center;gap:9px;border:1px dashed hsl(var(--border));border-radius:10px;background:hsl(var(--muted));color:#8995a5;font-size:11px}
+.technician-phone-missing svg{width:27px;height:27px;padding:6px;border-radius:8px;background:hsl(var(--card));color:#95a3b3}
+.dark .technician-phone{background:linear-gradient(110deg,#163d4a,hsl(var(--card)));color:#a9f0ec;border-color:#305566}
+.dark .technician-phone svg{background:#1b505b;color:#7ee4df}
+.dark .technician-phone:hover{background:linear-gradient(110deg,#1a4a55,hsl(var(--card)));border-color:#56bdb9}
+.dark .technician-phone-missing{color:#a1afbf}
+@media(max-width:560px){.technician-phone{min-height:38px}.technician-phone-input input{min-height:46px}}

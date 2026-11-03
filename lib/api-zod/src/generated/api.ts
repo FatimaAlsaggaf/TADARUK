@@ -566,6 +566,7 @@ export const ListTechniciansResponseItem = zod.object({
   "branchId": zod.string(),
   "branchName": zod.string(),
   "specialization": zod.string(),
+  "phone": zod.string().nullable(),
   "available": zod.boolean(),
   "active": zod.boolean(),
   "workload": zod.number().int()
@@ -578,12 +579,16 @@ export const ListTechniciansResponse = zod.array(ListTechniciansResponseItem)
  */
 export const createTechnicianBodyNameMin = 2;
 
+export const createTechnicianBodyPhoneMin = 7;
+export const createTechnicianBodyPhoneMax = 24;
+
 
 
 export const CreateTechnicianBody = zod.object({
   "name": zod.string().min(createTechnicianBodyNameMin),
   "branchId": zod.string(),
   "specialization": zod.string(),
+  "phone": zod.string().min(createTechnicianBodyPhoneMin).max(createTechnicianBodyPhoneMax),
   "available": zod.boolean().optional()
 })
 
@@ -594,6 +599,7 @@ export const CreateTechnicianResponse = zod.object({
   "branchId": zod.string(),
   "branchName": zod.string(),
   "specialization": zod.string(),
+  "phone": zod.string().nullable(),
   "available": zod.boolean(),
   "active": zod.boolean(),
   "workload": zod.number().int()
@@ -609,12 +615,16 @@ export const UpdateTechnicianParams = zod.object({
 
 export const updateTechnicianBodyNameMin = 2;
 
+export const updateTechnicianBodyPhoneMin = 7;
+export const updateTechnicianBodyPhoneMax = 24;
+
 
 
 export const UpdateTechnicianBody = zod.object({
   "name": zod.string().min(updateTechnicianBodyNameMin).optional(),
   "branchId": zod.string().optional(),
   "specialization": zod.string().optional(),
+  "phone": zod.string().min(updateTechnicianBodyPhoneMin).max(updateTechnicianBodyPhoneMax).nullish(),
   "available": zod.boolean().optional(),
   "active": zod.boolean().optional()
 })
@@ -626,6 +636,7 @@ export const UpdateTechnicianResponse = zod.object({
   "branchId": zod.string(),
   "branchName": zod.string(),
   "specialization": zod.string(),
+  "phone": zod.string().nullable(),
   "available": zod.boolean(),
   "active": zod.boolean(),
   "workload": zod.number().int()

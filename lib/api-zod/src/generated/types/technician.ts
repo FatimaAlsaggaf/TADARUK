@@ -13,6 +13,8 @@ export interface Technician {
   branchId: string;
   branchName: string;
   specialization: string;
+  /** @nullable */
+  phone: string | null;
   available: boolean;
   active: boolean;
   workload: number;

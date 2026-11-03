@@ -11,5 +11,10 @@ export interface TechnicianInput {
   name: string;
   branchId: string;
   specialization: string;
+  /**
+     * @minLength 7
+     * @maxLength 24
+     */
+  phone: string;
   available?: boolean;
 }

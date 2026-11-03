@@ -11,6 +11,12 @@ export interface TechnicianUpdate {
   name?: string;
   branchId?: string;
   specialization?: string;
+  /**
+     * @minLength 7
+     * @maxLength 24
+     * @nullable
+     */
+  phone?: string | null;
   available?: boolean;
   active?: boolean;
 }

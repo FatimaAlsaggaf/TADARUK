@@ -125,6 +125,8 @@ export interface Technician {
   branchId: string;
   branchName: string;
   specialization: string;
+  /** @nullable */
+  phone: string | null;
   available: boolean;
   active: boolean;
   workload: number;
@@ -135,6 +137,11 @@ export interface TechnicianInput {
   name: string;
   branchId: string;
   specialization: string;
+  /**
+     * @minLength 7
+     * @maxLength 24
+     */
+  phone: string;
   available?: boolean;
 }
 
@@ -143,6 +150,12 @@ export interface TechnicianUpdate {
   name?: string;
   branchId?: string;
   specialization?: string;
+  /**
+     * @minLength 7
+     * @maxLength 24
+     * @nullable
+     */
+  phone?: string | null;
   available?: boolean;
   active?: boolean;
 }

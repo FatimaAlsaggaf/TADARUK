@@ -147,6 +147,7 @@ async function technicianView(member: TeamMemberRecord) {
     branchId: member.branchId ?? "",
     branchName: branch?.name ?? "",
     specialization: member.specialization ?? "",
+    phone: member.phone ?? null,
     available: member.available,
     active: member.active,
     workload: assigned.length,
@@ -788,6 +789,7 @@ router.post("/technicians", async (req, res): Promise<void> => {
       role: "technician",
       branchId: parsed.data.branchId,
       specialization: parsed.data.specialization,
+      phone: parsed.data.phone.trim(),
       available: parsed.data.available ?? true,
       active: true,
     }).returning();
