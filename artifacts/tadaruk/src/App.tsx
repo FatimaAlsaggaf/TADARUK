@@ -361,6 +361,7 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
       </div>
     </header>
     <section className="hero wrap" id="top" aria-labelledby="landing-title">
+      <div className="hero-brand-glow" aria-hidden="true"/>
       <div className="hero-mark-stage"><div className="mark-halo" aria-hidden="true"/><TadarukMark reduced={reduced}/></div>
       <div className="hero-copy">
         <motion.div className="hero-light-reveal" aria-hidden="true" initial={reduced?false:{opacity:0,x:'-28%',scaleX:.62}} animate={reduced?{opacity:0,x:0,scaleX:1}:{opacity:[0,.2,0],x:['-28%','0%','28%'],scaleX:[.62,1,.62]}} transition={reduced?{duration:0}:{duration:.95,delay:1.84,ease:[.22,.72,.18,1]}}/>
@@ -421,8 +422,7 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
     </section>
     <footer className="landing-footer wrap">
       <div className="footer-brand"><Brand darkMode={dark}/><p>{tr(lang,'منصة عربية تجمع بلاغات الصيانة ومسؤوليتها وتقدمها في سجل واضح.','An Arabic-first platform keeping maintenance reports, ownership and progress in one clear record.')}</p></div>
-      <nav className="footer-links" aria-label={tr(lang,'روابط الصفحة','Page links')}>{sectionIds.slice(1,3).map((id,index)=><button key={id} onClick={()=>goToSection(id)}>{sectionLabels[index+1]}</button>)}</nav>
-      <div className="footer-meta"><button className="nav-lang" onClick={()=>setLang(lang==='ar'?'en':'ar')}><Languages size={15}/>{lang==='ar'?'English':'العربية'}</button><span>© {new Date().getFullYear()} TADARUK</span></div>
+      <div className="footer-meta"><span>© {new Date().getFullYear()} TADARUK</span></div>
     </footer>
   </main>;
 }
