@@ -112,6 +112,7 @@ async function branchView(branch: BranchRecord) {
     name: branch.name,
     city: branch.city,
     address: branch.address,
+    googleMapsUrl: branch.googleMapsUrl ?? null,
     latitude: branch.latitude,
     longitude: branch.longitude,
     active: branch.active,
@@ -119,14 +120,18 @@ async function branchView(branch: BranchRecord) {
   };
 }
 
-function hasCompleteBranchCoordinates(body: unknown): boolean {
-  if (typeof body !== "object" || body === null) return false;
-  const input = body as Record<string, unknown>;
-  const hasLatitude = Object.hasOwn(input, "latitude");
-  const hasLongitude = Object.hasOwn(input, "longitude");
-  if (hasLatitude !== hasLongitude) return false;
-  if (!hasLatitude) return true;
-  return (input.latitude === null) === (input.longitude === null);
+function isGoogleMapsUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    const host = url.hostname.toLowerCase();
+    if (url.protocol !== "https:") return false;
+    if (host === "maps.app.goo.gl") return true;
+    if (host === "goo.gl") return url.pathname.startsWith("/maps");
+    if (host === "maps.google.com") return true;
+    return (host === "google.com" || host === "www.google.com") && url.pathname.startsWith("/maps");
+  } catch {
+    return false;
+  }
 }
 
 async function technicianView(member: TeamMemberRecord) {
@@ -704,8 +709,8 @@ router.post("/branches", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  if (!hasCompleteBranchCoordinates(req.body)) {
-    res.status(400).json({ error: "Latitude and longitude must be provided together." });
+  if (!isGoogleMapsUrl(parsed.data.googleMapsUrl)) {
+    res.status(400).json({ error: "Provide a valid Google Maps share link." });
     return;
   }
   try {
@@ -730,8 +735,8 @@ router.patch("/branches/:branchId", async (req, res): Promise<void> => {
     res.status(400).json({ error: params.error?.message ?? parsed.error?.message });
     return;
   }
-  if (!hasCompleteBranchCoordinates(req.body)) {
-    res.status(400).json({ error: "Latitude and longitude must be provided together." });
+  if (typeof parsed.data.googleMapsUrl === "string" && !isGoogleMapsUrl(parsed.data.googleMapsUrl)) {
+    res.status(400).json({ error: "Provide a valid Google Maps share link." });
     return;
   }
   try {

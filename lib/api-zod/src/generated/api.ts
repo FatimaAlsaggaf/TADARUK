@@ -120,6 +120,7 @@ export const GetOverviewResponse = zod.object({
   "branchAddress": zod.string(),
   "branchLatitude": zod.number().min(getOverviewResponseRecentTicketsItemBranchLatitudeMin).max(getOverviewResponseRecentTicketsItemBranchLatitudeMax).nullable(),
   "branchLongitude": zod.number().min(getOverviewResponseRecentTicketsItemBranchLongitudeMin).max(getOverviewResponseRecentTicketsItemBranchLongitudeMax).nullable(),
+  "branchGoogleMapsUrl": zod.string().url().nullable(),
   "technicianId": zod.string().nullable(),
   "technicianName": zod.string().nullable(),
   "imageUrl": zod.string().nullable(),
@@ -241,6 +242,7 @@ export const ListTicketsResponseItem = zod.object({
   "branchAddress": zod.string(),
   "branchLatitude": zod.number().min(listTicketsResponseBranchLatitudeMin).max(listTicketsResponseBranchLatitudeMax).nullable(),
   "branchLongitude": zod.number().min(listTicketsResponseBranchLongitudeMin).max(listTicketsResponseBranchLongitudeMax).nullable(),
+  "branchGoogleMapsUrl": zod.string().url().nullable(),
   "technicianId": zod.string().nullable(),
   "technicianName": zod.string().nullable(),
   "imageUrl": zod.string().nullable(),
@@ -308,6 +310,7 @@ export const CreateTicketResponse = zod.object({
   "branchAddress": zod.string(),
   "branchLatitude": zod.number().min(createTicketResponseBranchLatitudeMin).max(createTicketResponseBranchLatitudeMax).nullable(),
   "branchLongitude": zod.number().min(createTicketResponseBranchLongitudeMin).max(createTicketResponseBranchLongitudeMax).nullable(),
+  "branchGoogleMapsUrl": zod.string().url().nullable(),
   "technicianId": zod.string().nullable(),
   "technicianName": zod.string().nullable(),
   "imageUrl": zod.string().nullable(),
@@ -361,6 +364,7 @@ export const GetTicketResponse = zod.object({
   "branchAddress": zod.string(),
   "branchLatitude": zod.number().min(getTicketResponseBranchLatitudeMin).max(getTicketResponseBranchLatitudeMax).nullable(),
   "branchLongitude": zod.number().min(getTicketResponseBranchLongitudeMin).max(getTicketResponseBranchLongitudeMax).nullable(),
+  "branchGoogleMapsUrl": zod.string().url().nullable(),
   "technicianId": zod.string().nullable(),
   "technicianName": zod.string().nullable(),
   "imageUrl": zod.string().nullable(),
@@ -422,6 +426,7 @@ export const PerformTicketActionResponse = zod.object({
   "branchAddress": zod.string(),
   "branchLatitude": zod.number().min(performTicketActionResponseBranchLatitudeMin).max(performTicketActionResponseBranchLatitudeMax).nullable(),
   "branchLongitude": zod.number().min(performTicketActionResponseBranchLongitudeMin).max(performTicketActionResponseBranchLongitudeMax).nullable(),
+  "branchGoogleMapsUrl": zod.string().url().nullable(),
   "technicianId": zod.string().nullable(),
   "technicianName": zod.string().nullable(),
   "imageUrl": zod.string().nullable(),
@@ -456,6 +461,7 @@ export const ListBranchesResponseItem = zod.object({
   "name": zod.string(),
   "city": zod.string(),
   "address": zod.string(),
+  "googleMapsUrl": zod.string().url().nullable(),
   "latitude": zod.number().min(listBranchesResponseLatitudeMin).max(listBranchesResponseLatitudeMax).nullable(),
   "longitude": zod.number().min(listBranchesResponseLongitudeMin).max(listBranchesResponseLongitudeMax).nullable(),
   "active": zod.boolean(),
@@ -471,11 +477,8 @@ export const createBranchBodyNameMin = 2;
 
 export const createBranchBodyCityMin = 2;
 
-export const createBranchBodyLatitudeMin = -90;
-export const createBranchBodyLatitudeMax = 90;
-
-export const createBranchBodyLongitudeMin = -180;
-export const createBranchBodyLongitudeMax = 180;
+export const createBranchBodyGoogleMapsUrlMin = 8;
+export const createBranchBodyGoogleMapsUrlMax = 2000;
 
 
 
@@ -483,8 +486,7 @@ export const CreateBranchBody = zod.object({
   "name": zod.string().min(createBranchBodyNameMin),
   "city": zod.string().min(createBranchBodyCityMin),
   "address": zod.string(),
-  "latitude": zod.number().min(createBranchBodyLatitudeMin).max(createBranchBodyLatitudeMax).nullish(),
-  "longitude": zod.number().min(createBranchBodyLongitudeMin).max(createBranchBodyLongitudeMax).nullish(),
+  "googleMapsUrl": zod.string().url().min(createBranchBodyGoogleMapsUrlMin).max(createBranchBodyGoogleMapsUrlMax),
   "active": zod.boolean().optional()
 })
 
@@ -501,6 +503,7 @@ export const CreateBranchResponse = zod.object({
   "name": zod.string(),
   "city": zod.string(),
   "address": zod.string(),
+  "googleMapsUrl": zod.string().url().nullable(),
   "latitude": zod.number().min(createBranchResponseLatitudeMin).max(createBranchResponseLatitudeMax).nullable(),
   "longitude": zod.number().min(createBranchResponseLongitudeMin).max(createBranchResponseLongitudeMax).nullable(),
   "active": zod.boolean(),
@@ -519,11 +522,7 @@ export const updateBranchBodyNameMin = 2;
 
 export const updateBranchBodyCityMin = 2;
 
-export const updateBranchBodyLatitudeMin = -90;
-export const updateBranchBodyLatitudeMax = 90;
-
-export const updateBranchBodyLongitudeMin = -180;
-export const updateBranchBodyLongitudeMax = 180;
+export const updateBranchBodyGoogleMapsUrlMax = 2000;
 
 
 
@@ -531,8 +530,7 @@ export const UpdateBranchBody = zod.object({
   "name": zod.string().min(updateBranchBodyNameMin).optional(),
   "city": zod.string().min(updateBranchBodyCityMin).optional(),
   "address": zod.string().optional(),
-  "latitude": zod.number().min(updateBranchBodyLatitudeMin).max(updateBranchBodyLatitudeMax).nullish(),
-  "longitude": zod.number().min(updateBranchBodyLongitudeMin).max(updateBranchBodyLongitudeMax).nullish(),
+  "googleMapsUrl": zod.string().url().max(updateBranchBodyGoogleMapsUrlMax).nullish(),
   "active": zod.boolean().optional()
 })
 
@@ -549,6 +547,7 @@ export const UpdateBranchResponse = zod.object({
   "name": zod.string(),
   "city": zod.string(),
   "address": zod.string(),
+  "googleMapsUrl": zod.string().url().nullable(),
   "latitude": zod.number().min(updateBranchResponseLatitudeMin).max(updateBranchResponseLatitudeMax).nullable(),
   "longitude": zod.number().min(updateBranchResponseLongitudeMin).max(updateBranchResponseLongitudeMax).nullable(),
   "active": zod.boolean(),

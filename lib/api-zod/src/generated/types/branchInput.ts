@@ -13,16 +13,9 @@ export interface BranchInput {
   city: string;
   address: string;
   /**
-     * @minimum -90
-     * @maximum 90
-     * @nullable
+     * @minLength 8
+     * @maxLength 2000
      */
-  latitude?: number | null;
-  /**
-     * @minimum -180
-     * @maximum 180
-     * @nullable
-     */
-  longitude?: number | null;
+  googleMapsUrl: string;
   active?: boolean;
 }

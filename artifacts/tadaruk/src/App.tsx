@@ -70,7 +70,24 @@ const classificationText = (value: string, lang: Lang) => {
   return m[value]?.[lang === 'ar' ? 0 : 1] || value;
 };
 const dateText = (date: string, lang: Lang) => new Intl.DateTimeFormat(lang === 'ar' ? 'ar' : 'en', {day:'numeric',month:'short'}).format(new Date(date));
-const branchMapUrl = (latitude:number|null|undefined,longitude:number|null|undefined,address:string,city='') => {
+const isGoogleMapsShareUrl = (value:string|null|undefined):value is string => {
+  if(!value)return false;
+  try{
+    const url=new URL(value);
+    const host=url.hostname.toLowerCase();
+    if(url.protocol!=='https:')return false;
+    if(host==='maps.app.goo.gl'||host==='maps.google.com')return true;
+    if(host==='goo.gl')return url.pathname.startsWith('/maps');
+    return (host==='google.com'||host==='www.google.com')&&url.pathname.startsWith('/maps');
+  }catch{return false;}
+};
+const googleMapsSearchUrl = (city:string,address:string) => {
+  const query=[address.trim(),city.trim()].filter(Boolean).join(', ');
+  return query?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`:'https://www.google.com/maps/';
+};
+const OTHER_CITY='__other_city__';
+const branchMapUrl = (latitude:number|null|undefined,longitude:number|null|undefined,address:string,city='',googleMapsUrl?:string|null) => {
+  if(isGoogleMapsShareUrl(googleMapsUrl))return googleMapsUrl;
   const hasCoordinates=typeof latitude==='number'&&Number.isFinite(latitude)&&latitude>=-90&&latitude<=90&&typeof longitude==='number'&&Number.isFinite(longitude)&&longitude>=-180&&longitude<=180;
   const searchAddress=address.trim()?[address.trim(),city.trim()].filter(Boolean).join(', '):'';
   const destination=hasCoordinates?`${latitude},${longitude}`:searchAddress;
@@ -654,7 +671,7 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
      <section className="panel timeline-panel"><div className="panel-heading"><div><span className="eyebrow">{tr(lang,'سجل النشاط','ACTIVITY')}</span><h2>{tr(lang,'سجل المتابعة','Activity history')}</h2></div></div><div className="timeline">{(ticket.history||[]).map(ev=><div className="timeline-event" key={ev.id}><span className="timeline-dot"/><div><b>{ev.label}</b><small>{ev.actorName} · {dateText(ev.createdAt,lang)}</small>{ev.note&&<p>{ev.note}</p>}</div></div>)}</div></section>
       {(technician&&ticket.status==='in_progress'||technician&&ticket.status==='new')&&<section className="panel repair-panel"><span className="eyebrow">{tr(lang,'سجل الإصلاح','REPAIR RECORD')}</span><h2>{tr(lang,'وثّق ما أصلحته','Document the repair')}</h2><p>{tr(lang,'ملاحظاتك تساعد المبلّغ وتصبح معرفة للفريق عند إغلاق البلاغ.','Your notes help the reporter and become team knowledge after closure.')}</p><div className="form-two"><label className="field-label">{tr(lang,'السبب إن عُرف','Cause, if known')}<input value={cause} onChange={e=>setCause(e.target.value)} placeholder={tr(lang,'ما الذي أدى إلى المشكلة؟','What caused the issue?')}/></label><div className="field-label"><label htmlFor="repair-resolution">{tr(lang,'الحل والإجراء','Repair and action')}</label><textarea id="repair-resolution" value={resolution} onChange={e=>setResolution(e.target.value)} rows={3} placeholder={tr(lang,'ما الذي قمت به؟','What did you do?')}/><VoiceRecorder lang={lang} onTranscript={text=>setResolution(current=>current?`${current.trimEnd()} ${text}`:text)}/></div></div><label className="field-label">{tr(lang,'ملاحظة إضافية','Additional note')}<textarea value={note} onChange={e=>setNote(e.target.value)} rows={2} placeholder={tr(lang,'معلومة للفريق أو للمبلّغ','A note for the team or reporter')}/></label></section>}
     </section>
-      <aside className="detail-side"><section className="panel owner-panel"><span className="eyebrow">{tr(lang,'الإسناد','ASSIGNMENT')}</span><h3>{tr(lang,'الأشخاص','People')}</h3><div className="person-line"><Avatar name={ticket.reporterName} size="sm"/><span><small>{tr(lang,'المبلّغ','Reporter')}</small><b>{ticket.reporterName}</b></span></div><div className="person-line"><Avatar name={ticket.technicianName||tr(lang,'غير مسند','Unassigned')} size="sm"/><span><small>{tr(lang,'الفني المسؤول','Assigned technician')}</small><b>{ticket.technicianName||tr(lang,'بانتظار الإسناد','Awaiting assignment')}</b></span></div>{technician&&ticket.technicianId===user.id&&(ticket.branchAddress||ticket.branchLatitude!==null&&ticket.branchLatitude!==undefined||ticket.branchLongitude!==null&&ticket.branchLongitude!==undefined)&&<a className="branch-map-link" href={branchMapUrl(ticket.branchLatitude,ticket.branchLongitude,ticket.branchAddress,ticket.branchCity)} target="_blank" rel="noreferrer" data-testid={`ticket-map-${ticket.id}`}><MapPinned size={16}/>{tr(lang,'افتح موقع الفرع في الخرائط','Open branch location in Maps')}<ArrowUpRight size={14}/></a>}</section>
+      <aside className="detail-side"><section className="panel owner-panel"><span className="eyebrow">{tr(lang,'الإسناد','ASSIGNMENT')}</span><h3>{tr(lang,'الأشخاص','People')}</h3><div className="person-line"><Avatar name={ticket.reporterName} size="sm"/><span><small>{tr(lang,'المبلّغ','Reporter')}</small><b>{ticket.reporterName}</b></span></div><div className="person-line"><Avatar name={ticket.technicianName||tr(lang,'غير مسند','Unassigned')} size="sm"/><span><small>{tr(lang,'الفني المسؤول','Assigned technician')}</small><b>{ticket.technicianName||tr(lang,'بانتظار الإسناد','Awaiting assignment')}</b></span></div>{technician&&ticket.technicianId===user.id&&(ticket.branchGoogleMapsUrl||ticket.branchAddress||ticket.branchLatitude!==null&&ticket.branchLatitude!==undefined||ticket.branchLongitude!==null&&ticket.branchLongitude!==undefined)&&<a className="branch-map-link" href={branchMapUrl(ticket.branchLatitude,ticket.branchLongitude,ticket.branchAddress,ticket.branchCity,ticket.branchGoogleMapsUrl)} target="_blank" rel="noreferrer" data-testid={`ticket-map-${ticket.id}`}><MapPinned size={16}/>{tr(lang,'افتح موقع الفرع في الخرائط','Open branch location in Maps')}<ArrowUpRight size={14}/></a>}</section>
        {ticket.repairNotes&&<section className="panel resolution-panel"><span className="eyebrow">{tr(lang,'ملاحظات الإصلاح','REPAIR NOTES')}</span><h3>{tr(lang,'ملاحظات الإصلاح','Repair notes')}</h3><p>{ticket.repairNotes}</p>{ticket.cause&&<><small>{tr(lang,'السبب','Cause')}</small><p>{ticket.cause}</p></>}{ticket.resolution&&<><small>{tr(lang,'الإجراء','Action taken')}</small><p>{ticket.resolution}</p></>}</section>}
         <section className="action-panel" aria-busy={action.isPending}><span className="eyebrow">{tr(lang,'الخطوة التالية','NEXT STEP')}</span>
          {ticket.status==='cancelled'&&<div className="cancelled-ticket-note" role="status"><CircleAlert size={18}/><span><b>{tr(lang,'أُلغي هذا البلاغ','This report was cancelled')}</b><small>{tr(lang,'حُفظ سجل الإلغاء للمراجعة.','The cancellation remains in the audit history.')}</small></span></div>}
@@ -743,40 +760,140 @@ function TechniciansPage({lang}:{lang:Lang}) {
         <div className="field-label"><span className="field-label-caption">{tr(lang,'الفرع','Branch')}</span><TadarukSelect name="branchId" required value={branchId} onValueChange={setBranchId} ariaLabel={tr(lang,'الفرع','Branch')} dir={lang==='ar'?'rtl':'ltr'} placeholder={tr(lang,'اختر الفرع','Choose a branch')} testId="select-technician-branch" options={branchOptions.map(branch=>({value:branch.id,label:branch.name}))}/></div>
         <div className="field-label"><span className="field-label-caption">{tr(lang,'التخصص','Specialization')}</span><TadarukSelect name="specialtyChoice" required value={specialtyChoice} onValueChange={setSpecialtyChoice} ariaLabel={tr(lang,'التخصص','Specialization')} dir={lang==='ar'?'rtl':'ltr'} placeholder={tr(lang,'اختر التخصص','Choose a specialization')} testId="select-technician-specialization" options={specialtyOptions}/></div>
         {specialtyChoice===TECHNICIAN_OTHER_SPECIALTY&&<label className="field-label">{tr(lang,'اكتب التخصص','Enter specialization')}<input name="customSpecialty" value={customSpecialty} onChange={event=>setCustomSpecialty(event.target.value)} required minLength={2} maxLength={60} placeholder={tr(lang,'مثال: صيانة المصاعد','Example: elevator maintenance')} data-testid="input-technician-custom-specialization"/></label>}
-        <label className="technician-availability"><input type="checkbox" name="available" defaultChecked={edit?.available??true} data-testid="checkbox-technician-availability"/><span className="technician-checkbox-mark" aria-hidden="true"><Check size={13}/></span><span>{tr(lang,'متاح لاستقبال المهام','Available for assignments')}</span></label>
+        <label className="premium-checkbox"><input type="checkbox" name="available" defaultChecked={edit?.available??true} data-testid="checkbox-technician-availability"/><span className="premium-checkbox-mark" aria-hidden="true"><Check size={13}/></span><span>{tr(lang,'متاح لاستقبال المهام','Available for assignments')}</span></label>
         {(create.isError||update.isError)&&<p className="inline-error" role="alert">{tr(lang,'تعذر حفظ بيانات الفني. تحقق من المدخلات ثم حاول مجدداً.','Could not save technician details. Check the form and try again.')}</p>}
-        <div className="form-actions technician-form-actions"><Button type="submit" disabled={create.isPending||update.isPending} data-testid="button-save-technician">{create.isPending||update.isPending?tr(lang,'جارٍ الحفظ…','Saving…'):edit?tr(lang,'حفظ التعديلات','Save changes'):tr(lang,'إضافة الفني','Add technician')}</Button></div>
+        <div className="form-actions modal-primary-actions"><Button type="submit" disabled={create.isPending||update.isPending} data-testid="button-save-technician">{create.isPending||update.isPending?tr(lang,'جارٍ الحفظ…','Saving…'):edit?tr(lang,'حفظ التعديلات','Save changes'):tr(lang,'إضافة الفني','Add technician')}</Button></div>
       </form>
     </Modal>}
   </div>;
 }
 function BranchesPage({lang}:{lang:Lang}) {
-  const {data:branches,isLoading,isError,refetch}=useListBranches();const {data:techs}=useListTechnicians();const create=useCreateBranch();const update=useUpdateBranch();const query=useQueryClient();
-  const [modal,setModal]=useState(false);const [editing,setEditing]=useState<Branch|null>(null);const [deactivating,setDeactivating]=useState<Branch|null>(null);const [coordinateError,setCoordinateError]=useState('');
-  const invalidate=()=>{void query.invalidateQueries({queryKey:getListBranchesQueryKey()});void query.invalidateQueries({queryKey:getListTechniciansQueryKey()});void query.invalidateQueries({queryKey:getListTicketsQueryKey()});void query.invalidateQueries({queryKey:getGetOverviewQueryKey()});};
-  const begin=(record:Branch|null)=>{setEditing(record);setCoordinateError('');create.reset();update.reset();setModal(true);};
-  const save=(e:FormEvent<HTMLFormElement>)=>{e.preventDefault();const f=new FormData(e.currentTarget);const latitudeText=String(f.get('latitude')||'').trim();const longitudeText=String(f.get('longitude')||'').trim();if((latitudeText==='')!==(longitudeText==='')){setCoordinateError(tr(lang,'أدخل خط العرض وخط الطول معاً، أو اتركهما فارغين.','Enter both latitude and longitude, or leave both blank.'));return;}setCoordinateError('');const readCoord=(key:'latitude'|'longitude')=>{const raw=String(f.get(key)||'').trim();return raw===''?null:Number(raw);};
-    const data:BranchInput={name:String(f.get('name')).trim(),city:String(f.get('city')).trim(),address:String(f.get('address')||'').trim(),latitude:readCoord('latitude'),longitude:readCoord('longitude'),active:f.get('active')==='on'};
-    const done=()=>{setModal(false);setEditing(null);create.reset();update.reset();invalidate();};
-    if(editing)update.mutate({branchId:editing.id,data:data as BranchUpdate},{onSuccess:done});else create.mutate({data},{onSuccess:done});};
+  const cityOptions=[
+    {value:'الرياض',label:tr(lang,'الرياض','Riyadh')},
+    {value:'جدة',label:tr(lang,'جدة','Jeddah')},
+    {value:'مكة المكرمة',label:tr(lang,'مكة المكرمة','Makkah')},
+    {value:'المدينة المنورة',label:tr(lang,'المدينة المنورة','Madinah')},
+    {value:'الدمام',label:tr(lang,'الدمام','Dammam')},
+    {value:'الخبر',label:tr(lang,'الخبر','Al Khobar')},
+    {value:'الطائف',label:tr(lang,'الطائف','Taif')},
+    {value:'تبوك',label:tr(lang,'تبوك','Tabuk')},
+    {value:'أبها',label:tr(lang,'أبها','Abha')},
+    {value:'بريدة',label:tr(lang,'بريدة','Buraidah')},
+    {value:'حائل',label:tr(lang,'حائل','Hail')},
+    {value:'جازان',label:tr(lang,'جازان','Jazan')},
+    {value:'نجران',label:tr(lang,'نجران','Najran')},
+    {value:'ينبع',label:tr(lang,'ينبع','Yanbu')},
+    {value:'الأحساء',label:tr(lang,'الأحساء','Al Ahsa')},
+    {value:'الجبيل',label:tr(lang,'الجبيل','Jubail')},
+    {value:OTHER_CITY,label:tr(lang,'مدينة أخرى','Another city')},
+  ];
+  const {data:branches,isLoading,isError,refetch}=useListBranches();
+  const {data:techs}=useListTechnicians();
+  const create=useCreateBranch();
+  const update=useUpdateBranch();
+  const query=useQueryClient();
+  const [modal,setModal]=useState(false);
+  const [editing,setEditing]=useState<Branch|null>(null);
+  const [deactivating,setDeactivating]=useState<Branch|null>(null);
+  const [cityChoice,setCityChoice]=useState('');
+  const [customCity,setCustomCity]=useState('');
+  const [branchAddress,setBranchAddress]=useState('');
+  const [googleMapsUrl,setGoogleMapsUrl]=useState('');
+  const [locationError,setLocationError]=useState('');
+  const branchCity=cityChoice===OTHER_CITY?customCity:cityChoice;
+
+  const invalidate=()=>{
+    void query.invalidateQueries({queryKey:getListBranchesQueryKey()});
+    void query.invalidateQueries({queryKey:getListTechniciansQueryKey()});
+    void query.invalidateQueries({queryKey:getListTicketsQueryKey()});
+    void query.invalidateQueries({queryKey:getGetOverviewQueryKey()});
+  };
+  const begin=(record:Branch|null)=>{
+    setEditing(record);
+    const existingCity=record?.city||'';
+    const knownCity=cityOptions.some(option=>option.value===existingCity);
+    setCityChoice(existingCity?(knownCity?existingCity:OTHER_CITY):'');
+    setCustomCity(existingCity&&!knownCity?existingCity:'');
+    setBranchAddress(record?.address||'');
+    setGoogleMapsUrl(record?.googleMapsUrl||'');
+    setLocationError('');
+    create.reset();
+    update.reset();
+    setModal(true);
+  };
+  const closeEditor=()=>{
+    setModal(false);
+    setEditing(null);
+    create.reset();
+    update.reset();
+  };
+  const save=(event:FormEvent<HTMLFormElement>)=>{
+    event.preventDefault();
+    const form=new FormData(event.currentTarget);
+    const mapsUrl=String(form.get('googleMapsUrl')||'').trim();
+    const selectedCity=String(form.get('city')||'');
+    const city=selectedCity===OTHER_CITY?String(form.get('cityOther')||'').trim():selectedCity;
+    if((!editing&&!mapsUrl)||(mapsUrl&&!isGoogleMapsShareUrl(mapsUrl))){
+      setLocationError(tr(lang,'ألصق رابط مشاركة صحيحاً من خرائط Google.','Paste a valid Google Maps share link.'));
+      return;
+    }
+    setLocationError('');
+    const baseData={
+      name:String(form.get('name')).trim(),
+      city:city.trim(),
+      address:String(form.get('address')||'').trim(),
+      active:form.get('active')==='on',
+    };
+    const done=()=>{
+      setModal(false);
+      setEditing(null);
+      create.reset();
+      update.reset();
+      invalidate();
+    };
+    if(editing){
+      update.mutate({branchId:editing.id,data:{...baseData,googleMapsUrl:mapsUrl||null}},{onSuccess:done});
+    }else{
+      create.mutate({data:{...baseData,googleMapsUrl:mapsUrl}},{onSuccess:done});
+    }
+  };
   const toggleActive=(branch:Branch,active:boolean)=>update.mutate({branchId:branch.id,data:{active}},{onSuccess:()=>{setDeactivating(null);invalidate();}});
-  return <div className="page-enter"><PageTitle eyebrow={tr(lang,'المواقع والفروع','LOCATIONS / NETWORK')} title={tr(lang,'الفروع','Branches')} description={tr(lang,'سجل الفروع وحجم الصيانة والفريق النشط في كل موقع.','Branch records, open maintenance, and active field staff at each location.')} action={<Button onClick={()=>begin(null)} data-testid="button-add-branch"><Plus size={17}/>{tr(lang,'إضافة فرع','Add branch')}</Button>}/>
-     {isLoading?<State title={tr(lang,'جاري تحميل الفروع','Loading branches')} loading/>:isError?<State title={tr(lang,'تعذر تحميل الفروع','Could not load branches')} retry={()=>void refetch()}/>:!branches?.length?<div className="empty-panel" aria-live="polite"><Building2 size={25}/><h3>{tr(lang,'لا توجد فروع مسجلة بعد','No branches added yet')}</h3><p>{tr(lang,'أضف أول فرع لبدء تنظيم سجل الصيانة.','Add a branch to organize its maintenance record.')}</p><Button onClick={()=>begin(null)}><Plus size={17}/>{tr(lang,'إضافة فرع','Add branch')}</Button></div>:<div className="branches-grid">{branches.map((b,index)=>{const activeTechs=(techs||[]).filter(t=>t.branchId===b.id&&t.active).length;const mapUrl=branchMapUrl(b.latitude,b.longitude,b.address,b.city);return <article className={`branch-card ${!b.active?'branch-card-inactive':''}`} key={b.id} data-testid={`card-branch-${b.id}`}>
-       <div className="branch-card-top"><span className="branch-emblem"><Building2 size={21}/></span><span className="branch-sequence">{String(index+1).padStart(2,'0')}</span><span className={`availability ${b.active?'available':'unavailable'}`}><i/>{b.active?tr(lang,'نشط','Active'):tr(lang,'غير نشط','Inactive')}</span></div>
-       <h2>{b.name}</h2><div className="branch-location"><b>{b.city}</b>{b.address&&<span>{b.address}</span>}</div>
-       <div className="branch-stats"><div><strong>{b.openTickets}</strong><span>{tr(lang,'بلاغات مفتوحة','Open tickets')}</span></div><div><strong>{techs?activeTechs:'—'}</strong><span>{tr(lang,'فنيون نشطون','Active technicians')}</span></div></div>
-       <div className="branch-card-actions">{mapUrl?<a href={mapUrl} target="_blank" rel="noreferrer" className="branch-map-link" data-testid={`branch-map-${b.id}`}><MapPinned size={16}/>{tr(lang,'عرض الموقع','View location')}<ArrowUpRight size={14}/></a>:<span className="branch-map-link branch-map-unavailable"><MapPin size={16}/>{tr(lang,'أضف عنواناً لعرض الموقع','Add an address for map directions')}</span>}<button type="button" className="edit-button branch-edit" onClick={()=>begin(b)} data-testid={`button-edit-branch-${b.id}`}><Settings2 size={15}/>{tr(lang,'تعديل','Edit')}</button></div>
-       <div className="branch-state-action">{b.active?<button type="button" className="branch-deactivate" onClick={()=>setDeactivating(b)} disabled={update.isPending} data-testid={`button-deactivate-branch-${b.id}`}>{tr(lang,'إيقاف الفرع','Deactivate branch')}</button>:<button type="button" className="branch-reactivate" onClick={()=>toggleActive(b,true)} disabled={update.isPending} data-testid={`button-reactivate-branch-${b.id}`}>{tr(lang,'إعادة تفعيل الفرع','Reactivate branch')}</button>}</div>
-     </article>})}</div>}
-      <ReporterAccessPanel lang={lang} branches={branches||[]}/>
-      {update.isError&&!deactivating&&<p className="inline-error branch-action-error" role="alert">{tr(lang,'تعذر تحديث حالة الفرع. حاول مرة أخرى.','Could not update the branch status. Try again.')}</p>}
-     {modal&&<Modal key={editing?.id||'new-branch'} title={editing?tr(lang,'تعديل الفرع','Edit branch'):tr(lang,'إضافة فرع','Add branch')} close={()=>{setModal(false);create.reset();update.reset();}} description={tr(lang,'بيانات الفرع وموقعه الجغرافي. لا يتم التحقق من العنوان.','Branch details and coordinates. The address is not verified.')}>
-       <form onSubmit={save}><label className="field-label">{tr(lang,'اسم الفرع','Branch name')}<input name="name" required minLength={2} defaultValue={editing?.name||''} data-testid="input-branch-name"/></label><div className="form-two"><label className="field-label">{tr(lang,'المدينة','City')}<input name="city" required minLength={2} defaultValue={editing?.city||''} data-testid="input-branch-city"/></label><label className="field-label">{tr(lang,'العنوان المختصر','Short address')}<input name="address" defaultValue={editing?.address||''} data-testid="input-branch-address"/></label></div>
-        <div className="form-two coordinate-fields"><label className="field-label">{tr(lang,'خط العرض','Latitude')}<input name="latitude" type="number" step="any" min="-90" max="90" defaultValue={editing?.latitude??''} placeholder="—" onChange={()=>setCoordinateError('')} data-testid="input-branch-latitude"/></label><label className="field-label">{tr(lang,'خط الطول','Longitude')}<input name="longitude" type="number" step="any" min="-180" max="180" defaultValue={editing?.longitude??''} placeholder="—" onChange={()=>setCoordinateError('')} data-testid="input-branch-longitude"/></label></div><p className="branch-coordinate-note">{tr(lang,'الإحداثيات اختيارية؛ أدخل الإحداثيين معاً. يُستخدم العنوان والمدينة في الخرائط عند تركهما فارغين.','Coordinates are optional; enter both together. Maps uses the address and city when both are blank.')}</p>{coordinateError&&<p className="inline-error" role="alert">{coordinateError}</p>}
-       <label className="check-field"><input type="checkbox" name="active" defaultChecked={editing?.active??true} data-testid="checkbox-branch-active"/>{tr(lang,'الفرع نشط','Branch is active')}</label>
-       {(create.isError||update.isError)&&<p className="inline-error" role="alert">{tr(lang,'تعذر حفظ الفرع. تحقق من البيانات وحاول مرة أخرى.','Could not save branch. Check the details and try again.')}</p>}
-       <div className="form-actions"><Button type="submit" disabled={create.isPending||update.isPending} data-testid="button-save-branch">{create.isPending||update.isPending?tr(lang,'جارٍ الحفظ…','Saving…'):tr(lang,'حفظ الفرع','Save branch')}</Button><Button kind="ghost" onClick={()=>setModal(false)}>{tr(lang,'إلغاء','Cancel')}</Button></div></form></Modal>}
-     <AlertDialog open={!!deactivating} onOpenChange={open=>{if(!open)setDeactivating(null);}}><AlertDialogContent className="confirm-dialog"><AlertDialogHeader><AlertDialogTitle>{tr(lang,'تأكيد إيقاف الفرع','Confirm branch deactivation')}</AlertDialogTitle><AlertDialogDescription>{tr(lang,`قد يؤثر إيقاف «${deactivating?.name||''}» في استقبال البلاغات الجديدة والإسناد التلقائي. سيبقى سجل البلاغات الحالي محفوظاً.`,`Deactivating “${deactivating?.name||''}” may affect new tickets and automatic assignment. Existing ticket history will remain.`)}</AlertDialogDescription></AlertDialogHeader>{update.isError&&<p className="inline-error" role="alert">{tr(lang,'تعذر إيقاف الفرع. حاول مرة أخرى.','Could not deactivate the branch. Try again.')}</p>}<AlertDialogFooter><AlertDialogCancel disabled={update.isPending}>{tr(lang,'إلغاء','Cancel')}</AlertDialogCancel><AlertDialogAction className="branch-confirm-action" disabled={update.isPending} onClick={event=>{event.preventDefault();if(deactivating)toggleActive(deactivating,false);}} data-testid="button-confirm-deactivate">{update.isPending?tr(lang,'جارٍ الإيقاف…','Deactivating…'):tr(lang,'تأكيد الإيقاف','Confirm deactivation')}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
+
+  return <div className="page-enter">
+    <PageTitle eyebrow={tr(lang,'المواقع والفروع','LOCATIONS / NETWORK')} title={tr(lang,'الفروع','Branches')} description={tr(lang,'سجل الفروع وحجم الصيانة والفريق النشط في كل موقع.','Branch records, open maintenance, and active field staff at each location.')} action={<Button onClick={()=>begin(null)} data-testid="button-add-branch"><Plus size={17}/>{tr(lang,'إضافة فرع','Add branch')}</Button>}/>
+    {isLoading?<State title={tr(lang,'جاري تحميل الفروع','Loading branches')} loading/>:isError?<State title={tr(lang,'تعذر تحميل الفروع','Could not load branches')} retry={()=>void refetch()}/>:!branches?.length?<div className="empty-panel" aria-live="polite"><Building2 size={25}/><h3>{tr(lang,'لا توجد فروع مسجلة بعد','No branches added yet')}</h3><p>{tr(lang,'أضف أول فرع لبدء تنظيم سجل الصيانة.','Add a branch to organize its maintenance record.')}</p><Button onClick={()=>begin(null)}><Plus size={17}/>{tr(lang,'إضافة فرع','Add branch')}</Button></div>:<div className="branches-grid">{branches.map((branch,index)=>{
+      const activeTechs=(techs||[]).filter(technician=>technician.branchId===branch.id&&technician.active).length;
+      const mapUrl=branchMapUrl(branch.latitude,branch.longitude,branch.address,branch.city,branch.googleMapsUrl);
+      return <article className={`branch-card ${!branch.active?'branch-card-inactive':''}`} key={branch.id} data-testid={`card-branch-${branch.id}`}>
+        <div className="branch-card-top"><span className="branch-emblem"><Building2 size={21}/></span><span className="branch-sequence">{String(index+1).padStart(2,'0')}</span><span className={`availability ${branch.active?'available':'unavailable'}`}><i/>{branch.active?tr(lang,'نشط','Active'):tr(lang,'غير نشط','Inactive')}</span></div>
+        <h2>{branch.name}</h2><div className="branch-location"><b>{branch.city}</b>{branch.address&&<span>{branch.address}</span>}</div>
+        <div className="branch-stats"><div><strong>{branch.openTickets}</strong><span>{tr(lang,'بلاغات مفتوحة','Open tickets')}</span></div><div><strong>{techs?activeTechs:'—'}</strong><span>{tr(lang,'فنيون نشطون','Active technicians')}</span></div></div>
+        <div className="branch-card-actions">{mapUrl?<a href={mapUrl} target="_blank" rel="noreferrer" className="branch-map-link" data-testid={`branch-map-${branch.id}`}><MapPinned size={16}/>{tr(lang,'عرض الموقع','View location')}<ArrowUpRight size={14}/></a>:<span className="branch-map-link branch-map-unavailable"><MapPin size={16}/>{tr(lang,'أضف عنواناً لعرض الموقع','Add an address for map directions')}</span>}<button type="button" className="edit-button branch-edit" onClick={()=>begin(branch)} data-testid={`button-edit-branch-${branch.id}`}><Settings2 size={15}/>{tr(lang,'تعديل','Edit')}</button></div>
+        <div className="branch-state-action">{branch.active?<button type="button" className="branch-deactivate" onClick={()=>setDeactivating(branch)} disabled={update.isPending} data-testid={`button-deactivate-branch-${branch.id}`}>{tr(lang,'إيقاف الفرع','Deactivate branch')}</button>:<button type="button" className="branch-reactivate" onClick={()=>toggleActive(branch,true)} disabled={update.isPending} data-testid={`button-reactivate-branch-${branch.id}`}>{tr(lang,'إعادة تفعيل الفرع','Reactivate branch')}</button>}</div>
+      </article>;
+    })}</div>}
+    <ReporterAccessPanel lang={lang} branches={branches||[]}/>
+    {update.isError&&!deactivating&&<p className="inline-error branch-action-error" role="alert">{tr(lang,'تعذر تحديث حالة الفرع. حاول مرة أخرى.','Could not update the branch status. Try again.')}</p>}
+    {modal&&<Modal key={editing?.id||'new-branch'} title={editing?tr(lang,'تعديل الفرع','Edit branch'):tr(lang,'إضافة فرع','Add branch')} close={closeEditor} dir={lang==='ar'?'rtl':'ltr'} description={tr(lang,'بيانات الفرع وموقعه من خرائط Google.','Branch details and its Google Maps location.')}>
+      <form onSubmit={save}>
+        <label className="field-label">{tr(lang,'اسم الفرع','Branch name')}<input name="name" required minLength={2} defaultValue={editing?.name||''} data-testid="input-branch-name"/></label>
+        <div className="form-two">
+          <div className="field-label"><span className="field-label-caption">{tr(lang,'المدينة','City')}</span><TadarukSelect name="city" required value={cityChoice} onValueChange={value=>{setCityChoice(value);if(value!==OTHER_CITY)setCustomCity('');}} ariaLabel={tr(lang,'المدينة','City')} dir={lang==='ar'?'rtl':'ltr'} placeholder={tr(lang,'اختر المدينة','Choose a city')} testId="input-branch-city" options={cityOptions}/>{cityChoice===OTHER_CITY&&<input name="cityOther" required minLength={2} value={customCity} onChange={event=>setCustomCity(event.target.value)} placeholder={tr(lang,'اكتبي اسم المدينة','Enter city name')} data-testid="input-branch-city-other"/>}</div>
+          <label className="field-label">{tr(lang,'العنوان المختصر','Short address')}<input name="address" value={branchAddress} onChange={event=>setBranchAddress(event.target.value)} data-testid="input-branch-address"/></label>
+        </div>
+        <div className="field-label branch-maps-field">
+          <span className="field-label-caption">{tr(lang,'موقع الفرع على خرائط Google','Google Maps location')}</span>
+          <input name="googleMapsUrl" type="url" value={googleMapsUrl} onChange={event=>{setGoogleMapsUrl(event.target.value);setLocationError('');}} required={!editing||Boolean(editing.googleMapsUrl)} placeholder="https://maps.app.goo.gl/..." data-testid="input-branch-google-maps-url"/>
+          <small className="branch-map-help">{tr(lang,'افتحي الخرائط، اختاري الموقع، ثم انسخي رابط المشاركة والصقيه هنا.','Open Maps, choose the location, then paste its share link here.')}</small>
+          <a className="branch-map-picker" href={googleMapsSearchUrl(branchCity,branchAddress)} target="_blank" rel="noreferrer" data-testid="link-open-google-maps-picker"><MapPinned size={16}/>{tr(lang,'اختيار الموقع على خرائط Google','Choose location in Google Maps')}<ArrowUpRight size={14}/></a>
+        </div>
+        {locationError&&<p className="inline-error" role="alert">{locationError}</p>}
+        <label className="premium-checkbox"><input type="checkbox" name="active" defaultChecked={editing?.active??true} data-testid="checkbox-branch-active"/><span className="premium-checkbox-mark" aria-hidden="true"><Check size={13}/></span><span>{tr(lang,'الفرع نشط','Branch is active')}</span></label>
+        {(create.isError||update.isError)&&<p className="inline-error" role="alert">{tr(lang,'تعذر حفظ الفرع. تحقق من البيانات وحاول مرة أخرى.','Could not save branch. Check the details and try again.')}</p>}
+        <div className="form-actions modal-primary-actions"><Button type="submit" disabled={create.isPending||update.isPending} data-testid="button-save-branch">{create.isPending||update.isPending?tr(lang,'جارٍ الحفظ…','Saving…'):tr(lang,'حفظ الفرع','Save branch')}</Button></div>
+      </form>
+    </Modal>}
+    <AlertDialog open={!!deactivating} onOpenChange={open=>{if(!open)setDeactivating(null);}}><AlertDialogContent className="confirm-dialog"><AlertDialogHeader><AlertDialogTitle>{tr(lang,'تأكيد إيقاف الفرع','Confirm branch deactivation')}</AlertDialogTitle><AlertDialogDescription>{tr(lang,`قد يؤثر إيقاف «${deactivating?.name||''}» في استقبال البلاغات الجديدة والإسناد التلقائي. سيبقى سجل البلاغات الحالي محفوظاً.`,`Deactivating “${deactivating?.name||''}” may affect new tickets and automatic assignment. Existing ticket history will remain.`)}</AlertDialogDescription></AlertDialogHeader>{update.isError&&<p className="inline-error" role="alert">{tr(lang,'تعذر إيقاف الفرع. حاول مرة أخرى.','Could not deactivate the branch. Try again.')}</p>}<AlertDialogFooter><AlertDialogCancel disabled={update.isPending}>{tr(lang,'إلغاء','Cancel')}</AlertDialogCancel><AlertDialogAction className="branch-confirm-action" disabled={update.isPending} onClick={event=>{event.preventDefault();if(deactivating)toggleActive(deactivating,false);}} data-testid="button-confirm-deactivate">{update.isPending?tr(lang,'جارٍ الإيقاف…','Deactivating…'):tr(lang,'تأكيد الإيقاف','Confirm deactivation')}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
   </div>;
 }
 function KnowledgePage({lang}:{lang:Lang}) {
@@ -789,8 +906,8 @@ function KnowledgePage({lang}:{lang:Lang}) {
     {isLoading?<State title={tr(lang,'جاري تحميل المعرفة','Loading knowledge base')} loading/>:isError?<State title={tr(lang,'تعذر تحميل قاعدة المعرفة','Could not load knowledge base')} retry={()=>void refetch()}/>:filtered.length?<div className="knowledge-list">{filtered.map((entry:KnowledgeEntry,i)=><article className="knowledge-entry" key={entry.id}><span className="knowledge-index">{String(i+1).padStart(2,'0')}</span><div className="knowledge-entry-content"><div className="entry-tags"><span>{entry.category}</span><span>{entry.branchName}</span></div><h3>{entry.title}</h3><div className="entry-solution">{entry.cause&&<p><b>{tr(lang,'السبب','Cause')}</b>{entry.cause}</p>}{entry.resolution&&<p><b>{tr(lang,'الإجراء','Action taken')}</b>{entry.resolution}</p>}</div><div className="entry-foot"><span><UserRound size={14}/>{entry.technicianName}</span><span>{dateText(entry.createdAt,lang)}</span><Link href={`/workspace/tickets/${entry.ticketId}`}>{tr(lang,'البلاغ','Ticket')} {entry.ticketNumber}<ArrowUpRight size={14}/></Link></div></div><CheckCircle2 className="knowledge-check" size={20}/></article>)}</div>:<div className="empty-panel" aria-live="polite"><BookOpen size={25}/><h3>{entries?.length?tr(lang,'لا توجد نتائج مطابقة','No matching results'):tr(lang,'لا توجد حلول مؤكدة بعد','No confirmed fixes yet')}</h3><p>{tr(lang,'تُضاف الحلول تلقائياً عند تأكيد إغلاق البلاغ.','Solutions are added when a reporter confirms a repair.')}</p></div>}
   </div>;
 }
-function Modal({title,children,close,description}:{title:string;children:ReactNode;close:()=>void;description?:string}) {
-  return <Dialog open onOpenChange={open=>{if(!open)close();}}><DialogContent className="modal-card modal-radix"><DialogHeader className="modal-head"><DialogTitle>{title}</DialogTitle>{description&&<DialogDescription>{description}</DialogDescription>}</DialogHeader>{children}</DialogContent></Dialog>;
+function Modal({title,children,close,description,dir}:{title:string;children:ReactNode;close:()=>void;description?:string;dir?:'rtl'|'ltr'}) {
+  return <Dialog open onOpenChange={open=>{if(!open)close();}}><DialogContent className="modal-card modal-radix" dir={dir}><DialogHeader className="modal-head"><DialogTitle>{title}</DialogTitle>{description&&<DialogDescription>{description}</DialogDescription>}</DialogHeader>{children}</DialogContent></Dialog>;
 }
 function WorkspaceRouter({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;dark:boolean;setDark:(x:boolean)=>void}) {
   const {data:session}=useGetDemoSession();const user=session?.user;const [location]=useLocation();

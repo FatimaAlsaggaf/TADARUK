@@ -3100,8 +3100,6 @@
 .branch-reactivate{color:#318276}.branch-reactivate:hover{color:#205e57;background:#e7f6f2}
 .branch-deactivate:focus-visible,.branch-reactivate:focus-visible,.branch-edit:focus-visible,.branch-map-link:focus-visible{outline:3px solid rgba(86,196,189,.5);outline-offset:3px}
 .branch-action-error{margin-top:14px}
-.branch-coordinate-note{margin:-5px 0 15px;color:#8190a1;font-size:10px;line-height:1.75}
-.coordinate-fields{gap:12px}
 
 /* Operational metrics retain API values while color-coding only their meaning. */
 .metric-open{background:#1f3363!important;border-color:#1f3363!important}
@@ -3152,10 +3150,10 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
 .dark .metric-confirm{background:#273b4b!important;box-shadow:inset 0 3px #6cb5c5,0 8px 22px rgba(0,0,0,.1)}
 .dark .metric-confirm>span,.dark .metric-confirm small{color:#a9c8d2!important}.dark .metric-confirm strong{color:#8bd4e2!important}
 .dark .ticket-summary b{color:#e0eaf4}.dark .modal-card.modal-radix,.dark .confirm-dialog{box-shadow:0 24px 74px rgba(0,0,0,.42)}
-.dark .modal-radix .modal-head h2{color:hsl(var(--foreground))}.dark .branch-coordinate-note{color:#a5b4c6}
+.dark .modal-radix .modal-head h2{color:hsl(var(--foreground))}
 @media(max-width:780px){.branches-grid{grid-template-columns:1fr;gap:12px}.branch-card{padding:18px}.modal-card.modal-radix{width:calc(100vw - 24px);max-height:calc(100dvh - 24px);padding:23px 19px 19px}.modal-radix>.modal-head{margin-bottom:17px}.modal-radix .form-two{grid-template-columns:1fr;gap:0}.confirm-dialog{width:calc(100vw - 24px);padding:21px}}
-@media(max-width:390px){.branch-card{padding:16px}.branch-card-actions{align-items:flex-start}.branch-map-link{font-size:10px}.branch-edit{padding-inline:5px}.modal-card.modal-radix{width:calc(100vw - 20px);padding-inline:16px}.modal-radix .form-actions{flex-wrap:wrap}.confirm-dialog>div:last-child{flex-direction:column-reverse;align-items:stretch}.confirm-dialog>div:last-child button{width:100%;margin:0}}
-@media(prefers-reduced-motion:reduce){.branch-card,.branch-deactivate,.branch-reactivate,.branch-map-link,.branch-edit,.modal-radix>button:first-of-type{transition:none!important}}
+@media(max-width:390px){.branch-card{padding:16px}.branch-card-actions{align-items:flex-start}.branch-map-link{font-size:10px}.branch-map-picker{font-size:10px}.branch-edit{padding-inline:5px}.modal-card.modal-radix{width:calc(100vw - 20px);padding-inline:16px}.modal-radix .form-actions{flex-wrap:wrap}.confirm-dialog>div:last-child{flex-direction:column-reverse;align-items:stretch}.confirm-dialog>div:last-child button{width:100%;margin:0}}
+@media(prefers-reduced-motion:reduce){.branch-card,.branch-deactivate,.branch-reactivate,.branch-map-link,.branch-map-picker,.branch-edit,.modal-radix>button:first-of-type{transition:none!important}}
 
 /* Dashboard KPIs use real values and pair each queue with one clear visual cue. */
 .metric-lead-head{display:flex;align-items:center;justify-content:space-between;gap:12px}

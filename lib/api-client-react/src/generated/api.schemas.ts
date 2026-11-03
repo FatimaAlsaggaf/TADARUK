@@ -44,6 +44,8 @@ export interface Branch {
   name: string;
   city: string;
   address: string;
+  /** @nullable */
+  googleMapsUrl: string | null;
   /**
      * @minimum -90
      * @maximum 90
@@ -67,17 +69,10 @@ export interface BranchInput {
   city: string;
   address: string;
   /**
-     * @minimum -90
-     * @maximum 90
-     * @nullable
+     * @minLength 8
+     * @maxLength 2000
      */
-  latitude?: number | null;
-  /**
-     * @minimum -180
-     * @maximum 180
-     * @nullable
-     */
-  longitude?: number | null;
+  googleMapsUrl: string;
   active?: boolean;
 }
 
@@ -88,17 +83,10 @@ export interface BranchUpdate {
   city?: string;
   address?: string;
   /**
-     * @minimum -90
-     * @maximum 90
+     * @maxLength 2000
      * @nullable
      */
-  latitude?: number | null;
-  /**
-     * @minimum -180
-     * @maximum 180
-     * @nullable
-     */
-  longitude?: number | null;
+  googleMapsUrl?: string | null;
   active?: boolean;
 }
 
@@ -223,6 +211,8 @@ export interface Ticket {
      * @nullable
      */
   branchLongitude: number | null;
+  /** @nullable */
+  branchGoogleMapsUrl: string | null;
   /** @nullable */
   technicianId: string | null;
   /** @nullable */

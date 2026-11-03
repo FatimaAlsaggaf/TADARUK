@@ -11,6 +11,8 @@ export interface Branch {
   name: string;
   city: string;
   address: string;
+  /** @nullable */
+  googleMapsUrl: string | null;
   /**
      * @minimum -90
      * @maximum 90

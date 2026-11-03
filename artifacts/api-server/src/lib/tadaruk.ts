@@ -271,6 +271,7 @@ export async function toTicketView(ticket: TicketRecord) {
     branchAddress: branch?.address ?? "",
     branchLatitude: branch?.latitude ?? null,
     branchLongitude: branch?.longitude ?? null,
+    branchGoogleMapsUrl: branch?.googleMapsUrl ?? null,
     technicianId: ticket.technicianId,
     technicianName: technician?.name ?? null,
     imageUrl: ticket.imageUrl,

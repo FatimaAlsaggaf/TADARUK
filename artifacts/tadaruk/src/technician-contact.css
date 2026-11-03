@@ -11,17 +11,27 @@
 .dark .technician-phone svg{background:#1b505b;color:#7ee4df}
 .dark .technician-phone:hover{background:linear-gradient(110deg,#1a4a55,hsl(var(--card)));border-color:#56bdb9}
 .dark .technician-phone-missing{color:#a1afbf}
-.technician-availability{display:flex;align-items:center;gap:11px;margin:2px 0 18px;padding:11px 13px;border:1px solid hsl(var(--border));border-radius:11px;background:linear-gradient(110deg,#effaf9,hsl(var(--card)));color:hsl(var(--foreground));font-size:12px;font-weight:600;cursor:pointer;transition:border-color .18s ease,background .18s ease}
-.technician-availability:hover{border-color:#92d8d4}
-.technician-availability input{position:absolute;width:1px;height:1px;margin:0;opacity:0;clip-path:inset(50%);overflow:hidden}
-.technician-checkbox-mark{width:21px;height:21px;flex:none;display:grid;place-items:center;border:1.5px solid #b8c8d1;border-radius:7px;background:hsl(var(--background));color:#fff;transition:background .18s ease,border-color .18s ease,box-shadow .18s ease}
-.technician-checkbox-mark svg{opacity:0;transform:scale(.7);transition:opacity .16s ease,transform .16s ease}
-.technician-availability input:checked+.technician-checkbox-mark{border-color:transparent;background:linear-gradient(135deg,#1f3363,#168f99);box-shadow:0 3px 8px #1f336326}
-.technician-availability input:checked+.technician-checkbox-mark svg{opacity:1;transform:scale(1)}
-.technician-availability input:focus-visible+.technician-checkbox-mark{outline:3px solid #56c9c455;outline-offset:2px}
-.dark .technician-availability{background:linear-gradient(110deg,#172e3f,hsl(var(--card)));border-color:hsl(var(--border))}
-.dark .technician-availability:hover{border-color:#408c91}
-.dark .technician-checkbox-mark{border-color:#506477}
-.technician-form-actions{justify-content:flex-start}
-.technician-form-actions .btn{flex:0 0 auto;min-width:142px}
+.premium-checkbox{position:relative;display:flex;align-items:center;gap:11px;margin:2px 0 18px;padding:11px 13px;border:1px solid hsl(var(--border));border-radius:11px;background:linear-gradient(110deg,#effaf9,hsl(var(--card)));color:hsl(var(--foreground));font-size:12px;font-weight:600;cursor:pointer;transition:border-color .18s ease,background .18s ease}
+.premium-checkbox:hover{border-color:#92d8d4}
+.premium-checkbox input{position:absolute;width:1px;height:1px;margin:0;opacity:0;clip-path:inset(50%);overflow:hidden}
+.premium-checkbox-mark{width:21px;height:21px;flex:none;display:grid;place-items:center;border:1.5px solid #b8c8d1;border-radius:7px;background:hsl(var(--background));color:#fff;transition:background .18s ease,border-color .18s ease,box-shadow .18s ease}
+.premium-checkbox-mark svg{opacity:0;transform:scale(.7);transition:opacity .16s ease,transform .16s ease}
+.premium-checkbox input:checked+.premium-checkbox-mark{border-color:transparent;background:linear-gradient(135deg,#1f3363,#168f99);box-shadow:0 3px 8px #1f336326}
+.premium-checkbox input:checked+.premium-checkbox-mark svg{opacity:1;transform:scale(1)}
+.premium-checkbox input:focus-visible+.premium-checkbox-mark{outline:3px solid #56c9c455;outline-offset:2px}
+.dark .premium-checkbox{background:linear-gradient(110deg,#172e3f,hsl(var(--card)));border-color:hsl(var(--border))}
+.dark .premium-checkbox:hover{border-color:#408c91}
+.dark .premium-checkbox-mark{border-color:#506477}
+.modal-primary-actions{justify-content:flex-start}
+.modal-primary-actions .btn{flex:0 0 auto;min-width:142px}
+.branch-maps-field{gap:7px;margin-top:4px}
+.branch-maps-field input{direction:ltr;text-align:left}
+.branch-map-help{color:#7f8c9b;font-size:11px;font-weight:400;line-height:1.7}
+.branch-map-picker{width:max-content;max-width:100%;min-height:37px;display:inline-flex;align-items:center;gap:8px;margin-top:3px;padding:8px 11px;border:1px solid #cfe7e5;border-radius:10px;background:linear-gradient(110deg,#f0fbfa,#fff);color:#287f82;font-size:11px;font-weight:700;text-decoration:none;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.branch-map-picker svg{flex:none}
+.branch-map-picker:hover{transform:translateY(-1px);border-color:#8bd2cd;box-shadow:0 5px 14px #2c9f9918}
+.branch-map-picker:focus-visible{outline:3px solid #56c9c455;outline-offset:3px}
+.dark .branch-map-help{color:#a5b4c6}
+.dark .branch-map-picker{background:linear-gradient(110deg,#173541,hsl(var(--card)));border-color:#345566;color:#9de4df}
+.dark .branch-map-picker:hover{border-color:#56bdb9}
 @media(max-width:560px){.technician-phone{min-height:38px}.technician-phone-input input{min-height:46px}}

@@ -436,25 +436,25 @@ components:
         userId: { type: string }
     Branch:
       type: object
-      required: [id, name, city, address, latitude, longitude, active, openTickets]
+      required: [id, name, city, address, googleMapsUrl, latitude, longitude, active, openTickets]
       properties:
         id: { type: string }
         name: { type: string }
         city: { type: string }
         address: { type: string }
+        googleMapsUrl: { type: ["string", "null"], format: uri }
         latitude: { type: ["number", "null"], minimum: -90, maximum: 90 }
         longitude: { type: ["number", "null"], minimum: -180, maximum: 180 }
         active: { type: boolean }
         openTickets: { type: integer }
     BranchInput:
       type: object
-      required: [name, city, address]
+      required: [name, city, address, googleMapsUrl]
       properties:
         name: { type: string, minLength: 2 }
         city: { type: string, minLength: 2 }
         address: { type: string }
-        latitude: { type: ["number", "null"], minimum: -90, maximum: 90 }
-        longitude: { type: ["number", "null"], minimum: -180, maximum: 180 }
+        googleMapsUrl: { type: string, format: uri, minLength: 8, maxLength: 2000 }
         active: { type: boolean }
     BranchUpdate:
       type: object
@@ -462,8 +462,7 @@ components:
         name: { type: string, minLength: 2 }
         city: { type: string, minLength: 2 }
         address: { type: string }
-        latitude: { type: ["number", "null"], minimum: -90, maximum: 90 }
-        longitude: { type: ["number", "null"], minimum: -180, maximum: 180 }
+        googleMapsUrl: { type: ["string", "null"], format: uri, maxLength: 2000 }
         active: { type: boolean }
     ReporterBranch:
       type: object
@@ -531,7 +530,7 @@ components:
         createdAt: { type: string, format: date-time }
     Ticket:
       type: object
-      required: [id, number, title, description, category, priority, specialization, location, status, cancelledAt, cancelledBy, reporterId, reporterName, branchId, branchName, branchCity, branchAddress, branchLatitude, branchLongitude, technicianId, technicianName, imageUrl, repairNotes, cause, resolution, createdAt, updatedAt, history]
+      required: [id, number, title, description, category, priority, specialization, location, status, cancelledAt, cancelledBy, reporterId, reporterName, branchId, branchName, branchCity, branchAddress, branchLatitude, branchLongitude, branchGoogleMapsUrl, technicianId, technicianName, imageUrl, repairNotes, cause, resolution, createdAt, updatedAt, history]
       properties:
         id: { type: string }
         number: { type: string }
@@ -552,6 +551,7 @@ components:
         branchAddress: { type: string }
         branchLatitude: { type: ["number", "null"], minimum: -90, maximum: 90 }
         branchLongitude: { type: ["number", "null"], minimum: -180, maximum: 180 }
+        branchGoogleMapsUrl: { type: ["string", "null"], format: uri }
         technicianId: { type: ["string", "null"] }
         technicianName: { type: ["string", "null"] }
         imageUrl: { type: ["string", "null"] }

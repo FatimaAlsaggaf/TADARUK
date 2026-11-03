@@ -42,6 +42,8 @@ export interface Ticket {
      */
   branchLongitude: number | null;
   /** @nullable */
+  branchGoogleMapsUrl: string | null;
+  /** @nullable */
   technicianId: string | null;
   /** @nullable */
   technicianName: string | null;

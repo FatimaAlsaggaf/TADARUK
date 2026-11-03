@@ -13,6 +13,7 @@ export const branchesTable = pgTable("tadaruk_branches", {
   name: text("name").notNull(),
   city: text("city").notNull(),
   address: text("address").notNull().default(""),
+  googleMapsUrl: text("google_maps_url"),
   latitude: doublePrecision("latitude"),
   longitude: doublePrecision("longitude"),
   active: boolean("active").notNull().default(true),
