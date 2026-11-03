@@ -116,36 +116,154 @@
   line-height: 1.7;
 }
 
-.photo-preview {
-  position: relative;
-  width: fit-content;
-  max-width: 180px;
-  margin-top: 2px;
+.photo-attachment-card {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+  margin-top: 4px;
+  padding: 11px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 16px;
+  background: hsl(var(--card));
+  box-shadow: 0 9px 24px rgba(31, 51, 99, .055);
+  text-align: start;
 }
 
-.photo-preview img {
+.photo-attachment-thumbnail {
+  width: 112px;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 12px;
+  background: hsl(var(--muted));
+}
+
+.photo-attachment-thumbnail img {
   display: block;
-  max-width: 180px;
-  max-height: 120px;
-  border: 1px solid #e2e9eb;
-  border-radius: 8px;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 
-.photo-preview button {
-  position: absolute;
-  inset-block-start: 5px;
-  inset-inline-end: 5px;
+.photo-attachment-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.photo-attachment-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #57858a;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.photo-attachment-label svg {
+  color: #35a6a2;
+}
+
+.photo-attachment-copy strong {
+  color: hsl(var(--foreground));
+  font-size: 14px;
+}
+
+.photo-attachment-meta {
+  color: hsl(var(--muted-foreground));
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.photo-attachment-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  align-self: center;
+  padding: 7px 9px;
+  border-radius: 999px;
+  background: rgba(86, 196, 189, .12);
+  color: #287e72;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.photo-attachment-remove {
   display: grid;
-  width: 25px;
-  height: 25px;
+  width: 32px;
+  height: 32px;
   place-items: center;
+  align-self: start;
   border: 0;
   border-radius: 50%;
-  background: #fff;
-  color: #1f3363;
-  box-shadow: 0 2px 8px #17264129;
-  cursor: pointer;
+  background: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  transition: color .16s ease, background-color .16s ease, transform .16s ease;
+}
+
+.photo-attachment-remove:hover {
+  transform: scale(1.04);
+  background: rgba(178, 56, 66, .1);
+  color: #b23842;
+}
+
+.photo-attachment-remove:focus-visible {
+  outline: 3px solid rgba(86, 196, 189, .55);
+  outline-offset: 2px;
+}
+
+.dark .photo-attachment-card {
+  box-shadow: 0 9px 24px rgba(0, 0, 0, .16);
+}
+
+.dark .photo-attachment-label {
+  color: #9ec9ca;
+}
+
+.dark .photo-attachment-label svg {
+  color: #73d8d2;
+}
+
+.dark .photo-attachment-state {
+  background: rgba(86, 244, 239, .1);
+  color: #a7e2d9;
+}
+
+.dark .photo-attachment-remove:hover {
+  background: rgba(255, 132, 138, .14);
+  color: #ff9a9e;
+}
+
+@media (max-width: 640px) {
+  .photo-attachment-card {
+    grid-template-columns: 82px minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 9px;
+  }
+
+  .photo-attachment-thumbnail {
+    width: 82px;
+    border-radius: 10px;
+  }
+
+  .photo-attachment-copy strong {
+    font-size: 12px;
+  }
+
+  .photo-attachment-meta {
+    font-size: 10px;
+  }
+
+  .photo-attachment-state {
+    gap: 4px;
+    padding: 6px 7px;
+    font-size: 9px;
+  }
 }
 
 .upload-field input[type='file'] {
@@ -1598,6 +1716,7 @@
   .role-card,
   .step-counter,
   .side-link,
+  .side-user-trigger,
   .sidebar,
   .mobile-scrim,
   .nav-lang,
@@ -1606,8 +1725,10 @@
   .skeleton-bar,
   .btn,
   .account-menu,
+  .account-menu-signout,
   .empty-inline,
   .empty-panel,
+  .photo-attachment-remove,
   .analysis-feedback svg,
   .feedback-loader {
     animation: none !important;
