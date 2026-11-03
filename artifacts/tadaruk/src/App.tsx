@@ -671,18 +671,83 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
     </aside></div>
   </div>;
 }
+const TECHNICIAN_OTHER_SPECIALTY = '__other_specialty__';
+const TECHNICIAN_SPECIALTIES = [
+  { value: 'cooling', ar: 'تكييف وتبريد', en: 'Cooling' },
+  { value: 'electrical', ar: 'كهرباء وإنارة', en: 'Electrical' },
+  { value: 'plumbing', ar: 'سباكة ومياه', en: 'Plumbing' },
+  { value: 'general', ar: 'صيانة عامة', en: 'General maintenance' },
+];
+
 function TechniciansPage({lang}:{lang:Lang}) {
-  const {data:techs,isLoading,isError,refetch}=useListTechnicians();const {data:branches}=useListBranches();const create=useCreateTechnician();const update=useUpdateTechnician();const query=useQueryClient();const [open,setOpen]=useState(false);const [edit,setEdit]=useState<Technician|null>(null);
+  const {data:techs,isLoading,isError,refetch}=useListTechnicians();
+  const {data:branches}=useListBranches();
+  const create=useCreateTechnician();
+  const update=useUpdateTechnician();
+  const query=useQueryClient();
+  const [open,setOpen]=useState(false);
+  const [edit,setEdit]=useState<Technician|null>(null);
   const [branchId,setBranchId]=useState('');
+  const [specialtyChoice,setSpecialtyChoice]=useState('');
+  const [customSpecialty,setCustomSpecialty]=useState('');
   const branchOptions=useMemo(()=>(branches||[]).filter(b=>b.active||b.id===edit?.branchId),[branches,edit?.branchId]);
+  const specialtyOptions=[
+    ...TECHNICIAN_SPECIALTIES.map(specialty=>({value:specialty.value,label:tr(lang,specialty.ar,specialty.en)})),
+    {value:TECHNICIAN_OTHER_SPECIALTY,label:tr(lang,'أخرى','Other')},
+  ];
+
   useEffect(()=>{if(open&&!branchId&&branchOptions.length)setBranchId(edit?.branchId||branchOptions[0].id);},[open,branchId,branchOptions,edit?.branchId]);
-  const save=(e:FormEvent<HTMLFormElement>)=>{e.preventDefault();const f=new FormData(e.currentTarget);const data={name:String(f.get('name')).trim(),branchId:String(f.get('branchId')),specialization:String(f.get('specialization')).trim(),phone:String(f.get('phone')).trim(),available:f.get('available')==='on'};
-    const done=()=>{setOpen(false);setEdit(null);void query.invalidateQueries({queryKey:getListTechniciansQueryKey()});void query.invalidateQueries({queryKey:getListBranchesQueryKey()});void query.invalidateQueries({queryKey:getGetOverviewQueryKey()});};
-    edit?update.mutate({technicianId:edit.id,data},{onSuccess:done}):create.mutate({data},{onSuccess:done});};
-  const begin=(record:Technician|null)=>{setEdit(record);setBranchId(record?.branchId||'');create.reset();update.reset();setOpen(true);};
-  return <div className="page-enter"><PageTitle eyebrow={tr(lang,'الفريق الميداني','PEOPLE / FIELD TEAM')} title={tr(lang,'الفنيون','Technicians')} description={tr(lang,'توزيع واضح للمهارات والتوفر في كل فرع.','A clear view of skills and availability by branch.')} action={<Button onClick={()=>begin(null)}><Plus size={17}/>{tr(lang,'إضافة فني','Add technician')}</Button>}/>
-      {isLoading?<State title={tr(lang,'جاري تحميل الفريق','Loading team')} loading/>:isError?<State title={tr(lang,'تعذر تحميل الفنيين','Could not load technicians')} retry={()=>void refetch()}/>:!techs?.length?<div className="empty-panel" aria-live="polite"><Users size={26}/><h3>{tr(lang,'لا يوجد فنّيون مسجلون بعد','No technicians added yet')}</h3><p>{tr(lang,'أضف أعضاء فريق الصيانة لتسهيل إسناد البلاغات.','Add maintenance staff to make ticket assignment easier.')}</p><Button onClick={()=>begin(null)}><Plus size={17}/>{tr(lang,'إضافة أول فني','Add the first technician')}</Button></div>:<div className="people-grid">{techs.map(t=><article className="person-card" key={t.id}><div className="person-card-head"><Avatar name={t.name} size="lg"/><button className="edit-button" onClick={()=>begin(t)} aria-label={`${tr(lang,'تعديل','Edit')} ${t.name}`}><Settings2 size={17}/></button></div><h3>{t.name}</h3><span className="specialization">{t.specialization}</span><div className="person-card-meta">{t.phone?<a className="technician-phone" dir="rtl" href={`tel:${t.phone.replace(/[\\s()-]/g,'')}`} aria-label={`${tr(lang,'اتصال بالفني','Call technician')} ${t.name}: ${t.phone}`} data-testid={`link-technician-phone-${t.id}`}><Phone size={15}/><b dir="ltr">{t.phone}</b></a>:<span className="technician-phone-missing"><Phone size={15}/>{tr(lang,'لم يضاف رقم الجوال','Phone not added')}</span>}<span><Building2 size={15}/>{t.branchName}</span><span><Activity size={15}/>{t.workload} {tr(lang,'مهام مفتوحة','open tasks')}</span></div><div className="person-card-bottom"><span className={`availability ${t.available&&t.active?'available':'unavailable'}`}><i/>{t.active?(t.available?tr(lang,'متاح','Available'):tr(lang,'غير متاح','Unavailable')):tr(lang,'غير نشط','Inactive')}</span><button onClick={()=>update.mutate({technicianId:t.id,data:{available:!t.available}},{onSuccess:()=>void query.invalidateQueries({queryKey:getListTechniciansQueryKey()})})} className="availability-toggle">{t.available?tr(lang,'تعيين غير متاح','Set unavailable'):tr(lang,'تعيين متاح','Set available')}</button></div></article>)}</div>}
-      {open&&<Modal key={edit?.id||'new-technician'} title={edit?tr(lang,'تعديل بيانات الفني','Edit technician'):tr(lang,'إضافة فني','Add technician')} close={()=>{setOpen(false);create.reset();update.reset();}}><form onSubmit={save}><label className="field-label">{tr(lang,'الاسم','Name')}<input name="name" required minLength={2} defaultValue={edit?.name} data-testid="input-technician-name"/></label><label className="field-label">{tr(lang,'رقم الجوال','Mobile number')}<div className="technician-phone-input"><Phone size={16} aria-hidden="true"/><input name="phone" type="tel" inputMode="tel" autoComplete="tel" required minLength={7} maxLength={24} defaultValue={edit?.phone??''} placeholder="05XXXXXXXX" data-testid="input-technician-phone"/></div></label><div className="field-label"><span className="field-label-caption">{tr(lang,'الفرع','Branch')}</span><TadarukSelect name="branchId" required value={branchId} onValueChange={setBranchId} ariaLabel={tr(lang,'الفرع','Branch')} dir={lang==='ar'?'rtl':'ltr'} placeholder={tr(lang,'اختر الفرع','Choose a branch')} testId="select-technician-branch" options={branchOptions.map(branch=>({value:branch.id,label:branch.name}))}/></div><label className="field-label">{tr(lang,'التخصص','Specialization')}<input name="specialization" required defaultValue={edit?.specialization} placeholder={tr(lang,'تكييف، كهرباء، سباكة','HVAC, electrical, plumbing')} data-testid="input-technician-specialization"/></label><label className="check-field"><input type="checkbox" name="available" defaultChecked={edit?.available??true}/> {tr(lang,'متاح لاستقبال المهام','Available for assignments')}</label>{(create.isError||update.isError)&&<p className="inline-error" role="alert">{tr(lang,'تعذر حفظ بيانات الفني. تحقق من المدخلات ثم حاول مجدداً.','Could not save technician details. Check the form and try again.')}</p>}<div className="form-actions"><Button type="submit" disabled={create.isPending||update.isPending} data-testid="button-save-technician">{create.isPending||update.isPending?tr(lang,'جارٍ الحفظ…','Saving…'):edit?tr(lang,'حفظ التعديلات','Save changes'):tr(lang,'إضافة الفني','Add technician')}</Button><Button kind="ghost" onClick={()=>setOpen(false)}>{tr(lang,'إلغاء','Cancel')}</Button></div></form></Modal>}
+  const save=(e:FormEvent<HTMLFormElement>)=>{
+    e.preventDefault();
+    const f=new FormData(e.currentTarget);
+    const specialization=specialtyChoice===TECHNICIAN_OTHER_SPECIALTY?customSpecialty.trim():specialtyChoice;
+    const data={
+      name:String(f.get('name')).trim(),
+      branchId:String(f.get('branchId')),
+      specialization,
+      phone:String(f.get('phone')).trim(),
+      available:f.get('available')==='on',
+    };
+    const done=()=>{
+      setOpen(false);
+      setEdit(null);
+      void query.invalidateQueries({queryKey:getListTechniciansQueryKey()});
+      void query.invalidateQueries({queryKey:getListBranchesQueryKey()});
+      void query.invalidateQueries({queryKey:getGetOverviewQueryKey()});
+    };
+    edit?update.mutate({technicianId:edit.id,data},{onSuccess:done}):create.mutate({data},{onSuccess:done});
+  };
+  const begin=(record:Technician|null)=>{
+    setEdit(record);
+    setBranchId(record?.branchId||'');
+    const isPreset=record&&TECHNICIAN_SPECIALTIES.some(specialty=>specialty.value===record.specialization);
+    setSpecialtyChoice(record?(isPreset?record.specialization:TECHNICIAN_OTHER_SPECIALTY):'');
+    setCustomSpecialty(record&&!isPreset?record.specialization:'');
+    create.reset();
+    update.reset();
+    setOpen(true);
+  };
+  const close=()=>{
+    setOpen(false);
+    create.reset();
+    update.reset();
+  };
+
+  return <div className="page-enter">
+    <PageTitle eyebrow={tr(lang,'الفريق الميداني','PEOPLE / FIELD TEAM')} title={tr(lang,'الفنيون','Technicians')} description={tr(lang,'توزيع واضح للمهارات والتوفر في كل فرع.','A clear view of skills and availability by branch.')} action={<Button onClick={()=>begin(null)}><Plus size={17}/>{tr(lang,'إضافة فني','Add technician')}</Button>}/>
+    {isLoading?<State title={tr(lang,'جاري تحميل الفريق','Loading team')} loading/>:isError?<State title={tr(lang,'تعذر تحميل الفنيين','Could not load technicians')} retry={()=>void refetch()}/>:!techs?.length?<div className="empty-panel" aria-live="polite"><Users size={26}/><h3>{tr(lang,'لا يوجد فنّيون مسجلون بعد','No technicians added yet')}</h3><p>{tr(lang,'أضف أعضاء فريق الصيانة لتسهيل إسناد البلاغات.','Add maintenance staff to make ticket assignment easier.')}</p><Button onClick={()=>begin(null)}><Plus size={17}/>{tr(lang,'إضافة أول فني','Add the first technician')}</Button></div>:<div className="people-grid">{techs.map(t=><article className="person-card" key={t.id}><div className="person-card-head"><Avatar name={t.name} size="lg"/><button className="edit-button" onClick={()=>begin(t)} aria-label={`${tr(lang,'تعديل','Edit')} ${t.name}`}><Settings2 size={17}/></button></div><h3>{t.name}</h3><span className="specialization">{t.specialization}</span><div className="person-card-meta">{t.phone?<a className="technician-phone" dir="rtl" href={`tel:${t.phone.replace(/[\s()-]/g,'')}`} aria-label={`${tr(lang,'اتصال بالفني','Call technician')} ${t.name}: ${t.phone}`} data-testid={`link-technician-phone-${t.id}`}><Phone size={15}/><b dir="ltr">{t.phone}</b></a>:<span className="technician-phone-missing"><Phone size={15}/>{tr(lang,'لم يضاف رقم الجوال','Phone not added')}</span>}<span><Building2 size={15}/>{t.branchName}</span><span><Activity size={15}/>{t.workload} {tr(lang,'مهام مفتوحة','open tasks')}</span></div><div className="person-card-bottom"><span className={`availability ${t.available&&t.active?'available':'unavailable'}`}><i/>{t.active?(t.available?tr(lang,'متاح','Available'):tr(lang,'غير متاح','Unavailable')):tr(lang,'غير نشط','Inactive')}</span><button onClick={()=>update.mutate({technicianId:t.id,data:{available:!t.available}},{onSuccess:()=>void query.invalidateQueries({queryKey:getListTechniciansQueryKey()})})} className="availability-toggle">{t.available?tr(lang,'تعيين غير متاح','Set unavailable'):tr(lang,'تعيين متاح','Set available')}</button></div></article>)}</div>}
+    {open&&<Modal key={edit?.id||'new-technician'} title={edit?tr(lang,'تعديل بيانات الفني','Edit technician'):tr(lang,'إضافة فني','Add technician')} close={close}>
+      <form onSubmit={save}>
+        <label className="field-label">{tr(lang,'الاسم','Name')}<input name="name" required minLength={2} defaultValue={edit?.name} data-testid="input-technician-name"/></label>
+        <label className="field-label">{tr(lang,'رقم الجوال','Mobile number')}<div className="technician-phone-input"><Phone size={16} aria-hidden="true"/><input name="phone" type="tel" inputMode="tel" autoComplete="tel" required minLength={7} maxLength={24} defaultValue={edit?.phone??''} placeholder="05XXXXXXXX" data-testid="input-technician-phone"/></div></label>
+        <div className="field-label"><span className="field-label-caption">{tr(lang,'الفرع','Branch')}</span><TadarukSelect name="branchId" required value={branchId} onValueChange={setBranchId} ariaLabel={tr(lang,'الفرع','Branch')} dir={lang==='ar'?'rtl':'ltr'} placeholder={tr(lang,'اختر الفرع','Choose a branch')} testId="select-technician-branch" options={branchOptions.map(branch=>({value:branch.id,label:branch.name}))}/></div>
+        <div className="field-label"><span className="field-label-caption">{tr(lang,'التخصص','Specialization')}</span><TadarukSelect name="specialtyChoice" required value={specialtyChoice} onValueChange={setSpecialtyChoice} ariaLabel={tr(lang,'التخصص','Specialization')} dir={lang==='ar'?'rtl':'ltr'} placeholder={tr(lang,'اختر التخصص','Choose a specialization')} testId="select-technician-specialization" options={specialtyOptions}/></div>
+        {specialtyChoice===TECHNICIAN_OTHER_SPECIALTY&&<label className="field-label">{tr(lang,'اكتب التخصص','Enter specialization')}<input name="customSpecialty" value={customSpecialty} onChange={event=>setCustomSpecialty(event.target.value)} required minLength={2} maxLength={60} placeholder={tr(lang,'مثال: صيانة المصاعد','Example: elevator maintenance')} data-testid="input-technician-custom-specialization"/></label>}
+        <label className="technician-availability"><input type="checkbox" name="available" defaultChecked={edit?.available??true} data-testid="checkbox-technician-availability"/><span className="technician-checkbox-mark" aria-hidden="true"><Check size={13}/></span><span>{tr(lang,'متاح لاستقبال المهام','Available for assignments')}</span></label>
+        {(create.isError||update.isError)&&<p className="inline-error" role="alert">{tr(lang,'تعذر حفظ بيانات الفني. تحقق من المدخلات ثم حاول مجدداً.','Could not save technician details. Check the form and try again.')}</p>}
+        <div className="form-actions technician-form-actions"><Button type="submit" disabled={create.isPending||update.isPending} data-testid="button-save-technician">{create.isPending||update.isPending?tr(lang,'جارٍ الحفظ…','Saving…'):edit?tr(lang,'حفظ التعديلات','Save changes'):tr(lang,'إضافة الفني','Add technician')}</Button></div>
+      </form>
+    </Modal>}
   </div>;
 }
 function BranchesPage({lang}:{lang:Lang}) {
