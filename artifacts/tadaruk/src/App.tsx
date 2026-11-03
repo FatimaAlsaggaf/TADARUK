@@ -5,6 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import BlurText from '@/components/BlurText';
 import SpotlightCard from '@/components/SpotlightCard';
 import PhotoAttachmentCard from '@/components/PhotoAttachmentCard';
+import { FieldMessage } from '@/components/FieldMessage';
 import {
   Activity, ArrowDownLeft, ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, Building2, Check,
   CheckCircle2, ChevronDown, ClipboardList, Clock3, Filter, Languages, LayoutDashboard,
@@ -707,6 +708,7 @@ function TechniciansPage({lang}:{lang:Lang}) {
   const [branchId,setBranchId]=useState('');
   const [specialtyChoice,setSpecialtyChoice]=useState('');
   const [customSpecialty,setCustomSpecialty]=useState('');
+  const [fieldErrors,setFieldErrors]=useState<Record<string,string>>({});
   const branchOptions=useMemo(()=>(branches||[]).filter(b=>b.active||b.id===edit?.branchId),[branches,edit?.branchId]);
   const specialtyOptions=[
     ...TECHNICIAN_SPECIALTIES.map(specialty=>({value:specialty.value,label:tr(lang,specialty.ar,specialty.en)})),
@@ -718,8 +720,18 @@ function TechniciansPage({lang}:{lang:Lang}) {
     e.preventDefault();
     const f=new FormData(e.currentTarget);
     const specialization=specialtyChoice===TECHNICIAN_OTHER_SPECIALTY?customSpecialty.trim():specialtyChoice;
+    const name=String(f.get('name')||'').trim();
+    const phone=String(f.get('phone')||'').trim();
+    const errors:Record<string,string>={};
+    if(name.length<2)errors.name=tr(lang,'اكتب اسم الفني، حرفين على الأقل.','Enter the technician name (at least 2 characters).');
+    if(phone.replace(/\D/g,'').length<7)errors.phone=tr(lang,'أدخل رقم جوال صحيحاً، مثل 05XXXXXXXX.','Enter a valid mobile number, for example 05XXXXXXXX.');
+    if(!branchId)errors.branchId=tr(lang,'اختر الفرع.','Choose a branch.');
+    if(!specialtyChoice)errors.specialization=tr(lang,'اختر التخصص.','Choose a specialization.');
+    if(specialtyChoice===TECHNICIAN_OTHER_SPECIALTY&&customSpecialty.trim().length<2)errors.customSpecialty=tr(lang,'اكتب التخصص، حرفين على الأقل.','Enter a specialization (at least 2 characters).');
+    setFieldErrors(errors);
+    if(Object.keys(errors).length)return;
     const data={
-      name:String(f.get('name')).trim(),
+      name,
       branchId:String(f.get('branchId')),
       specialization,
       phone:String(f.get('phone')).trim(),
@@ -736,6 +748,7 @@ function TechniciansPage({lang}:{lang:Lang}) {
   };
   const begin=(record:Technician|null)=>{
     setEdit(record);
+    setFieldErrors({});
     setBranchId(record?.branchId||'');
     const isPreset=record&&TECHNICIAN_SPECIALTIES.some(specialty=>specialty.value===record.specialization);
     setSpecialtyChoice(record?(isPreset?record.specialization:TECHNICIAN_OTHER_SPECIALTY):'');
@@ -746,6 +759,7 @@ function TechniciansPage({lang}:{lang:Lang}) {
   };
   const close=()=>{
     setOpen(false);
+    setFieldErrors({});
     create.reset();
     update.reset();
   };
@@ -754,12 +768,12 @@ function TechniciansPage({lang}:{lang:Lang}) {
     <PageTitle eyebrow={tr(lang,'الفريق الميداني','PEOPLE / FIELD TEAM')} title={tr(lang,'الفنيون','Technicians')} description={tr(lang,'توزيع واضح للمهارات والتوفر في كل فرع.','A clear view of skills and availability by branch.')} action={<Button onClick={()=>begin(null)}><Plus size={17}/>{tr(lang,'إضافة فني','Add technician')}</Button>}/>
     {isLoading?<State title={tr(lang,'جاري تحميل الفريق','Loading team')} loading/>:isError?<State title={tr(lang,'تعذر تحميل الفنيين','Could not load technicians')} retry={()=>void refetch()}/>:!techs?.length?<div className="empty-panel" aria-live="polite"><Users size={26}/><h3>{tr(lang,'لا يوجد فنّيون مسجلون بعد','No technicians added yet')}</h3><p>{tr(lang,'أضف أعضاء فريق الصيانة لتسهيل إسناد البلاغات.','Add maintenance staff to make ticket assignment easier.')}</p><Button onClick={()=>begin(null)}><Plus size={17}/>{tr(lang,'إضافة أول فني','Add the first technician')}</Button></div>:<div className="people-grid">{techs.map(t=><article className="person-card" key={t.id}><div className="person-card-head"><Avatar name={t.name} size="lg"/><button className="edit-button" onClick={()=>begin(t)} aria-label={`${tr(lang,'تعديل','Edit')} ${t.name}`}><Settings2 size={17}/></button></div><h3>{t.name}</h3><span className="specialization">{t.specialization}</span><div className="person-card-meta">{t.phone?<a className="technician-phone" dir="rtl" href={`tel:${t.phone.replace(/[\s()-]/g,'')}`} aria-label={`${tr(lang,'اتصال بالفني','Call technician')} ${t.name}: ${t.phone}`} data-testid={`link-technician-phone-${t.id}`}><Phone size={15}/><b dir="ltr">{t.phone}</b></a>:<span className="technician-phone-missing"><Phone size={15}/>{tr(lang,'لم يضاف رقم الجوال','Phone not added')}</span>}<span><Building2 size={15}/>{t.branchName}</span><span><Activity size={15}/>{t.workload} {tr(lang,'مهام مفتوحة','open tasks')}</span></div><div className="person-card-bottom"><span className={`availability ${t.available&&t.active?'available':'unavailable'}`}><i/>{t.active?(t.available?tr(lang,'متاح','Available'):tr(lang,'غير متاح','Unavailable')):tr(lang,'غير نشط','Inactive')}</span><button onClick={()=>update.mutate({technicianId:t.id,data:{available:!t.available}},{onSuccess:()=>void query.invalidateQueries({queryKey:getListTechniciansQueryKey()})})} className="availability-toggle">{t.available?tr(lang,'تعيين غير متاح','Set unavailable'):tr(lang,'تعيين متاح','Set available')}</button></div></article>)}</div>}
     {open&&<Modal key={edit?.id||'new-technician'} title={edit?tr(lang,'تعديل بيانات الفني','Edit technician'):tr(lang,'إضافة فني','Add technician')} close={close}>
-      <form onSubmit={save}>
-        <label className="field-label">{tr(lang,'الاسم','Name')}<input name="name" required minLength={2} defaultValue={edit?.name} data-testid="input-technician-name"/></label>
-        <label className="field-label">{tr(lang,'رقم الجوال','Mobile number')}<div className="technician-phone-input"><Phone size={16} aria-hidden="true"/><input name="phone" type="tel" inputMode="tel" autoComplete="tel" required minLength={7} maxLength={24} defaultValue={edit?.phone??''} placeholder="05XXXXXXXX" data-testid="input-technician-phone"/></div></label>
-        <div className="field-label"><span className="field-label-caption">{tr(lang,'الفرع','Branch')}</span><TadarukSelect name="branchId" required value={branchId} onValueChange={setBranchId} ariaLabel={tr(lang,'الفرع','Branch')} dir={lang==='ar'?'rtl':'ltr'} placeholder={tr(lang,'اختر الفرع','Choose a branch')} testId="select-technician-branch" options={branchOptions.map(branch=>({value:branch.id,label:branch.name}))}/></div>
-        <div className="field-label"><span className="field-label-caption">{tr(lang,'التخصص','Specialization')}</span><TadarukSelect name="specialtyChoice" required value={specialtyChoice} onValueChange={setSpecialtyChoice} ariaLabel={tr(lang,'التخصص','Specialization')} dir={lang==='ar'?'rtl':'ltr'} placeholder={tr(lang,'اختر التخصص','Choose a specialization')} testId="select-technician-specialization" options={specialtyOptions}/></div>
-        {specialtyChoice===TECHNICIAN_OTHER_SPECIALTY&&<label className="field-label">{tr(lang,'اكتب التخصص','Enter specialization')}<input name="customSpecialty" value={customSpecialty} onChange={event=>setCustomSpecialty(event.target.value)} required minLength={2} maxLength={60} placeholder={tr(lang,'مثال: صيانة المصاعد','Example: elevator maintenance')} data-testid="input-technician-custom-specialization"/></label>}
+      <form noValidate onSubmit={save}>
+        <label className="field-label">{tr(lang,'الاسم','Name')}<input name="name" required minLength={2} defaultValue={edit?.name} placeholder={tr(lang,'مثال: أحمد السالم','Example: Alex Smith')} aria-invalid={!!fieldErrors.name} onChange={()=>setFieldErrors(current=>({...current,name:''}))} data-testid="input-technician-name"/><FieldMessage message={fieldErrors.name}/></label>
+        <label className="field-label">{tr(lang,'رقم الجوال','Mobile number')}<div className="technician-phone-input"><Phone size={16} aria-hidden="true"/><input name="phone" type="tel" inputMode="tel" autoComplete="tel" required minLength={7} maxLength={24} defaultValue={edit?.phone??''} placeholder="05XXXXXXXX" aria-invalid={!!fieldErrors.phone} onChange={()=>setFieldErrors(current=>({...current,phone:''}))} data-testid="input-technician-phone"/></div><small className="field-example">{tr(lang,'مثال: 05XXXXXXXX','Example: 05XXXXXXXX')}</small><FieldMessage message={fieldErrors.phone}/></label>
+        <div className="field-label"><span className="field-label-caption">{tr(lang,'الفرع','Branch')}</span><TadarukSelect name="branchId" required value={branchId} onValueChange={value=>{setBranchId(value);setFieldErrors(current=>({...current,branchId:''}));}} ariaLabel={tr(lang,'الفرع','Branch')} dir={lang==='ar'?'rtl':'ltr'} placeholder={tr(lang,'اختر الفرع','Choose a branch')} testId="select-technician-branch" options={branchOptions.map(branch=>({value:branch.id,label:branch.name}))}/><FieldMessage message={fieldErrors.branchId}/></div>
+        <div className="field-label"><span className="field-label-caption">{tr(lang,'التخصص','Specialization')}</span><TadarukSelect name="specialtyChoice" required value={specialtyChoice} onValueChange={value=>{setSpecialtyChoice(value);setFieldErrors(current=>({...current,specialization:''}));}} ariaLabel={tr(lang,'التخصص','Specialization')} dir={lang==='ar'?'rtl':'ltr'} placeholder={tr(lang,'اختر التخصص','Choose a specialization')} testId="select-technician-specialization" options={specialtyOptions}/><FieldMessage message={fieldErrors.specialization}/></div>
+        {specialtyChoice===TECHNICIAN_OTHER_SPECIALTY&&<label className="field-label">{tr(lang,'اكتب التخصص','Enter specialization')}<input name="customSpecialty" value={customSpecialty} onChange={event=>{setCustomSpecialty(event.target.value);setFieldErrors(current=>({...current,customSpecialty:''}));}} required minLength={2} maxLength={60} placeholder={tr(lang,'مثال: صيانة المصاعد','Example: elevator maintenance')} data-testid="input-technician-custom-specialization"/><FieldMessage message={fieldErrors.customSpecialty}/></label>}
         <label className="premium-checkbox"><input type="checkbox" name="available" defaultChecked={edit?.available??true} data-testid="checkbox-technician-availability"/><span className="premium-checkbox-mark" aria-hidden="true"><Check size={13}/></span><span>{tr(lang,'متاح لاستقبال المهام','Available for assignments')}</span></label>
         {(create.isError||update.isError)&&<p className="inline-error" role="alert">{tr(lang,'تعذر حفظ بيانات الفني. تحقق من المدخلات ثم حاول مجدداً.','Could not save technician details. Check the form and try again.')}</p>}
         <div className="form-actions modal-primary-actions"><Button type="submit" disabled={create.isPending||update.isPending} data-testid="button-save-technician">{create.isPending||update.isPending?tr(lang,'جارٍ الحفظ…','Saving…'):edit?tr(lang,'حفظ التعديلات','Save changes'):tr(lang,'إضافة الفني','Add technician')}</Button></div>
@@ -800,6 +814,7 @@ function BranchesPage({lang}:{lang:Lang}) {
   const [branchAddress,setBranchAddress]=useState('');
   const [googleMapsUrl,setGoogleMapsUrl]=useState('');
   const [locationError,setLocationError]=useState('');
+  const [fieldErrors,setFieldErrors]=useState<Record<string,string>>({});
   const branchCity=cityChoice===OTHER_CITY?customCity:cityChoice;
 
   const invalidate=()=>{
@@ -817,6 +832,7 @@ function BranchesPage({lang}:{lang:Lang}) {
     setBranchAddress(record?.address||'');
     setGoogleMapsUrl(record?.googleMapsUrl||'');
     setLocationError('');
+    setFieldErrors({});
     create.reset();
     update.reset();
     setModal(true);
@@ -824,6 +840,7 @@ function BranchesPage({lang}:{lang:Lang}) {
   const closeEditor=()=>{
     setModal(false);
     setEditing(null);
+    setFieldErrors({});
     create.reset();
     update.reset();
   };
@@ -833,11 +850,17 @@ function BranchesPage({lang}:{lang:Lang}) {
     const mapsUrl=String(form.get('googleMapsUrl')||'').trim();
     const selectedCity=String(form.get('city')||'');
     const city=selectedCity===OTHER_CITY?String(form.get('cityOther')||'').trim():selectedCity;
+    const name=String(form.get('name')||'').trim();
+    const errors:Record<string,string>={};
+    if(name.length<2)errors.name=tr(lang,'اكتب اسم الفرع، حرفين على الأقل.','Enter a branch name (at least 2 characters).');
+    if(!selectedCity)errors.city=tr(lang,'اختر المدينة.','Choose a city.');
+    if(selectedCity===OTHER_CITY&&city.length<2)errors.cityOther=tr(lang,'اكتب اسم المدينة.','Enter the city name.');
     if((!editing&&!mapsUrl)||(mapsUrl&&!isGoogleMapsShareUrl(mapsUrl))){
-      setLocationError(tr(lang,'ألصق رابط مشاركة صحيحاً من خرائط Google.','Paste a valid Google Maps share link.'));
-      return;
+      errors.googleMapsUrl=tr(lang,'أدخل رابط مشاركة صحيحاً من خرائط Google.','Enter a valid Google Maps share link.');
     }
+    setFieldErrors(errors);
     setLocationError('');
+    if(Object.keys(errors).length)return;
     const baseData={
       name:String(form.get('name')).trim(),
       city:city.trim(),
@@ -875,19 +898,20 @@ function BranchesPage({lang}:{lang:Lang}) {
     <ReporterAccessPanel lang={lang} branches={branches||[]}/>
     {update.isError&&!deactivating&&<p className="inline-error branch-action-error" role="alert">{tr(lang,'تعذر تحديث حالة الفرع. حاول مرة أخرى.','Could not update the branch status. Try again.')}</p>}
     {modal&&<Modal key={editing?.id||'new-branch'} title={editing?tr(lang,'تعديل الفرع','Edit branch'):tr(lang,'إضافة فرع','Add branch')} close={closeEditor} dir={lang==='ar'?'rtl':'ltr'} description={tr(lang,'بيانات الفرع وموقعه من خرائط Google.','Branch details and its Google Maps location.')}>
-      <form onSubmit={save}>
-        <label className="field-label">{tr(lang,'اسم الفرع','Branch name')}<input name="name" required minLength={2} defaultValue={editing?.name||''} data-testid="input-branch-name"/></label>
+       <form noValidate onSubmit={save}>
+         <label className="field-label">{tr(lang,'اسم الفرع','Branch name')}<input name="name" required minLength={2} defaultValue={editing?.name||''} placeholder={tr(lang,'مثال: فرع الروضة','Example: Al Rawdah Branch')} aria-invalid={!!fieldErrors.name} onChange={()=>setFieldErrors(current=>({...current,name:''}))} data-testid="input-branch-name"/><FieldMessage message={fieldErrors.name}/></label>
         <div className="form-two">
-          <div className="field-label"><span className="field-label-caption">{tr(lang,'المدينة','City')}</span><TadarukSelect name="city" required value={cityChoice} onValueChange={value=>{setCityChoice(value);if(value!==OTHER_CITY)setCustomCity('');}} ariaLabel={tr(lang,'المدينة','City')} dir={lang==='ar'?'rtl':'ltr'} placeholder={tr(lang,'اختر المدينة','Choose a city')} testId="input-branch-city" options={cityOptions}/>{cityChoice===OTHER_CITY&&<input name="cityOther" required minLength={2} value={customCity} onChange={event=>setCustomCity(event.target.value)} placeholder={tr(lang,'اكتبي اسم المدينة','Enter city name')} data-testid="input-branch-city-other"/>}</div>
-          <label className="field-label">{tr(lang,'العنوان المختصر','Short address')}<input name="address" value={branchAddress} onChange={event=>setBranchAddress(event.target.value)} data-testid="input-branch-address"/></label>
+           <div className="field-label"><span className="field-label-caption">{tr(lang,'المدينة','City')}</span><TadarukSelect name="city" required value={cityChoice} onValueChange={value=>{setCityChoice(value);setFieldErrors(current=>({...current,city:'',cityOther:''}));if(value!==OTHER_CITY)setCustomCity('');}} ariaLabel={tr(lang,'المدينة','City')} dir={lang==='ar'?'rtl':'ltr'} placeholder={tr(lang,'اختر المدينة','Choose a city')} testId="input-branch-city" options={cityOptions}/><FieldMessage message={fieldErrors.city}/>{cityChoice===OTHER_CITY&&<><input name="cityOther" required minLength={2} value={customCity} onChange={event=>{setCustomCity(event.target.value);setFieldErrors(current=>({...current,cityOther:''}));}} placeholder={tr(lang,'مثال: مدينة الملك عبدالله الاقتصادية','Example: King Abdullah Economic City')} data-testid="input-branch-city-other"/><FieldMessage message={fieldErrors.cityOther}/></>}</div>
+           <label className="field-label">{tr(lang,'العنوان المختصر','Short address')}<input name="address" value={branchAddress} onChange={event=>setBranchAddress(event.target.value)} placeholder={tr(lang,'مثال: شارع الأمير سلطان، حي الروضة','Example: Prince Sultan Street, Al Rawdah')} data-testid="input-branch-address"/></label>
         </div>
         <div className="field-label branch-maps-field">
           <span className="field-label-caption">{tr(lang,'موقع الفرع على خرائط Google','Google Maps location')}</span>
-          <input name="googleMapsUrl" type="url" value={googleMapsUrl} onChange={event=>{setGoogleMapsUrl(event.target.value);setLocationError('');}} required={!editing||Boolean(editing.googleMapsUrl)} placeholder="https://maps.app.goo.gl/..." data-testid="input-branch-google-maps-url"/>
+           <input name="googleMapsUrl" type="url" value={googleMapsUrl} onChange={event=>{setGoogleMapsUrl(event.target.value);setFieldErrors(current=>({...current,googleMapsUrl:''}));setLocationError('');}} required={!editing||Boolean(editing.googleMapsUrl)} placeholder="https://maps.app.goo.gl/..." aria-invalid={!!fieldErrors.googleMapsUrl} data-testid="input-branch-google-maps-url"/>
+           <FieldMessage message={fieldErrors.googleMapsUrl}/>
           <small className="branch-map-help">{tr(lang,'افتحي الخرائط، اختاري الموقع، ثم انسخي رابط المشاركة والصقيه هنا.','Open Maps, choose the location, then paste its share link here.')}</small>
           <a className="branch-map-picker" href={googleMapsSearchUrl(branchCity,branchAddress)} target="_blank" rel="noreferrer" data-testid="link-open-google-maps-picker"><MapPinned size={16}/>{tr(lang,'اختيار الموقع على خرائط Google','Choose location in Google Maps')}<ArrowUpRight size={14}/></a>
+           <FieldMessage message={locationError}/>
         </div>
-        {locationError&&<p className="inline-error" role="alert">{locationError}</p>}
         <label className="premium-checkbox"><input type="checkbox" name="active" defaultChecked={editing?.active??true} data-testid="checkbox-branch-active"/><span className="premium-checkbox-mark" aria-hidden="true"><Check size={13}/></span><span>{tr(lang,'الفرع نشط','Branch is active')}</span></label>
         {(create.isError||update.isError)&&<p className="inline-error" role="alert">{tr(lang,'تعذر حفظ الفرع. تحقق من البيانات وحاول مرة أخرى.','Could not save branch. Check the details and try again.')}</p>}
         <div className="form-actions modal-primary-actions"><Button type="submit" disabled={create.isPending||update.isPending} data-testid="button-save-branch">{create.isPending||update.isPending?tr(lang,'جارٍ الحفظ…','Saving…'):tr(lang,'حفظ الفرع','Save branch')}</Button></div>
@@ -959,6 +983,59 @@ function WorkspaceRouter({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)
 function AppRoutes() {
   const prefs=usePrefs();
   const [location]=useLocation();
+  useEffect(()=>{
+    const messageFor=(control:HTMLInputElement|HTMLTextAreaElement|HTMLSelectElement)=>{
+      const validity=control.validity;
+      if(validity.valueMissing)return tr(prefs.lang,'هذا الحقل مطلوب.','This field is required.');
+      if(validity.typeMismatch&&control instanceof HTMLInputElement&&control.type==='url')return tr(prefs.lang,'أدخل رابطاً صحيحاً.','Enter a valid link.');
+      if(validity.typeMismatch&&control instanceof HTMLInputElement&&control.type==='email')return tr(prefs.lang,'أدخل بريداً إلكترونياً صحيحاً.','Enter a valid email address.');
+      if(validity.tooShort)return tr(prefs.lang,'أدخل قيمة أطول.','Enter a longer value.');
+      if(validity.tooLong)return tr(prefs.lang,'اختصر القيمة قليلاً.','Shorten this value.');
+      if(validity.patternMismatch)return tr(prefs.lang,'اكتب القيمة بالتنسيق الموضح.','Use the format shown.');
+      return tr(prefs.lang,'تحقق من هذه القيمة.','Check this value.');
+    };
+    const onInvalid=(event:Event)=>{
+      event.preventDefault();
+      const control=event.target;
+      if(!(control instanceof HTMLInputElement||control instanceof HTMLTextAreaElement||control instanceof HTMLSelectElement))return;
+      const field=control.closest<HTMLElement>('.field-label,.rw-field')||control.parentElement;
+      if(!field)return;
+      control.setAttribute('aria-invalid','true');
+      let error=field.querySelector<HTMLElement>(':scope > .tadaruk-native-field-error');
+      if(!error){
+        error=document.createElement('p');
+        error.className='tadaruk-field-error tadaruk-native-field-error';
+        error.setAttribute('role','alert');
+        error.setAttribute('aria-live','polite');
+        const icon=document.createElement('span');
+        icon.className='tadaruk-field-error-icon';
+        icon.setAttribute('aria-hidden','true');
+        icon.textContent='!';
+        const copy=document.createElement('span');
+        copy.className='tadaruk-field-error-copy';
+        error.append(icon,copy);
+        field.append(error);
+      }
+      const copy=error.querySelector('.tadaruk-field-error-copy');
+      if(copy)copy.textContent=messageFor(control);
+    };
+    const clearError=(event:Event)=>{
+      const control=event.target;
+      if(!(control instanceof HTMLInputElement||control instanceof HTMLTextAreaElement||control instanceof HTMLSelectElement))return;
+      if(!control.validity.valid)return;
+      control.removeAttribute('aria-invalid');
+      const field=control.closest<HTMLElement>('.field-label,.rw-field')||control.parentElement;
+      field?.querySelectorAll('.tadaruk-native-field-error').forEach(error=>error.remove());
+    };
+    document.addEventListener('invalid',onInvalid,true);
+    document.addEventListener('input',clearError,true);
+    document.addEventListener('change',clearError,true);
+    return ()=>{
+      document.removeEventListener('invalid',onInvalid,true);
+      document.removeEventListener('input',clearError,true);
+      document.removeEventListener('change',clearError,true);
+    };
+  },[prefs.lang]);
   const path=location.replace(/\/+$/,'')||'/';
   const workspaceRoutes=['/workspace','/workspace/tickets','/workspace/tickets/new','/workspace/technicians','/workspace/branches','/workspace/knowledge'];
   const isTicketDetail=/^\/workspace\/tickets\/[^/]+$/.test(path)&&path!=='/workspace/tickets/new';

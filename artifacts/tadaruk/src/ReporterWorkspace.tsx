@@ -321,7 +321,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
     const rawDescription = description.trim();
     if (rawDescription.length < 4) {
       if (!rawDescription && photo) setNeedsDescription(true);
-      else setDescriptionError(text(lang, 'اكتب وصفاً من أربع كلمات على الأقل أو سجّل وصفاً صوتياً.', 'Enter at least four characters or record a voice description.'));
+      else setDescriptionError(text(lang, 'اكتب وصفاً من 4 أحرف على الأقل أو سجّل وصفاً صوتياً.', 'Enter at least 4 characters or record a voice description.'));
       return;
     }
     setNeedsDescription(false);
@@ -557,7 +557,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
           </header>
           {renderBranchChoice()}
           <label className="rw-field"><span>{text(lang, 'عنوان البلاغ', 'Report title')}</span>
-          <input required minLength={3} value={title} onChange={event => setTitle(event.currentTarget.value)} data-testid="input-review-title"/>
+          <input required minLength={3} value={title} placeholder={text(lang, 'مثال: تسرب ماء قرب حوض التحضير', 'Example: Water leak near prep sink')} onChange={event => setTitle(event.currentTarget.value)} data-testid="input-review-title"/>
           </label>
           <label className="rw-field rw-preview-description"><span>{text(lang, 'وصف المشكلة', 'Issue description')}</span>
           <textarea required minLength={4} value={reviewDescription} onChange={event => setReviewDescription(event.currentTarget.value)} data-testid="input-review-description"/>
@@ -584,7 +584,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
               ]}/>
             </div>
             <label className="rw-field"><span>{text(lang, 'الموقع داخل الفرع', 'Location in the branch')}</span>
-              <input required value={reviewLocation} onChange={event => setReviewLocation(event.currentTarget.value)} data-testid="input-review-location"/>
+              <input required value={reviewLocation} placeholder={text(lang, 'مثال: بجانب حوض التحضير', 'Example: beside the prep sink')} onChange={event => setReviewLocation(event.currentTarget.value)} data-testid="input-review-location"/>
             </label>
           </div>
           {photo && <div className="rw-photo-preview" data-testid="preview-review-photo">

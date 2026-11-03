@@ -3931,3 +3931,66 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   right: auto;
   left: 1rem;
 }
+
+.tadaruk-field-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid #f0d4d2;
+  border-radius: 8px;
+  background: #fff8f7;
+  color: #a34a47;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.65;
+  text-align: start;
+}
+
+.tadaruk-field-error svg,
+.tadaruk-field-error-icon {
+  flex: none;
+  margin-top: 1px;
+  color: #b2514d;
+}
+
+.tadaruk-field-error-icon {
+  display: grid;
+  width: 15px;
+  height: 15px;
+  place-items: center;
+  border-radius: 50%;
+  background: #f4e1df;
+  font: 800 10px/1 sans-serif;
+}
+
+.field-example {
+  color: hsl(var(--muted-foreground));
+  font-size: 10px;
+  font-weight: 450;
+}
+
+.field-label input[aria-invalid="true"],
+.field-label textarea[aria-invalid="true"],
+.rw-field input[aria-invalid="true"],
+.rw-field textarea[aria-invalid="true"] {
+  border-color: #c97873;
+  box-shadow: 0 0 0 3px #c9787317;
+}
+
+.dark .tadaruk-field-error {
+  border-color: #624544;
+  background: #352a31;
+  color: #f1b2ac;
+}
+
+.dark .tadaruk-field-error svg,
+.dark .tadaruk-field-error-icon {
+  color: #f1aaa3;
+}
+
+.dark .tadaruk-field-error-icon {
+  background: #543638;
+}
