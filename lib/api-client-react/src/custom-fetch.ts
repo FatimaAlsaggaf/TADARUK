@@ -360,12 +360,523 @@ export async function customFetch<T = unknown>(
 
   const requestInfo = { method, url: resolveUrl(input) };
 
-  const response = await fetch(input, { ...init, method, headers });
+  try {
+    const response = await fetch(input, { ...init, method, headers });
 
-  if (!response.ok) {
+    if (response.ok) {
+      const mediaType = getMediaType(response.headers);
+      if (responseType === "json" && mediaType && isTextMediaType(mediaType)) {
+        const textContent = await response.text();
+        if (!looksLikeJson(textContent)) {
+          const fallback = tryHandleClientFallback<T>(requestInfo.url, method, init.body);
+          if (fallback !== undefined) return fallback;
+        } else {
+          try {
+            return JSON.parse(stripBom(textContent)) as T;
+          } catch {
+            const fallback = tryHandleClientFallback<T>(requestInfo.url, method, init.body);
+            if (fallback !== undefined) return fallback;
+          }
+        }
+      }
+      return (await parseSuccessBody(response, responseType, requestInfo)) as T;
+    }
+
+    const fallback = tryHandleClientFallback<T>(requestInfo.url, method, init.body);
+    if (fallback !== undefined) {
+      return fallback;
+    }
+
     const errorData = await parseErrorBody(response, method);
     throw new ApiError(response, errorData, requestInfo);
+  } catch (error) {
+    const fallback = tryHandleClientFallback<T>(requestInfo.url, method, init.body);
+    if (fallback !== undefined) {
+      return fallback;
+    }
+    throw error;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// In-Browser Demo Fallback for Static Hostings (e.g. Vercel)
+// ---------------------------------------------------------------------------
+
+const FALLBACK_DEMO_USERS = [
+  {
+    id: "demo-reporter",
+    name: "سارة القحطاني",
+    role: "reporter",
+    initials: "سق",
+    branchId: "branch-olaya",
+    branchName: "فرع العليا",
+    specialization: null,
+    available: true,
+    active: true,
+  },
+  {
+    id: "demo-manager",
+    name: "فهد السليمان",
+    role: "manager",
+    initials: "فس",
+    branchId: null,
+    branchName: null,
+    specialization: null,
+    available: true,
+    active: true,
+  },
+  {
+    id: "demo-tech",
+    name: "خالد الحربي",
+    role: "technician",
+    initials: "خح",
+    branchId: "branch-olaya",
+    branchName: "فرع العليا",
+    specialization: "plumbing",
+    available: true,
+    active: true,
+  },
+];
+
+const FALLBACK_BRANCHES = [
+  {
+    id: "branch-olaya",
+    name: "فرع العليا",
+    city: "الرياض",
+    address: "شارع التحلية",
+    googleMapsUrl: "https://maps.google.com/?q=24.7003,46.6806",
+    latitude: 24.7003,
+    longitude: 46.6806,
+    active: true,
+    openTickets: 2,
+  },
+  {
+    id: "branch-nakheel",
+    name: "فرع النخيل",
+    city: "الرياض",
+    address: "طريق الملك فهد",
+    googleMapsUrl: "https://maps.google.com/?q=24.7500,46.6400",
+    latitude: 24.7500,
+    longitude: 46.6400,
+    active: true,
+    openTickets: 1,
+  },
+  {
+    id: "branch-jeddah",
+    name: "فرع الروضة",
+    city: "جدة",
+    address: "شارع الأمير سلطان",
+    googleMapsUrl: "https://maps.google.com/?q=21.5700,39.1600",
+    latitude: 21.5700,
+    longitude: 39.1600,
+    active: true,
+    openTickets: 0,
+  },
+];
+
+const FALLBACK_TECHNICIANS = [
+  {
+    id: "demo-tech",
+    name: "خالد الحربي",
+    initials: "خح",
+    branchId: "branch-olaya",
+    branchName: "فرع العليا",
+    specialization: "plumbing",
+    available: true,
+    active: true,
+    activeTickets: 1,
+    resolvedThisMonth: 14,
+  },
+  {
+    id: "tech-cooling",
+    name: "مازن القحطاني",
+    initials: "مق",
+    branchId: "branch-olaya",
+    branchName: "فرع العليا",
+    specialization: "cooling",
+    available: true,
+    active: true,
+    activeTickets: 2,
+    resolvedThisMonth: 9,
+  },
+  {
+    id: "tech-electrical",
+    name: "هند الشهري",
+    initials: "هش",
+    branchId: "branch-olaya",
+    branchName: "فرع العليا",
+    specialization: "electrical",
+    available: true,
+    active: true,
+    activeTickets: 0,
+    resolvedThisMonth: 12,
+  },
+];
+
+const FALLBACK_KNOWLEDGE = [
+  {
+    id: "kb-1",
+    title: "خطوات التعامل مع تسرب المياه العاجل",
+    category: "plumbing",
+    summary: "إجراءات إيقاف المحبس الرئيسي وعزل المنطقة قبل وصول الفني المختص.",
+    content: "١. تحديد موقع المحبس الفرعي وإغلاقه فوراً.\n٢. وضع علامات تحذيرية لمنع الانزلاق.\n٣. فصل التيار الكهربائي عن الأجهزة القريبة.\n٤. التواصل مع فني السباكة المعتمد للفرع.",
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "kb-2",
+    title: "إعادة ضبط قواطع الكهرباء الذكية",
+    category: "electrical",
+    summary: "دليل التعامل مع انقطاع التيار الجزئي في صالة الفرع.",
+    content: "١. التأكد من عدم وجود حمل زائد على الدائرة.\n٢. فحص لوحة التوزيع الرئيسية.\n٣. إعادة رفع القاطع بحذر مرة واحدة فقط.\n٤. إذا تكرر الفصل، استدعاء فني الكهرباء فوراً.",
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "kb-3",
+    title: "فحص فلاتر التكييف المركزي دورياً",
+    category: "cooling",
+    summary: "جدول الصيانة الوقائية لفلاتر الهواء في صالات الاستقبال.",
+    content: "١. تنظيف الفلاتر أسبوعياً لضمان كفاءة التبريد.\n٢. التحقق من ثرموستات الغرفة وضبطه على ٢٣ درجة مئوية.\n٣. الإبلاغ الفوري عند سماع أصوات اهتزاز غير طبيعية.",
+    updatedAt: new Date().toISOString(),
+  },
+];
+
+const FALLBACK_INITIAL_TICKETS = [
+  {
+    id: "ticket-demo-2401",
+    number: "TDR-2401",
+    title: "تسرب ماء أسفل حوض التحضير",
+    description: "يوجد تسرب مستمر تحت حوض التحضير في المطبخ، والأرضية أصبحت زلقة.",
+    category: "plumbing",
+    priority: "high",
+    specialization: "plumbing",
+    location: "المطبخ — منطقة التحضير",
+    status: "awaiting_confirmation",
+    reporterId: "demo-reporter",
+    reporterName: "سارة القحطاني",
+    branchId: "branch-olaya",
+    branchName: "فرع العليا",
+    technicianId: "demo-tech",
+    technicianName: "خالد الحربي",
+    repairNotes: "تم استبدال الوصلة المطاطية وإحكام ربط الصمام.",
+    cause: "تآكل الوصلة بسبب الاستخدام اليومي.",
+    resolution: "تغيير الوصلة واختبار تدفق الماء لمدة خمس دقائق.",
+    imageUrl: null,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString(),
+    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
+  },
+  {
+    id: "ticket-demo-2402",
+    number: "TDR-2402",
+    title: "وحدة التبريد لا تصل للدرجة المطلوبة",
+    description: "الثلاجة تعرض ٩ درجات بدلاً من ٤ درجات، ويظهر صوت غير معتاد.",
+    category: "cooling",
+    priority: "urgent",
+    specialization: "cooling",
+    location: "المطبخ — غرفة التبريد",
+    status: "in_progress",
+    reporterId: "demo-reporter",
+    reporterName: "سارة القحطاني",
+    branchId: "branch-olaya",
+    branchName: "فرع العليا",
+    technicianId: "tech-cooling",
+    technicianName: "مازن القحطاني",
+    repairNotes: null,
+    cause: null,
+    resolution: null,
+    imageUrl: null,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
+    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 1).toISOString(),
+  },
+  {
+    id: "ticket-demo-2403",
+    number: "TDR-2403",
+    title: "مصباح منطقة الاستلام لا يعمل",
+    description: "المصباح فوق نقطة استلام الطلبات مطفأ منذ بداية الوردية.",
+    category: "electrical",
+    priority: "medium",
+    specialization: "electrical",
+    location: "صالة العملاء — نقطة الاستلام",
+    status: "review",
+    reporterId: "demo-reporter",
+    reporterName: "سارة القحطاني",
+    branchId: "branch-olaya",
+    branchName: "فرع العليا",
+    technicianId: "tech-electrical",
+    technicianName: "هند الشهري",
+    repairNotes: null,
+    cause: null,
+    resolution: null,
+    imageUrl: null,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString(),
+  },
+  {
+    id: "ticket-demo-2404",
+    number: "TDR-2404",
+    title: "صوت من وحدة التكييف",
+    description: "صوت اهتزاز متقطع عند تشغيل المكيف في صالة الجلسات.",
+    category: "cooling",
+    priority: "low",
+    specialization: "cooling",
+    location: "صالة العملاء",
+    status: "new",
+    reporterId: "demo-reporter",
+    reporterName: "سارة القحطاني",
+    branchId: "branch-nakheel",
+    branchName: "فرع النخيل",
+    technicianId: null,
+    technicianName: null,
+    repairNotes: null,
+    cause: null,
+    resolution: null,
+    imageUrl: null,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 30).toISOString(),
+    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 30).toISOString(),
+  },
+];
+
+function getStoredTickets(): Array<Record<string, unknown>> {
+  if (typeof window === "undefined") return FALLBACK_INITIAL_TICKETS;
+  try {
+    const raw = window.localStorage.getItem("tadaruk_mock_tickets");
+    if (raw) return JSON.parse(raw);
+    window.localStorage.setItem("tadaruk_mock_tickets", JSON.stringify(FALLBACK_INITIAL_TICKETS));
+    return FALLBACK_INITIAL_TICKETS;
+  } catch {
+    return FALLBACK_INITIAL_TICKETS;
+  }
+}
+
+function saveStoredTickets(tickets: Array<Record<string, unknown>>): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem("tadaruk_mock_tickets", JSON.stringify(tickets));
+  } catch {
+    // Ignore storage quota
+  }
+}
+
+function getActiveUser(): Record<string, unknown> | null {
+  if (typeof window === "undefined") return FALLBACK_DEMO_USERS[0];
+  try {
+    const raw = window.localStorage.getItem("tadaruk-demo-session-user");
+    if (raw) return JSON.parse(raw);
+    const def = FALLBACK_DEMO_USERS[0];
+    window.localStorage.setItem("tadaruk-demo-session-user", JSON.stringify(def));
+    return def;
+  } catch {
+    return FALLBACK_DEMO_USERS[0];
+  }
+}
+
+function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unknown): T | undefined {
+  if (typeof window === "undefined") return undefined;
+
+  let pathname = rawUrl;
+  let searchParams = new URLSearchParams();
+  try {
+    const parsed = new URL(rawUrl, window.location.origin);
+    pathname = parsed.pathname;
+    searchParams = parsed.searchParams;
+  } catch {
+    const [p, q] = rawUrl.split("?");
+    pathname = p;
+    if (q) searchParams = new URLSearchParams(q);
   }
 
-  return (await parseSuccessBody(response, responseType, requestInfo)) as T;
+  // Ensure path belongs to /api/
+  if (!pathname.includes("/api/")) return undefined;
+  const apiPath = pathname.substring(pathname.indexOf("/api/"));
+
+  // 1. Health check
+  if (apiPath === "/api/health") {
+    return { status: "ok" } as unknown as T;
+  }
+
+  // 2. Demo users list
+  if (apiPath === "/api/demo/users") {
+    return FALLBACK_DEMO_USERS as unknown as T;
+  }
+
+  // 3. Demo session
+  if (apiPath === "/api/demo/session") {
+    if (method === "GET") {
+      const user = getActiveUser();
+      return { user } as unknown as T;
+    }
+  }
+
+  // 4. Select demo account
+  if (apiPath === "/api/demo/session/select") {
+    try {
+      const parsedBody = typeof body === "string" ? JSON.parse(body) : body;
+      const targetId = parsedBody?.userId;
+      const found = FALLBACK_DEMO_USERS.find(u => u.id === targetId) || FALLBACK_DEMO_USERS[0];
+      window.localStorage.setItem("tadaruk-demo-session-user", JSON.stringify(found));
+      return { user: found } as unknown as T;
+    } catch {
+      return { user: FALLBACK_DEMO_USERS[0] } as unknown as T;
+    }
+  }
+
+  // 5. Clear demo session
+  if (apiPath === "/api/demo/session/clear") {
+    try {
+      window.localStorage.removeItem("tadaruk-demo-session-user");
+    } catch {
+      // ignore
+    }
+    return { user: null } as unknown as T;
+  }
+
+  // 6. Overview
+  if (apiPath === "/api/overview") {
+    const tickets = getStoredTickets();
+    const openTickets = tickets.filter(t => t.status !== "closed" && t.status !== "cancelled").length;
+    const inProgress = tickets.filter(t => t.status === "in_progress").length;
+    const awaitingConfirmation = tickets.filter(t => t.status === "awaiting_confirmation").length;
+    const closed = tickets.filter(t => t.status === "closed").length;
+    return {
+      totalTickets: tickets.length,
+      openTickets,
+      inProgressTickets: inProgress,
+      awaitingConfirmationTickets: awaitingConfirmation,
+      resolvedThisMonth: closed + 4,
+      activeTechnicians: FALLBACK_TECHNICIANS.length,
+      branchesCount: FALLBACK_BRANCHES.length,
+      averageResolutionHours: 3.5,
+    } as unknown as T;
+  }
+
+  // 7. Reporter branches
+  if (apiPath === "/api/reporter/branches") {
+    return [
+      { id: "branch-olaya", name: "فرع العليا", city: "الرياض" },
+      { id: "branch-nakheel", name: "فرع النخيل", city: "الرياض" },
+    ] as unknown as T;
+  }
+
+  // 8. Reporter access
+  if (apiPath === "/api/reporter/access") {
+    return [
+      { id: "access-1", reporterId: "demo-reporter", branchId: "branch-olaya", active: true },
+      { id: "access-2", reporterId: "demo-reporter", branchId: "branch-nakheel", active: true },
+    ] as unknown as T;
+  }
+
+  // 9. Branches
+  if (apiPath === "/api/branches") {
+    return FALLBACK_BRANCHES as unknown as T;
+  }
+
+  // 10. Technicians
+  if (apiPath === "/api/technicians") {
+    return FALLBACK_TECHNICIANS as unknown as T;
+  }
+
+  // 11. Knowledge
+  if (apiPath === "/api/knowledge") {
+    return FALLBACK_KNOWLEDGE as unknown as T;
+  }
+
+  // 12. Tickets
+  if (apiPath === "/api/tickets") {
+    if (method === "GET") {
+      const tickets = getStoredTickets();
+      const search = searchParams.get("search")?.toLowerCase().trim();
+      const status = searchParams.get("status")?.trim();
+      let filtered = tickets;
+      if (search) {
+        filtered = filtered.filter(t =>
+          String(t.number || "").toLowerCase().includes(search) ||
+          String(t.title || "").toLowerCase().includes(search) ||
+          String(t.description || "").toLowerCase().includes(search)
+        );
+      }
+      if (status) {
+        filtered = filtered.filter(t => t.status === status);
+      }
+      return filtered as unknown as T;
+    }
+
+    if (method === "POST") {
+      try {
+        const payload = typeof body === "string" ? JSON.parse(body) : (body || {});
+        const user = getActiveUser();
+        const tickets = getStoredTickets();
+        const randNum = Math.floor(2500 + Math.random() * 500);
+        const assignedTech = FALLBACK_TECHNICIANS.find(tech => tech.specialization === payload.specialization) || FALLBACK_TECHNICIANS[0];
+        const newTicket = {
+          id: `ticket-demo-${Date.now()}`,
+          number: `TDR-${randNum}`,
+          title: payload.title || "بلاغ صيانة جديد",
+          description: payload.description || "",
+          category: payload.category || "general",
+          priority: payload.priority || "medium",
+          specialization: payload.specialization || "general",
+          location: payload.location || "داخل الفرع",
+          status: "new",
+          reporterId: user?.id || "demo-reporter",
+          reporterName: user?.name || "سارة القحطاني",
+          branchId: payload.branchId || "branch-olaya",
+          branchName: "فرع العليا",
+          technicianId: assignedTech?.id || null,
+          technicianName: assignedTech?.name || null,
+          repairNotes: null,
+          cause: null,
+          resolution: null,
+          imageUrl: payload.imageUrl || null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        const updated = [newTicket, ...tickets];
+        saveStoredTickets(updated);
+        return newTicket as unknown as T;
+      } catch {
+        return undefined;
+      }
+    }
+  }
+
+  // 13. Ticket actions (/api/tickets/:id/actions)
+  if (apiPath.startsWith("/api/tickets/") && apiPath.endsWith("/actions")) {
+    const parts = apiPath.split("/");
+    const ticketId = parts[3];
+    const tickets = getStoredTickets();
+    const ticketIndex = tickets.findIndex(t => t.id === ticketId);
+    if (ticketIndex >= 0) {
+      try {
+        const parsedBody = typeof body === "string" ? JSON.parse(body) : (body || {});
+        const action = parsedBody?.action;
+        const current = { ...tickets[ticketIndex] };
+        if (action === "confirm" || action === "close") {
+          current.status = "closed";
+        } else if (action === "cancel") {
+          current.status = "cancelled";
+        } else if (action === "start") {
+          current.status = "in_progress";
+        } else if (action === "resolve") {
+          current.status = "awaiting_confirmation";
+          current.repairNotes = parsedBody?.notes || "تم استكمال أعمال الصيانة بنجاح.";
+        }
+        current.updatedAt = new Date().toISOString();
+        tickets[ticketIndex] = current;
+        saveStoredTickets(tickets);
+        return current as unknown as T;
+      } catch {
+        return tickets[ticketIndex] as unknown as T;
+      }
+    }
+  }
+
+  // 14. Single Ticket (/api/tickets/:id)
+  if (apiPath.startsWith("/api/tickets/")) {
+    const parts = apiPath.split("/");
+    const ticketId = parts[3];
+    const tickets = getStoredTickets();
+    const found = tickets.find(t => t.id === ticketId) || tickets[0];
+    return found as unknown as T;
+  }
+
+  return undefined;
 }

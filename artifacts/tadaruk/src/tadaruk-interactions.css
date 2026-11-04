@@ -2348,82 +2348,154 @@
   letter-spacing: -.035em;
   line-height: 1.35;
 }
-.roadmap { position: relative; min-height: 315px; margin-top: 4px; }
+/* Connected Animated Roadmap */
+.roadmap {
+  position: relative;
+  max-width: 900px;
+  min-height: 250px;
+  margin: 12px auto 0;
+  width: 100%;
+}
 .roadmap-path {
   position: absolute;
-  z-index: 0;
-  inset: 18px 0 auto;
+  inset: 0;
   width: 100%;
-  height: 250px;
+  height: 200px;
   overflow: visible;
+  pointer-events: none;
+  z-index: 1;
 }
 .roadmap-path-mobile { display: none; }
-.roadmap-track, .roadmap-glint { fill: none; stroke-linecap: round; }
-.roadmap-track { stroke: url(#roadmap-gradient); stroke-width: 2.2; opacity: .66; }
-.roadmap-glint {
-  stroke: #76ddd3;
-  stroke-width: 5;
-  stroke-dasharray: .05 .95;
-  filter: drop-shadow(0 0 5px rgba(76, 190, 185, .24));
+.roadmap-track-base {
+  fill: none;
+  stroke: rgba(31, 51, 99, 0.12);
+  stroke-width: 3;
+  stroke-linecap: round;
 }
-.workflow-steps { position: absolute; inset: 0; padding: 0; }
+.dark .roadmap-track-base {
+  stroke: rgba(255, 255, 255, 0.12);
+}
+.roadmap-track {
+  fill: none;
+  stroke: url(#roadmap-gradient);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  filter: drop-shadow(0 2px 8px rgba(86, 244, 239, 0.25));
+}
+.roadmap-glint {
+  fill: none;
+  stroke: #56F4EF;
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 0.08 0.92;
+  filter: drop-shadow(0 0 8px rgba(86, 244, 239, 0.9));
+}
+
+.workflow-steps {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  pointer-events: none;
+}
 .workflow-step {
   position: absolute;
   display: flex;
-  width: 180px;
-  min-height: 0;
+  width: 160px;
   flex-direction: column;
   align-items: center;
-  gap: 7px;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  color: var(--landing-ink);
-  background: transparent;
+  gap: 8px;
+  left: var(--step-x);
+  top: var(--step-y);
+  transform: translate(-50%, -32px);
   text-align: center;
+  z-index: 2;
+  pointer-events: auto;
 }
-.workflow-step:nth-child(1) { left: 5.5%; top: 51%; transform: translate(-50%, -50%); }
-.workflow-step:nth-child(2) { left: 31.5%; top: 22%; transform: translate(-50%, -50%); }
-.workflow-step:nth-child(3) { left: 57.5%; top: 54%; transform: translate(-50%, -50%); }
-.workflow-step:nth-child(4) { left: 94.5%; top: 36%; transform: translate(-50%, -50%); }
-.landing[dir="rtl"] .roadmap-path-desktop { transform: scaleX(-1); }
-.landing[dir="rtl"] .workflow-step:nth-child(1) { left: auto; right: 5.5%; transform: translate(50%, -50%); }
-.landing[dir="rtl"] .workflow-step:nth-child(2) { left: auto; right: 31.5%; transform: translate(50%, -50%); }
-.landing[dir="rtl"] .workflow-step:nth-child(3) { left: auto; right: 57.5%; transform: translate(50%, -50%); }
-.landing[dir="rtl"] .workflow-step:nth-child(4) { left: auto; right: 94.5%; transform: translate(50%, -50%); }
-.workflow-step::after { display: none !important; }
+.workflow-node-anchor {
+  position: relative;
+  width: 64px;
+  height: 64px;
+}
 .workflow-node {
+  position: relative;
+  z-index: 2;
   display: grid;
   width: 64px;
   height: 64px;
   place-items: center;
-  border: 1px solid rgba(30, 50, 99, .14);
-  border-radius: 22px;
+  border: 1.5px solid rgba(31, 51, 99, 0.14);
+  border-radius: 20px;
   color: #688394;
-  background: rgba(249, 251, 248, .95);
-  box-shadow: 0 11px 28px rgba(30, 50, 99, .09), inset 0 1px rgba(255,255,255,.85);
-  transition: color .35s ease, background-color .35s ease, border-color .35s ease, transform .35s ease, box-shadow .35s ease;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 8px 24px rgba(31, 51, 99, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: all 0.5s cubic-bezier(0.22, 0.72, 0.18, 1);
+}
+.dark .workflow-node {
+  background: rgba(23, 38, 59, 0.96);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #8da4b8;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
 }
 .workflow-step.is-reached .workflow-node {
-  border-color: rgba(71, 176, 170, .55);
-  color: #1e6d74;
-  background: #e8f5f1;
-  box-shadow: 0 13px 28px rgba(40, 105, 112, .13), inset 0 1px rgba(255,255,255,.9);
+  border-color: rgba(86, 244, 239, 0.65);
+  color: #1F3363;
+  background: linear-gradient(135deg, #ffffff 0%, #e9fbf9 100%);
+  box-shadow: 0 10px 28px rgba(40, 105, 112, 0.16), 0 0 0 2px rgba(86, 244, 239, 0.2);
 }
-.workflow-step.is-current .workflow-node { transform: translateY(-4px); }
-.workflow-step:last-child.is-reached .workflow-node {
-  color: #f2fbf7;
-  background: #1e3263;
-  border-color: #1e3263;
-  box-shadow: 0 13px 30px rgba(30, 50, 99, .19);
+.dark .workflow-step.is-reached .workflow-node {
+  border-color: rgba(86, 244, 239, 0.6);
+  color: #56F4EF;
+  background: linear-gradient(135deg, #1b304c 0%, #173847 100%);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(86, 244, 239, 0.25);
 }
-.workflow-index { order: 2; color: #5b999b; font: 600 10px 'Anek Kannada', sans-serif; }
+.workflow-step.is-current .workflow-node {
+  transform: scale(1.06);
+  box-shadow: 0 12px 32px rgba(40, 105, 112, 0.25), 0 0 0 4px rgba(86, 244, 239, 0.35);
+}
+/* Beautiful final success milestone */
+.workflow-step.is-success .workflow-node {
+  background: linear-gradient(135deg, #1F3363 0%, #204b6b 100%);
+  border-color: #56F4EF;
+  color: #56F4EF;
+  box-shadow: 0 12px 34px rgba(31, 51, 99, 0.3), 0 0 18px rgba(86, 244, 239, 0.45);
+}
+.repair-success-halo {
+  position: absolute;
+  inset: -6px;
+  border-radius: 26px;
+  border: 2px solid rgba(86, 244, 239, 0.6);
+  animation: repair-success-pulse 2.4s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes repair-success-pulse {
+  0% { transform: scale(0.95); opacity: 0.9; }
+  60% { transform: scale(1.22); opacity: 0; }
+  100% { transform: scale(1.22); opacity: 0; }
+}
+
+.workflow-step-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.workflow-index {
+  color: #5b999b;
+  font: 700 11px 'Anek Kannada', sans-serif;
+  letter-spacing: 0.05em;
+  transition: color 0.3s ease;
+}
+.workflow-step.is-reached .workflow-index {
+  color: #1e7075;
+}
+.dark .workflow-step.is-reached .workflow-index {
+  color: #76DADD;
+}
 .workflow-label {
-  order: 3;
   color: var(--landing-ink);
   font-size: 15px;
-  font-weight: 750;
-  line-height: 1.55;
+  font-weight: 700;
+  line-height: 1.4;
   white-space: nowrap;
 }
 .landing-impact { padding-block: 40px 120px; }
@@ -2630,32 +2702,47 @@
   .workflow-reveal { padding-block: 31px 72px; }
   .workflow-heading { margin-bottom: 18px; }
   .workflow-heading h2 { font-size: clamp(30px, 8vw, 39px); }
-  .roadmap { min-height: 575px; margin-top: 10px; }
-  .roadmap-path-desktop { display: none; }
-  .roadmap-path-mobile { display: block; inset: 0 auto 0 4px; width: 72px; height: 100%; }
-  .landing[dir="rtl"] .roadmap-path-mobile { inset-inline-start: auto; inset-inline-end: 4px; }
-  .roadmap-track { stroke: url(#roadmap-gradient-mobile); stroke-width: 2.5; }
-  .workflow-steps { display: flex; position: absolute; inset: 0; flex-direction: column; justify-content: space-between; padding: 0; }
-  .workflow-step, .workflow-step:nth-child(n) {
-    position: relative;
-    left: auto;
-    top: auto;
-    display: grid;
-    width: auto;
-    min-height: 104px;
-    grid-template-columns: 64px 1fr;
-    grid-template-rows: 28px 38px;
-    align-items: center;
-    justify-items: start;
-    gap: 0 17px;
-    padding: 0 5px;
-    transform: none;
-    text-align: start;
+  .roadmap {
+    max-width: 360px;
+    min-height: 480px;
+    margin-top: 18px;
   }
-  .landing[dir="rtl"] .workflow-step:nth-child(n) { right: auto; transform: none; }
-  .workflow-node { grid-column: 1; grid-row: 1 / span 2; width: 58px; height: 58px; border-radius: 20px; }
-  .workflow-index { grid-column: 2; grid-row: 1; align-self: end; }
-  .workflow-label { grid-column: 2; grid-row: 2; align-self: start; font-size: 16px; white-space: normal; }
+  .roadmap-path-desktop { display: none; }
+  .roadmap-path-mobile {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 480px;
+  }
+  .roadmap-path-mobile .roadmap-track {
+    stroke: url(#roadmap-gradient-mobile);
+    stroke-width: 3.5;
+  }
+  .workflow-step {
+    width: auto;
+    max-width: 290px;
+    left: var(--mobile-x) !important;
+    top: var(--mobile-y) !important;
+    transform: translate(-32px, -32px) !important;
+    flex-direction: row-reverse;
+    gap: 14px;
+    text-align: right;
+  }
+  .landing[dir="ltr"] .workflow-step {
+    flex-direction: row;
+    text-align: left;
+  }
+  .workflow-step-meta {
+    align-items: flex-end;
+  }
+  .landing[dir="ltr"] .workflow-step-meta {
+    align-items: flex-start;
+  }
+  .workflow-label {
+    white-space: normal;
+    font-size: 15px;
+  }
   .landing-impact { padding-block: 25px 78px; }
   .impact-heading { grid-template-columns: 1fr; gap: 13px; margin-bottom: 24px; }
   .impact-heading h2 { font-size: clamp(32px, 8vw, 42px); }
@@ -2727,8 +2814,7 @@
   stroke-width: 5.4;
   filter: drop-shadow(0 0 4px rgba(78, 185, 181, .28));
 }
-.workflow-step:nth-child(4) { left: 88.5%; top: 43.5%; }
-.landing[dir="rtl"] .workflow-step:nth-child(4) { left: auto; right: 88.5%; }
+
 .workflow-node {
   border-color: var(--landing-line);
   border-radius: 21px;
@@ -3211,9 +3297,6 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
 @media(prefers-reduced-motion:reduce){.ticket-cancel-trigger,.voice-wave i{transition:none!important}}
 
 /* Connect each workflow station directly to the rail and slow its progress cue. */
-.workflow-step { z-index: 1; }
-.workflow-step:nth-child(4) { left: 90.5%; top: 43.5%; width: 140px; }
-.landing[dir="rtl"] .workflow-step:nth-child(4) { left: auto; right: 90.5%; }
 .workflow-node {
   position: relative;
   overflow: hidden;
@@ -3245,13 +3328,7 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   38% { opacity: .66; }
   100% { opacity: 0; transform: translateX(125%); }
 }
-@media (max-width: 780px) {
-  .workflow-steps { align-items: stretch; }
-  .workflow-step:nth-child(n) { left: 0; right: 0; width: 100%; }
-  .landing[dir="rtl"] .workflow-step:nth-child(n) { left: 0; right: 0; }
-  .landing[dir="rtl"] .roadmap-path-mobile { left: auto; right: 4px; }
-  .workflow-step:nth-child(4) { width: 100%; }
-}
+
 @media (prefers-reduced-motion: reduce) {
   .workflow-step.is-current .workflow-node,
   .landing[dir="rtl"] .workflow-step.is-current .workflow-node,

@@ -3,9 +3,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useLocation } from 'wouter';
 import { motion, useReducedMotion } from 'motion/react';
 import {
-  ArrowLeft, ArrowRight, ArrowUpLeft, ArrowUpRight, Camera, Check, CheckCircle2,
+  ArrowLeft, ArrowRight, ArrowUpLeft, ArrowUpRight, Building2, Camera, Check, CheckCircle2,
   ChevronLeft, ChevronRight, CircleAlert, ClipboardList, Clock3, FileText, ImagePlus,
-  LoaderCircle, MapPin, Plus, RotateCcw, Search, Send, ShieldCheck,
+  LoaderCircle, MapPin, Plus, RotateCcw, Search, Send, ShieldCheck, Sparkles,
   Trash2, UserRound, Wrench, X
 } from 'lucide-react';
 import {
@@ -16,7 +16,11 @@ import {
 import { AiVoiceInput } from '@/components/ui/ai-voice-input';
 import { TicketCancellationAction } from '@/components/TicketCancellationAction';
 import { TadarukSelect } from '@/components/TadarukSelect';
-import { reporterDemoAnalysisAdapter, type ReporterDemoAnalysisRequest } from '@/services/reporter-demo-analysis';
+import {
+  reporterDemoAnalysisAdapter,
+  PRESET_DEMO_SCENARIOS,
+  type ReporterDemoAnalysisRequest
+} from '@/services/reporter-demo-analysis';
 import './reporter-workspace.css';
 
 type ReporterLang = 'ar' | 'en';
@@ -267,6 +271,8 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
   const [specialization, setSpecialization] = useState('');
   const [reviewLocation, setReviewLocation] = useState('');
   const [reviewEditing, setReviewEditing] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [aiStage, setAiStage] = useState<number>(0);
   const reduced = useReducedMotion() === true;
   const analyze = useMutation({
     mutationFn: (input: ReporterDemoAnalysisRequest) => reporterDemoAnalysisAdapter.analyze(input),
@@ -274,9 +280,11 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
   const create = useCreateTicket();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
+
   const clarificationValue = selectedLocation === 'مكان آخر' ? otherLocation.trim() : selectedLocation;
   const clarifiedLocation = selectedLocation === 'مكان آخر' || lang === 'ar' ? clarificationValue
     : ({ 'المطبخ': 'Kitchen', 'صالة العملاء': 'Customer area', 'المستودع': 'Storage', 'دورات المياه': 'Restrooms' } as Record<string, string>)[clarificationValue] ?? clarificationValue;
+
   const effectiveBranchId = allowedBranches.find(branch => branch.id === selectedBranchId)?.id
     ?? allowedBranches.find(branch => branch.id === user.branchId)?.id
     ?? allowedBranches[0]?.id
@@ -286,7 +294,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
 
   const renderBranchChoice = () => {
     if (branchesLoading) return <p className="rw-branch-note" role="status" data-testid="status-branches-loading">
-      <LoaderCircle size={15}/>{text(lang, 'جارٍ تحميل الفروع المسموح بها...', 'Loading your authorized branches...')}
+      <LoaderCircle size={15} className="animate-spin" />{text(lang, 'جارٍ تحميل الفروع المسموح بها...', 'Loading your authorized branches...')}
     </p>;
     if (branchesError) return <div className="rw-inline-error" role="alert" data-testid="status-branches-error">
       <span>{text(lang, 'تعذر تحميل الفروع المسموح بها. أعد المحاولة قبل متابعة البلاغ.', 'Could not load your authorized branches. Retry before continuing.')}</span>
@@ -296,65 +304,102 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
       {text(lang, 'لا يوجد لديك فرع مسموح به حالياً. اطلب من مديرك إسناد فرع قبل إنشاء البلاغ.', 'You do not have an authorized branch yet. Ask your manager to assign one before creating a report.')}
     </p>;
     return <div className="rw-branch-note" data-testid="text-selected-branch">
-      <MapPin size={15}/>{text(lang, 'الفرع المحدد', 'Selected branch')}: {selectedBranch?.name}
-      {selectedBranch?.city ? ` · ${selectedBranch.city}` : ''}
-      {allowedBranches.length > 1 && <small>{text(lang, 'يمكن تغييره من الشريط الجانبي', 'Change it in the sidebar')}</small>}
+      <Building2 size={15} className="text-[#307190]" />
+      <span>{text(lang, 'الفرع المصرح', 'Authorized branch')}: <b>{selectedBranch?.name}</b>{selectedBranch?.city ? ` · ${selectedBranch.city}` : ''}</span>
+      {allowedBranches.length > 1 && <small className="mr-auto">{text(lang, 'يمكن تغييره من الشريط الجانبي', 'Change in sidebar')}</small>}
     </div>;
   };
 
   const beginReview = (suggestion: TicketAnalysis, preferredLocation = '') => {
-    const finalLocation = preferredLocation || suggestion.location;
+    const finalLocation = preferredLocation || suggestion.location || (lang === 'ar' ? 'داخل الفرع' : 'Inside branch');
     setAnalysis(suggestion);
     setTitle(suggestion.title);
     setReviewDescription(suggestion.description);
-    setCategory(suggestion.category);
-    setPriority(suggestion.priority as TicketPriority);
-    setSpecialization(suggestion.specialization);
+    setCategory(suggestion.category || 'general');
+    setPriority((suggestion.priority as TicketPriority) || 'medium');
+    setSpecialization(suggestion.specialization || 'general');
     setReviewLocation(finalLocation);
     setReviewEditing(false);
     setNeedsLocation(false);
   };
-  const handleAnalyze = (event: FormEvent<HTMLFormElement>) => {
+
+  const handleStartAnalysis = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const rawDescription = description.trim();
     const suppliedLocation = location.trim();
-    analyze.mutate({ description: rawDescription, locale: lang, ...(suppliedLocation ? { location: suppliedLocation } : {}) }, {
-      onSuccess: suggestion => {
-        if ((suggestion.needsClarification || !suggestion.location) && !suppliedLocation) {
-          setSelectedLocation('');
-          setOtherLocation('');
-          setNeedsLocation(true);
-          setAnalysis(suggestion);
-          return;
+
+    setIsAnalyzing(true);
+    setAiStage(1);
+
+    // Staged progressive AI animation:
+    // Stage 1: فهم المشكلة (0-600ms)
+    // Stage 2: تحديد نوع العطل (600-1200ms)
+    // Stage 3: تجهيز التذكرة (1200-1800ms)
+    const t1 = window.setTimeout(() => setAiStage(2), 600);
+    const t2 = window.setTimeout(() => setAiStage(3), 1200);
+    const t3 = window.setTimeout(() => {
+      analyze.mutate({
+        description: rawDescription,
+        locale: lang,
+        ...(suppliedLocation ? { location: suppliedLocation } : {})
+      }, {
+        onSuccess: suggestion => {
+          setIsAnalyzing(false);
+          setAiStage(0);
+          if ((suggestion.needsClarification || !suggestion.location) && !suppliedLocation) {
+            setSelectedLocation('');
+            setOtherLocation('');
+            setNeedsLocation(true);
+            setAnalysis(suggestion);
+            return;
+          }
+          beginReview(suggestion, suppliedLocation || suggestion.location);
+        },
+        onError: () => {
+          setIsAnalyzing(false);
+          setAiStage(0);
         }
-        beginReview(suggestion, suppliedLocation || suggestion.location);
-      }
-    });
+      });
+    }, 1800);
+
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+      window.clearTimeout(t3);
+    };
   };
+
   const handleClarify = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!clarificationValue) return;
-    setLocation(clarifiedLocation);
-    analyze.mutate({ description: description.trim(), location: clarifiedLocation, locale: lang }, {
-      onSuccess: suggestion => beginReview(suggestion, clarifiedLocation)
+    const finalClarified = clarifiedLocation;
+    setLocation(finalClarified);
+    analyze.mutate({ description: description.trim(), location: finalClarified, locale: lang }, {
+      onSuccess: suggestion => beginReview(suggestion, finalClarified)
     });
   };
+
   const setPhotoFromFile = async (file?: File) => {
     if (!file) return;
     setPhotoError('');
     try { setPhoto(await fileToPreview(file, lang)); }
     catch (error) { setPhotoError(error instanceof Error ? error.message : text(lang, 'تعذر تجهيز الصورة.', 'Could not prepare the image.')); }
   };
+
   const appendTranscript = (transcript: string) => {
     setDescription(current => current ? `${current.trimEnd()} ${transcript}` : transcript);
   };
+
   const backToCompose = () => {
     setAnalysis(null);
     setNeedsLocation(false);
     setReviewEditing(false);
+    setIsAnalyzing(false);
     if (reviewLocation) setLocation(reviewLocation);
   };
+
   const returnToPreview = () => setReviewEditing(false);
+
   const submitReview = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const payload: TicketInput = {
@@ -382,240 +427,648 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
       }
     });
   };
+
   useEffect(() => {
     if (!submittedTicket || photoSaveFailed) return;
-    const timer = window.setTimeout(() => navigate(`/workspace/tickets/${submittedTicket.id}`), 1700);
+    const timer = window.setTimeout(() => navigate(`/workspace/tickets/${submittedTicket.id}`), 2200);
     return () => window.clearTimeout(timer);
   }, [submittedTicket, photoSaveFailed, navigate]);
-  const step = analysis ? 3 : needsLocation || analyze.isPending ? 2 : 1;
+
+  // Three-step workflow mapping:
+  // Step 1: وصف المشكلة
+  // Step 2: تحليل وتجهيز البلاغ (while analyzing or needing location clarification)
+  // Step 3: مراجعة البلاغ
+  const step = analysis && !needsLocation ? 3 : (isAnalyzing || needsLocation) ? 2 : 1;
   const nextIcon = lang === 'ar' ? <ArrowLeft size={17}/> : <ArrowRight size={17}/>;
 
-  return <div className="reporter-view" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
-    <ReporterHeading
-      eyebrow={text(lang, 'بلاغ صيانة جديد', 'NEW MAINTENANCE REPORT')}
-      title={analysis ? text(lang, 'مراجعة البلاغ', 'Review your report') : text(lang, 'خلّنا نعرف ما الذي حدث', 'Tell us what happened')}
-      description={analysis
-        ? text(lang, 'جهزنا التفاصيل لتراجعها قبل الإرسال.', 'Your report is ready for a final review.')
-        : text(lang, 'خطوات قليلة، ومراجعة منك قبل إرسال البلاغ.', 'A few simple steps, with your review before anything is sent.')}
-      lang={lang}
-    />
-    <div className="rw-report">
-      <div className="rw-progress" aria-label={text(lang, `الخطوة ${step} من 3`, `Step ${step} of 3`)} data-testid="status-report-progress">
-        {[
-          text(lang, 'وصف المشكلة', 'Describe the issue'),
-          text(lang, 'تجهيز البلاغ', 'Prepare the report'),
-          text(lang, 'مراجعة البلاغ', 'Review the report'),
-        ].map((label, index) => <div key={label} className={`rw-progress-step ${step >= index + 1 ? 'is-active' : ''} ${step > index + 1 ? 'is-complete' : ''}`}>
-          <span className="rw-progress-dot" aria-hidden="true">{step > index + 1 ? <Check size={12}/> : index + 1}</span>
-          <span>{label}</span>
-        </div>)}
+  return (
+    <div className="reporter-view" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+      <ReporterHeading
+        title={
+          step === 3
+            ? text(lang, 'جهزنا بلاغك', 'Your report is ready')
+            : step === 2
+            ? text(lang, 'تحليل وتجهيز البلاغ', 'Analyzing and preparing report')
+            : text(lang, 'صف ما لاحظته', 'Describe what happened')
+        }
+        description={
+          step === 3
+            ? text(lang, 'راجع تفاصيل البلاغ التي أعدها النظام، ويمكنك تعديلها قبل الإرسال.', 'Review the details prepared by TADARUK. You can make edits before submitting.')
+            : step === 2
+            ? text(lang, 'تدارك يحلل العطل ويحدد التخصص والأولوية المناسبة.', 'TADARUK is analyzing the issue to determine category and priority.')
+            : text(lang, 'اكتب، أو سجّل صوتاً، أو أرفق صورة. لن يُرسل شيء قبل مراجعتك.', 'Type, record your voice, or attach a photo. Nothing is sent before your review.')
+        }
+        lang={lang}
+      />
+
+      <div className="rw-report">
+        {/* Elegant 3-Step Progress Indicator */}
+        <div className="rw-progress" aria-label={text(lang, `الخطوة ${step} من 3`, `Step ${step} of 3`)} data-testid="status-report-progress">
+          {[
+            text(lang, 'وصف المشكلة', 'Describe the issue'),
+            text(lang, 'تحليل وتجهيز البلاغ', 'Analyze & prepare report'),
+            text(lang, 'مراجعة البلاغ', 'Review the report'),
+          ].map((label, index) => (
+            <div key={label} className={`rw-progress-step ${step >= index + 1 ? 'is-active' : ''} ${step > index + 1 ? 'is-complete' : ''}`}>
+              <span className="rw-progress-dot" aria-hidden="true">
+                {step > index + 1 ? <Check size={13} strokeWidth={2.5}/> : index + 1}
+              </span>
+              <span>{label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* STEP 1: Compose Form */}
+        {!analysis && !needsLocation && !isAnalyzing && (
+          <motion.form
+            key="compose"
+            initial={reduced ? false : { opacity: 0, y: 7 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: reduced ? 0 : 0.2 }}
+            onSubmit={handleStartAnalysis}
+            data-testid="form-report-description"
+          >
+            <div className="rw-report-intro">
+              <span className="rw-report-icon">
+                <Sparkles size={22} className="text-[#307190]" />
+              </span>
+              <div>
+                <h2>{text(lang, 'صف ما لاحظته', 'Describe what you noticed')}</h2>
+                <p>{text(lang, 'اكتب، أو سجّل صوتاً، أو أرفق صورة. لن يُرسل شيء قبل مراجعتك.', 'Type, record a voice note, or add a photo. Nothing is sent before your review.')}</p>
+              </div>
+            </div>
+
+            {renderBranchChoice()}
+
+            {/* Quick Preset Demo Scenarios */}
+            <div className="rw-preset-bar">
+              <span className="rw-preset-hint">
+                <Sparkles size={14} />
+                {text(lang, 'أمثلة جاهزة للتجربة السريعة:', 'Quick demo presets:')}
+              </span>
+              <div className="rw-preset-chips">
+                {PRESET_DEMO_SCENARIOS.map(preset => (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    className="rw-preset-chip"
+                    onClick={() => {
+                      setDescription(preset.description[lang]);
+                      setLocation(preset.location[lang]);
+                      setPhoto(preset.photoUrl);
+                      setPhotoError('');
+                    }}
+                    data-testid={`preset-scenario-${preset.id}`}
+                  >
+                    <span>{preset.emoji}</span>
+                    <span>{preset.label[lang]}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Description Textarea */}
+            <label className="rw-field">
+              <span className="font-semibold text-sm">
+                {text(lang, 'وصف المشكلة', 'Describe the issue')}
+                <span className="rw-field-hint">{text(lang, 'اكتب بكلماتك البسيطة', 'In your own words')}</span>
+              </span>
+              <textarea
+                ref={descriptionInputRef}
+                value={description}
+                onChange={event => setDescription(event.currentTarget.value)}
+                placeholder={text(lang, 'مثال: يوجد تسريب ماء أسفل حوض التحضير في المطبخ...', 'Example: There is a water leak beneath the prep sink in the kitchen...')}
+                className="text-base"
+                data-testid="input-report-description"
+              />
+            </label>
+
+            {/* Voice Input Section */}
+            <div className="rw-input-options" aria-label={text(lang, 'طرق وصف المشكلة', 'Ways to describe the issue')}>
+              <span className="rw-input-option-label">{text(lang, 'الوصف الصوتي', 'VOICE DESCRIPTION')}</span>
+              <AiVoiceInput
+                lang={lang}
+                onTranscript={appendTranscript}
+                onManualEntry={() => descriptionInputRef.current?.focus()}
+              />
+            </div>
+
+            {/* Photo Attachment Section */}
+            <div className="rw-field">
+              <span className="font-semibold text-sm">
+                {text(lang, 'صورة للمشكلة', 'A photo of the issue')}
+                <span className="rw-field-hint">{text(lang, 'اختياري ولكن يُفضل إرفاقها', 'Optional but recommended')}</span>
+              </span>
+              <div className="rw-photo-panel">
+                <div className="rw-photo-panel-copy">
+                  <span><ImagePlus size={20}/></span>
+                  <div>
+                    <b>{text(lang, 'أرفق صورة للمشكلة', 'Attach an issue photo')}</b>
+                    <small>{text(lang, 'اختر صورة من جهازك أو التقطها بالكاميرا مباشرة.', 'Choose a photo or take one directly.')}</small>
+                  </div>
+                </div>
+                <div className="rw-photo-actions">
+                  <label className="rw-button rw-button-secondary rw-upload" data-testid="button-upload-photo">
+                    {photo ? <RotateCcw size={16}/> : <ImagePlus size={17}/>}
+                    {text(lang, photo ? 'استبدال الصورة' : 'رفع صورة', photo ? 'Replace photo' : 'Upload photo')}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      aria-label={text(lang, 'اختيار صورة من الجهاز', 'Choose a photo from your device')}
+                      data-testid="input-upload-photo"
+                      onChange={event => {
+                        const file = event.currentTarget.files?.[0];
+                        event.currentTarget.value = '';
+                        void setPhotoFromFile(file);
+                      }}
+                    />
+                  </label>
+                  <label className="rw-button rw-button-quiet rw-upload" data-testid="button-capture-photo">
+                    <Camera size={17}/>
+                    {text(lang, 'التقاط بالكاميرا', 'Take photo')}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      aria-label={text(lang, 'التقاط صورة بالكاميرا', 'Take a photo with camera')}
+                      data-testid="input-capture-photo"
+                      onChange={event => {
+                        const file = event.currentTarget.files?.[0];
+                        event.currentTarget.value = '';
+                        void setPhotoFromFile(file);
+                      }}
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {photo && (
+                <div className="rw-photo-preview" data-testid="preview-report-photo">
+                  <img src={photo} alt={text(lang, 'معاينة صورة المشكلة', 'Issue photo preview')} />
+                  <div className="rw-photo-preview-bar">
+                    <span>{text(lang, 'معاينة الصورة المرفقة', 'Attached photo preview')}</span>
+                    <button
+                      type="button"
+                      className="rw-text-button"
+                      onClick={() => { setPhoto(''); setPhotoError(''); }}
+                      data-testid="button-remove-photo"
+                    >
+                      <Trash2 size={14}/>{text(lang, 'إزالة', 'Remove')}
+                    </button>
+                  </div>
+                </div>
+              )}
+              {photoError && <p className="rw-inline-error" role="alert" data-testid="status-photo-error">{photoError}</p>}
+            </div>
+
+            {analyze.isError && (
+              <p className="rw-inline-error" role="alert" data-testid="status-analyze-error">
+                {text(lang, 'تعذر تجهيز الاقتراحات. راجع الوصف وحاول مجدداً.', 'Could not prepare suggestions. Check the description and try again.')}
+              </p>
+            )}
+
+            {/* Action to proceed to AI analysis */}
+            <div className="rw-form-actions">
+              <button
+                type="submit"
+                className="rw-button rw-button-primary"
+                disabled={!canUseBranch || isAnalyzing}
+                data-testid="button-continue-report"
+              >
+                {isAnalyzing ? (
+                  <span className="rw-busy">
+                    <LoaderCircle size={16} className="animate-spin" />
+                    {text(lang, 'جارٍ تحليل البلاغ...', 'Analyzing your report...')}
+                  </span>
+                ) : (
+                  <>
+                    <Sparkles size={16} className="text-[#56F4EF]" />
+                    {text(lang, 'تحليل البلاغ', 'Analyze report')}
+                    {nextIcon}
+                  </>
+                )}
+              </button>
+              <small>{text(lang, 'لن يُرسل البلاغ إلا بعد مراجعتك وتأكيدك.', 'Nothing is sent until you review and confirm.')}</small>
+            </div>
+          </motion.form>
+        )}
+
+        {/* STEP 2A: AI Processing Animation Screen */}
+        {isAnalyzing && (
+          <motion.div
+            key="analyzing-stage"
+            className="rw-analysis-stage"
+            initial={reduced ? false : { opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.25 }}
+            data-testid="status-ai-analyzing"
+          >
+            <div className="rw-ai-orb-wrap">
+              <div className="rw-ai-orb-pulse" />
+              <div className="rw-ai-orb">
+                <Sparkles className="h-8 w-8 text-[#56F4EF] animate-pulse" />
+              </div>
+            </div>
+            <div className="rw-ai-heading">
+              <h3>{text(lang, 'تدارك يجهّز بلاغك بالذكاء الاصطناعي...', 'TADARUK AI is preparing your report...')}</h3>
+              <p>
+                {text(
+                  lang,
+                  'نقوم الآن بتحليل الوصف، تصنيف العطل، تحديد مستوى الأولوية واقتراح التخصص المناسب للفني.',
+                  'Analyzing description, categorizing issue, setting priority and determining technician specialization.',
+                )}
+              </p>
+            </div>
+
+            <div className="rw-ai-steps">
+              {[
+                { step: 1, ar: 'فهم المشكلة وقراءة الملاحظات', en: 'Understanding the problem' },
+                { step: 2, ar: 'تحديد نوع العطل والتصنيف الفني', en: 'Identifying failure type' },
+                { step: 3, ar: 'تجهيز التذكرة وتحديد الأولوية', en: 'Preparing the ticket' },
+              ].map(item => {
+                const isDone = aiStage > item.step;
+                const isActive = aiStage === item.step;
+                return (
+                  <div key={item.step} className={`rw-ai-step ${isDone ? 'is-done' : ''} ${isActive ? 'is-active' : ''}`}>
+                    <span className="rw-ai-step-indicator">
+                      {isDone ? (
+                        <Check size={14} className="text-white" />
+                      ) : isActive ? (
+                        <LoaderCircle size={14} className="animate-spin text-[#56F4EF]" />
+                      ) : (
+                        item.step
+                      )}
+                    </span>
+                    <span className="rw-ai-step-text">{text(lang, item.ar, item.en)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+
+        {/* STEP 2B: Smart Clarification (only if location was missing) */}
+        {!analysis && needsLocation && !isAnalyzing && (
+          <motion.form
+            key="clarify"
+            initial={reduced ? false : { opacity: 0, y: 7 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: reduced ? 0 : 0.2 }}
+            onSubmit={handleClarify}
+            data-testid="form-report-location"
+          >
+            <div className="rw-clarify-card">
+              <div className="rw-clarify-badge">
+                <MapPin size={15} />
+                <span>{text(lang, 'تحديد موقع العطل', 'SPECIFY LOCATION')}</span>
+              </div>
+              <h2>{text(lang, 'وين مكان العطل داخل الفرع؟', 'Where is the issue located in the branch?')}</h2>
+              <p>
+                {text(
+                  lang,
+                  'هذه المعلومة فقط لتوجيه الفني مباشرة إلى المكان المناسب داخل الفرع.',
+                  'One quick detail so the technician heads directly to the right location.',
+                )}
+              </p>
+
+              <div className="rw-choices">
+                {locationChoices.map(choice => (
+                  <button
+                    key={choice}
+                    type="button"
+                    className={`rw-chip ${selectedLocation === choice ? 'is-selected' : ''}`}
+                    onClick={() => setSelectedLocation(choice)}
+                    data-testid={`button-location-${choice === 'مكان آخر' ? 'other' : locationChoices.indexOf(choice)}`}
+                  >
+                    {text(lang, choice, ({ 'المطبخ': 'Kitchen', 'صالة العملاء': 'Customer area', 'المستودع': 'Storage', 'دورات المياه': 'Restrooms', 'مكان آخر': 'Somewhere else' } as Record<string, string>)[choice])}
+                  </button>
+                ))}
+              </div>
+
+              {selectedLocation === 'مكان آخر' && (
+                <label className="rw-field mt-3">
+                  <span>{text(lang, 'اكتب الموقع', 'Enter location')}</span>
+                  <input
+                    autoFocus
+                    required
+                    value={otherLocation}
+                    onChange={event => setOtherLocation(event.currentTarget.value)}
+                    placeholder={text(lang, 'مثال: غرفة الموظفين / خلف منطقة الكاشير', 'Example: Staff room / behind cashier')}
+                    data-testid="input-custom-location"
+                  />
+                </label>
+              )}
+            </div>
+
+            {analyze.isError && (
+              <p className="rw-inline-error" role="alert" data-testid="status-location-error">
+                {text(lang, 'تعذر تجهيز الاقتراحات. حاول مرة أخرى.', 'Could not prepare suggestions. Please try again.')}
+              </p>
+            )}
+
+            <div className="rw-form-actions">
+              <button
+                type="submit"
+                className="rw-button rw-button-primary"
+                disabled={!clarificationValue || analyze.isPending}
+                data-testid="button-confirm-location"
+              >
+                {analyze.isPending ? (
+                  <span className="rw-busy">
+                    <LoaderCircle size={16} className="animate-spin" />
+                    {text(lang, 'جارٍ التجهيز...', 'Preparing...')}
+                  </span>
+                ) : (
+                  <>
+                    {text(lang, 'متابعة إلى مراجعة البلاغ', 'Continue to review')}
+                    {nextIcon}
+                  </>
+                )}
+              </button>
+              <button
+                type="button"
+                className="rw-button rw-button-quiet"
+                onClick={backToCompose}
+                data-testid="button-back-description"
+              >
+                {lang === 'ar' ? <ArrowUpRight size={15}/> : <ArrowUpLeft size={15}/>}
+                {text(lang, 'العودة للوصف', 'Back to description')}
+              </button>
+            </div>
+          </motion.form>
+        )}
+
+        {/* SUBMISSION RESULT: Success State with Ticket Details Navigation */}
+        {submittedTicket && (
+          <div className="rw-submission-success-card" role="status" data-testid="state-report-sent">
+            <div className="rw-success-icon-wrap">
+              <div className="rw-success-pulse-ring" />
+              <span className="rw-success-icon">
+                <CheckCircle2 size={36} className="text-[#56F4EF]" />
+              </span>
+            </div>
+            <h2>{text(lang, 'تم إرسال البلاغ بنجاح', 'Report sent successfully')}</h2>
+            <div className="rw-ticket-num-badge">
+              {text(lang, 'رقم البلاغ:', 'Ticket number:')} <strong>{submittedTicket.number}</strong>
+            </div>
+            <p className="rw-success-sub">
+              {photoSaveFailed
+                ? photoError
+                : text(
+                    lang,
+                    'تم إسناد البلاغ وتوجيهه إلى فريق الصيانة المختص. جارٍ فتح تفاصيل البلاغ تلقائياً.',
+                    'The report has been created and directed to the maintenance team. Opening details now.',
+                  )}
+            </p>
+            <button
+              type="button"
+              className="rw-button rw-button-primary"
+              onClick={() => navigate(`/workspace/tickets/${submittedTicket.id}`)}
+              data-testid="button-open-created-report"
+            >
+              {text(lang, 'عرض تفاصيل البلاغ', 'Open ticket details')}
+              {nextIcon}
+            </button>
+          </div>
+        )}
+
+        {/* STEP 3: Beautiful Generated Ticket Preview */}
+        {analysis && !submittedTicket && !isAnalyzing && !needsLocation && (
+          <motion.form
+            key="review"
+            initial={reduced ? false : { opacity: 0, y: 7 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: reduced ? 0 : 0.2 }}
+            onSubmit={submitReview}
+            data-testid="form-report-review"
+          >
+            <div className="rw-report-intro">
+              <span className="rw-report-icon">
+                <CheckCircle2 size={24} className="text-[#307190]" />
+              </span>
+              <div>
+                <h2>{text(lang, 'جهزنا بلاغك', 'Your report is ready')}</h2>
+                <p>
+                  {text(
+                    lang,
+                    'راجع تفاصيل البلاغ التي أعدها النظام، ويمكنك تعديلها قبل الإرسال.',
+                    'Review the details prepared by TADARUK. You can make edits before submitting.',
+                  )}
+                </p>
+              </div>
+            </div>
+
+            <div className="rw-ticket-preview-card" data-testid="card-review-ticket">
+              <header className="rw-ticket-preview-head">
+                <div className="flex items-center gap-2">
+                  <span className="rw-preview-cat-badge">
+                    <ClipboardList size={14} />
+                    {classificationLabel(category, lang)}
+                  </span>
+                  <span className={`rw-priority-badge rw-priority-${priority}`}>
+                    {priorityLabel(priority, lang)}
+                  </span>
+                </div>
+                <span className="rw-demo-pill">
+                  <Sparkles size={12} className="text-[#307190] dark:text-[#56F4EF]" />
+                  {text(lang, 'تحليل ذكي (تجريبي)', 'AI Prepared (Demo)')}
+                </span>
+              </header>
+
+              {!reviewEditing ? (
+                <>
+                  <div className="rw-preview-title-block">
+                    <span className="rw-preview-label">{text(lang, 'عنوان البلاغ', 'REPORT TITLE')}</span>
+                    <h3 data-testid="text-generated-title">{title}</h3>
+                    <p data-testid="text-generated-description">{reviewDescription}</p>
+                  </div>
+
+                  <div className="rw-preview-facts">
+                    <div>
+                      <span><ClipboardList size={15}/>{text(lang, 'الفئة', 'Category')}</span>
+                      <b>{classificationLabel(category, lang)}</b>
+                    </div>
+                    <div>
+                      <span><CircleAlert size={15}/>{text(lang, 'الأولوية المقترحة', 'Suggested priority')}</span>
+                      <b className={`rw-priority rw-priority-${priority}`}>{priorityLabel(priority, lang)}</b>
+                    </div>
+                    <div>
+                      <span><Wrench size={15}/>{text(lang, 'التخصص المطلوب', 'Required specialization')}</span>
+                      <b>{classificationLabel(specialization, lang)}</b>
+                    </div>
+                    <div>
+                      <span><Building2 size={15}/>{text(lang, 'الفرع المصرح', 'Authorized branch')}</span>
+                      <b>{selectedBranch?.name || text(lang, 'الفرع المصرح', 'Authorized branch')}</b>
+                    </div>
+                    <div className="rw-fact-span-full">
+                      <span><MapPin size={15}/>{text(lang, 'الموقع داخل الفرع', 'Location in branch')}</span>
+                      <b>{reviewLocation || text(lang, 'داخل الفرع', 'Inside branch')}</b>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                /* Inline Edit Mode */
+                <div className="rw-edit-container">
+                  <div className="rw-editing-note">
+                    <RotateCcw size={15} />
+                    {text(lang, 'عدّل الاقتراحات بحرية، ثم ارجع للمعاينة قبل الإرسال.', 'Adjust suggestions freely, then return to preview.')}
+                  </div>
+                  <label className="rw-field">
+                    <span>{text(lang, 'عنوان البلاغ', 'Report title')}</span>
+                    <input
+                      required
+                      minLength={3}
+                      value={title}
+                      placeholder={text(lang, 'مثال: تسرب مياه أسفل حوض التحضير', 'Example: Water leak beneath prep sink')}
+                      onChange={event => setTitle(event.currentTarget.value)}
+                      data-testid="input-review-title"
+                    />
+                  </label>
+                  <label className="rw-field rw-preview-description">
+                    <span>{text(lang, 'وصف المشكلة المنظم', 'Structured issue description')}</span>
+                    <textarea
+                      required
+                      minLength={4}
+                      value={reviewDescription}
+                      onChange={event => setReviewDescription(event.currentTarget.value)}
+                      data-testid="input-review-description"
+                    />
+                  </label>
+                  <div className="rw-review-grid">
+                    <div className="rw-field">
+                      <span>{text(lang, 'الفئة', 'Category')}</span>
+                      <TadarukSelect
+                        required
+                        value={category}
+                        onValueChange={setCategory}
+                        ariaLabel={text(lang, 'الفئة', 'Category')}
+                        dir={lang === 'ar' ? 'rtl' : 'ltr'}
+                        placeholder={text(lang, 'اختر الفئة', 'Choose a category')}
+                        testId="input-review-category"
+                        options={[
+                          ...(category && !classificationOptions.some(([value]) => value === category) ? [{ value: category, label: category }] : []),
+                          ...classificationOptions.map(([value, ar, en]) => ({ value, label: text(lang, ar, en) })),
+                        ]}
+                      />
+                    </div>
+                    <div className="rw-field">
+                      <span>{text(lang, 'الأولوية', 'Priority')}</span>
+                      <TadarukSelect
+                        value={priority}
+                        onValueChange={value => setPriority(value as TicketPriority)}
+                        ariaLabel={text(lang, 'الأولوية', 'Priority')}
+                        dir={lang === 'ar' ? 'rtl' : 'ltr'}
+                        testId="select-review-priority"
+                        options={[
+                          { value: 'urgent', label: priorityLabel('urgent', lang) },
+                          { value: 'high', label: priorityLabel('high', lang) },
+                          { value: 'medium', label: priorityLabel('medium', lang) },
+                          { value: 'low', label: priorityLabel('low', lang) },
+                        ]}
+                      />
+                    </div>
+                    <div className="rw-field">
+                      <span>{text(lang, 'التخصص المطلوب', 'Specialization')}</span>
+                      <TadarukSelect
+                        required
+                        value={specialization}
+                        onValueChange={setSpecialization}
+                        ariaLabel={text(lang, 'التخصص', 'Specialization')}
+                        dir={lang === 'ar' ? 'rtl' : 'ltr'}
+                        placeholder={text(lang, 'اختر التخصص', 'Choose a specialization')}
+                        testId="input-review-specialization"
+                        options={[
+                          ...(specialization && !classificationOptions.some(([value]) => value === specialization) ? [{ value: specialization, label: classificationLabel(specialization, lang) }] : []),
+                          ...classificationOptions.map(([value, ar, en]) => ({ value, label: text(lang, ar, en) })),
+                        ]}
+                      />
+                    </div>
+                    <label className="rw-field">
+                      <span>{text(lang, 'الموقع داخل الفرع', 'Location in branch')}</span>
+                      <input
+                        required
+                        value={reviewLocation}
+                        placeholder={text(lang, 'مثال: بجانب حوض التحضير', 'Example: beside the prep sink')}
+                        onChange={event => setReviewLocation(event.currentTarget.value)}
+                        data-testid="input-review-location"
+                      />
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              {/* Photo preview in review */}
+              {photo && (
+                <div className="rw-review-photo-block" data-testid="preview-review-photo">
+                  <span className="rw-preview-label">{text(lang, 'الصورة المرفقة', 'ATTACHED PHOTO')}</span>
+                  <div className="rw-review-photo-frame">
+                    <img src={photo} alt={text(lang, 'الصورة المرفقة بالبلاغ', 'Photo attached to report')} />
+                    <button
+                      type="button"
+                      className="rw-photo-remove-btn"
+                      onClick={() => setPhoto('')}
+                      data-testid="button-remove-review-photo"
+                    >
+                      <X size={14} />
+                      {text(lang, 'إزالة الصورة', 'Remove photo')}
+                    </button>
+                  </div>
+                </div>
+              )}
+              {photoError && <p className="rw-inline-error" role="alert" data-testid="status-photo-storage-error">{photoError}</p>}
+            </div>
+
+            {create.isError && (
+              <p className="rw-inline-error" role="alert" data-testid="status-create-error">
+                {text(lang, 'لم يُرسل البلاغ. يمكنك المحاولة مرة أخرى.', 'The report was not sent. You can try again.')}
+              </p>
+            )}
+
+            <div className="rw-form-actions">
+              <button
+                type="submit"
+                className="rw-button rw-button-primary"
+                disabled={!canUseBranch || create.isPending || !title.trim() || !reviewLocation.trim()}
+                data-testid="button-submit-report"
+              >
+                {create.isPending ? (
+                  <span className="rw-busy">
+                    <LoaderCircle size={16} className="animate-spin" />
+                    {text(lang, 'جارٍ إرسال البلاغ...', 'Sending report...')}
+                  </span>
+                ) : (
+                  <>
+                    {text(lang, 'تأكيد وإرسال', 'Confirm & send')}
+                    <Send size={16}/>
+                  </>
+                )}
+              </button>
+              {!reviewEditing ? (
+                <button
+                  type="button"
+                  className="rw-button rw-button-secondary"
+                  onClick={() => setReviewEditing(true)}
+                  disabled={create.isPending}
+                  data-testid="button-edit-report"
+                >
+                  {text(lang, 'تعديل', 'Edit')}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="rw-button rw-button-quiet"
+                  onClick={returnToPreview}
+                  disabled={create.isPending}
+                  data-testid="button-return-preview"
+                >
+                  {text(lang, 'العودة للمعاينة', 'Return to preview')}
+                </button>
+              )}
+              <small>{text(lang, 'بالإرسال، سيصل البلاغ مباشرة للفني المختص.', 'Upon submission, the ticket will be assigned to the technician.')}</small>
+            </div>
+          </motion.form>
+        )}
       </div>
-
-      {!analysis && !needsLocation && <motion.form
-        key="compose"
-        initial={reduced ? false : { opacity: 0, y: 7 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: reduced ? 0 : .2 }}
-        onSubmit={handleAnalyze}
-        data-testid="form-report-description"
-      >
-        <div className="rw-report-intro">
-          <span className="rw-report-icon"><ClipboardList size={21}/></span>
-          <div><h2>{text(lang, 'صف ما لاحظته', 'Describe what you noticed')}</h2>
-            <p>{text(lang, 'اكتب، أو سجّل صوتاً، أو أرفق صورة. لن يُرسل شيء قبل مراجعتك.', 'Type, record a voice note, or add a photo. Nothing is sent before your review.')}</p>
-          </div>
-        </div>
-        {renderBranchChoice()}
-        <label className="rw-field">
-          <span>{text(lang, 'وصف المشكلة', 'Describe the issue')} <span className="rw-field-hint">{text(lang, 'اختياري', 'Optional')}</span></span>
-          <textarea ref={descriptionInputRef} value={description} onChange={event => {
-            setDescription(event.currentTarget.value);
-          }}
-            placeholder={text(lang, 'مثال: يوجد تسريب ماء بجانب حوض التحضير...', 'Example: There is a water leak beside the prep sink...')}
-            data-testid="input-report-description"/>
-        </label>
-        <div className="rw-input-options" aria-label={text(lang, 'طرق وصف المشكلة', 'Ways to describe the issue')}>
-          <span className="rw-input-option-label">{text(lang, 'وصفك', 'YOUR DESCRIPTION')}</span>
-          <AiVoiceInput lang={lang} onTranscript={appendTranscript} onManualEntry={() => descriptionInputRef.current?.focus()}/>
-        </div>
-        <div className="rw-field">
-          <span>{text(lang, 'صورة للمشكلة', 'A photo of the issue')} <span className="rw-field-hint">{text(lang, 'اختياري', 'Optional')}</span></span>
-          <div className="rw-photo-panel">
-            <div className="rw-photo-panel-copy">
-              <span><ImagePlus size={20}/></span>
-              <div><b>{text(lang, 'أرفق صورة للمشكلة', 'Attach an issue photo')}</b>
-                <small>{text(lang, 'اختر صورة أو التقطها بالكاميرا. تبقى في هذا المتصفح.', 'Choose a photo or take one. It stays in this browser.')}</small>
-              </div>
-            </div>
-            <div className="rw-photo-actions">
-              <label className="rw-button rw-button-secondary rw-upload" data-testid="button-upload-photo">
-                {photo ? <RotateCcw size={16}/> : <ImagePlus size={17}/>}
-                {text(lang, photo ? 'استبدال الصورة' : 'رفع صورة', photo ? 'Replace photo' : 'Upload photo')}
-                <input type="file" accept="image/*" aria-label={text(lang, 'اختيار صورة من الجهاز', 'Choose a photo from your device')}
-                  data-testid="input-upload-photo" onChange={event => { const file = event.currentTarget.files?.[0]; event.currentTarget.value = ''; void setPhotoFromFile(file); }}/>
-              </label>
-              <label className="rw-button rw-button-quiet rw-upload" data-testid="button-capture-photo">
-                <Camera size={17}/>{text(lang, 'التقاط صورة', 'Take a photo')}
-                <input type="file" accept="image/*" capture="environment" aria-label={text(lang, 'التقاط صورة بالكاميرا', 'Take a photo with camera')}
-                  data-testid="input-capture-photo" onChange={event => { const file = event.currentTarget.files?.[0]; event.currentTarget.value = ''; void setPhotoFromFile(file); }}/>
-              </label>
-            </div>
-          </div>
-          {photo && <div className="rw-photo-preview" data-testid="preview-report-photo">
-            <img src={photo} alt={text(lang, 'معاينة صورة المشكلة', 'Issue photo preview')}/>
-            <div className="rw-photo-preview-bar"><span>{text(lang, 'معاينة على هذا الجهاز فقط', 'Preview kept on this device only')}</span>
-              <button type="button" className="rw-text-button" onClick={() => { setPhoto(''); setPhotoError(''); }} data-testid="button-remove-photo"><Trash2 size={14}/>{text(lang, 'إزالة', 'Remove')}</button>
-            </div>
-          </div>}
-          {photoError && <p className="rw-inline-error" role="alert" data-testid="status-photo-error">{photoError}</p>}
-        </div>
-        {analyze.isError && <p className="rw-inline-error" role="alert" data-testid="status-analyze-error">{text(lang, 'تعذر تجهيز الاقتراحات. راجع الوصف وحاول مجدداً.', 'Could not prepare suggestions. Check the description and try again.')}</p>}
-        <div className="rw-form-actions">
-          <button type="submit" className="rw-button" disabled={!canUseBranch || analyze.isPending} data-testid="button-continue-report">
-            {analyze.isPending ? <span className="rw-busy"><LoaderCircle size={16}/>{text(lang, 'جاري تحليل البلاغ...', 'Analyzing your report...')}</span> : <>{text(lang, 'تجهيز المراجعة', 'Prepare review')}{nextIcon}</>}
-          </button>
-          <small>{text(lang, 'لن يُرسل البلاغ إلا بعد مراجعتك وتأكيدك.', 'Nothing is sent until you review and confirm.')}</small>
-        </div>
-      </motion.form>}
-
-      {!analysis && needsLocation && <motion.form
-        key="clarify"
-        initial={reduced ? false : { opacity: 0, y: 7 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: reduced ? 0 : .2 }}
-        onSubmit={handleClarify}
-        data-testid="form-report-location"
-      >
-        <div className="rw-report-intro">
-          <span className="rw-report-icon"><MapPin size={21}/></span>
-          <div><h2>{text(lang, 'أين داخل الفرع؟', 'Where in the branch?')}</h2>
-            <p>{text(lang, 'يساعدنا تحديد المكان على توجيه البلاغ للفريق المناسب.', 'A location helps us direct the report to the right team.')}</p>
-          </div>
-        </div>
-        <div className="rw-context">
-          <h3>{text(lang, 'اختر أقرب موقع', 'Choose the closest location')}</h3>
-          <p>{text(lang, 'هذه المعلومة فقط هي الناقصة قبل أن نجهز مراجعة البلاغ.', 'This is the only detail missing before we prepare your review.')}</p>
-          <div className="rw-choices">
-            {locationChoices.map(choice => <button key={choice} type="button" className="rw-chip"
-              aria-pressed={selectedLocation === choice} onClick={() => setSelectedLocation(choice)}
-              data-testid={`button-location-${choice === 'مكان آخر' ? 'other' : locationChoices.indexOf(choice)}`}>
-              {text(lang, choice, ({ 'المطبخ': 'Kitchen', 'صالة العملاء': 'Customer area', 'المستودع': 'Storage', 'دورات المياه': 'Restrooms', 'مكان آخر': 'Somewhere else' } as Record<string, string>)[choice])}
-            </button>)}
-          </div>
-        </div>
-        {selectedLocation === 'مكان آخر' && <label className="rw-field">
-          <span>{text(lang, 'اكتب الموقع', 'Enter the location')}</span>
-          <input autoFocus required value={otherLocation} onChange={event => setOtherLocation(event.currentTarget.value)}
-            placeholder={text(lang, 'مثال: غرفة الموظفين', 'Example: staff room')} data-testid="input-custom-location"/>
-        </label>}
-        {analyze.isError && <p className="rw-inline-error" role="alert" data-testid="status-location-error">{text(lang, 'تعذر تجهيز الاقتراحات. حاول مرة أخرى.', 'Could not prepare suggestions. Please try again.')}</p>}
-        <div className="rw-form-actions">
-          <button type="submit" className="rw-button" disabled={!clarificationValue || analyze.isPending} data-testid="button-confirm-location">
-            {analyze.isPending ? <span className="rw-busy"><LoaderCircle size={16}/>{text(lang, 'جارٍ تجهيز المراجعة', 'Preparing review')}</span> : <>{text(lang, 'متابعة إلى المراجعة', 'Continue to review')}{nextIcon}</>}
-          </button>
-          <button type="button" className="rw-button rw-button-quiet" onClick={backToCompose} data-testid="button-back-description">
-            {lang === 'ar' ? <ArrowUpRight size={15}/> : <ArrowUpLeft size={15}/>}
-            {text(lang, 'العودة للوصف', 'Back to description')}
-          </button>
-        </div>
-      </motion.form>}
-
-      {submittedTicket && <div className="rw-submission-result" role="status" data-testid="state-report-sent">
-        <span className="rw-report-icon"><CheckCircle2 size={22}/></span>
-        <div><h2>{text(lang, 'تم إرسال البلاغ', 'Report sent')}</h2>
-          <p>{photoSaveFailed ? photoError : text(lang, `تم تسجيل البلاغ ${submittedTicket.number}. جارٍ فتح تفاصيله.`, `Report ${submittedTicket.number} is saved. Opening its details now.`)}</p>
-          <button type="button" className="rw-button" onClick={() => navigate(`/workspace/tickets/${submittedTicket.id}`)} data-testid="button-open-created-report">{text(lang, 'عرض البلاغ', 'Open report')}<ArrowRight size={16}/></button>
-        </div>
-      </div>}
-      {analysis && !submittedTicket && <motion.form
-        key="review"
-        initial={reduced ? false : { opacity: 0, y: 7 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: reduced ? 0 : .2 }}
-        onSubmit={submitReview}
-        data-testid="form-report-review"
-      >
-        <div className="rw-report-intro">
-          <span className="rw-report-icon"><CheckCircle2 size={22}/></span>
-          <div><h2>{text(lang, 'جهزنا بلاغك', 'Your report is ready')}</h2>
-            <p>{text(lang, 'راجع التفاصيل، ويمكنك تعديلها قبل الإرسال.', 'Review the details and make any edits before sending.')}</p>
-          </div>
-        </div>
-        <div className="rw-ticket-preview-card" data-testid="card-review-ticket">
-          <header className="rw-ticket-preview-head">
-            <div><span>{text(lang, 'معاينة البلاغ', 'REPORT PREVIEW')}</span><b>{text(lang, 'طلب صيانة', 'Maintenance request')}</b></div>
-            <span className="rw-preview-status">{text(lang, 'نسخة تجريبية', 'Demo')}</span>
-          </header>
-          {!reviewEditing ? <>
-            <div className="rw-preview-title-block">
-              <span className="rw-preview-label">{text(lang, 'عنوان البلاغ', 'REPORT TITLE')}</span>
-              <h3 data-testid="text-generated-title">{title}</h3>
-              <p data-testid="text-generated-description">{reviewDescription}</p>
-            </div>
-            <div className="rw-preview-facts">
-              <div><span><ClipboardList size={14}/>{text(lang, 'الفئة', 'Category')}</span><b>{classificationLabel(category, lang)}</b></div>
-              <div><span><CircleAlert size={14}/>{text(lang, 'الأولوية المقترحة', 'Suggested priority')}</span><b className={`rw-priority rw-priority-${priority}`}>{priorityLabel(priority, lang)}</b></div>
-              <div><span><MapPin size={14}/>{text(lang, 'الموقع داخل الفرع', 'Location')}</span><b>{reviewLocation}</b></div>
-              <div><span><Wrench size={14}/>{text(lang, 'التخصص المقترح', 'Suggested specialization')}</span><b>{classificationLabel(specialization, lang)}</b></div>
-              <div><span><ShieldCheck size={14}/>{text(lang, 'الفرع المصرح', 'Authorized branch')}</span><b>{selectedBranch?.name}</b></div>
-            </div>
-          </> : <>
-            <div className="rw-editing-note"><RotateCcw size={15}/>{text(lang, 'عدّل الاقتراحات، ثم ارجع للمعاينة قبل الإرسال.', 'Adjust the suggested details, then return to preview before sending.')}</div>
-            <label className="rw-field"><span>{text(lang, 'عنوان البلاغ', 'Report title')}</span>
-              <input required minLength={3} value={title} placeholder={text(lang, 'مثال: تسرب ماء قرب حوض التحضير', 'Example: Water leak near prep sink')} onChange={event => setTitle(event.currentTarget.value)} data-testid="input-review-title"/>
-            </label>
-            <label className="rw-field rw-preview-description"><span>{text(lang, 'وصف المشكلة', 'Issue description')}</span>
-              <textarea required minLength={4} value={reviewDescription} onChange={event => setReviewDescription(event.currentTarget.value)} data-testid="input-review-description"/>
-            </label>
-            <div className="rw-review-grid">
-              <div className="rw-field"><span>{text(lang, 'الفئة', 'Category')}</span>
-                <TadarukSelect required value={category} onValueChange={setCategory} ariaLabel={text(lang, 'الفئة', 'Category')} dir={lang === 'ar' ? 'rtl' : 'ltr'} placeholder={text(lang, 'اختر الفئة', 'Choose a category')} testId="input-review-category" options={[
-                  ...(category && !classificationOptions.some(([value]) => value === category) ? [{ value: category, label: category }] : []),
-                  ...classificationOptions.map(([value, ar, en]) => ({ value, label: text(lang, ar, en) })),
-                ]}/>
-              </div>
-              <div className="rw-field"><span>{text(lang, 'الأولوية', 'Priority')}</span>
-                <TadarukSelect value={priority} onValueChange={value => setPriority(value as TicketPriority)} ariaLabel={text(lang, 'الأولوية', 'Priority')} dir={lang === 'ar' ? 'rtl' : 'ltr'} testId="select-review-priority" options={[
-                  { value: 'urgent', label: priorityLabel('urgent', lang) },
-                  { value: 'high', label: priorityLabel('high', lang) },
-                  { value: 'medium', label: priorityLabel('medium', lang) },
-                  { value: 'low', label: priorityLabel('low', lang) },
-                ]}/>
-              </div>
-              <div className="rw-field"><span>{text(lang, 'التخصص', 'Specialization')}</span>
-                <TadarukSelect required value={specialization} onValueChange={setSpecialization} ariaLabel={text(lang, 'التخصص', 'Specialization')} dir={lang === 'ar' ? 'rtl' : 'ltr'} placeholder={text(lang, 'اختر التخصص', 'Choose a specialization')} testId="input-review-specialization" options={[
-                  ...(specialization && !classificationOptions.some(([value]) => value === specialization) ? [{ value: specialization, label: classificationLabel(specialization, lang) }] : []),
-                  ...classificationOptions.map(([value, ar, en]) => ({ value, label: text(lang, ar, en) })),
-                ]}/>
-              </div>
-              <label className="rw-field"><span>{text(lang, 'الموقع داخل الفرع', 'Location in the branch')}</span>
-                <input required value={reviewLocation} placeholder={text(lang, 'مثال: بجانب حوض التحضير', 'Example: beside the prep sink')} onChange={event => setReviewLocation(event.currentTarget.value)} data-testid="input-review-location"/>
-              </label>
-            </div>
-          </>}
-          {description.trim() && <div className="rw-source-note">
-            <span>{text(lang, 'وصفك الأصلي', 'YOUR DESCRIPTION')}</span>
-            <p>{description.trim()}</p>
-          </div>}
-          {photo && <div className="rw-photo-preview" data-testid="preview-review-photo">
-            <img src={photo} alt={text(lang, 'الصورة المرفقة بالبلاغ', 'Photo attached to the report')}/>
-            <div className="rw-photo-preview-bar"><span>{text(lang, 'الصورة ستبقى في هذا المتصفح فقط.', 'This photo stays in this browser only.')}</span>
-              <button type="button" className="rw-text-button" onClick={() => setPhoto('')} data-testid="button-remove-review-photo"><X size={14}/>{text(lang, 'إزالة الصورة', 'Remove photo')}</button>
-            </div>
-          </div>}
-          {photoError && <p className="rw-inline-error" role="alert" data-testid="status-photo-storage-error">{photoError}</p>}
-        </div>
-        {create.isError && <p className="rw-inline-error" role="alert" data-testid="status-create-error">{text(lang, 'لم يُرسل البلاغ. يمكنك المحاولة مرة أخرى.', 'The report was not sent. You can try again.')}</p>}
-        <div className="rw-form-actions">
-          <button type="submit" className="rw-button" disabled={!canUseBranch || create.isPending || !title.trim() || !reviewLocation.trim()} data-testid="button-submit-report">
-            {create.isPending ? <span className="rw-busy"><LoaderCircle size={16}/>{text(lang, 'جارٍ إرسال البلاغ', 'Sending report')}</span> : <>{text(lang, 'تأكيد وإرسال', 'Confirm & send')}<Send size={16}/></>}
-          </button>
-          {!reviewEditing
-            ? <button type="button" className="rw-button rw-button-secondary" onClick={() => setReviewEditing(true)} disabled={create.isPending} data-testid="button-edit-report">{text(lang, 'تعديل', 'Edit')}</button>
-            : <button type="button" className="rw-button rw-button-quiet" onClick={returnToPreview} disabled={create.isPending} data-testid="button-return-preview">{text(lang, 'العودة للمعاينة', 'Return to preview')}</button>}
-          <small>{text(lang, 'بالإرسال، سيظهر البلاغ ضمن بلاغاتك.', 'After sending, this report will appear in My reports.')}</small>
-        </div>
-      </motion.form>}
     </div>
-  </div>;
+  );
 }
