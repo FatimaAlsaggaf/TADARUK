@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "pnpm run typecheck && pnpm --filter @workspace/tadaruk run build",
+  "buildCommand": "pnpm --filter @workspace/tadaruk run typecheck && pnpm --filter @workspace/tadaruk run build",
   "outputDirectory": "artifacts/tadaruk/dist/public",
   "rewrites": [
     {
