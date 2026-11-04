@@ -22,6 +22,7 @@ import {
   PRESET_DEMO_SCENARIOS,
   type ReporterDemoAnalysisRequest
 } from '@/services/reporter-demo-analysis';
+import Stepper, { Step } from '@/components/Stepper';
 import './reporter-workspace.css';
 
 type ReporterLang = 'ar' | 'en';
@@ -441,54 +442,69 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
   // Three-step workflow mapping:
   // Step 1: وصف المشكلة
   // Step 2: تحليل وتجهيز البلاغ (while analyzing or needing location clarification)
-  // Step 3: مراجعة البلاغ
-  const step = analysis && !needsLocation ? 3 : (isAnalyzing || needsLocation) ? 2 : 1;
+  // Step 3: مراجعة وتأكيد البلاغ
+  // Step 4: تم الإرسال بنجاح
+  const step = submittedTicket ? 4 : analysis && !needsLocation ? 3 : (isAnalyzing || needsLocation) ? 2 : 1;
   const nextIcon = lang === 'ar' ? <ArrowLeft size={17}/> : <ArrowRight size={17}/>;
 
   return (
     <div className="reporter-view" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       <ReporterHeading
-        title={
-          step === 3
-            ? text(lang, 'جهزنا بلاغك', 'Your report is ready')
-            : step === 2
-            ? text(lang, 'تحليل وتجهيز البلاغ', 'Analyzing and preparing report')
-            : text(lang, 'صف ما لاحظته', 'Describe what happened')
-        }
-        description={
-          step === 3
-            ? text(lang, 'راجع تفاصيل البلاغ التي أعدها النظام، ويمكنك تعديلها قبل الإرسال.', 'Review the details prepared by TADARUK. You can make edits before submitting.')
-            : step === 2
-            ? text(lang, 'تدارك يحلل العطل ويحدد التخصص والأولوية المناسبة.', 'TADARUK is analyzing the issue to determine category and priority.')
-            : text(lang, 'اكتب، أو سجّل صوتاً، أو أرفق صورة. لن يُرسل شيء قبل مراجعتك.', 'Type, record your voice, or attach a photo. Nothing is sent before your review.')
-        }
+        title={text(lang, 'تسجيل بلاغ جديد', 'Submit a new report')}
+        description={text(lang, 'نظام ذكي يحلل البلاغ ويحدد التخصص والأولوية المناسبة فوراً.', 'Intelligent system that analyzes reports and assigns specialization and priority instantly.')}
         lang={lang}
       />
 
-      <div className="rw-report">
-        {/* Elegant 3-Step Progress Indicator */}
-        <div className="rw-progress" aria-label={text(lang, `الخطوة ${step} من 3`, `Step ${step} of 3`)} data-testid="status-report-progress">
-          {[
-            text(lang, 'وصف المشكلة', 'Describe the issue'),
-            text(lang, 'تحليل وتجهيز البلاغ', 'Analyze & prepare report'),
-            text(lang, 'مراجعة البلاغ', 'Review the report'),
-          ].map((label, index) => (
-            <div key={label} className={`rw-progress-step ${step >= index + 1 ? 'is-active' : ''} ${step > index + 1 ? 'is-complete' : ''}`}>
-              <span className="rw-progress-dot" aria-hidden="true">
-                {step > index + 1 ? <Check size={13} strokeWidth={2.5}/> : index + 1}
-              </span>
-              <span>{label}</span>
+      <Stepper
+        step={step}
+        showFooter={false}
+        width="100%"
+        radius={22}
+        accentColor="#1f3363"
+        dir={lang === 'ar' ? 'rtl' : 'ltr'}
+        onStepChange={target => {
+          if (target === 1) backToCompose();
+        }}
+        completedContent={
+          submittedTicket ? (
+            <div className="rw-submission-success-card" role="status" data-testid="state-report-sent">
+              <div className="rw-success-icon-wrap">
+                <span className="rw-success-pulse-ring" />
+                <span className="rw-success-icon">
+                  <CheckCircle2 size={40} strokeWidth={2.4} />
+                </span>
+              </div>
+              <h2>{text(lang, 'تم إرسال البلاغ بنجاح', 'Report sent successfully')}</h2>
+              <div className="rw-ticket-num-badge">
+                {text(lang, 'رقم البلاغ:', 'Ticket number:')} <strong>{submittedTicket.number}</strong>
+              </div>
+              <p className="rw-success-sub">
+                {photoSaveFailed
+                  ? photoError
+                  : text(
+                      lang,
+                      'تم إسناد البلاغ وتوجيهه إلى فريق الصيانة المختص. جارٍ فتح تفاصيل البلاغ تلقائياً.',
+                      'The report has been created and directed to the maintenance team. Opening details now.',
+                    )}
+              </p>
+              <button
+                type="button"
+                className="rw-button rw-button-primary"
+                onClick={() => navigate(`/workspace/tickets/${submittedTicket.id}`)}
+                data-testid="button-open-created-report"
+              >
+                {text(lang, 'عرض تفاصيل البلاغ', 'Open ticket details')}
+                {nextIcon}
+              </button>
             </div>
-          ))}
-        </div>
-
-        {/* STEP 1: Compose Form */}
-        {!analysis && !needsLocation && !isAnalyzing && (
-          <motion.form
-            key="compose"
-            initial={reduced ? false : { opacity: 0, y: 7 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: reduced ? 0 : 0.2 }}
+          ) : null
+        }
+      >
+        <Step
+          title={text(lang, 'وصف المشكلة', 'Describe issue')}
+          description={text(lang, 'كتابة أو تسجيل صوتي', 'Text or voice note')}
+        >
+          <form
             onSubmit={handleStartAnalysis}
             data-testid="form-report-description"
           >
@@ -646,7 +662,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                   </span>
                 ) : (
                   <>
-                    <Sparkles size={16} className="text-[#56F4EF]" />
+                    <Sparkles size={16} className="text-white" />
                     {text(lang, 'تحليل البلاغ', 'Analyze report')}
                     {nextIcon}
                   </>
@@ -654,203 +670,169 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
               </button>
               <small>{text(lang, 'لن يُرسل البلاغ إلا بعد مراجعتك وتأكيدك.', 'Nothing is sent until you review and confirm.')}</small>
             </div>
-          </motion.form>
-        )}
+          </form>
+        </Step>
 
-        {/* STEP 2A: AI Processing Animation Screen */}
-        {isAnalyzing && (
-          <motion.div
-            key="analyzing-stage"
-            className="rw-analysis-stage"
-            initial={reduced ? false : { opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.25 }}
-            data-testid="status-ai-analyzing"
-          >
-            <div className="rw-ai-orb-wrap">
-              <div className="rw-ai-orb-pulse" />
-              <div className="rw-ai-orb">
-                <Sparkles className="h-8 w-8 text-[#56F4EF] animate-pulse" />
-              </div>
-            </div>
-            <div className="rw-ai-heading">
-              <h3>{text(lang, 'تدارك يجهّز بلاغك بالذكاء الاصطناعي...', 'TADARUK AI is preparing your report...')}</h3>
-              <p>
-                {text(
-                  lang,
-                  'نقوم الآن بتحليل الوصف، تصنيف العطل، تحديد مستوى الأولوية واقتراح التخصص المناسب للفني.',
-                  'Analyzing description, categorizing issue, setting priority and determining technician specialization.',
-                )}
-              </p>
-            </div>
-
-            <div className="rw-ai-steps">
-              {[
-                { step: 1, ar: 'فهم المشكلة وقراءة الملاحظات', en: 'Understanding the problem' },
-                { step: 2, ar: 'تحديد نوع العطل والتصنيف الفني', en: 'Identifying failure type' },
-                { step: 3, ar: 'تجهيز التذكرة وتحديد الأولوية', en: 'Preparing the ticket' },
-              ].map(item => {
-                const isDone = aiStage > item.step;
-                const isActive = aiStage === item.step;
-                return (
-                  <div key={item.step} className={`rw-ai-step ${isDone ? 'is-done' : ''} ${isActive ? 'is-active' : ''}`}>
-                    <span className="rw-ai-step-indicator">
-                      {isDone ? (
-                        <Check size={14} className="text-white" />
-                      ) : isActive ? (
-                        <LoaderCircle size={14} className="animate-spin text-[#56F4EF]" />
-                      ) : (
-                        item.step
-                      )}
-                    </span>
-                    <span className="rw-ai-step-text">{text(lang, item.ar, item.en)}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
-
-        {/* STEP 2B: Smart Clarification (only if location was missing) */}
-        {!analysis && needsLocation && !isAnalyzing && (
-          <motion.form
-            key="clarify"
-            initial={reduced ? false : { opacity: 0, y: 7 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: reduced ? 0 : 0.2 }}
-            onSubmit={handleClarify}
-            data-testid="form-report-location"
-          >
-            <div className="rw-clarify-card">
-              <div className="rw-clarify-badge">
-                <MapPin size={15} />
-                <span>{text(lang, 'تحديد موقع العطل', 'SPECIFY LOCATION')}</span>
-              </div>
-              <h2>{text(lang, 'وين مكان العطل داخل الفرع؟', 'Where is the issue located in the branch?')}</h2>
-              <p>
-                {text(
-                  lang,
-                  'هذه المعلومة فقط لتوجيه الفني مباشرة إلى المكان المناسب داخل الفرع.',
-                  'One quick detail so the technician heads directly to the right location.',
-                )}
-              </p>
-
-              <div className="rw-choices">
-                {locationChoices.map(choice => (
-                  <button
-                    key={choice}
-                    type="button"
-                    className={`rw-chip ${selectedLocation === choice ? 'is-selected' : ''}`}
-                    onClick={() => setSelectedLocation(choice)}
-                    data-testid={`button-location-${choice === 'مكان آخر' ? 'other' : locationChoices.indexOf(choice)}`}
-                  >
-                    {text(lang, choice, ({ 'المطبخ': 'Kitchen', 'صالة العملاء': 'Customer area', 'المستودع': 'Storage', 'دورات المياه': 'Restrooms', 'مكان آخر': 'Somewhere else' } as Record<string, string>)[choice])}
-                  </button>
-                ))}
-              </div>
-
-              {selectedLocation === 'مكان آخر' && (
-                <label className="rw-field mt-3">
-                  <span>{text(lang, 'اكتب الموقع', 'Enter location')}</span>
-                  <input
-                    autoFocus
-                    required
-                    value={otherLocation}
-                    onChange={event => setOtherLocation(event.currentTarget.value)}
-                    placeholder={text(lang, 'مثال: غرفة الموظفين / خلف منطقة الكاشير', 'Example: Staff room / behind cashier')}
-                    data-testid="input-custom-location"
-                  />
-                </label>
-              )}
-            </div>
-
-            {analyze.isError && (
-              <p className="rw-inline-error" role="alert" data-testid="status-location-error">
-                {text(lang, 'تعذر تجهيز الاقتراحات. حاول مرة أخرى.', 'Could not prepare suggestions. Please try again.')}
-              </p>
-            )}
-
-            <div className="rw-form-actions">
-              <button
-                type="submit"
-                className="rw-button rw-button-primary"
-                disabled={!clarificationValue || analyze.isPending}
-                data-testid="button-confirm-location"
-              >
-                {analyze.isPending ? (
-                  <span className="rw-busy">
-                    <LoaderCircle size={16} className="animate-spin" />
-                    {text(lang, 'جارٍ التجهيز...', 'Preparing...')}
-                  </span>
-                ) : (
-                  <>
-                    {text(lang, 'متابعة إلى مراجعة البلاغ', 'Continue to review')}
-                    {nextIcon}
-                  </>
-                )}
-              </button>
-              <button
-                type="button"
-                className="rw-button rw-button-quiet"
-                onClick={backToCompose}
-                data-testid="button-back-description"
-              >
-                {lang === 'ar' ? <ArrowUpRight size={15}/> : <ArrowUpLeft size={15}/>}
-                {text(lang, 'العودة للوصف', 'Back to description')}
-              </button>
-            </div>
-          </motion.form>
-        )}
-
-        {/* SUBMISSION RESULT: Success State with Ticket Details Navigation */}
-        {submittedTicket && (
-          <div className="rw-submission-success-card" role="status" data-testid="state-report-sent">
-            <div className="rw-success-icon-wrap">
-              <div className="rw-success-pulse-ring" />
-              <span className="rw-success-icon">
-                <CheckCircle2 size={36} className="text-[#56F4EF]" />
-              </span>
-            </div>
-            <h2>{text(lang, 'تم إرسال البلاغ بنجاح', 'Report sent successfully')}</h2>
-            <div className="rw-ticket-num-badge">
-              {text(lang, 'رقم البلاغ:', 'Ticket number:')} <strong>{submittedTicket.number}</strong>
-            </div>
-            <p className="rw-success-sub">
-              {photoSaveFailed
-                ? photoError
-                : text(
-                    lang,
-                    'تم إسناد البلاغ وتوجيهه إلى فريق الصيانة المختص. جارٍ فتح تفاصيل البلاغ تلقائياً.',
-                    'The report has been created and directed to the maintenance team. Opening details now.',
-                  )}
-            </p>
-            <button
-              type="button"
-              className="rw-button rw-button-primary"
-              onClick={() => navigate(`/workspace/tickets/${submittedTicket.id}`)}
-              data-testid="button-open-created-report"
+        {/* STEP 2: Intelligent Analysis & Clarification */}
+        <Step
+          title={text(lang, 'تحليل وتجهيز', 'Analyze & prepare')}
+          description={text(lang, 'تحديد التخصص والأولوية', 'Specialization & priority')}
+        >
+          {isAnalyzing ? (
+            <div
+              className="rw-analysis-stage"
+              data-testid="status-ai-analyzing"
             >
-              {text(lang, 'عرض تفاصيل البلاغ', 'Open ticket details')}
-              {nextIcon}
-            </button>
-          </div>
-        )}
+              <div className="rw-ai-orb-wrap">
+                <div className="rw-ai-orb-pulse" />
+                <div className="rw-ai-orb">
+                  <Sparkles className="h-8 w-8 text-[#307190] dark:text-[#93c5fd] animate-pulse" />
+                </div>
+              </div>
+              <div className="rw-ai-heading">
+                <h3>{text(lang, 'تدارك يجهّز بلاغك بالذكاء الاصطناعي...', 'TADARUK AI is preparing your report...')}</h3>
+                <p>
+                  {text(
+                    lang,
+                    'نقوم الآن بتحليل الوصف، تصنيف العطل، تحديد مستوى الأولوية واقتراح التخصص المناسب للفني.',
+                    'Analyzing description, categorizing issue, setting priority and determining technician specialization.',
+                  )}
+                </p>
+              </div>
 
-        {/* STEP 3: Beautiful Generated Ticket Preview */}
-        {analysis && !submittedTicket && !isAnalyzing && !needsLocation && (
-          <motion.form
-            key="review"
-            initial={reduced ? false : { opacity: 0, y: 7 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: reduced ? 0 : 0.2 }}
-            onSubmit={submitReview}
-            data-testid="form-report-review"
-          >
-            <div className="rw-ticket-preview-card" data-testid="card-review-ticket">
+              <div className="rw-ai-steps">
+                {[
+                  { step: 1, ar: 'فهم المشكلة وقراءة الملاحظات', en: 'Understanding the problem' },
+                  { step: 2, ar: 'تحديد نوع العطل والتصنيف الفني', en: 'Identifying failure type' },
+                  { step: 3, ar: 'تجهيز التذكرة وتحديد الأولوية', en: 'Preparing the ticket' },
+                ].map(item => {
+                  const isDone = aiStage > item.step;
+                  const isActive = aiStage === item.step;
+                  return (
+                    <div key={item.step} className={`rw-ai-step ${isDone ? 'is-done' : ''} ${isActive ? 'is-active' : ''}`}>
+                      <span className="rw-ai-step-indicator">
+                        {isDone ? (
+                          <Check size={14} className="text-white" />
+                        ) : isActive ? (
+                          <LoaderCircle size={14} className="animate-spin text-[#307190] dark:text-[#93c5fd]" />
+                        ) : (
+                          item.step
+                        )}
+                      </span>
+                      <span className="rw-ai-step-text">{text(lang, item.ar, item.en)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : needsLocation ? (
+            <form
+              onSubmit={handleClarify}
+              data-testid="form-report-location"
+            >
+              <div className="rw-clarify-card">
+                <div className="rw-clarify-badge">
+                  <MapPin size={15} />
+                  <span>{text(lang, 'تحديد موقع العطل', 'SPECIFY LOCATION')}</span>
+                </div>
+                <h2>{text(lang, 'وين مكان العطل داخل الفرع؟', 'Where is the issue located in the branch?')}</h2>
+                <p>
+                  {text(
+                    lang,
+                    'هذه المعلومة فقط لتوجيه الفني مباشرة إلى المكان المناسب داخل الفرع.',
+                    'One quick detail so the technician heads directly to the right location.',
+                  )}
+                </p>
+
+                <div className="rw-choices">
+                  {locationChoices.map(choice => (
+                    <button
+                      key={choice}
+                      type="button"
+                      className={`rw-chip ${selectedLocation === choice ? 'is-selected' : ''}`}
+                      onClick={() => setSelectedLocation(choice)}
+                      data-testid={`button-location-${choice === 'مكان آخر' ? 'other' : locationChoices.indexOf(choice)}`}
+                    >
+                      {text(lang, choice, ({ 'المطبخ': 'Kitchen', 'صالة العملاء': 'Customer area', 'المستودع': 'Storage', 'دورات المياه': 'Restrooms', 'مكان آخر': 'Somewhere else' } as Record<string, string>)[choice])}
+                    </button>
+                  ))}
+                </div>
+
+                {selectedLocation === 'مكان آخر' && (
+                  <label className="rw-field mt-3">
+                    <span>{text(lang, 'اكتب الموقع', 'Enter location')}</span>
+                    <input
+                      autoFocus
+                      required
+                      value={otherLocation}
+                      onChange={event => setOtherLocation(event.currentTarget.value)}
+                      placeholder={text(lang, 'مثال: غرفة الموظفين / خلف منطقة الكاشير', 'Example: Staff room / behind cashier')}
+                      data-testid="input-custom-location"
+                    />
+                  </label>
+                )}
+              </div>
+
+              {analyze.isError && (
+                <p className="rw-inline-error" role="alert" data-testid="status-location-error">
+                  {text(lang, 'تعذر تجهيز الاقتراحات. حاول مرة أخرى.', 'Could not prepare suggestions. Please try again.')}
+                </p>
+              )}
+
+              <div className="rw-form-actions">
+                <button
+                  type="submit"
+                  className="rw-button rw-button-primary"
+                  disabled={!clarificationValue || analyze.isPending}
+                  data-testid="button-confirm-location"
+                >
+                  {analyze.isPending ? (
+                    <span className="rw-busy">
+                      <LoaderCircle size={16} className="animate-spin" />
+                      {text(lang, 'جارٍ التجهيز...', 'Preparing...')}
+                    </span>
+                  ) : (
+                    <>
+                      {text(lang, 'متابعة إلى مراجعة البلاغ', 'Continue to review')}
+                      {nextIcon}
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  className="rw-button rw-button-quiet"
+                  onClick={backToCompose}
+                  data-testid="button-back-description"
+                >
+                  {lang === 'ar' ? <ArrowUpRight size={15}/> : <ArrowUpLeft size={15}/>}
+                  {text(lang, 'العودة للوصف', 'Back to description')}
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="rw-context text-center p-8">
+              <p className="text-sm text-slate-500">
+                {text(lang, 'جاهز للتحليل. ارجع للخطوة السابقة لبدء المعالجة الذكية.', 'Ready to analyze. Return to previous step to start AI processing.')}
+              </p>
+            </div>
+          )}
+        </Step>
+
+        {/* STEP 3: Beautiful Generated Ticket Preview & Dispatch */}
+        <Step
+          title={text(lang, 'مراجعة وتأكيد', 'Review & confirm')}
+          description={text(lang, 'اعتماد البلاغ والإرسال', 'Review details and dispatch')}
+        >
+          {analysis ? (
+            <form
+              onSubmit={submitReview}
+              data-testid="form-report-review"
+            >
+              <div className="rw-ticket-preview-card" data-testid="card-review-ticket">
               <header className="rw-ticket-preview-head">
                 <div className="rw-ticket-head-meta">
                   <span className="rw-ticket-branch-tag" data-testid="badge-preview-branch">
-                    <Building2 size={13} className="text-[#307190] dark:text-[#56F4EF]" />
+                    <Building2 size={13} className="text-[#307190] dark:text-[#93c5fd]" />
                     <b>{selectedBranch?.name || text(lang, 'فرع العليا', 'Olaya Branch')}</b>
                   </span>
                   <span className="rw-preview-cat-badge">
@@ -863,7 +845,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                     {priorityLabel(priority, lang)}
                   </span>
                   <span className="rw-demo-pill">
-                    <Sparkles size={12} className="text-[#307190] dark:text-[#56F4EF]" />
+                    <Sparkles size={12} className="text-[#307190] dark:text-[#93c5fd]" />
                     {text(lang, 'تحليل ذكي', 'AI Prepared')}
                   </span>
                 </div>
@@ -1067,9 +1049,16 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
               )}
               <small>{text(lang, 'بالإرسال، سيصل البلاغ مباشرة للفني المختص.', 'Upon submission, the ticket will be assigned to the technician.')}</small>
             </div>
-          </motion.form>
-        )}
-      </div>
+          </form>
+          ) : (
+            <div className="rw-context text-center p-8">
+              <p className="text-sm text-slate-500">
+                {text(lang, 'أكمل وصف المشكلة أولاً لمراجعة تفاصيل البلاغ هنا.', 'Complete the issue description first to review ticket details here.')}
+              </p>
+            </div>
+          )}
+        </Step>
+      </Stepper>
     </div>
   );
 }
