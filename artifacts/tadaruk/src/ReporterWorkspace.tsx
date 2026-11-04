@@ -332,6 +332,19 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
     const rawDescription = description.trim();
     const suppliedLocation = location.trim();
 
+    if (!rawDescription) {
+      descriptionInputRef.current?.focus();
+      return;
+    }
+
+    if (!photo) {
+      setPhotoError(text(lang, 'إرفاق صورة للمشكلة إلزامي لمتابعة البلاغ.', 'Attaching a photo of the issue is required to continue.'));
+      const uploader = document.querySelector('[data-testid="panel-photo-uploader"]');
+      uploader?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    setPhotoError('');
     setIsAnalyzing(true);
     setAiStage(1);
 
@@ -406,6 +419,10 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
 
   const submitReview = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!photo) {
+      setPhotoError(text(lang, 'إرفاق صورة للمشكلة إلزامي لإرسال البلاغ.', 'Attaching a photo is required to submit the report.'));
+      return;
+    }
     const payload: TicketInput = {
       title: title.trim(),
       description: reviewDescription.trim(),
@@ -509,11 +526,14 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
           >
             <div className="rw-report-intro">
               <span className="rw-report-icon">
-                <Sparkles size={22} className="text-[#307190]" />
+                <Sparkles size={22} className="text-[#307190] dark:text-[#56f4ef]" />
               </span>
-              <div>
-                <h2>{text(lang, 'صف ما لاحظته', 'Describe what you noticed')}</h2>
-                <p>{text(lang, 'اكتب، أو سجّل صوتاً، أو أرفق صورة. لن يُرسل شيء قبل مراجعتك.', 'Type, record a voice note, or add a photo. Nothing is sent before your review.')}</p>
+              <div className="rw-report-intro-text">
+                <h2>{text(lang, 'صف ما لاحظته في الفرع', 'Describe what you noticed')}</h2>
+                <div className="rw-report-assurance-badge">
+                  <ShieldCheck size={14} className="text-[#307190] dark:text-[#56f4ef] flex-shrink-0" />
+                  <span>{text(lang, 'سجّل تفاصيل العطل وأرفق الصورة، ولن يُرسل شيء للفني إلا بعد مراجعتك وتأكيدك.', 'Record issue details and photo. Nothing is sent to maintenance before your final review.')}</span>
+                </div>
               </div>
             </div>
 
@@ -575,9 +595,9 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
             {/* Photo Attachment Section */}
             <div className="rw-field">
               <div className="rw-photo-header">
-                <span className="font-semibold text-sm">
+                <span className="font-semibold text-sm flex items-center">
                   {text(lang, 'صورة للمشكلة', 'A photo of the issue')}
-                  <span className="rw-field-hint">{text(lang, 'اختياري ولكن يُفضل إرفاقها', 'Optional but recommended')}</span>
+                  <span className="rw-field-required-badge">{text(lang, 'إلزامي', 'Required')}</span>
                 </span>
                 {photo && (
                   <span className="rw-photo-attached-badge">
@@ -589,14 +609,14 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
 
               {!photo ? (
                 /* Upload & Capture panel when NO photo is selected */
-                <div className="rw-photo-uploader" data-testid="panel-photo-uploader">
+                <div className={`rw-photo-uploader ${photoError ? 'has-error' : ''}`} data-testid="panel-photo-uploader">
                   <div className="rw-photo-uploader-content">
                     <div className="rw-photo-uploader-icon">
-                      <ImagePlus size={22} className="text-[#307190] dark:text-[#93c5fd]" />
+                      <ImagePlus size={22} className={photoError ? 'text-red-500' : 'text-[#307190] dark:text-[#93c5fd]'} />
                     </div>
                     <div className="rw-photo-uploader-text">
-                      <b>{text(lang, 'إرفاق صورة توضيحية للمشكلة', 'Attach an issue photo')}</b>
-                      <p>{text(lang, 'التقط صورة بالكاميرا أو اخترها من جهازك لتسهيل التشخيص على الفني.', 'Capture with camera or choose from device for quick technician diagnosis.')}</p>
+                      <b>{text(lang, 'إرفاق صورة توضيحية للمشكلة (إلزامي)', 'Attach an issue photo (Required)')}</b>
+                      <p>{text(lang, 'التقط صورة بالكاميرا أو اخترها من جهازك لتوثيق المشكلة للفني قبل المتابعة.', 'Capture with camera or choose from device to document the issue for the technician.')}</p>
                     </div>
                   </div>
                   <div className="rw-photo-uploader-buttons">
@@ -1021,9 +1041,12 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
               )}
 
               {/* Photo preview in review */}
-              {photo && (
+              {photo ? (
                 <div className="rw-review-photo-block" data-testid="preview-review-photo">
-                  <span className="rw-preview-label">{text(lang, 'الصورة المرفقة', 'ATTACHED PHOTO')}</span>
+                  <span className="rw-preview-label flex items-center gap-1.5">
+                    {text(lang, 'الصورة المرفقة', 'ATTACHED PHOTO')}
+                    <span className="rw-field-required-badge">{text(lang, 'إلزامي', 'Required')}</span>
+                  </span>
                   <div className="rw-photo-preview-centered">
                     <div className="rw-photo-hover-card" style={{ maxWidth: '440px', marginTop: '8px' }}>
                       <img
@@ -1056,13 +1079,46 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                             className="rw-photo-icon-btn rw-photo-icon-delete"
                             title={text(lang, 'حذف الصورة', 'Delete photo')}
                             aria-label={text(lang, 'حذف الصورة', 'Delete photo')}
-                            onClick={() => { setPhoto(''); setPhotoError(''); }}
+                            onClick={() => { setPhoto(''); setPhotoError(text(lang, 'الصورة إلزامية — يرجى إرفاق صورة بديلة قبل تأكيد البلاغ.', 'Photo is required — please attach an alternative photo before confirming.')); }}
                             data-testid="button-remove-review-photo"
                           >
                             <Trash2 size={17} strokeWidth={2.2} />
                           </button>
                         </div>
                       </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="rw-review-photo-block rw-review-photo-missing" data-testid="preview-review-photo-missing">
+                  <span className="rw-preview-label flex items-center gap-1.5 text-red-600 dark:text-red-400 font-bold">
+                    {text(lang, 'صورة المشكلة (إلزامية)', 'ISSUE PHOTO (REQUIRED)')}
+                    <span className="rw-field-required-badge">{text(lang, 'مطلوبة', 'Required')}</span>
+                  </span>
+                  <div className="rw-photo-uploader has-error mt-2">
+                    <div className="rw-photo-uploader-content">
+                      <div className="rw-photo-uploader-icon">
+                        <ImagePlus size={22} className="text-red-500" />
+                      </div>
+                      <div className="rw-photo-uploader-text">
+                        <b>{text(lang, 'يرجى إرفاق صورة للمشكلة', 'Please attach an issue photo')}</b>
+                        <p>{text(lang, 'الصورة إلزامية لتوثيق البلاغ وإرساله للفني.', 'A photo is required to document the issue for the technician.')}</p>
+                      </div>
+                    </div>
+                    <div className="rw-photo-uploader-buttons">
+                      <label className="rw-photo-action-btn rw-photo-btn-upload">
+                        <ImagePlus size={16} />
+                        <span>{text(lang, 'رفع صورة', 'Upload')}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={event => {
+                            const file = event.currentTarget.files?.[0];
+                            event.currentTarget.value = '';
+                            void setPhotoFromFile(file);
+                          }}
+                        />
+                      </label>
                     </div>
                   </div>
                 </div>

@@ -290,6 +290,63 @@
   background: rgba(59, 130, 246, 0.12);
   border-color: rgba(59, 130, 246, 0.28);
 }
+.rw-field-required-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 750;
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  margin-inline-start: 7px;
+  vertical-align: middle;
+}
+.dark .rw-field-required-badge {
+  color: #f87171;
+  background: rgba(220, 38, 38, 0.15);
+  border-color: rgba(220, 38, 38, 0.35);
+}
+.rw-report-intro-text {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+.rw-report-intro-text h2 {
+  margin: 0;
+  color: var(--rw-ink);
+  font-size: 21px;
+  font-weight: 750;
+}
+.rw-report-assurance-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 13px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: #1a3959;
+  background: color-mix(in srgb, #307190 9%, var(--rw-surface));
+  border: 1px solid color-mix(in srgb, #307190 22%, transparent);
+  width: fit-content;
+}
+.dark .rw-report-assurance-badge {
+  color: #c7d9e8;
+  background: rgba(86, 244, 239, 0.08);
+  border-color: rgba(86, 244, 239, 0.22);
+}
+.rw-photo-uploader.has-error {
+  border-color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.04) !important;
+}
+.dark .rw-photo-uploader.has-error {
+  border-color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.08) !important;
+}
 .rw-photo-uploader {
   display: flex;
   align-items: center;
