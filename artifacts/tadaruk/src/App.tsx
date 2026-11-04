@@ -351,7 +351,7 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
     }
   };
   const labels=lang==='ar'?['بلاغ جديد','تحليل ذكي','إسناد للفني','تم الإصلاح']:['New report','Smart analysis','Technician assigned','Repair confirmed'];
-  const desktopRoadmapPath='M 55 105 C 160 105, 210 45, 315 45 C 420 45, 470 115, 575 115 C 690 115, 790 85, 905 85';
+  const desktopRoadmapPath='M 140 110 C 235 110, 285 55, 380 55 C 475 55, 525 145, 620 145 C 715 145, 765 100, 860 100';
   const mobileRoadmapPath='M37 52 C37 99 13 143 37 191 S61 286 37 329 S13 421 37 468';
   const impact=lang==='ar'?[
     ['بلاغات لا تضيع','كل بلاغ في سجل واحد.'],
@@ -414,8 +414,9 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
               <stop offset="1" stopColor={dark?'#71d0c9':'#56c9c4'}/>
             </linearGradient>
           </defs>
+          <path className="roadmap-track-base" d={desktopRoadmapPath} />
           <motion.path className="roadmap-track" d={desktopRoadmapPath} pathLength="1" initial={{pathLength:reduced?1:0}} animate={{pathLength:roadmapProgress>=0?1:0}} transition={reduced?{duration:0}:{duration:4.2,ease:[.42,0,.58,1]}}/>
-          <motion.path className="roadmap-glint" d={desktopRoadmapPath} pathLength="1" initial={{pathLength:0,opacity:0}} animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.12,0],pathOffset:[0,.88,1],opacity:[0,.85,0]}:{pathLength:0,opacity:0}} transition={reduced?{duration:0}:{duration:4.2,ease:[.42,0,.58,1]}}/>
+          <motion.path className="roadmap-glint" d={desktopRoadmapPath} pathLength="1" initial={{pathLength:0,opacity:0}} animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.15,0],pathOffset:[0,.85,1],opacity:[0,.9,0]}:{pathLength:0,opacity:0}} transition={reduced?{duration:0}:{duration:4.2,ease:[.42,0,.58,1]}}/>
         </svg>
         <svg className="roadmap-path roadmap-path-mobile" viewBox="0 0 80 520" preserveAspectRatio="none" aria-hidden="true">
           <defs>
@@ -425,8 +426,9 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
               <stop offset="1" stopColor={dark?'#71d0c9':'#56c9c4'}/>
             </linearGradient>
           </defs>
+          <path className="roadmap-track-base" d={mobileRoadmapPath} />
           <motion.path className="roadmap-track" d={mobileRoadmapPath} pathLength="1" initial={{pathLength:reduced?1:0}} animate={{pathLength:roadmapProgress>=0?1:0}} transition={reduced?{duration:0}:{duration:4.2,ease:[.42,0,.58,1]}}/>
-          <motion.path className="roadmap-glint" d={mobileRoadmapPath} pathLength="1" initial={{pathLength:0,opacity:0}} animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.12,0],pathOffset:[0,.88,1],opacity:[0,.85,0]}:{pathLength:0,opacity:0}} transition={reduced?{duration:0}:{duration:4.2,ease:[.42,0,.58,1]}}/>
+          <motion.path className="roadmap-glint" d={mobileRoadmapPath} pathLength="1" initial={{pathLength:0,opacity:0}} animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.15,0],pathOffset:[0,.85,1],opacity:[0,.9,0]}:{pathLength:0,opacity:0}} transition={reduced?{duration:0}:{duration:4.2,ease:[.42,0,.58,1]}}/>
         </svg>
         <div className="workflow-steps">{labels.map((label,index)=>{
           const StepIcon=[ClipboardList,Activity,Wrench,CheckCircle2][index];
@@ -488,6 +490,7 @@ const DEFAULT_DEMO_USERS: DemoUser[] = [
 ];
 
 function DemoPage({lang,setLang,dark,setDark}:{lang:Lang;setLang:(lang:Lang)=>void;dark:boolean;setDark:(dark:boolean)=>void}) {
+  const qc=useQueryClient();
   const {data:users,isLoading,isError,refetch}=useListDemoUsers();
   const select=useSelectDemoAccount(); const [,go]=useLocation();
   const rawList = Array.isArray(users) && users.length ? users : DEFAULT_DEMO_USERS;

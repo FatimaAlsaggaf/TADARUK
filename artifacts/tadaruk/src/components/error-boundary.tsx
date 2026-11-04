@@ -36,6 +36,7 @@ function toError(value: unknown): Error {
 }
 
 function DefaultFallback({ error, resetError }: ErrorFallbackProps) {
+  const message = error.message || String(error) || 'An unexpected error occurred';
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gray-50 dark:bg-[#0d1624] p-6">
       <div className="max-w-lg w-full text-center">
@@ -43,16 +44,28 @@ function DefaultFallback({ error, resetError }: ErrorFallbackProps) {
           Something went wrong
         </h1>
         <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          This part of the app hit an error. The rest of the app is still
-          running.
+          This part of the app hit an error. The rest of the app is still running.
         </p>
-        <pre className="mt-4 overflow-x-auto rounded bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300 p-3 text-left text-xs border border-red-200 dark:border-red-900/50">
-          {error.message || String(error)}
+        <pre
+          className="mt-4 overflow-x-auto rounded p-3 text-left text-xs"
+          style={{
+            backgroundColor: '#fee2e2',
+            color: '#991b1b',
+            border: '1px solid #f87171',
+            borderRadius: '8px',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+          }}
+        >
+          {message}
         </pre>
         <button
           type="button"
-          onClick={resetError}
-          className="mt-4 rounded bg-gray-900 dark:bg-[#56F4EF] dark:text-[#1F3363] px-4 py-2 text-sm text-white hover:bg-gray-700 font-semibold"
+          onClick={() => {
+            resetError();
+            if (typeof window !== 'undefined') window.location.href = '/';
+          }}
+          className="mt-4 rounded bg-gray-900 dark:bg-[#56F4EF] dark:text-[#1F3363] px-4 py-2 text-sm text-white hover:bg-gray-700 font-semibold cursor-pointer"
         >
           Try again
         </button>

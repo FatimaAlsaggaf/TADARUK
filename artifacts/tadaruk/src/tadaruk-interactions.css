@@ -2351,8 +2351,10 @@
 /* Animated Roadmap - Wave passing directly through milestone boxes */
 .roadmap {
   position: relative;
-  min-height: 250px;
-  margin: 12px auto 0;
+  max-width: 960px;
+  height: 230px;
+  min-height: 230px;
+  margin: 16px auto 0;
   width: 100%;
 }
 .roadmap-path {
@@ -2365,17 +2367,24 @@
   pointer-events: none;
 }
 .roadmap-path-mobile { display: none; }
-.roadmap-track, .roadmap-glint { fill: none; stroke-linecap: round; }
+.roadmap-track-base, .roadmap-track, .roadmap-glint { fill: none; stroke-linecap: round; }
+.roadmap-track-base {
+  stroke: rgba(30, 50, 99, .15);
+  stroke-width: 2.8;
+}
+.dark .roadmap-track-base {
+  stroke: rgba(207, 224, 233, .16);
+}
 .roadmap-track {
   stroke: url(#roadmap-gradient);
   stroke-width: 2.8;
-  opacity: .75;
+  opacity: .85;
 }
 .roadmap-glint {
   stroke: #56F4EF;
   stroke-width: 5.5;
   stroke-dasharray: .06 .94;
-  filter: drop-shadow(0 0 7px rgba(86, 244, 239, .8));
+  filter: drop-shadow(0 0 8px rgba(86, 244, 239, .85));
 }
 .workflow-steps {
   position: absolute;
@@ -2400,19 +2409,19 @@
   z-index: 2;
   pointer-events: auto;
 }
-.workflow-step:nth-child(1) { left: 5.5%; top: 105px; transform: translate(-50%, -32px); }
-.workflow-step:nth-child(2) { left: 31.5%; top: 45px; transform: translate(-50%, -32px); }
-.workflow-step:nth-child(3) { left: 57.5%; top: 115px; transform: translate(-50%, -32px); }
-.workflow-step:nth-child(4) { left: 90.5%; top: 85px; transform: translate(-50%, -32px); }
+.workflow-step:nth-child(1) { left: 14%; top: 110px; transform: translate(-50%, -32px); }
+.workflow-step:nth-child(2) { left: 38%; top: 55px; transform: translate(-50%, -32px); }
+.workflow-step:nth-child(3) { left: 62%; top: 145px; transform: translate(-50%, -32px); }
+.workflow-step:nth-child(4) { left: 86%; top: 100px; transform: translate(-50%, -32px); }
 
 .landing[dir="rtl"] .roadmap-path-desktop {
   transform: scaleX(-1);
   transform-origin: center;
 }
-.landing[dir="rtl"] .workflow-step:nth-child(1) { left: auto; right: 5.5%; top: 105px; transform: translate(50%, -32px); }
-.landing[dir="rtl"] .workflow-step:nth-child(2) { left: auto; right: 31.5%; top: 45px; transform: translate(50%, -32px); }
-.landing[dir="rtl"] .workflow-step:nth-child(3) { left: auto; right: 57.5%; top: 115px; transform: translate(50%, -32px); }
-.landing[dir="rtl"] .workflow-step:nth-child(4) { left: auto; right: 90.5%; top: 85px; transform: translate(50%, -32px); }
+.landing[dir="rtl"] .workflow-step:nth-child(1) { left: auto; right: 14%; top: 110px; transform: translate(50%, -32px); }
+.landing[dir="rtl"] .workflow-step:nth-child(2) { left: auto; right: 38%; top: 55px; transform: translate(50%, -32px); }
+.landing[dir="rtl"] .workflow-step:nth-child(3) { left: auto; right: 62%; top: 145px; transform: translate(50%, -32px); }
+.landing[dir="rtl"] .workflow-step:nth-child(4) { left: auto; right: 86%; top: 100px; transform: translate(50%, -32px); }
 
 .workflow-step::after { display: none !important; }
 .workflow-node {
@@ -2813,7 +2822,7 @@
 }
 .workflow-heading h2 { font-size: clamp(35px, 4.25vw, 50px); }
 .impact-heading h2 { font-size: clamp(36px, 4.35vw, 52px); }
-.roadmap { min-height: 315px; }
+.roadmap { max-width: 960px; }
 .roadmap-track {
   stroke-width: 2.8;
   opacity: .92;

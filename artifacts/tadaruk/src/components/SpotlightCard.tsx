@@ -267,11 +267,16 @@ const SpotlightCard = ({
       if (pointer.active || state.presence > 0) wake();
     };
 
-    const observer = new IntersectionObserver(entries => {
-      state.visible = entries.some(entry => entry.isIntersecting);
-      if (state.visible) wake();
-    });
-    observer.observe(root);
+    let observer: IntersectionObserver | null = null;
+    if (typeof IntersectionObserver !== 'undefined') {
+      try {
+        observer = new IntersectionObserver(entries => {
+          state.visible = entries.some(entry => entry.isIntersecting);
+          if (state.visible) wake();
+        });
+        observer.observe(root);
+      } catch {}
+    }
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
     window.addEventListener('pointercancel', onUp);
@@ -285,7 +290,9 @@ const SpotlightCard = ({
     return () => {
       alive = false;
       cancelAnimationFrame(raf);
-      observer.disconnect();
+      if (observer) {
+        try { observer.disconnect(); } catch {}
+      }
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointercancel', onUp);
