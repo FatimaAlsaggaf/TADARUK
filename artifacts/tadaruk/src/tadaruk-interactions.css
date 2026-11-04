@@ -3994,3 +3994,58 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
 .dark .tadaruk-field-error-icon {
   background: #543638;
 }
+
+/* Shared shell type scale for manager and technician pages. */
+.app-shell {
+  font-family: var(--tadaruk-font-body);
+}
+
+.app-shell .page-title p,
+.app-shell .detail-description,
+.app-shell .repair-panel > p,
+.app-shell .resolution-panel > p,
+.app-shell .action-panel > p,
+.app-shell .state-panel p,
+.app-shell .personal-feature p,
+.app-shell .knowledge-intro p,
+.app-shell .entry-solution p {
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.app-shell .metric-card small,
+.app-shell .ticket-summary small,
+.app-shell .ticket-number,
+.app-shell .ticket-date,
+.app-shell .status-pill,
+.app-shell .branch-location,
+.app-shell .branch-stats span,
+.app-shell .knowledge-count small,
+.app-shell .entry-solution b,
+.app-shell .entry-foot,
+.app-shell .entry-tags span,
+.app-shell .person-line small,
+.app-shell .timeline-event small,
+.app-shell .field-label,
+.app-shell .form-intro p,
+.app-shell .quick-link small {
+  font-size: max(12px, 1em);
+  line-height: 1.65;
+}
+
+.side-link-icon {
+  display: inline-flex;
+  flex: 0 0 20px;
+  align-items: center;
+  justify-content: center;
+}
+
+.side-link-icon svg {
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .side-link-icon {
+    transition: none !important;
+  }
+}

@@ -534,9 +534,16 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
         :<div className="branch-switch" data-testid={user.role==='reporter'?'text-sidebar-branch':'branch-indicator'}><span className="branch-icon"><Building2 size={16}/></span><span><small>{tr(lang,'الموقع الحالي','CURRENT LOCATION')}</small><b>{user.role==='reporter'?branchLabel:user.branchName||tr(lang,'جميع الفروع','All branches')}</b></span></div>}
       <nav className="side-nav">{links.map(([path,ar,en,Icon])=>{
         const selected=matchingLink===path;
-        return <Link key={path as string} href={path as string} onClick={()=>setMobile(false)} className={`side-link ${selected?'selected':''}`} aria-current={selected?'page':undefined}>
+        return <Link key={path as string} href={path as string} onClick={()=>setMobile(false)} className={`side-link ${selected?'selected':''}`} aria-current={selected?'page':undefined} data-testid={`nav-${(path as string).replaceAll('/','-').replace(/^-/, 'root')}`}>
           {selected&&<motion.span className="nav-shared-indicator" layoutId="workspace-nav-indicator" transition={reduced?{duration:0}:{duration:.3,ease:[.22,.72,.18,1]}}><span className="nav-active-mark"/></motion.span>}
-          <Icon size={19}/><span>{tr(lang,ar as string,en as string)}</span>
+          <motion.span
+            className="side-link-icon"
+            aria-hidden="true"
+            whileTap={reduced?undefined:{scale:.92,y:1}}
+            animate={selected&&!reduced?{scale:[1,1.08,1],y:[0,-1,0]}:{scale:1,y:0}}
+            transition={{duration:reduced?0:.32,ease:[.22,.72,.18,1]}}
+          ><Icon size={19}/></motion.span>
+          <span>{tr(lang,ar as string,en as string)}</span>
         </Link>;
       })}</nav>
       <div className="side-bottom"><div className="side-user">

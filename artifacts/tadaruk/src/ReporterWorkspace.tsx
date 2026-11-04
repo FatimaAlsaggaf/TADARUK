@@ -4,7 +4,7 @@ import { Link, useLocation } from 'wouter';
 import { motion, useReducedMotion } from 'motion/react';
 import {
   ArrowLeft, ArrowRight, ArrowUpLeft, ArrowUpRight, Camera, Check, CheckCircle2,
-  ChevronLeft, ChevronRight, CircleAlert, ClipboardList, Clock3, ImagePlus,
+  ChevronLeft, ChevronRight, CircleAlert, ClipboardList, Clock3, FileText, ImagePlus,
   LoaderCircle, MapPin, Plus, RotateCcw, Search, Send, ShieldCheck, Sparkles,
   Trash2, UserRound, Wrench, X
 } from 'lucide-react';
@@ -61,7 +61,7 @@ const classificationLabel = (value: string, lang: ReporterLang) =>
   classificationOptions.find(([key]) => key === value)?.[lang === 'ar' ? 1 : 2] ?? value;
 
 function ReporterHeading({ title, description, action, lang }: {
-  eyebrow: string; title: string; description: string; action?: ReactNode; lang: ReporterLang;
+  eyebrow?: string; title: string; description: string; action?: ReactNode; lang: ReporterLang;
 }) {
   return <div className="rw-heading">
     <div>
@@ -132,15 +132,12 @@ export function ReporterHomePage({ lang, user }: ReporterPageProps) {
 
   return <div className="reporter-view" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
     <ReporterHeading
-      eyebrow={text(lang, 'مساحة العمل · المبلّغ', 'YOUR WORKSPACE · REPORTER')}
       title={text(lang, `أهلاً ${user.name.split(' ')[0]}`, `Hello, ${user.name.split(' ')[0]}`)}
       description={text(lang, 'أرسل ما يحتاج إلى إصلاح، وتابع كل خطوة حتى يعود المكان للعمل.', 'Tell us what needs fixing, then follow each step until it is resolved.')}
       lang={lang}
-      action={<Link href="/workspace/tickets/new" className="rw-button" data-testid="link-create-report"><Plus size={17}/>{text(lang, 'بلاغ جديد', 'New report')}</Link>}
     />
     <section className="rw-home-intro" aria-label={text(lang, 'بدء بلاغ صيانة', 'Start a maintenance report')}>
       <div className="rw-home-copy">
-        <div className="rw-kicker">{text(lang, 'صيانة أوضح، بخطوة بسيطة', 'A clearer repair, one simple step')}</div>
         <h2>{text(lang, 'ما الذي يحتاج إلى عناية في فرعك؟', 'What needs attention at your branch?')}</h2>
         <p>{text(lang, 'اكتب ما لاحظته بلغتك. سنرتب البلاغ ونبقيك على اطلاع بحالته.', 'Describe what you noticed in your own words. We will organize the report and keep you updated.')}</p>
         <Link href="/workspace/tickets/new" className="rw-button" data-testid="link-start-report">
@@ -148,7 +145,9 @@ export function ReporterHomePage({ lang, user }: ReporterPageProps) {
           {lang === 'ar' ? <ArrowLeft size={16}/> : <ArrowRight size={16}/>}
         </Link>
       </div>
-      <div className="rw-home-symbol" aria-hidden="true"><Wrench size={34}/></div>
+      <div className="rw-home-symbol" aria-hidden="true">
+        <span className="rw-document-orbit"><FileText size={44} strokeWidth={1.45}/><i/><i/><i/></span>
+      </div>
     </section>
     {loading ? <TicketLoadingState/> : failed ? <div className="rw-error" role="alert" data-testid="state-home-error">
       <CircleAlert size={19}/>
@@ -164,7 +163,7 @@ export function ReporterHomePage({ lang, user }: ReporterPageProps) {
       {waitingCount > 0 && <p className="rw-branch-note" data-testid="status-awaiting-confirmation"><ShieldCheck size={16}/>{text(lang, `هناك ${waitingCount} بلاغ بانتظار تأكيدك.`, `${waitingCount} report${waitingCount === 1 ? ' is' : 's are'} waiting for your confirmation.`)}</p>}
       <section className="rw-section">
         <div className="rw-section-head">
-          <div><div className="rw-kicker">{text(lang, 'متابعتك', 'YOUR FOLLOW-UP')}</div><h2>{text(lang, 'آخر بلاغاتك', 'Your recent reports')}</h2></div>
+          <div><h2>{text(lang, 'آخر بلاغاتك', 'Your recent reports')}</h2></div>
           <Link href="/workspace/tickets" className="rw-link" data-testid="link-all-reports">{text(lang, 'عرض الكل', 'View all')}{lang === 'ar' ? <ArrowLeft size={15}/> : <ArrowRight size={15}/>}</Link>
         </div>
         <ReporterTicketRows tickets={rows.slice(0, 5)} lang={lang}
@@ -425,8 +424,8 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
       >
         <div className="rw-report-intro">
           <span className="rw-report-icon"><ClipboardList size={21}/></span>
-          <div><h2>{text(lang, 'ما المشكلة التي لاحظتها؟', 'What issue did you notice?')}</h2>
-            <p>{text(lang, 'اكتب وصفاً قصيراً كما رأيته. لا حاجة لتحديد الأولوية أو الفني.', 'A short description is enough. No need to choose a priority or technician.')}</p>
+          <div><h2>{text(lang, 'صف ما لاحظته', 'Describe what you noticed')}</h2>
+            <p>{text(lang, 'اكتب، أو سجّل صوتاً، أو أرفق صورة. لن يُرسل شيء قبل مراجعتك.', 'Type, record a voice note, or add a photo. Nothing is sent before your review.')}</p>
           </div>
         </div>
         {renderBranchChoice()}
@@ -440,7 +439,10 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
             placeholder={text(lang, 'مثال: يوجد تسريب ماء بجانب حوض التحضير...', 'Example: There is a water leak beside the prep sink...')}
             data-testid="input-report-description"/>
         </label>
-        <div className="rw-voice"><AiVoiceInput lang={lang} onTranscript={appendTranscript} onManualEntry={() => descriptionInputRef.current?.focus()}/></div>
+        <div className="rw-input-options" aria-label={text(lang, 'طرق وصف المشكلة', 'Ways to describe the issue')}>
+          <span className="rw-input-option-label">{text(lang, 'وصفك', 'YOUR DESCRIPTION')}</span>
+          <AiVoiceInput lang={lang} onTranscript={appendTranscript} onManualEntry={() => descriptionInputRef.current?.focus()}/>
+        </div>
         {descriptionError && <p className="rw-inline-error" role="alert" data-testid="status-description-error">{descriptionError}</p>}
         {needsDescription && <p className="rw-inline-error" role="alert" data-testid="status-photo-needs-description">
           {text(lang, 'في العرض التجريبي لا يتم تحليل الصور تلقائياً. أضف وصفاً قصيراً للمشكلة أو سجّل وصفاً صوتياً.', 'In this demo, photos are not analyzed automatically. Add a short description of the issue or record a voice description.')}
@@ -480,7 +482,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
         {analyze.isError && <p className="rw-inline-error" role="alert" data-testid="status-analyze-error">{text(lang, 'تعذر تجهيز الاقتراحات. راجع الوصف وحاول مجدداً.', 'Could not prepare suggestions. Check the description and try again.')}</p>}
         <div className="rw-form-actions">
           <button type="submit" className="rw-button" disabled={!canUseBranch || (!description.trim() && !photo) || analyze.isPending} data-testid="button-continue-report">
-            {analyze.isPending ? <span className="rw-busy"><LoaderCircle size={16}/>{text(lang, 'جارٍ تحليل البلاغ…', 'Analyzing the report…')}</span> : <>{text(lang, 'تحليل البلاغ', 'Analyze report')}{nextIcon}</>}
+            {analyze.isPending ? <span className="rw-busy"><LoaderCircle size={16}/>{text(lang, 'جارٍ تجهيز المراجعة…', 'Preparing your review…')}</span> : <>{text(lang, 'تجهيز المراجعة', 'Prepare review')}{nextIcon}</>}
           </button>
           <small>{text(lang, 'لن يُرسل البلاغ إلا بعد مراجعتك وتأكيدك.', 'Nothing is sent until you review and confirm.')}</small>
         </div>

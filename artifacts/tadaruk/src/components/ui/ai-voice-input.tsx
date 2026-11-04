@@ -319,37 +319,51 @@ export function AiVoiceInput({
   const isBusy = stage === "requesting" || stage === "processing";
 
   return (
-    <div className="ai-voice-input" data-testid="component-ai-voice-input">
-      <div className="ai-voice-controls">
-        {(stage === "idle" || stage === "ready" || stage === "error") && (
-          <button type="button" className="voice-button" onClick={() => void start()} data-testid="button-start-voice">
-            {stage === "ready" ? <RotateCcw size={15} /> : <Mic size={15} />}
-            {stage === "ready"
-              ? text(lang, "تسجيل مرة أخرى", "Record again")
-              : text(lang, "تسجيل وصف صوتي", "Record a voice description")}
-          </button>
-        )}
-        {stage === "recording" && (
-          <>
-            <button type="button" className="voice-button voice-active" onClick={stop} data-testid="button-stop-voice">
-              <Square size={14} fill="currentColor" />{text(lang, "إيقاف التسجيل", "Stop recording")}
+    <div className={`ai-voice-input ${stage === "recording" ? "is-recording" : ""}`} data-testid="component-ai-voice-input">
+      <div className="voice-card">
+        <div className="voice-card-top">
+          <span className="voice-card-title">{text(lang, "وصف صوتي", "Voice description")}</span>
+          {stage === "recording" && <span className="voice-recording-indicator"><i aria-hidden="true"/>{text(lang, "جارٍ التسجيل", "Recording")}</span>}
+          {stage === "ready" && <span className="voice-ready-indicator">{text(lang, "تمت إضافة النص", "Text added")}</span>}
+        </div>
+        <div className="voice-stage">
+          {stage === "recording" && <div className="voice-wave" role="img" aria-label={text(lang, "مستوى الصوت المباشر", "Live audio level")}>
+            {bars.map((height, index) => <i key={index} style={{ height: `${height}px` }} />)}
+          </div>}
+          {isBusy && <div className="voice-wave voice-wave-busy" aria-hidden="true">{bars.map((height, index) => <i key={index} style={{ height: `${height}px` }} />)}</div>}
+          {(stage === "idle" || stage === "ready" || stage === "error") && (
+            <button type="button" className="voice-button voice-start" onClick={() => void start()}
+              aria-label={text(lang, "ابدأ تسجيل وصف صوتي", "Start recording a voice description")} data-testid="button-start-voice">
+              <span className="voice-mic-core">{stage === "ready" ? <RotateCcw size={19} /> : <Mic size={21} />}</span>
+              <span>{stage === "ready"
+                ? text(lang, "تسجيل مرة أخرى", "Record again")
+                : text(lang, "اضغط للتسجيل", "Tap to record")}</span>
             </button>
-            <span className="voice-timer" role="timer" aria-label={formattedTime}>{formattedTime}</span>
-            <button type="button" className="voice-cancel" onClick={cancel} data-testid="button-cancel-voice">
-              <X size={14} />{text(lang, "إلغاء", "Cancel")}
-            </button>
-          </>
-        )}
-        {stage === "requesting" && <span className="voice-live-status" role="status">{text(lang, "بانتظار إذن الميكروفون…", "Waiting for microphone permission…")}</span>}
-        {stage === "processing" && <span className="voice-live-status" role="status">{text(lang, "جارٍ إنهاء التسجيل…", "Finishing the recording…")}</span>}
+          )}
+          {stage === "recording" && (
+            <>
+              <button type="button" className="voice-button voice-active voice-stop" onClick={stop}
+                aria-label={text(lang, "إيقاف التسجيل وإضافة النص", "Stop recording and add transcript")} data-testid="button-stop-voice">
+                <span className="voice-mic-core"><Square size={16} fill="currentColor" /></span>
+                <span>{text(lang, "إيقاف وإضافة النص", "Stop and add text")}</span>
+              </button>
+              <span className="voice-timer" role="timer" aria-label={text(lang, `مدة التسجيل ${formattedTime}`, `Recording time ${formattedTime}`)}>{formattedTime}</span>
+              <button type="button" className="voice-cancel" onClick={cancel}
+                aria-label={text(lang, "إلغاء التسجيل وحذف النص", "Cancel recording and discard transcript")} data-testid="button-cancel-voice">
+                <X size={14} />{text(lang, "إلغاء", "Cancel")}
+              </button>
+            </>
+          )}
+        </div>
+        <div className="voice-card-foot">
+          {stage === "idle" && <span>{text(lang, "سجّل وصفاً قصيراً للمشكلة", "Record a short description of the issue")}</span>}
+          {stage === "recording" && <span className="voice-hint">{text(lang, "لا تحفظ تدارك التسجيل. قد يستخدم المتصفح خدمة التفريغ الصوتي التابعة له.", "TADARUK does not save the recording. Your browser may use its own speech service for transcription.")}</span>}
+          {stage === "requesting" && <span className="voice-live-status" role="status">{text(lang, "بانتظار إذن الميكروفون…", "Waiting for microphone permission…")}</span>}
+          {stage === "processing" && <span className="voice-live-status" role="status">{text(lang, "جارٍ إنهاء التسجيل…", "Finishing the recording…")}</span>}
+          {stage === "ready" && <span className="voice-success" role="status">{text(lang, "أُضيف النص إلى الوصف. راجعه وعدّله قبل المتابعة.", "Transcript added to the description. Review and edit it before continuing.")}</span>}
+          {error && <span className="voice-error" role="alert">{error}</span>}
+        </div>
       </div>
-      {stage === "recording" && <div className="voice-wave" role="img" aria-label={text(lang, "مستوى الصوت المباشر", "Live audio level")}>
-        {bars.map((height, index) => <i key={index} style={{ height: `${height}px` }} />)}
-      </div>}
-      {stage === "recording" && <span className="voice-hint">{text(lang, "لا تحفظ تدارك التسجيل. قد يستخدم المتصفح خدمة التفريغ الصوتي التابعة له.", "TADARUK does not save the recording. Your browser may use its own speech service for transcription.")}</span>}
-      {stage === "ready" && <span className="voice-success" role="status">{text(lang, "أُضيف النص إلى الوصف. راجعه قبل المتابعة.", "The transcript was added to the description. Review it before continuing.")}</span>}
-      {isBusy && <span className="voice-wave voice-wave-busy" aria-hidden="true">{bars.map((height, index) => <i key={index} style={{ height: `${height}px` }} />)}</span>}
-      {error && <span className="voice-error" role="alert">{error}</span>}
       {stage === "error" && onManualEntry && (
         <button type="button" className="voice-manual-entry" onClick={onManualEntry}>
           {text(lang, "اكتب الوصف يدوياً", "Type the description")}
