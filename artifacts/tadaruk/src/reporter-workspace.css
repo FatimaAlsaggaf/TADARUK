@@ -390,6 +390,13 @@
   color: #307190;
   transform: translateY(-1px);
 }
+.rw-photo-preview-centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-block: 6px;
+}
 .rw-photo-hover-card {
   position: relative;
   overflow: hidden;
@@ -398,6 +405,8 @@
   background: var(--rw-paper);
   box-shadow: 0 4px 16px rgba(31, 51, 99, 0.06);
   max-width: 440px;
+  width: 100%;
+  margin-inline: auto;
   transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 .rw-photo-hover-card:hover {
@@ -1527,6 +1536,10 @@
   margin-top: 18px;
   padding-top: 16px;
   border-top: 1px solid var(--rw-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .rw-review-photo-frame {
