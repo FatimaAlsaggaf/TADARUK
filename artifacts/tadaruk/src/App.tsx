@@ -4,6 +4,7 @@ import { Route, Switch, Link, useLocation, useParams } from 'wouter';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import BlurText from '@/components/BlurText';
 import SpotlightCard from '@/components/SpotlightCard';
+import FolderFloat from '@/components/FolderFloat';
 import PhotoAttachmentCard from '@/components/PhotoAttachmentCard';
 import { FieldMessage } from '@/components/FieldMessage';
 import {
@@ -351,20 +352,66 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
     }
   };
   const labels=lang==='ar'?['بلاغ جديد','تحليل ذكي','إسناد للفني','تم الإصلاح']:['New report','Smart analysis','Technician assigned','Repair confirmed'];
-  const desktopRoadmapPath='M 140 110 C 235 110, 285 55, 380 55 C 475 55, 525 145, 620 145 C 715 145, 765 100, 860 100';
+  const desktopRoadmapPath=lang==='ar'
+    ?'M 780 110 C 680 110, 680 70, 580 70 C 480 70, 480 140, 380 140 C 280 140, 280 100, 180 100'
+    :'M 180 100 C 280 100, 280 140, 380 140 C 480 140, 480 70, 580 70 C 680 70, 680 110, 780 110';
   const mobileRoadmapPath='M37 52 C37 99 13 143 37 191 S61 286 37 329 S13 421 37 468';
-  const impact=lang==='ar'?[
-    ['بلاغات لا تضيع','كل بلاغ في سجل واحد.'],
-    ['مسؤولية واضحة','كل مهمة لها مسؤول وحالة.'],
-    ['متابعة من مكان واحد','اعرف حالة البلاغ بوضوح.'],
-    ['معرفة تتراكم','حلول الأعطال السابقة متاحة للرجوع إليها.']
-  ]:[
-    ['Nothing gets lost','Every report has one clear record.'],
-    ['Ownership is clear','Every task has an owner and a status.'],
-    ['One place to follow','See where every report stands.'],
-    ['Knowledge carries forward','Past repair guidance stays available.']
+  const whatsappDemoReports = lang === 'ar' ? [
+    { label: 'مكيف الفرع يقطر موية فوق الطاولات', value: 'ac-leak', time: '10:42 ص', branch: 'فرع العليا' },
+    { label: 'تسريب ماء قوي تحت المغاسل', value: 'water-leak', time: '11:15 ص', branch: 'فرع النخيل' },
+    { label: 'عطل لوحة الكهرباء الرئيسية', value: 'power-fault', time: '01:30 م', branch: 'فرع التخصصي' },
+    { label: 'قفل باب المستودع الخلفي معلق', value: 'door-lock', time: '02:05 م', branch: 'فرع الصحافة' },
+    { label: 'ثلاجة المشروبات باردة ما تشتغل', value: 'fridge-cooling', time: '03:20 م', branch: 'فرع الملقا' },
+  ] : [
+    { label: 'Branch AC leaking onto dining tables', value: 'ac-leak', time: '10:42 AM', branch: 'Olaya' },
+    { label: 'Water pipe leaking under wash sinks', value: 'water-leak', time: '11:15 AM', branch: 'Nakheel' },
+    { label: 'Main power circuit breaker tripping', value: 'power-fault', time: '01:30 PM', branch: 'Takhassusi' },
+    { label: 'Storage back door lock jammed', value: 'door-lock', time: '02:05 PM', branch: 'Sahafa' },
+    { label: 'Display cooler fridge stopped cooling', value: 'fridge-cooling', time: '03:20 PM', branch: 'Malqa' },
   ];
-  const impactIcons=[ClipboardList,Users,Activity,BookOpen];
+  const impactPillars = lang === 'ar' ? [
+    {
+      title: 'بلاغات لا تضيع في الواتساب',
+      copy: 'تحويل رسائل وصور وقروبات الواتساب المشتتة إلى سجلات صيانة موحدة برقم وتاريخ وموقع دقيق.',
+      icon: ClipboardList
+    },
+    {
+      title: 'مسؤولية واضحة ومحددة',
+      copy: 'إسناد فوري لكل عطل إلى الفني المختص، مع تحديد وقت الاستجابة ومتابعة فورية للمسؤولية.',
+      icon: Users
+    },
+    {
+      title: 'متابعة مباشرة من مكان واحد',
+      copy: 'لوحة تحكم توضح مسار الإصلاح خطوة بخطوة من الفتح حتى الإغلاق بدقة وشفافية كاملة.',
+      icon: Activity
+    },
+    {
+      title: 'معرفة متراكمة لا تتكرر',
+      copy: 'أرشيف ذكي يربط كل مشكلة بحلها وتكلفتها، مما يمنع تكرار الأعطال ويسرّع الصيانة مستقبلاً.',
+      icon: BookOpen
+    }
+  ] : [
+    {
+      title: 'No lost reports in WhatsApp',
+      copy: 'Transform scattered WhatsApp chat messages into verified maintenance records with photos and exact locations.',
+      icon: ClipboardList
+    },
+    {
+      title: 'Clear ownership and assignment',
+      copy: 'Immediate assignment to the right technician with response tracking, ending the chaos of unassigned tasks.',
+      icon: Users
+    },
+    {
+      title: 'Track progress from one place',
+      copy: 'A unified dashboard showing live repair status from submission to closure with complete transparency.',
+      icon: Activity
+    },
+    {
+      title: 'Accumulated maintenance knowledge',
+      copy: 'A smart historical archive linking issues with past solutions to prevent repeat faults and accelerate fixes.',
+      icon: BookOpen
+    }
+  ];
   const closeMenu=()=>setMobileOpen(false);
   return <main className="landing" dir={lang==='ar'?'rtl':'ltr'}>
     <header className="landing-nav wrap">
@@ -406,11 +453,11 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
         <h2 className={lang==='ar'?'display-ar':''}>{tr(lang,'من البلاغ إلى الإصلاح','From report to repair')}</h2>
       </motion.div>
       <div className={`roadmap ${roadmapProgress>=0?'has-started':''}`} data-progress={roadmapProgress}>
-        <svg className="roadmap-path roadmap-path-desktop" viewBox="0 0 1000 220" preserveAspectRatio="none" aria-hidden="true">
+        <svg className="roadmap-path roadmap-path-desktop" viewBox="0 0 960 220" preserveAspectRatio="none" aria-hidden="true">
           <defs>
-            <linearGradient id="roadmap-gradient" x1="0" y1="0" x2="1" y2="0">
+            <linearGradient id="roadmap-gradient" x1={lang==='ar'?'1':'0'} y1="0" x2={lang==='ar'?'0':'1'} y2="0">
               <stop offset="0" stopColor={dark?'#6f8ba3':'#1e3263'}/>
-              <stop offset=".52" stopColor={dark?'#75aeb4':'#4d9aa8'}/>
+              <stop offset=".45" stopColor={dark?'#75aeb4':'#4d9aa8'}/>
               <stop offset="1" stopColor={dark?'#71d0c9':'#56c9c4'}/>
             </linearGradient>
           </defs>
@@ -454,24 +501,43 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
     <section className="landing-impact wrap" id="impact" aria-labelledby="impact-title">
       <div className="impact-heading">
         <motion.div initial={reduced?false:{opacity:0,y:14}} whileInView={{opacity:1,y:0}} viewport={{once:true,amount:.4}} transition={reduced?{duration:0}:{duration:.5,ease:[.22,.72,.18,1]}}>
-          <span className="eyebrow">{tr(lang,'نتيجة العمل المنظم','THE DIFFERENCE')}</span>
-          <h2 id="impact-title" className={lang==='ar'?'display-ar':''}>{tr(lang,'أثر تدارك على منشأتك','A clearer picture of maintenance')}</h2>
+          <span className="eyebrow">{tr(lang,'من رسائل الواتساب إلى نظام منظم','FROM WHATSAPP TO STRUCTURED RECORDS')}</span>
+          <h2 id="impact-title" className={lang==='ar'?'display-ar':''}>{tr(lang,'أثر تدارك على عملياتك','Tadaruk’s impact on operations')}</h2>
         </motion.div>
-        <p>{tr(lang,'سجل واحد يجمع البلاغ والمسؤولية وخطوات الإصلاح، لتبقى الصورة واضحة للجميع.','One record brings reports, ownership and repair progress together, so everyone can see what happens next.')}</p>
+        <p>{tr(lang,'بدلاً من ضياع البلاغات في قروبات ومحادثات الواتساب، يجمع تدارك كل عطل في ملف موحد يضمن المسؤولية وسرعة الإصلاح.','Instead of reports getting lost in WhatsApp groups, Tadaruk captures every issue into an organized file for clear accountability and rapid repair.')}</p>
       </div>
-      <div className="impact-grid">{impact.map(([title,copy],index)=>{
-        const ImpactIcon=impactIcons[index];
-        return <motion.article className={`impact-card impact-card-${index+1}`} key={title} initial={reduced?false:{opacity:0,y:16}} whileInView={{opacity:1,y:0}} viewport={{once:true,amount:.22}} transition={reduced?{duration:0}:{duration:.46,delay:index*.09,ease:[.22,.72,.18,1]}}>
-          <div className={`impact-visual impact-visual-${index+1}`} aria-hidden="true">
-            {index===0&&<><i className="report-fragment fragment-a"/><i className="report-fragment fragment-b"/><i className="report-fragment fragment-c"/><span className="report-record"><i/><i/><i/></span></>}
-            {index===1&&<><span className="task-owner-link"/><span className="task-chip"><i/><i/></span><span className="owner-chip"><i/></span></>}
-            {index===2&&<><span className="progress-rail"><i/></span><span className="progress-steps"><i/><i/><i/><i/></span><span className="progress-caption"><i/><i/></span></>}
-            {index===3&&<><span className="knowledge-sheet sheet-back"><i/><i/></span><span className="knowledge-sheet sheet-front"><i/><i/><i/></span><span className="knowledge-scan"/></>}
-          </div>
-          <span className="impact-icon"><ImpactIcon size={21} strokeWidth={1.7}/></span><span className="impact-index">0{index+1}</span>
-          <h3>{title}</h3><p>{copy}</p>
-        </motion.article>;
-      })}</div>
+
+      <div className="impact-showcase-stage">
+        <div className="impact-folder-showcase">
+          <FolderFloat
+            items={whatsappDemoReports}
+            label={tr(lang,'ملف بلاغات تدارك','TADARUK Tickets Folder')}
+            sublabel={tr(lang,'٥ بلاغات مجمعة من الواتساب','5 reports filed from WhatsApp')}
+            hint={tr(lang,'اسحب رسائل الواتساب أو اضغط على الملف لفتحه','Drag WhatsApp reports or click the folder to interact')}
+          />
+        </div>
+
+        <div className="impact-pillars-list">
+          {impactPillars.map((item,index)=>{
+            const Icon=item.icon;
+            return <motion.article
+              className={`impact-pillar-card impact-pillar-${index+1}`}
+              key={item.title}
+              initial={reduced?false:{opacity:0,x:lang==='ar'?-16:16}}
+              whileInView={{opacity:1,x:0}}
+              viewport={{once:true,amount:.25}}
+              transition={reduced?{duration:0}:{duration:.45,delay:index*.1,ease:[.22,.72,.18,1]}}
+            >
+              <div className="impact-pillar-head">
+                <span className="impact-pillar-index">0{index+1}</span>
+                <span className="impact-pillar-icon"><Icon size={20} strokeWidth={2}/></span>
+                <h3 className="impact-pillar-title">{item.title}</h3>
+              </div>
+              <p className="impact-pillar-copy">{item.copy}</p>
+            </motion.article>;
+          })}
+        </div>
+      </div>
     </section>
     <section className="landing-end wrap" id="final">
       <div><span className="eyebrow"><span className="live-dot"/>{health.isLoading?tr(lang,'جارٍ الاتصال','CONNECTING'):health.isError?tr(lang,'العرض متاح','DEMO AVAILABLE'):tr(lang,'من البلاغ إلى الإصلاح','REPORT TO REPAIR')}</span><h2 className={lang==='ar'?'display-ar':''}>{tr(lang,'جاهز تبدأ مع تدارك؟','Ready to start with Tadaruk?')}</h2><p>{tr(lang,'من أول بلاغ إلى آخر خطوة، كل شيء أوضح.','From the first report to the final step, everything is clearer.')}</p></div>
