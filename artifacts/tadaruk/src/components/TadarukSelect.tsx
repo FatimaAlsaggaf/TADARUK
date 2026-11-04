@@ -67,6 +67,9 @@ export function TadarukSelect({
       </SelectTrigger>
       <SelectContent
         align="start"
+        side="bottom"
+        sideOffset={6}
+        collisionPadding={12}
         dir={dir}
         className={cn('tadaruk-dropdown-surface tadaruk-select-content', contentClassName)}
       >

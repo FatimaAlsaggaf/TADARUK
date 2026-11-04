@@ -1,4 +1,4 @@
 - [React Bits license](react-bits-license.md) — TADARUK may embed registry components in-app; do not redistribute them as standalone assets.
-- [Reporter demo uploads](reporter-demo-uploads.md) — Keep the Reporter flow on demo accounts; explain that photos stay in the current browser.
+- [Reporter demo boundaries](reporter-demo-uploads.md) — Demo account, browser-only photos, and deterministic AI suggestions until provider integration.
 - [Dropdown menu styling](dropdown-menu-style.md) — Use the shared rounded, soft-shadow navy/cyan menu treatment across TADARUK.
 - [Workspace page headings](workspace-page-headings.md) — Keep page headings direct: omit the small kicker above the title.

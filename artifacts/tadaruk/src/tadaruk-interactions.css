@@ -3694,6 +3694,12 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
 
 /* One shared surface for selects, action menus, popovers, and the account menu. */
 .tadaruk-dropdown-surface {
+  min-width: min(190px, calc(100vw - 24px));
+  max-width: calc(100vw - 24px);
+  max-height: min(var(--radix-dropdown-menu-content-available-height, 360px), calc(100dvh - 28px));
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 6px;
   border: 1px solid hsl(var(--popover-border, var(--border)));
   border-radius: 12px;
   color: hsl(var(--popover-foreground));
@@ -3753,25 +3759,31 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
 
 .tadaruk-select-content {
   z-index: 100;
-  width: var(--radix-select-trigger-width);
-  max-width: calc(100vw - 20px);
-  max-height: min(var(--radix-select-content-available-height), 340px);
-  padding: 5px;
-  animation-duration: 160ms;
+  width: min(max(var(--radix-select-trigger-width), 210px), calc(100vw - 24px));
+  min-width: min(210px, calc(100vw - 24px));
+  max-width: calc(100vw - 24px);
+  max-height: min(var(--radix-select-content-available-height), 360px, calc(100dvh - 28px));
+  padding: 6px;
+  animation-duration: 180ms;
 }
 
 .tadaruk-select-item {
-  min-height: 37px;
+  min-height: 42px;
   margin: 2px 0;
-  padding: 7px 10px;
-  padding-inline-end: 34px;
-  border-radius: 7px;
+  padding: 9px 12px;
+  padding-inline-end: 38px;
+  border-radius: 8px;
   color: hsl(var(--popover-foreground));
   font-family: 'Noto Sans Arabic', sans-serif;
   font-size: 12px;
-  line-height: 1.5;
+  line-height: 1.6;
   text-align: start;
   transition: background-color .14s ease, color .14s ease;
+}
+
+.tadaruk-select-item > span:last-child {
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .tadaruk-select-item[data-highlighted],
@@ -3801,12 +3813,13 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
 .dark .tadaruk-select-indicator { color: #63cbd0; }
 
 .tadaruk-dropdown-item {
-  min-height: 37px;
-  border-radius: 7px;
-  padding: 7px 9px;
+  min-height: 42px;
+  border-radius: 8px;
+  padding: 9px 12px;
   color: hsl(var(--popover-foreground));
   font-family: 'Noto Sans Arabic', sans-serif;
   font-size: 12px;
+  line-height: 1.6;
   text-align: start;
   transition: color .14s ease, background-color .14s ease;
 }
@@ -4015,10 +4028,7 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
 
 .app-shell .metric-card small,
 .app-shell .ticket-summary small,
-.app-shell .ticket-number,
-.app-shell .ticket-date,
 .app-shell .status-pill,
-.app-shell .branch-location,
 .app-shell .branch-stats span,
 .app-shell .knowledge-count small,
 .app-shell .entry-solution b,
@@ -4029,8 +4039,102 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
 .app-shell .field-label,
 .app-shell .form-intro p,
 .app-shell .quick-link small {
-  font-size: max(12px, 1em);
-  line-height: 1.65;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.app-shell .branch-location,
+.app-shell .entry-solution p,
+.app-shell .knowledge-intro p {
+  font-size: 13px;
+  line-height: 1.75;
+}
+
+.app-shell .ticket-summary b {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.app-shell .page-title h1 {
+  font-size: 32px;
+  line-height: 1.35;
+}
+
+.app-shell[dir="rtl"] .page-title h1 {
+  font-family: 'Amiri', 'Noto Sans Arabic', serif;
+}
+
+.overview-grid {
+  gap: 12px;
+}
+
+.metric-lead,
+.metric-card {
+  min-height: 124px;
+}
+
+.metric-lead,
+.metric-card {
+  padding: 16px 18px;
+}
+
+.metric-lead strong {
+  font-size: 42px;
+}
+
+.metric-card strong {
+  font-size: 30px;
+}
+
+.metric-card-head {
+  font-size: 12px;
+}
+
+@media (min-width: 1440px) {
+  .dashboard-columns {
+    grid-template-columns: minmax(0, 1.5fr) minmax(340px, 1fr);
+    gap: 18px;
+  }
+
+  .frequent-faults {
+    padding: 19px;
+  }
+}
+
+@media (max-width: 1439px) and (min-width: 781px) {
+  .dashboard-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ops-aside {
+    display: grid;
+    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 520px) {
+  .ops-aside {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 390px) {
+  .app-shell .ticket-row .status-pill {
+    font-size: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .tadaruk-select-content {
+    width: min(max(var(--radix-select-trigger-width), 190px), calc(100vw - 24px));
+    min-width: min(190px, calc(100vw - 24px));
+  }
+
+  .tadaruk-select-item,
+  .tadaruk-dropdown-item {
+    min-height: 44px;
+  }
 }
 
 .side-link-icon {

@@ -1,16 +1,17 @@
-import { useEffect, useRef, useState } from "react";
-import { Mic, RotateCcw, Square, X } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Mic, Mic2, RotateCcw, Square, X } from 'lucide-react';
+import {
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
 
-type Lang = "ar" | "en";
-type VoiceStage = "idle" | "requesting" | "recording" | "processing" | "ready" | "error";
+type Lang = 'ar' | 'en';
+type Stage = 'idle' | 'requesting' | 'recording' | 'processing' | 'error';
+type SpeechResult = { isFinal: boolean; 0?: { transcript: string } };
 type SpeechRecognitionLike = {
   lang: string;
   continuous: boolean;
   interimResults: boolean;
-  onresult: ((event: {
-    resultIndex: number;
-    results: ArrayLike<{ isFinal: boolean; 0?: { transcript: string } }>;
-  }) => void) | null;
+  onresult: ((event: { resultIndex: number; results: ArrayLike<SpeechResult> }) => void) | null;
   onerror: ((event: { error?: string }) => void) | null;
   onend: (() => void) | null;
   start: () => void;
@@ -18,9 +19,18 @@ type SpeechRecognitionLike = {
   abort: () => void;
 };
 type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
+type VoiceWindow = Window & {
+  SpeechRecognition?: SpeechRecognitionConstructor;
+  webkitSpeechRecognition?: SpeechRecognitionConstructor;
+  webkitAudioContext?: typeof AudioContext;
+};
 
-const text = (lang: Lang, ar: string, en: string) => lang === "ar" ? ar : en;
-const initialBars = () => Array.from({ length: 24 }, () => 4);
+const text = (lang: Lang, ar: string, en: string) => lang === 'ar' ? ar : en;
+const barCount = 34;
+const demoTranscript = {
+  ar: 'يوجد تسرب مياه أسفل حوض المطبخ.',
+  en: 'There is a water leak under the kitchen sink.',
+};
 
 export function AiVoiceInput({
   lang,
@@ -31,171 +41,140 @@ export function AiVoiceInput({
   onTranscript: (transcript: string) => void;
   onManualEntry?: () => void;
 }) {
-  const [stage, setStageState] = useState<VoiceStage>("idle");
+  const [open, setOpen] = useState(false);
+  const [stage, setStage] = useState<Stage>('idle');
   const [seconds, setSeconds] = useState(0);
-  const [bars, setBars] = useState(initialBars);
-  const [error, setError] = useState("");
-  const stageRef = useRef<VoiceStage>("idle");
+  const [bars, setBars] = useState<number[]>(() => Array(barCount).fill(3));
+  const [error, setError] = useState('');
+  const [showDemo, setShowDemo] = useState(false);
   const streamRef = useRef<MediaStream | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
-  const animationRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
   const intervalRef = useRef<number | null>(null);
-  const finishTimeoutRef = useRef<number | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const transcriptRef = useRef<Map<number, string>>(new Map());
-  const recorderEndedRef = useRef(true);
-  const recognitionEndedRef = useRef(true);
-  const recognitionFailedRef = useRef(false);
+  const finalizeTimeoutRef = useRef<number | null>(null);
+  const transcriptPartsRef = useRef<Map<number, string>>(new Map());
+  const onTranscriptRef = useRef(onTranscript);
   const cancelledRef = useRef(false);
   const finalizedRef = useRef(false);
-  const mountedRef = useRef(true);
-  const callbackRef = useRef(onTranscript);
-  const finishRef = useRef<() => void>(() => undefined);
+  const recorderEndedRef = useRef(true);
+  const speechEndedRef = useRef(true);
+  const speechFailedRef = useRef(false);
+  const startedAtRef = useRef(0);
+  const processingStartedAtRef = useRef(0);
+  const finalizeRef = useRef<() => void>(() => undefined);
 
-  useEffect(() => {
-    callbackRef.current = onTranscript;
-  }, [onTranscript]);
+  onTranscriptRef.current = onTranscript;
 
-  const setStage = (next: VoiceStage) => {
-    stageRef.current = next;
-    setStageState(next);
-  };
-
-  const clearTimers = () => {
+  const releaseResources = useCallback(() => {
     if (intervalRef.current !== null) window.clearInterval(intervalRef.current);
-    if (finishTimeoutRef.current !== null) window.clearTimeout(finishTimeoutRef.current);
-    if (animationRef.current !== null) cancelAnimationFrame(animationRef.current);
+    if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    if (finalizeTimeoutRef.current !== null) window.clearTimeout(finalizeTimeoutRef.current);
     intervalRef.current = null;
-    finishTimeoutRef.current = null;
-    animationRef.current = null;
-  };
-
-  const releaseTracksAndAudio = () => {
-    clearTimers();
-    streamRef.current?.getTracks().forEach((track) => track.stop());
+    rafRef.current = null;
+    finalizeTimeoutRef.current = null;
+    streamRef.current?.getTracks().forEach(track => track.stop());
     streamRef.current = null;
     const context = audioContextRef.current;
     audioContextRef.current = null;
-    if (context && context.state !== "closed") void context.close();
-    recognitionRef.current = null;
+    if (context && context.state !== 'closed') void context.close();
     recorderRef.current = null;
-    chunksRef.current = [];
-  };
-
-  finishRef.current = () => {
-    if (cancelledRef.current || finalizedRef.current ||
-        !recorderEndedRef.current || !recognitionEndedRef.current) return;
-    finalizedRef.current = true;
-    clearTimers();
-    const transcript = [...transcriptRef.current.entries()]
-      .sort(([left], [right]) => left - right)
-      .map(([, value]) => value)
-      .join(" ")
-      .trim();
-    releaseTracksAndAudio();
-
-    if (transcript) {
-      callbackRef.current(transcript);
-      setError("");
-      setStage("ready");
-    } else {
-      setError(recognitionFailedRef.current
-        ? text(lang, "التفريغ الصوتي غير متاح الآن. اكتب الوصف يدوياً أو حاول مرة أخرى.", "Speech transcription is unavailable right now. Type the description or try again.")
-        : text(lang, "لم نلتقط كلمات واضحة. اكتب الوصف يدوياً أو حاول مرة أخرى.", "No clear words were captured. Type the description or try again."));
-      setStage("error");
-    }
-  };
-
-  const cancel = () => {
-    cancelledRef.current = true;
-    try { recognitionRef.current?.abort(); } catch { /* browser may already have stopped */ }
-    const recorder = recorderRef.current;
-    if (recorder && recorder.state !== "inactive") {
-      recorder.ondataavailable = null;
-      recorder.onstop = null;
-      try { recorder.stop(); } catch { /* already stopped */ }
-    }
-    releaseTracksAndAudio();
-    transcriptRef.current.clear();
-    finalizedRef.current = false;
-    setError("");
-    setSeconds(0);
-    setBars(initialBars());
-    setStage("idle");
-  };
-
-  useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-      cancelledRef.current = true;
-      try { recognitionRef.current?.abort(); } catch { /* no-op during unmount */ }
-      const recorder = recorderRef.current;
-      if (recorder && recorder.state !== "inactive") {
-        recorder.ondataavailable = null;
-        recorder.onstop = null;
-        try { recorder.stop(); } catch { /* no-op during unmount */ }
-      }
-      releaseTracksAndAudio();
-    };
+    recognitionRef.current = null;
   }, []);
 
-  const start = async () => {
-    if (!["idle", "ready", "error"].includes(stageRef.current)) return;
-    setError("");
+  const finalize = useCallback(() => {
+    if (cancelledRef.current || finalizedRef.current || !recorderEndedRef.current || !speechEndedRef.current) return;
+    const remainingProcessingTime = 480 - (Date.now() - processingStartedAtRef.current);
+    if (processingStartedAtRef.current && remainingProcessingTime > 0) {
+      if (finalizeTimeoutRef.current !== null) window.clearTimeout(finalizeTimeoutRef.current);
+      finalizeTimeoutRef.current = window.setTimeout(() => finalizeRef.current(), remainingProcessingTime);
+      return;
+    }
+    finalizedRef.current = true;
+    const transcript = [...transcriptPartsRef.current.entries()]
+      .sort(([a], [b]) => a - b)
+      .map(([, phrase]) => phrase.trim())
+      .filter(Boolean)
+      .join(' ')
+      .trim();
+    const speechFailed = speechFailedRef.current;
+    releaseResources();
+    if (transcript) {
+      setOpen(false);
+      setStage('idle');
+      setError('');
+      setShowDemo(false);
+      onTranscriptRef.current(transcript);
+    } else {
+      setOpen(false);
+      setStage('idle');
+      setShowDemo(true);
+      setError(speechFailed
+        ? text(lang, 'لم يتوفر تفريغ صوتي من المتصفح. يمكنك استخدام المثال التجريبي أو كتابة الوصف.', 'Browser transcription was unavailable. Use the labeled demo sample or type your description.')
+        : text(lang, 'لم يتوفر نص مسجل. يمكنك استخدام المثال التجريبي أو كتابة الوصف.', 'No transcript was available. Use the labeled demo sample or type your description.'));
+    }
+  }, [lang, releaseResources]);
+  finalizeRef.current = finalize;
+
+  const cancel = useCallback(() => {
+    cancelledRef.current = true;
+    try { recognitionRef.current?.abort(); } catch { /* Recognition may already be closed. */ }
+    const recorder = recorderRef.current;
+    if (recorder && recorder.state !== 'inactive') {
+      recorder.onstop = null;
+      recorder.ondataavailable = null;
+      try { recorder.stop(); } catch { /* Recorder may already be closed. */ }
+    }
+    releaseResources();
+    transcriptPartsRef.current.clear();
+    finalizedRef.current = false;
     setSeconds(0);
-    setBars(initialBars());
+    setError('');
+    setShowDemo(false);
+    setStage('idle');
+    setOpen(false);
+  }, [releaseResources]);
+
+  const start = useCallback(async () => {
+    if (stage === 'requesting' || stage === 'recording' || stage === 'processing') return;
     cancelledRef.current = false;
     finalizedRef.current = false;
-    recognitionFailedRef.current = false;
-    transcriptRef.current.clear();
-    chunksRef.current = [];
+    speechFailedRef.current = false;
+    transcriptPartsRef.current.clear();
+    setSeconds(0);
+    setBars(Array(barCount).fill(3));
+    setError('');
+    setShowDemo(false);
+    setOpen(true);
+    setStage('requesting');
 
-    const browserWindow = window as Window & {
-      SpeechRecognition?: SpeechRecognitionConstructor;
-      webkitSpeechRecognition?: SpeechRecognitionConstructor;
-      webkitAudioContext?: typeof AudioContext;
-    };
-    const Recognition = browserWindow.SpeechRecognition || browserWindow.webkitSpeechRecognition;
-    const MediaRecorderConstructor = window.MediaRecorder;
+    const browser = window as VoiceWindow;
+    const Recognition = browser.SpeechRecognition || browser.webkitSpeechRecognition;
     if (!navigator.mediaDevices?.getUserMedia) {
-      setError(text(lang, "هذا المتصفح لا يتيح الوصول إلى الميكروفون.", "This browser does not provide microphone access."));
-      setStage("error");
+      setStage('error');
+      setError(text(lang, 'هذا المتصفح لا يتيح الوصول إلى الميكروفون. تحقق من إعدادات المتصفح.', 'This browser does not provide microphone access. Check your browser settings.'));
       return;
     }
-    if (!MediaRecorderConstructor && !Recognition) {
-      setError(text(lang, "التسجيل والتفريغ غير متاحين في هذا المتصفح. اكتب الوصف يدوياً.", "Recording and transcription are unavailable in this browser. Type the description instead."));
-      setStage("error");
-      return;
-    }
-
-    setStage("requesting");
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      if (!mountedRef.current || cancelledRef.current) {
-        stream.getTracks().forEach((track) => track.stop());
+      if (cancelledRef.current) {
+        stream.getTracks().forEach(track => track.stop());
         return;
       }
       streamRef.current = stream;
-
-      if (MediaRecorderConstructor) {
-        const mimeType = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"]
-          .find((type) => MediaRecorderConstructor.isTypeSupported(type));
-        const recorder = new MediaRecorderConstructor(stream, mimeType ? { mimeType } : undefined);
+      const Recorder = window.MediaRecorder;
+      if (Recorder) {
+        const mimeType = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'].find(type => Recorder.isTypeSupported(type));
+        const recorder = new Recorder(stream, mimeType ? { mimeType } : undefined);
         recorderRef.current = recorder;
         recorderEndedRef.current = false;
-        recorder.ondataavailable = (event) => {
-          if (event.data.size > 0) chunksRef.current.push(event.data);
-        };
+        recorder.ondataavailable = () => undefined;
         recorder.onstop = () => {
           recorderEndedRef.current = true;
-          finishRef.current();
+          finalizeRef.current();
         };
-        recorder.onerror = () => {
-          setError(text(lang, "تعذر تسجيل الصوت. أوقف التسجيل واكتب الوصف يدوياً.", "Audio capture failed. Stop and type the description instead."));
-        };
+        recorder.onerror = () => setError(text(lang, 'تعذر التقاط الصوت. يمكنك إيقاف التسجيل أو المحاولة مرة أخرى.', 'Audio capture failed. Stop recording or try again.'));
         recorder.start(250);
       } else {
         recorderEndedRef.current = true;
@@ -205,170 +184,182 @@ export function AiVoiceInput({
         try {
           const recognition = new Recognition();
           recognitionRef.current = recognition;
-          recognition.lang = lang === "ar" ? "ar-SA" : "en-US";
+          recognition.lang = lang === 'ar' ? 'ar-SA' : 'en-US';
           recognition.continuous = true;
           recognition.interimResults = false;
-          recognitionEndedRef.current = false;
-          recognition.onresult = (event) => {
+          speechEndedRef.current = false;
+          recognition.onresult = event => {
             for (let index = event.resultIndex; index < event.results.length; index += 1) {
               const result = event.results[index];
-              const transcript = result?.[0]?.transcript?.trim();
-              if (result?.isFinal && transcript) transcriptRef.current.set(index, transcript);
+              const phrase = result?.[0]?.transcript?.trim();
+              if (result?.isFinal && phrase) transcriptPartsRef.current.set(index, phrase);
             }
           };
-          recognition.onerror = (event) => {
-            if (event.error === "aborted" || cancelledRef.current) return;
-            recognitionFailedRef.current = true;
-            setError(text(lang, "تعذر تحويل الصوت إلى نص. يمكنك إيقاف التسجيل وكتابة الوصف.", "Speech could not be transcribed. You can stop and type the description."));
+          recognition.onerror = event => {
+            if (event.error !== 'aborted' && !cancelledRef.current) speechFailedRef.current = true;
           };
           recognition.onend = () => {
-            recognitionEndedRef.current = true;
-            finishRef.current();
+            speechEndedRef.current = true;
+            finalizeRef.current();
           };
           recognition.start();
         } catch {
-          recognitionEndedRef.current = true;
-          recognitionFailedRef.current = true;
+          speechEndedRef.current = true;
+          speechFailedRef.current = true;
         }
       } else {
-        recognitionEndedRef.current = true;
+        speechEndedRef.current = true;
+        speechFailedRef.current = true;
       }
 
-      const AudioContextConstructor = window.AudioContext || browserWindow.webkitAudioContext;
+      const AudioContextConstructor = window.AudioContext || browser.webkitAudioContext;
       if (AudioContextConstructor) {
         try {
           const context = new AudioContextConstructor();
           audioContextRef.current = context;
-          if (context.state === "suspended") await context.resume();
+          if (context.state === 'suspended') await context.resume();
           const analyser = context.createAnalyser();
           analyser.fftSize = 128;
           context.createMediaStreamSource(stream).connect(analyser);
           const samples = new Uint8Array(analyser.frequencyBinCount);
           const draw = () => {
-            if (stageRef.current !== "recording" || cancelledRef.current) return;
+            if (cancelledRef.current || finalizedRef.current) return;
             analyser.getByteFrequencyData(samples);
-            const nextBars = Array.from({ length: 24 }, (_, index) => {
-              const sample = samples[Math.floor(index * samples.length / 24)] ?? 0;
-              return Math.max(4, Math.min(28, Math.round(sample / 255 * 28)));
-            });
-            setBars(nextBars);
-            animationRef.current = requestAnimationFrame(draw);
+            setBars(Array.from({ length: barCount }, (_, index) => {
+              const value = samples[Math.floor(index * samples.length / barCount)] ?? 0;
+              return Math.max(3, Math.min(38, Math.round(value / 255 * 38)));
+            }));
+            rafRef.current = requestAnimationFrame(draw);
           };
-          animationRef.current = requestAnimationFrame(draw);
+          rafRef.current = requestAnimationFrame(draw);
         } catch {
-          // Recording/transcription can continue without an analyser.
+          // Capture remains usable when the browser does not expose an analyser.
         }
       }
-
-      if (!mountedRef.current || cancelledRef.current) {
-        releaseTracksAndAudio();
+      if (cancelledRef.current) {
+        releaseResources();
         return;
       }
-      setStage("recording");
-      intervalRef.current = window.setInterval(() => setSeconds((value) => value + 1), 1000);
+      startedAtRef.current = Date.now();
+      setStage('recording');
+      intervalRef.current = window.setInterval(() => setSeconds(Math.floor((Date.now() - startedAtRef.current) / 1000)), 250);
     } catch (cause) {
-      const denied = cause instanceof DOMException && cause.name === "NotAllowedError";
-      cancelledRef.current = true;
-      try { recognitionRef.current?.abort(); } catch { /* browser may already have stopped */ }
-      const recorder = recorderRef.current;
-      if (recorder && recorder.state !== "inactive") {
-        recorder.ondataavailable = null;
-        recorder.onstop = null;
-        try { recorder.stop(); } catch { /* already stopped */ }
-      }
+      const denied = cause instanceof DOMException && (cause.name === 'NotAllowedError' || cause.name === 'PermissionDeniedError');
+      releaseResources();
+      setStage('error');
       setError(denied
-        ? text(lang, "لم يُسمح باستخدام الميكروفون. يمكنك كتابة الوصف بدلاً من ذلك.", "Microphone access was not allowed. You can type the description instead.")
-        : text(lang, "تعذر بدء التسجيل. تحقق من الميكروفون وحاول مرة أخرى.", "Could not start recording. Check the microphone and try again."));
-      releaseTracksAndAudio();
-      setStage("error");
+        ? text(lang, 'لم يُسمح باستخدام الميكروفون. اسمح بالوصول أو اكتب الوصف يدوياً.', 'Microphone access was denied. Allow access or type your description.')
+        : text(lang, 'تعذر بدء التسجيل. تحقق من الميكروفون وحاول مرة أخرى.', 'Could not start recording. Check the microphone and try again.'));
     }
-  };
+  }, [lang, releaseResources, stage]);
 
   const stop = () => {
-    if (stageRef.current !== "recording") return;
-    setStage("processing");
+    if (stage !== 'recording') return;
+    processingStartedAtRef.current = Date.now();
+    setStage('processing');
     if (intervalRef.current !== null) window.clearInterval(intervalRef.current);
-    if (animationRef.current !== null) cancelAnimationFrame(animationRef.current);
+    if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     intervalRef.current = null;
-    animationRef.current = null;
+    rafRef.current = null;
     const recorder = recorderRef.current;
     const recognition = recognitionRef.current;
-    recorderEndedRef.current = !recorder || recorder.state === "inactive";
-    recognitionEndedRef.current = !recognition;
-
-    if (recorder && recorder.state !== "inactive") {
+    recorderEndedRef.current = !recorder || recorder.state === 'inactive';
+    speechEndedRef.current = !recognition;
+    if (recorder && recorder.state !== 'inactive') {
       try { recorder.stop(); } catch { recorderEndedRef.current = true; }
     }
     if (recognition) {
-      try { recognition.stop(); } catch { recognitionEndedRef.current = true; }
+      try { recognition.stop(); } catch { speechEndedRef.current = true; }
     }
-
-    finishTimeoutRef.current = window.setTimeout(() => {
-      recognitionEndedRef.current = true;
-      const activeRecorder = recorderRef.current;
-      if (activeRecorder?.state !== "inactive") {
-        try { activeRecorder?.stop(); } catch { /* already stopped */ }
+    finalizeTimeoutRef.current = window.setTimeout(() => {
+      if (recorderRef.current?.state !== 'inactive') {
+        try { recorderRef.current?.stop(); } catch { recorderEndedRef.current = true; }
       }
       recorderEndedRef.current = true;
-      finishRef.current();
-    }, 2500);
-    finishRef.current();
+      speechEndedRef.current = true;
+      finalizeRef.current();
+    }, 2200);
+    finalizeRef.current();
   };
 
-  const formattedTime = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
-  const isBusy = stage === "requesting" || stage === "processing";
+  useEffect(() => () => {
+    cancelledRef.current = true;
+    try { recognitionRef.current?.abort(); } catch { /* Unmount cleanup. */ }
+    const recorder = recorderRef.current;
+    if (recorder && recorder.state !== 'inactive') {
+      recorder.onstop = null;
+      recorder.ondataavailable = null;
+      try { recorder.stop(); } catch { /* Unmount cleanup. */ }
+    }
+    releaseResources();
+  }, [releaseResources]);
 
-  return (
-    <div className={`ai-voice-input ${stage === "recording" ? "is-recording" : ""}`} data-testid="component-ai-voice-input">
-      <div className="voice-card">
-        <div className="voice-card-top">
-          <span className="voice-card-title">{text(lang, "وصف صوتي", "Voice description")}</span>
-          {stage === "recording" && <span className="voice-recording-indicator"><i aria-hidden="true"/>{text(lang, "جارٍ التسجيل", "Recording")}</span>}
-          {stage === "ready" && <span className="voice-ready-indicator">{text(lang, "تمت إضافة النص", "Text added")}</span>}
+  const formattedTime = `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+  const active = stage === 'recording';
+  const dialogOpen = open;
+  const handleOpenChange = (next: boolean) => {
+    if (!next && (stage === 'recording' || stage === 'requesting' || stage === 'processing')) cancel();
+    else setOpen(next);
+  };
+
+  return <div className="ai-voice-input" data-testid="component-ai-voice-input">
+    <button type="button" className="voice-launch" onClick={() => void start()}
+      aria-label={text(lang, 'تسجيل وصف صوتي', 'Record a voice description')} data-testid="button-start-voice">
+      <span className="voice-launch-icon"><Mic size={17}/></span>
+      <span>{text(lang, 'أضف وصفاً صوتياً', 'Add a voice description')}</span>
+    </button>
+    {onManualEntry && <button type="button" className="voice-manual-entry" onClick={onManualEntry}>{text(lang, 'اكتب بدلاً من ذلك', 'Type instead')}</button>}
+    {showDemo && <div className="voice-demo-option" role="status" data-testid="status-voice-demo">
+      <span className="voice-error">{error}</span>
+      <p>{text(lang, `مثال جاهز: «${demoTranscript.ar}»`, `Prewritten example: “${demoTranscript.en}”`)}</p>
+      <button type="button" className="rw-button rw-button-secondary" onClick={() => {
+        onTranscriptRef.current(demoTranscript[lang]);
+        setShowDemo(false);
+        setError('');
+      }} data-testid="button-use-demo-transcript">{text(lang, 'إضافة المثال التجريبي', 'Insert demo sample')}</button>
+    </div>}
+    {!!error && !showDemo && stage === 'error' && <p className="voice-error" role="alert">{error}</p>}
+
+    <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
+      <DialogContent className="voice-dialog" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+        <DialogHeader className="voice-dialog-header">
+          <span className="voice-dialog-overline">{text(lang, 'إملاء صوتي', 'VOICE NOTE')}</span>
+          <DialogTitle>{text(lang, 'صف المشكلة بصوتك', 'Describe the issue aloud')}</DialogTitle>
+          <DialogDescription>{text(lang, 'سيُضاف النص المتاح إلى وصف البلاغ لتراجعه بنفسك.', 'Any available transcript will be added to your report for you to review.')}</DialogDescription>
+        </DialogHeader>
+        <div className={`voice-dialog-stage ${active ? 'is-live' : ''}`}>
+          <div className={`voice-orb ${active ? 'is-live' : ''}`} aria-hidden="true"><Mic2 size={27}/></div>
+          <div className="voice-wave-dialog" role="img" aria-label={text(lang, 'موجة مستوى الصوت المباشر', 'Live audio level waveform')}>
+            {bars.map((height, index) => <i key={index} style={{ height: `${height}px` }}/>)}
+          </div>
+          <span className="voice-dialog-timer" role="timer">{formattedTime}</span>
         </div>
-        <div className="voice-stage">
-          {stage === "recording" && <div className="voice-wave" role="img" aria-label={text(lang, "مستوى الصوت المباشر", "Live audio level")}>
-            {bars.map((height, index) => <i key={index} style={{ height: `${height}px` }} />)}
-          </div>}
-          {isBusy && <div className="voice-wave voice-wave-busy" aria-hidden="true">{bars.map((height, index) => <i key={index} style={{ height: `${height}px` }} />)}</div>}
-          {(stage === "idle" || stage === "ready" || stage === "error") && (
-            <button type="button" className="voice-button voice-start" onClick={() => void start()}
-              aria-label={text(lang, "ابدأ تسجيل وصف صوتي", "Start recording a voice description")} data-testid="button-start-voice">
-              <span className="voice-mic-core">{stage === "ready" ? <RotateCcw size={19} /> : <Mic size={21} />}</span>
-              <span>{stage === "ready"
-                ? text(lang, "تسجيل مرة أخرى", "Record again")
-                : text(lang, "اضغط للتسجيل", "Tap to record")}</span>
-            </button>
-          )}
-          {stage === "recording" && (
-            <>
-              <button type="button" className="voice-button voice-active voice-stop" onClick={stop}
-                aria-label={text(lang, "إيقاف التسجيل وإضافة النص", "Stop recording and add transcript")} data-testid="button-stop-voice">
-                <span className="voice-mic-core"><Square size={16} fill="currentColor" /></span>
-                <span>{text(lang, "إيقاف وإضافة النص", "Stop and add text")}</span>
-              </button>
-              <span className="voice-timer" role="timer" aria-label={text(lang, `مدة التسجيل ${formattedTime}`, `Recording time ${formattedTime}`)}>{formattedTime}</span>
-              <button type="button" className="voice-cancel" onClick={cancel}
-                aria-label={text(lang, "إلغاء التسجيل وحذف النص", "Cancel recording and discard transcript")} data-testid="button-cancel-voice">
-                <X size={14} />{text(lang, "إلغاء", "Cancel")}
-              </button>
-            </>
-          )}
+        <p className="voice-dialog-message" role={stage === 'error' ? 'alert' : 'status'}>
+          {stage === 'requesting' && text(lang, 'بانتظار إذن الميكروفون…', 'Waiting for microphone permission…')}
+          {stage === 'recording' && text(lang, 'جارٍ التسجيل — تحدث بوضوح وبالسرعة المناسبة.', 'Recording — speak clearly at a comfortable pace.')}
+          {stage === 'processing' && text(lang, 'جاري تحويل الصوت إلى نص...', 'Processing voice into text...')}
+          {stage === 'error' && error}
+        </p>
+        {stage === 'error' && <p className="voice-dialog-example">
+          {text(lang, `مثال مكتوب فقط، وليس تفريغاً لتسجيلك: «${demoTranscript.ar}»`, `Prewritten example only, not a transcript of your recording: “${demoTranscript.en}”`)}
+        </p>}
+        <p className="voice-dialog-disclosure">{text(lang, 'التسجيل لا يُحفظ في تدارك. قد يستخدم المتصفح خدمة التفريغ الصوتي الخاصة به.', 'TADARUK does not save the recording. Your browser may use its own speech service.')}</p>
+        <div className="voice-dialog-actions">
+          {active ? <button type="button" className="rw-button voice-stop-button" onClick={stop} data-testid="button-stop-voice">
+            <Square size={15} fill="currentColor"/>{text(lang, 'إيقاف التسجيل', 'Stop recording')}
+          </button> : stage === 'error' ? <>
+            <button type="button" className="rw-button rw-button-secondary" onClick={() => void start()} data-testid="button-retry-voice"><RotateCcw size={15}/>{text(lang, 'حاول مرة أخرى', 'Try again')}</button>
+            <button type="button" className="rw-button rw-button-quiet" onClick={() => {
+              onTranscriptRef.current(demoTranscript[lang]);
+              setOpen(false);
+              setStage('idle');
+              setError('');
+              setShowDemo(false);
+            }} data-testid="button-use-demo-transcript-from-error">{text(lang, 'إدراج المثال المكتوب', 'Insert prewritten example')}</button>
+          </> : null}
+          <button type="button" className="rw-button rw-button-quiet" onClick={cancel} data-testid="button-cancel-voice"><X size={15}/>{text(lang, 'إلغاء', 'Cancel')}</button>
         </div>
-        <div className="voice-card-foot">
-          {stage === "idle" && <span>{text(lang, "سجّل وصفاً قصيراً للمشكلة", "Record a short description of the issue")}</span>}
-          {stage === "recording" && <span className="voice-hint">{text(lang, "لا تحفظ تدارك التسجيل. قد يستخدم المتصفح خدمة التفريغ الصوتي التابعة له.", "TADARUK does not save the recording. Your browser may use its own speech service for transcription.")}</span>}
-          {stage === "requesting" && <span className="voice-live-status" role="status">{text(lang, "بانتظار إذن الميكروفون…", "Waiting for microphone permission…")}</span>}
-          {stage === "processing" && <span className="voice-live-status" role="status">{text(lang, "جارٍ إنهاء التسجيل…", "Finishing the recording…")}</span>}
-          {stage === "ready" && <span className="voice-success" role="status">{text(lang, "أُضيف النص إلى الوصف. راجعه وعدّله قبل المتابعة.", "Transcript added to the description. Review and edit it before continuing.")}</span>}
-          {error && <span className="voice-error" role="alert">{error}</span>}
-        </div>
-      </div>
-      {stage === "error" && onManualEntry && (
-        <button type="button" className="voice-manual-entry" onClick={onManualEntry}>
-          {text(lang, "اكتب الوصف يدوياً", "Type the description")}
-        </button>
-      )}
-    </div>
-  );
+      </DialogContent>
+    </Dialog>
+  </div>;
 }

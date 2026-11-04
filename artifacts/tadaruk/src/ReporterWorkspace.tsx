@@ -16,7 +16,7 @@ import {
 import { AiVoiceInput } from '@/components/ui/ai-voice-input';
 import { TicketCancellationAction } from '@/components/TicketCancellationAction';
 import { TadarukSelect } from '@/components/TadarukSelect';
-import { ticketAnalysisAdapter, type TicketAnalysisRequest } from '@/services/ticket-analysis';
+import { reporterDemoAnalysisAdapter, type ReporterDemoAnalysisRequest } from '@/services/reporter-demo-analysis';
 import './reporter-workspace.css';
 
 type ReporterLang = 'ar' | 'en';
@@ -270,14 +270,17 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
   const [priority, setPriority] = useState<TicketPriority>('medium');
   const [specialization, setSpecialization] = useState('');
   const [reviewLocation, setReviewLocation] = useState('');
+  const [reviewEditing, setReviewEditing] = useState(false);
   const reduced = useReducedMotion() === true;
   const analyze = useMutation({
-    mutationFn: (input: TicketAnalysisRequest) => ticketAnalysisAdapter.analyze(input),
+    mutationFn: (input: ReporterDemoAnalysisRequest) => reporterDemoAnalysisAdapter.analyze(input),
   });
   const create = useCreateTicket();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
   const clarificationValue = selectedLocation === 'مكان آخر' ? otherLocation.trim() : selectedLocation;
+  const clarifiedLocation = selectedLocation === 'مكان آخر' || lang === 'ar' ? clarificationValue
+    : ({ 'المطبخ': 'Kitchen', 'صالة العملاء': 'Customer area', 'المستودع': 'Storage', 'دورات المياه': 'Restrooms' } as Record<string, string>)[clarificationValue] ?? clarificationValue;
   const effectiveBranchId = allowedBranches.find(branch => branch.id === selectedBranchId)?.id
     ?? allowedBranches.find(branch => branch.id === user.branchId)?.id
     ?? allowedBranches[0]?.id
@@ -313,6 +316,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
     setPriority(suggestion.priority as TicketPriority);
     setSpecialization(suggestion.specialization);
     setReviewLocation(finalLocation);
+    setReviewEditing(false);
     setNeedsLocation(false);
   };
   const handleAnalyze = (event: FormEvent<HTMLFormElement>) => {
@@ -343,9 +347,9 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
   const handleClarify = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!clarificationValue) return;
-    setLocation(clarificationValue);
-    analyze.mutate({ description: description.trim(), location: clarificationValue, locale: lang }, {
-      onSuccess: suggestion => beginReview(suggestion, clarificationValue)
+    setLocation(clarifiedLocation);
+    analyze.mutate({ description: description.trim(), location: clarifiedLocation, locale: lang }, {
+      onSuccess: suggestion => beginReview(suggestion, clarifiedLocation)
     });
   };
   const setPhotoFromFile = async (file?: File) => {
@@ -363,8 +367,10 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
     setAnalysis(null);
     setNeedsLocation(false);
     setLocationWasClarified(false);
+    setReviewEditing(false);
     if (reviewLocation) setLocation(reviewLocation);
   };
+  const returnToPreview = () => setReviewEditing(false);
   const submitReview = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const payload: TicketInput = {
@@ -482,7 +488,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
         {analyze.isError && <p className="rw-inline-error" role="alert" data-testid="status-analyze-error">{text(lang, 'تعذر تجهيز الاقتراحات. راجع الوصف وحاول مجدداً.', 'Could not prepare suggestions. Check the description and try again.')}</p>}
         <div className="rw-form-actions">
           <button type="submit" className="rw-button" disabled={!canUseBranch || (!description.trim() && !photo) || analyze.isPending} data-testid="button-continue-report">
-            {analyze.isPending ? <span className="rw-busy"><LoaderCircle size={16}/>{text(lang, 'جارٍ تجهيز المراجعة…', 'Preparing your review…')}</span> : <>{text(lang, 'تجهيز المراجعة', 'Prepare review')}{nextIcon}</>}
+            {analyze.isPending ? <span className="rw-busy"><LoaderCircle size={16}/>{text(lang, 'جاري تحليل البلاغ...', 'Analyzing your report...')}</span> : <>{text(lang, 'تجهيز المراجعة', 'Prepare review')}{nextIcon}</>}
           </button>
           <small>{text(lang, 'لن يُرسل البلاغ إلا بعد مراجعتك وتأكيدك.', 'Nothing is sent until you review and confirm.')}</small>
         </div>
@@ -558,36 +564,56 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
             <span className="rw-preview-status">{text(lang, 'مسودة', 'Draft')}</span>
           </header>
           {renderBranchChoice()}
-          <label className="rw-field"><span>{text(lang, 'عنوان البلاغ', 'Report title')}</span>
-          <input required minLength={3} value={title} placeholder={text(lang, 'مثال: تسرب ماء قرب حوض التحضير', 'Example: Water leak near prep sink')} onChange={event => setTitle(event.currentTarget.value)} data-testid="input-review-title"/>
-          </label>
-          <label className="rw-field rw-preview-description"><span>{text(lang, 'وصف المشكلة', 'Issue description')}</span>
-          <textarea required minLength={4} value={reviewDescription} onChange={event => setReviewDescription(event.currentTarget.value)} data-testid="input-review-description"/>
-          </label>
-          <div className="rw-review-grid">
-            <div className="rw-field"><span>{text(lang, 'الفئة', 'Category')}</span>
-              <TadarukSelect required value={category} onValueChange={setCategory} ariaLabel={text(lang, 'الفئة', 'Category')} dir={lang === 'ar' ? 'rtl' : 'ltr'} placeholder={text(lang, 'اختر الفئة', 'Choose a category')} testId="input-review-category" options={[
-                ...(category && !classificationOptions.some(([value]) => value === category) ? [{ value: category, label: category }] : []),
-                ...classificationOptions.map(([value, ar, en]) => ({ value, label: text(lang, ar, en) })),
-              ]}/>
+          {!reviewEditing ? <>
+            <div className="rw-preview-title-block">
+              <span className="rw-preview-label">{text(lang, 'العنوان المقترح', 'GENERATED TITLE')}</span>
+              <h3 data-testid="text-generated-title">{title}</h3>
+              <p data-testid="text-generated-description">{reviewDescription}</p>
             </div>
-            <div className="rw-field"><span>{text(lang, 'الأولوية', 'Priority')}</span>
-              <TadarukSelect value={priority} onValueChange={value => setPriority(value as TicketPriority)} ariaLabel={text(lang, 'الأولوية', 'Priority')} dir={lang === 'ar' ? 'rtl' : 'ltr'} testId="select-review-priority" options={[
-                { value: 'urgent', label: priorityLabel('urgent', lang) },
-                { value: 'high', label: priorityLabel('high', lang) },
-                { value: 'medium', label: priorityLabel('medium', lang) },
-                { value: 'low', label: priorityLabel('low', lang) },
-              ]}/>
+            <div className="rw-preview-facts">
+              <div><span><ClipboardList size={14}/>{text(lang, 'الفئة', 'Category')}</span><b>{classificationLabel(category, lang)}</b></div>
+              <div><span><CircleAlert size={14}/>{text(lang, 'الأولوية المقترحة', 'Suggested priority')}</span><b className={`rw-priority rw-priority-${priority}`}>{priorityLabel(priority, lang)}</b></div>
+              <div><span><MapPin size={14}/>{text(lang, 'الموقع داخل الفرع', 'Location')}</span><b>{reviewLocation}</b></div>
+              <div><span><Wrench size={14}/>{text(lang, 'التخصص المقترح', 'Suggested specialization')}</span><b>{classificationLabel(specialization, lang)}</b></div>
+              <div><span><ShieldCheck size={14}/>{text(lang, 'الفرع المصرح', 'Authorized branch')}</span><b>{selectedBranch?.name}</b></div>
             </div>
-            <div className="rw-field"><span>{text(lang, 'التخصص', 'Specialization')}</span>
-              <TadarukSelect required value={specialization} onValueChange={setSpecialization} ariaLabel={text(lang, 'التخصص', 'Specialization')} dir={lang === 'ar' ? 'rtl' : 'ltr'} placeholder={text(lang, 'اختر التخصص', 'Choose a specialization')} testId="input-review-specialization" options={[
-                ...(specialization && !classificationOptions.some(([value]) => value === specialization) ? [{ value: specialization, label: classificationLabel(specialization, lang) }] : []),
-                ...classificationOptions.map(([value, ar, en]) => ({ value, label: text(lang, ar, en) })),
-              ]}/>
-            </div>
-            <label className="rw-field"><span>{text(lang, 'الموقع داخل الفرع', 'Location in the branch')}</span>
-              <input required value={reviewLocation} placeholder={text(lang, 'مثال: بجانب حوض التحضير', 'Example: beside the prep sink')} onChange={event => setReviewLocation(event.currentTarget.value)} data-testid="input-review-location"/>
+          </> : <>
+            <div className="rw-editing-note"><RotateCcw size={15}/>{text(lang, 'عدّل الاقتراحات، ثم ارجع للمعاينة قبل الإرسال.', 'Adjust the suggested details, then return to preview before sending.')}</div>
+            <label className="rw-field"><span>{text(lang, 'عنوان البلاغ', 'Report title')}</span>
+              <input required minLength={3} value={title} placeholder={text(lang, 'مثال: تسرب ماء قرب حوض التحضير', 'Example: Water leak near prep sink')} onChange={event => setTitle(event.currentTarget.value)} data-testid="input-review-title"/>
             </label>
+            <label className="rw-field rw-preview-description"><span>{text(lang, 'وصف المشكلة', 'Issue description')}</span>
+              <textarea required minLength={4} value={reviewDescription} onChange={event => setReviewDescription(event.currentTarget.value)} data-testid="input-review-description"/>
+            </label>
+            <div className="rw-review-grid">
+              <div className="rw-field"><span>{text(lang, 'الفئة', 'Category')}</span>
+                <TadarukSelect required value={category} onValueChange={setCategory} ariaLabel={text(lang, 'الفئة', 'Category')} dir={lang === 'ar' ? 'rtl' : 'ltr'} placeholder={text(lang, 'اختر الفئة', 'Choose a category')} testId="input-review-category" options={[
+                  ...(category && !classificationOptions.some(([value]) => value === category) ? [{ value: category, label: category }] : []),
+                  ...classificationOptions.map(([value, ar, en]) => ({ value, label: text(lang, ar, en) })),
+                ]}/>
+              </div>
+              <div className="rw-field"><span>{text(lang, 'الأولوية', 'Priority')}</span>
+                <TadarukSelect value={priority} onValueChange={value => setPriority(value as TicketPriority)} ariaLabel={text(lang, 'الأولوية', 'Priority')} dir={lang === 'ar' ? 'rtl' : 'ltr'} testId="select-review-priority" options={[
+                  { value: 'urgent', label: priorityLabel('urgent', lang) },
+                  { value: 'high', label: priorityLabel('high', lang) },
+                  { value: 'medium', label: priorityLabel('medium', lang) },
+                  { value: 'low', label: priorityLabel('low', lang) },
+                ]}/>
+              </div>
+              <div className="rw-field"><span>{text(lang, 'التخصص', 'Specialization')}</span>
+                <TadarukSelect required value={specialization} onValueChange={setSpecialization} ariaLabel={text(lang, 'التخصص', 'Specialization')} dir={lang === 'ar' ? 'rtl' : 'ltr'} placeholder={text(lang, 'اختر التخصص', 'Choose a specialization')} testId="input-review-specialization" options={[
+                  ...(specialization && !classificationOptions.some(([value]) => value === specialization) ? [{ value: specialization, label: classificationLabel(specialization, lang) }] : []),
+                  ...classificationOptions.map(([value, ar, en]) => ({ value, label: text(lang, ar, en) })),
+                ]}/>
+              </div>
+              <label className="rw-field"><span>{text(lang, 'الموقع داخل الفرع', 'Location in the branch')}</span>
+                <input required value={reviewLocation} placeholder={text(lang, 'مثال: بجانب حوض التحضير', 'Example: beside the prep sink')} onChange={event => setReviewLocation(event.currentTarget.value)} data-testid="input-review-location"/>
+              </label>
+            </div>
+          </>}
+          <div className="rw-source-note">
+            <span>{text(lang, 'المعلومات التي قدمتها', 'YOUR ORIGINAL INPUT')}</span>
+            <p>{description.trim()}</p>
           </div>
           {photo && <div className="rw-photo-preview" data-testid="preview-review-photo">
             <img src={photo} alt={text(lang, 'الصورة المرفقة بالبلاغ', 'Photo attached to the report')}/>
@@ -602,9 +628,9 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
           <button type="submit" className="rw-button" disabled={!canUseBranch || create.isPending || !title.trim() || !reviewLocation.trim()} data-testid="button-submit-report">
             {create.isPending ? <span className="rw-busy"><LoaderCircle size={16}/>{text(lang, 'جارٍ إرسال البلاغ', 'Sending report')}</span> : <>{text(lang, 'إرسال البلاغ', 'Submit report')}<Send size={16}/></>}
           </button>
-          <button type="button" className="rw-button rw-button-quiet" onClick={backToCompose} disabled={create.isPending} data-testid="button-edit-report">
-            {text(lang, 'تعديل', 'Edit')}
-          </button>
+          {!reviewEditing
+            ? <button type="button" className="rw-button rw-button-secondary" onClick={() => setReviewEditing(true)} disabled={create.isPending} data-testid="button-edit-report">{text(lang, 'تعديل', 'Edit')}</button>
+            : <button type="button" className="rw-button rw-button-quiet" onClick={returnToPreview} disabled={create.isPending} data-testid="button-return-preview">{text(lang, 'العودة للمعاينة', 'Return to preview')}</button>}
           <small>{text(lang, 'بالإرسال، سيظهر البلاغ ضمن بلاغاتك.', 'After sending, this report will appear in My reports.')}</small>
         </div>
       </motion.form>}
