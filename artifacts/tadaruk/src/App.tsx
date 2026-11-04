@@ -33,10 +33,12 @@ import NotFound from '@/pages/not-found';
 import { ReporterHomePage, ReporterNewTicketPage, ReporterTicketsPage } from '@/ReporterWorkspace';
 import ReporterAccessPanel from '@/ReporterAccessPanel';
 import { TicketCancellationAction } from '@/components/TicketCancellationAction';
+import { TechnicianTicketDetail } from '@/components/TechnicianTicketDetail';
 import SunMoonThemeToggle from '@/components/ui/sun-moon-theme-toggle';
 import './tadaruk.css';
 import './tadaruk-interactions.css';
 import './technician-contact.css';
+import './technician-ticket.css';
 
 const qc = new QueryClient();
 type Lang = 'ar' | 'en';
@@ -853,6 +855,23 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
   const act=(a:'start'|'complete'|'confirm'|'reject'|'reassign',extra:Record<string,string>={})=>{setActionFeedback('');action.mutate({ticketId:id,data:{action:a,note,...extra}},{onSuccess:()=>{void query.invalidateQueries({queryKey:getGetTicketQueryKey(id)});void query.invalidateQueries({queryKey:getListTicketsQueryKey()});void query.invalidateQueries({queryKey:getGetOverviewQueryKey()});void query.invalidateQueries({queryKey:getListKnowledgeQueryKey()});setNote('');setActionFeedback(a==='start'?tr(lang,'بدأ العمل على البلاغ.','Work has started on this report.'):a==='complete'?tr(lang,'أُرسل تقييم الإصلاح للمراجعة.','The repair was submitted for confirmation.'):a==='confirm'?tr(lang,'تم تأكيد الإصلاح وإغلاق البلاغ.','The repair was confirmed and the report closed.'):a==='reject'?tr(lang,'تمت إعادة البلاغ للفني للمتابعة.','The report was returned to the technician.'):tr(lang,'تم تحديث إسناد الفني.','The technician assignment was updated.'));}});};
   const ticket = rawTicket || (FALLBACK_INITIAL_TICKETS as unknown as Ticket[]).find(t => t.id === id) || (FALLBACK_INITIAL_TICKETS[0] as unknown as Ticket);
   const manager=user.role==='manager',technician=user.role==='technician',reporter=user.role==='reporter';
+
+  if (technician) {
+    return (
+      <div className="page-enter">
+        <TechnicianTicketDetail
+          ticket={ticket}
+          lang={lang}
+          user={user}
+          act={act}
+          action={action}
+          actionFeedback={actionFeedback}
+          localPhoto={localPhoto}
+          reduced={reduced}
+        />
+      </div>
+    );
+  }
 
   const techStage = ticket.status === 'closed' ? 4
     : ticket.status === 'awaiting_confirmation' ? 3

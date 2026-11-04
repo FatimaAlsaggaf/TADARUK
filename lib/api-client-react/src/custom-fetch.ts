@@ -1057,7 +1057,27 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
   if (apiPath === "/api/knowledge") {
     const category = searchParams.get("category");
     const branchId = searchParams.get("branchId");
-    let list = FALLBACK_KNOWLEDGE;
+    const tickets = getStoredTickets();
+    const closedTicketEntries = tickets
+      .filter(t => t.status === "closed" && (t.resolution || t.repairNotes))
+      .map(t => ({
+        id: `knowledge-${t.id}`,
+        ticketId: t.id,
+        ticketNumber: t.number,
+        title: t.title,
+        category: t.category,
+        branchId: t.branchId,
+        branchName: t.branchName || "",
+        technicianName: t.technicianName || "",
+        cause: t.cause || null,
+        resolution: t.resolution || t.repairNotes || "",
+        createdAt: t.updatedAt || new Date().toISOString(),
+      }));
+    const existingIds = new Set(closedTicketEntries.map(k => k.ticketId));
+    let list = [
+      ...closedTicketEntries,
+      ...FALLBACK_KNOWLEDGE.filter(k => !existingIds.has(k.ticketId))
+    ];
     if (category) list = list.filter(k => k.category === category);
     if (branchId) list = list.filter(k => k.branchId === branchId);
     return list as unknown as T;
@@ -1151,27 +1171,74 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
         const parsedBody = typeof body === "string" ? JSON.parse(body) : (body || {});
         const action = parsedBody?.action;
         const current = { ...tickets[ticketIndex] };
+        const existingHistory = Array.isArray(current.history) ? [...current.history] : [];
         if (action === "confirm" || action === "close") {
           current.status = "closed";
+          existingHistory.push({
+            id: `ev-${Date.now()}`,
+            label: "أكد المبلّغ نجاح الإصلاح",
+            actorName: (current.reporterName as string) || "المبلّغ",
+            note: "تم التحقق من حل المشكلة وإغلاق البلاغ",
+            createdAt: new Date().toISOString()
+          });
         } else if (action === "cancel") {
           current.status = "cancelled";
           current.cancelledAt = new Date().toISOString();
           current.cancelledBy = "المبلّغ";
+          existingHistory.push({
+            id: `ev-${Date.now()}`,
+            label: "ألغى المبلّغ البلاغ",
+            actorName: "المبلّغ",
+            note: parsedBody?.note || "إلغاء البلاغ قبل بدء العمل",
+            createdAt: new Date().toISOString()
+          });
         } else if (action === "start") {
           current.status = "in_progress";
+          existingHistory.push({
+            id: `ev-${Date.now()}`,
+            label: "بدأ الفني العمل",
+            actorName: (current.technicianName as string) || "الفني",
+            note: "باشر الفني أعمال الفحص والصيانة بالموقع",
+            createdAt: new Date().toISOString()
+          });
         } else if (action === "complete" || action === "resolve") {
           current.status = "awaiting_confirmation";
-          current.repairNotes = parsedBody?.note || "تم استكمال أعمال الصيانة بنجاح.";
+          const explanation = parsedBody?.resolution || parsedBody?.note || "تم استكمال أعمال الصيانة بنجاح.";
+          current.repairNotes = explanation;
+          current.resolution = explanation;
+          current.cause = parsedBody?.cause || null;
+          existingHistory.push({
+            id: `ev-${Date.now()}`,
+            label: "أكمل الفني الإصلاح",
+            actorName: (current.technicianName as string) || "الفني",
+            note: explanation,
+            createdAt: new Date().toISOString()
+          });
         } else if (action === "reject") {
           current.status = "in_progress";
+          existingHistory.push({
+            id: `ev-${Date.now()}`,
+            label: "أعاد المبلّغ فتح البلاغ",
+            actorName: (current.reporterName as string) || "المبلّغ",
+            note: parsedBody?.note || "المشكلة ما زالت قائمة وبحاجة لمتابعة إضافية",
+            createdAt: new Date().toISOString()
+          });
         } else if (action === "reassign") {
           const techs = getStoredTechnicians();
           const t = techs.find(x => x.id === parsedBody?.technicianId);
           if (t) {
             current.technicianId = t.id;
             current.technicianName = t.name;
+            existingHistory.push({
+              id: `ev-${Date.now()}`,
+              label: "إعادة إسناد البلاغ",
+              actorName: "مدير العمليات",
+              note: `تم إسناد البلاغ إلى ${t.name}`,
+              createdAt: new Date().toISOString()
+            });
           }
         }
+        current.history = existingHistory;
         current.updatedAt = new Date().toISOString();
         tickets[ticketIndex] = current;
         saveStoredTickets(tickets);
