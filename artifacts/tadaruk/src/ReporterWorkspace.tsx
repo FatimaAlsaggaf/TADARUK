@@ -15,7 +15,6 @@ import {
   FALLBACK_REPORTER_BRANCHES
 } from '@workspace/api-client-react';
 import { AiVoiceInput } from '@/components/ui/ai-voice-input';
-import { TicketCancellationAction } from '@/components/TicketCancellationAction';
 import { TadarukSelect } from '@/components/TadarukSelect';
 import {
   reporterDemoAnalysisAdapter,
@@ -92,8 +91,9 @@ function ReporterTicketRows({ tickets, lang, emptyTitle, emptyDescription }: {
         : ticket.status === 'in_progress' ? Wrench
         : ticket.status === 'review' || ticket.status === 'awaiting_confirmation' ? Clock3
         : CircleAlert;
-      return <div className="rw-ticket-entry" key={ticket.id}>
+      return (
         <Link
+          key={ticket.id}
           href={`/workspace/tickets/${ticket.id}`}
           className="rw-ticket-link"
           data-testid={`link-ticket-${ticket.id}`}
@@ -112,8 +112,7 @@ function ReporterTicketRows({ tickets, lang, emptyTitle, emptyDescription }: {
           <time className="rw-date" dateTime={ticket.createdAt} data-testid={`date-ticket-${ticket.id}`}>{dateLabel(ticket.createdAt, lang)}</time>
           {rtl ? <ChevronLeft className="rw-arrow" size={16} aria-hidden="true"/> : <ChevronRight className="rw-arrow" size={16} aria-hidden="true"/>}
         </Link>
-        {ticket.status === 'new' && <TicketCancellationAction ticketId={ticket.id} ticketNumber={ticket.number} lang={lang}/>}
-      </div>;
+      );
     })}
   </div>;
 }

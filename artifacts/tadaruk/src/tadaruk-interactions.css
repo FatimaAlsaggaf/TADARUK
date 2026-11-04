@@ -4477,3 +4477,442 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
     transition: none !important;
   }
 }
+
+/* ========================================================
+   Streamlined Ticket Details, Technician Workflow & Compact Log
+   ======================================================== */
+.ticket-stages-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--card);
+  border: 1px solid hsl(var(--border));
+  border-radius: 14px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+}
+
+.ticket-stage-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: max-content;
+  position: relative;
+  opacity: 0.55;
+  transition: opacity 0.2s ease;
+}
+
+.ticket-stage-step.is-current {
+  opacity: 1;
+}
+
+.ticket-stage-step.is-past {
+  opacity: 0.85;
+}
+
+.ticket-stage-step:not(:last-child)::after {
+  content: '';
+  flex: 1;
+  height: 2px;
+  background: hsl(var(--border));
+  margin-inline-start: 8px;
+}
+
+.ticket-stage-step.is-past:not(:last-child)::after {
+  background: #307190;
+}
+
+.ticket-stage-dot {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  background: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  flex-shrink: 0;
+}
+
+.ticket-stage-step.is-current .ticket-stage-dot {
+  background: #1f3363;
+  color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(31, 51, 99, 0.18);
+}
+
+.ticket-stage-step.is-past .ticket-stage-dot {
+  background: #307190;
+  color: #ffffff;
+}
+
+.ticket-stage-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  white-space: nowrap;
+}
+
+/* Technician Action Hub */
+.tech-action-box {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(48, 113, 144, 0.06) 0%, rgba(31, 51, 99, 0.03) 100%);
+  border: 1px solid rgba(48, 113, 144, 0.22);
+}
+
+.tech-action-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.tech-action-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #307190;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.tech-action-meta h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #1f3363;
+}
+
+.dark .tech-action-meta h4 {
+  color: #e2e8f0;
+}
+
+.tech-action-meta p {
+  margin: 0;
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.tech-main-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 13.5px;
+  background: #1f3363;
+  color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.tech-main-btn:hover {
+  background: #284478;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(31, 51, 99, 0.2);
+}
+
+.tech-repair-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tech-repair-form .field-label {
+  margin: 0;
+}
+
+.tech-status-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.tech-status-card.info {
+  background: #f0f7fb;
+  border: 1px solid #d0e5f2;
+  color: #245876;
+}
+
+.dark .tech-status-card.info {
+  background: rgba(48, 113, 144, 0.15);
+  border-color: rgba(48, 113, 144, 0.35);
+  color: #93c5fd;
+}
+
+.tech-status-card.success {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+}
+
+.dark .tech-status-card.success {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #86efac;
+}
+
+.tech-status-card b {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+
+.tech-status-card p {
+  margin: 0;
+}
+
+/* Compact Activity History (سجل المتابعة) */
+.compact-timeline-panel {
+  padding: 18px 20px;
+  border-radius: 14px;
+}
+
+.compact-timeline-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.compact-timeline-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.compact-timeline-title h3 {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 750;
+  color: hsl(var(--foreground));
+}
+
+.compact-timeline-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #64748b;
+  background: hsl(var(--muted));
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.compact-timeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.compact-timeline-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.compact-timeline-item:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  bottom: -8px;
+  inset-inline-start: 5px;
+  width: 2px;
+  background: hsl(var(--border));
+}
+
+.compact-timeline-bullet {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #307190;
+  border: 2px solid hsl(var(--card));
+  box-shadow: 0 0 0 2px rgba(48, 113, 144, 0.25);
+  margin-top: 3px;
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.compact-timeline-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.compact-timeline-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.compact-timeline-row b {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+}
+
+.compact-timeline-row time {
+  font-size: 11px;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.compact-timeline-content small {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.compact-timeline-note {
+  margin: 5px 0 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #475569;
+  background: hsl(var(--muted));
+  padding: 6px 10px;
+  border-radius: 7px;
+  border-inline-start: 3px solid #307190;
+}
+
+.dark .compact-timeline-note {
+  color: #cbd5e1;
+}
+
+.compact-timeline-empty {
+  margin: 0;
+  font-size: 12px;
+  color: #94a3b8;
+  text-align: center;
+  padding: 10px 0;
+}
+
+/* Reporter Specific Status Actions & Safe Cancellation */
+.reporter-pending-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reporter-pending-info {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #b45309;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.reporter-pending-box p {
+  margin: 0;
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.reporter-in-progress-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #f0f7fb;
+  border: 1px solid #d0e5f2;
+}
+
+.dark .reporter-in-progress-box {
+  background: rgba(48, 113, 144, 0.14);
+  border-color: rgba(48, 113, 144, 0.32);
+}
+
+.reporter-in-progress-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: #307190;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.reporter-in-progress-box b {
+  display: block;
+  font-size: 13px;
+  color: #1f3363;
+  margin-bottom: 2px;
+}
+
+.dark .reporter-in-progress-box b {
+  color: #93c5fd;
+}
+
+.reporter-in-progress-box p {
+  margin: 0;
+  font-size: 11.5px;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.dark .reporter-in-progress-box p {
+  color: #cbd5e1;
+}
+
+.reporter-confirm-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.reporter-confirm-box h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 750;
+  color: hsl(var(--foreground));
+}
+
+.reporter-confirm-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-cancel-zone {
+  margin-top: 10px;
+  padding-top: 12px;
+  border-top: 1px dashed hsl(var(--border));
+}
+
+.detail-cancel-zone .ticket-cancel-trigger {
+  width: 100%;
+  background: transparent;
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.18s ease;
+}
+
+.detail-cancel-zone .ticket-cancel-trigger:hover {
+  background: rgba(220, 38, 38, 0.08);
+  border-color: #dc2626;
+}
+

@@ -843,31 +843,352 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
   const [localPhoto,setLocalPhoto]=useState(()=>localStorage.getItem(`tadaruk-photo:${id}`)||'');
   useEffect(()=>{setLocalPhoto(localStorage.getItem(`tadaruk-photo:${id}`)||'');},[id]);
   const [technicianId,setTechnicianId]=useState('');
-  const act=(a:'start'|'complete'|'confirm'|'reject'|'reassign',extra:Record<string,string>={})=>{setActionFeedback('');action.mutate({ticketId:id,data:{action:a,note,...extra}},{onSuccess:()=>{void query.invalidateQueries({queryKey:getGetTicketQueryKey(id)});void query.invalidateQueries({queryKey:getListTicketsQueryKey()});void query.invalidateQueries({queryKey:getGetOverviewQueryKey()});void query.invalidateQueries({queryKey:getListKnowledgeQueryKey()});setNote('');setActionFeedback(a==='start'?tr(lang,'بدأ العمل على البلاغ.','Work has started on this report.'):a==='complete'?tr(lang,'أُرسل الإصلاح للمراجعة.','The repair was sent for confirmation.'):a==='confirm'?tr(lang,'تم تأكيد الإصلاح وإغلاق البلاغ.','The repair was confirmed and the report closed.'):a==='reject'?tr(lang,'تمت إعادة البلاغ للفني.','The report was returned to the technician.'):tr(lang,'تم تحديث إسناد الفني.','The technician assignment was updated.'));}});};
+  const act=(a:'start'|'complete'|'confirm'|'reject'|'reassign',extra:Record<string,string>={})=>{setActionFeedback('');action.mutate({ticketId:id,data:{action:a,note,...extra}},{onSuccess:()=>{void query.invalidateQueries({queryKey:getGetTicketQueryKey(id)});void query.invalidateQueries({queryKey:getListTicketsQueryKey()});void query.invalidateQueries({queryKey:getGetOverviewQueryKey()});void query.invalidateQueries({queryKey:getListKnowledgeQueryKey()});setNote('');setActionFeedback(a==='start'?tr(lang,'بدأ العمل على البلاغ.','Work has started on this report.'):a==='complete'?tr(lang,'أُرسل تقييم الإصلاح للمراجعة.','The repair was submitted for confirmation.'):a==='confirm'?tr(lang,'تم تأكيد الإصلاح وإغلاق البلاغ.','The repair was confirmed and the report closed.'):a==='reject'?tr(lang,'تمت إعادة البلاغ للفني للمتابعة.','The report was returned to the technician.'):tr(lang,'تم تحديث إسناد الفني.','The technician assignment was updated.'));}});};
   const ticket = rawTicket || (FALLBACK_INITIAL_TICKETS as unknown as Ticket[]).find(t => t.id === id) || (FALLBACK_INITIAL_TICKETS[0] as unknown as Ticket);
   const manager=user.role==='manager',technician=user.role==='technician',reporter=user.role==='reporter';
-  return <div className="page-enter"><div className="detail-back"><Link href="/workspace/tickets"><ArrowRight size={16}/>{tr(lang,'العودة إلى البلاغات','Back to tickets')}</Link><span>{ticket.number}</span></div>
-     <div className="detail-layout"><section className="detail-main"><div className="panel detail-hero"><div className="detail-tags"><StatusBadge status={ticket.status} lang={lang}/><PriorityBadge priority={ticket.priority} lang={lang}/><span className="ticket-number">{ticket.number}</span></div><h1>{ticket.title}</h1><p className="detail-description">{ticket.description}</p><div className="detail-properties"><span><Building2 size={16}/>{ticket.branchName}</span><span><MapPin size={16}/>{ticket.location}</span><span><Wrench size={16}/>{tr(lang,'التخصص','Specialty')}: {classificationText(ticket.specialization,lang)}</span><span><ClipboardList size={16}/>{tr(lang,'التصنيف','Classification')}: {classificationText(ticket.category,lang)}</span><span><Clock3 size={16}/>{dateText(ticket.createdAt,lang)}</span></div>
-        {(ticket.imageUrl||localPhoto)&&<PhotoAttachmentCard imageUrl={ticket.imageUrl||localPhoto} lang={lang} variant="detail" localOnly={!ticket.imageUrl&&Boolean(localPhoto)}/>}
+
+  const techStage = ticket.status === 'closed' ? 4
+    : ticket.status === 'awaiting_confirmation' ? 3
+    : ticket.status === 'in_progress' ? 2
+    : 1;
+
+  return <div className="page-enter">
+    <div className="detail-back">
+      <Link href="/workspace/tickets">
+        <ArrowRight size={16}/>
+        {tr(lang,'العودة إلى البلاغات','Back to tickets')}
+      </Link>
+      <span className="font-semibold text-slate-500">{ticket.number}</span>
     </div>
-     <section className="panel timeline-panel"><div className="panel-heading"><div><span className="eyebrow">{tr(lang,'سجل النشاط','ACTIVITY')}</span><h2>{tr(lang,'سجل المتابعة','Activity history')}</h2></div></div><div className="timeline">{(ticket.history||[]).map(ev=><div className="timeline-event" key={ev.id}><span className="timeline-dot"/><div><b>{ev.label}</b><small>{ev.actorName} · {dateText(ev.createdAt,lang)}</small>{ev.note&&<p>{ev.note}</p>}</div></div>)}</div></section>
-      {(technician&&ticket.status==='in_progress'||technician&&ticket.status==='new')&&<section className="panel repair-panel"><span className="eyebrow">{tr(lang,'سجل الإصلاح','REPAIR RECORD')}</span><h2>{tr(lang,'وثّق ما أصلحته','Document the repair')}</h2><p>{tr(lang,'ملاحظاتك تساعد المبلّغ وتصبح معرفة للفريق عند إغلاق البلاغ.','Your notes help the reporter and become team knowledge after closure.')}</p><div className="form-two"><label className="field-label">{tr(lang,'السبب إن عُرف','Cause, if known')}<input value={cause} onChange={e=>setCause(e.target.value)} placeholder={tr(lang,'ما الذي أدى إلى المشكلة؟','What caused the issue?')}/></label><div className="field-label"><label htmlFor="repair-resolution">{tr(lang,'الحل والإجراء','Repair and action')}</label><textarea id="repair-resolution" value={resolution} onChange={e=>setResolution(e.target.value)} rows={3} placeholder={tr(lang,'ما الذي قمت به؟','What did you do?')}/><VoiceRecorder lang={lang} onTranscript={text=>setResolution(current=>current?`${current.trimEnd()} ${text}`:text)}/></div></div><label className="field-label">{tr(lang,'ملاحظة إضافية','Additional note')}<textarea value={note} onChange={e=>setNote(e.target.value)} rows={2} placeholder={tr(lang,'معلومة للفريق أو للمبلّغ','A note for the team or reporter')}/></label></section>}
-    </section>
-      <aside className="detail-side"><section className="panel owner-panel"><span className="eyebrow">{tr(lang,'الإسناد','ASSIGNMENT')}</span><h3>{tr(lang,'الأشخاص','People')}</h3><div className="person-line"><Avatar name={ticket.reporterName} size="sm"/><span><small>{tr(lang,'المبلّغ','Reporter')}</small><b>{ticket.reporterName}</b></span></div><div className="person-line"><Avatar name={ticket.technicianName||tr(lang,'غير مسند','Unassigned')} size="sm"/><span><small>{tr(lang,'الفني المسؤول','Assigned technician')}</small><b>{ticket.technicianName||tr(lang,'بانتظار الإسناد','Awaiting assignment')}</b></span></div>{technician&&ticket.technicianId===user.id&&(ticket.branchGoogleMapsUrl||ticket.branchAddress||ticket.branchLatitude!==null&&ticket.branchLatitude!==undefined||ticket.branchLongitude!==null&&ticket.branchLongitude!==undefined)&&<a className="branch-map-link" href={branchMapUrl(ticket.branchLatitude,ticket.branchLongitude,ticket.branchAddress,ticket.branchCity,ticket.branchGoogleMapsUrl)} target="_blank" rel="noreferrer" data-testid={`ticket-map-${ticket.id}`}><MapPinned size={16}/>{tr(lang,'افتح موقع الفرع في الخرائط','Open branch location in Maps')}<ArrowUpRight size={14}/></a>}</section>
-       {ticket.repairNotes&&<section className="panel resolution-panel"><span className="eyebrow">{tr(lang,'ملاحظات الإصلاح','REPAIR NOTES')}</span><h3>{tr(lang,'ملاحظات الإصلاح','Repair notes')}</h3><p>{ticket.repairNotes}</p>{ticket.cause&&<><small>{tr(lang,'السبب','Cause')}</small><p>{ticket.cause}</p></>}{ticket.resolution&&<><small>{tr(lang,'الإجراء','Action taken')}</small><p>{ticket.resolution}</p></>}</section>}
-        <section className="action-panel" aria-busy={action.isPending}><span className="eyebrow">{tr(lang,'الخطوة التالية','NEXT STEP')}</span>
-         {ticket.status==='cancelled'&&<div className="cancelled-ticket-note" role="status"><CircleAlert size={18}/><span><b>{tr(lang,'أُلغي هذا البلاغ','This report was cancelled')}</b><small>{tr(lang,'حُفظ سجل الإلغاء للمراجعة.','The cancellation remains in the audit history.')}</small></span></div>}
-         {technician&&(ticket.status==='new'||ticket.status==='review')&&<Button onClick={()=>act('start')} disabled={action.isPending}><Wrench size={17}/>{tr(lang,'بدء العمل','Start work')}</Button>}
-         {technician&&ticket.status==='in_progress'&&<Button onClick={()=>act('complete',{cause,resolution:resolution||note})} disabled={action.isPending||(!resolution&&!note)}><CheckCircle2 size={17}/>{tr(lang,'إرسال الإصلاح للتأكيد','Submit repair for confirmation')}</Button>}
-          {reporter&&ticket.status==='awaiting_confirmation'&&<><p>{tr(lang,'هل تم إصلاح المشكلة بنجاح؟','Was the issue fixed successfully?')}</p><Button onClick={()=>act('confirm')} disabled={action.isPending}><Check size={17}/>{tr(lang,'نعم، تم الإصلاح','Yes, it is fixed')}</Button><Button kind="outline" onClick={()=>act('reject',{note})} disabled={action.isPending}>{tr(lang,'لا، ما زالت المشكلة قائمة','No, it is still happening')}</Button><label className="field-label">{tr(lang,'ملاحظة للفني','Note for technician')}<textarea value={note} onChange={e=>setNote(e.target.value)} rows={2}/></label></>}
-          {manager&&ticket.status!=='closed'&&ticket.status!=='cancelled'&&<><p>{ticket.technicianName?tr(lang,`مسند إلى ${ticket.technicianName}`,`Assigned to ${ticket.technicianName}`):tr(lang,'البلاغ بانتظار الإسناد.','This ticket is awaiting assignment.')} {tr(lang,'يمكن تغيير المسؤول عند الحاجة.','You can change the assignee if needed.')}</p><div className="field-label"><span className="field-label-caption">{tr(lang,'إعادة الإسناد إلى','Reassign to')}</span><TadarukSelect value={technicianId} onValueChange={setTechnicianId} ariaLabel={tr(lang,'إعادة الإسناد إلى','Reassign to')} dir={lang==='ar'?'rtl':'ltr'} placeholder={tr(lang,'اختر فنياً','Choose a technician')} options={[{value:'',label:tr(lang,'اختر فنياً','Choose a technician')},...(technicians||[]).filter(t=>t.active&&t.branchId===ticket.branchId).map(t=>({value:t.id,label:`${t.name} · ${t.specialization}`}))]}/></div><Button kind="outline" onClick={()=>technicianId&&act('reassign',{technicianId})} disabled={!technicianId||action.isPending}><Users size={16}/>{tr(lang,'تحديث الإسناد','Update assignment')}</Button></>}
-         {reporter&&ticket.status==='new'&&<TicketCancellationAction ticketId={ticket.id} ticketNumber={ticket.number} lang={lang}/>}
-         {manager&&ticket.status!=='closed'&&ticket.status!=='cancelled'&&<TicketCancellationAction ticketId={ticket.id} ticketNumber={ticket.number} lang={lang} manager/>}
-          {ticket.status==='closed'&&<div className="closed-note"><CheckCircle2 size={18}/>{tr(lang,'أُغلق البلاغ بعد تأكيد الإصلاح.','The ticket was closed after repair confirmation.')}</div>}
-          <AnimatePresence mode="wait">{(action.isPending||actionFeedback)&&<motion.div className="action-feedback" role="status" aria-live="polite" initial={reduced?false:{opacity:0,y:4}} animate={{opacity:1,y:0}} exit={reduced?{opacity:1}:{opacity:0,y:-3}} transition={{duration:reduced?0:.16}}>{action.isPending?<><LoaderCircle size={15} className="feedback-loader"/>{tr(lang,'جارٍ تحديث سجل البلاغ...','Updating the report record...')}</>:<><CheckCircle2 size={15}/>{actionFeedback}</>}</motion.div>}</AnimatePresence>
-         {action.isError&&<p className="inline-error">{tr(lang,'تعذر تنفيذ الخطوة، يرجى المحاولة مجدداً.','Could not complete that step. Please try again.')}</p>}
+
+    {/* Stage Progress Pipeline */}
+    <div className="ticket-stages-bar" aria-label={tr(lang, 'مراحل البلاغ', 'Ticket stages')}>
+      {[
+        { step: 1, ar: 'استلام الطلب', en: 'Request received' },
+        { step: 2, ar: 'قيد التنفيذ', en: 'In progress' },
+        { step: 3, ar: 'تقييم الإصلاح', en: 'Repair assessment' },
+        { step: 4, ar: 'تم الإغلاق', en: 'Closed' },
+      ].map(st => {
+        const isPast = techStage > st.step;
+        const isCurrent = techStage === st.step;
+        return (
+          <div key={st.step} className={`ticket-stage-step ${isPast ? 'is-past' : ''} ${isCurrent ? 'is-current' : ''}`}>
+            <span className="ticket-stage-dot">
+              {isPast ? <Check size={13} strokeWidth={3} /> : st.step}
+            </span>
+            <span className="ticket-stage-label">{tr(lang, st.ar, st.en)}</span>
+          </div>
+        );
+      })}
+    </div>
+
+    <div className="detail-layout">
+      <section className="detail-main">
+        {/* Ticket Header & Properties */}
+        <div className="panel detail-hero">
+          <div className="detail-tags">
+            <StatusBadge status={ticket.status} lang={lang}/>
+            <PriorityBadge priority={ticket.priority} lang={lang}/>
+            <span className="ticket-number">{ticket.number}</span>
+          </div>
+          <h1>{ticket.title}</h1>
+          <p className="detail-description">{ticket.description}</p>
+          <div className="detail-properties">
+            <span><Building2 size={16}/>{ticket.branchName}</span>
+            <span><MapPin size={16}/>{ticket.location}</span>
+            <span><Wrench size={16}/>{classificationText(ticket.specialization,lang)}</span>
+            <span><ClipboardList size={16}/>{classificationText(ticket.category,lang)}</span>
+            <span><Clock3 size={16}/>{dateText(ticket.createdAt,lang)}</span>
+          </div>
+          {(ticket.imageUrl||localPhoto)&&<PhotoAttachmentCard imageUrl={ticket.imageUrl||localPhoto} lang={lang} variant="detail" localOnly={!ticket.imageUrl&&Boolean(localPhoto)}/>}
+        </div>
+
+        {/* Streamlined Compact Activity History (سجل المتابعة) */}
+        <section className="panel compact-timeline-panel">
+          <div className="compact-timeline-head">
+            <div className="compact-timeline-title">
+              <Clock3 size={15} className="text-[#307190]" />
+              <h3>{tr(lang, 'سجل المتابعة', 'Activity log')}</h3>
+            </div>
+            <span className="compact-timeline-badge">
+              {(ticket.history || []).length} {tr(lang, 'أحداث', 'events')}
+            </span>
+          </div>
+          <div className="compact-timeline-list">
+            {(!ticket.history || ticket.history.length === 0) ? (
+              <p className="compact-timeline-empty">{tr(lang, 'لا توجد أحداث مسجلة بعد.', 'No events recorded yet.')}</p>
+            ) : (
+              (ticket.history || []).map(ev => (
+                <div className="compact-timeline-item" key={ev.id}>
+                  <span className="compact-timeline-bullet" />
+                  <div className="compact-timeline-content">
+                    <div className="compact-timeline-row">
+                      <b>{ev.label}</b>
+                      <time>{dateText(ev.createdAt, lang)}</time>
+                    </div>
+                    <small>{ev.actorName}</small>
+                    {ev.note && <p className="compact-timeline-note">{ev.note}</p>}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
       </section>
-    </aside></div>
+
+      {/* Side Column: People, Resolution Record & Action Hub */}
+      <aside className="detail-side">
+        {/* People Involved */}
+        <section className="panel owner-panel">
+          <span className="eyebrow">{tr(lang,'الإسناد','ASSIGNMENT')}</span>
+          <h3>{tr(lang,'أطراف البلاغ','People')}</h3>
+          <div className="person-line">
+            <Avatar name={ticket.reporterName} size="sm"/>
+            <span>
+              <small>{tr(lang,'المبلّغ','Reporter')}</small>
+              <b>{ticket.reporterName}</b>
+            </span>
+          </div>
+          <div className="person-line">
+            <Avatar name={ticket.technicianName||tr(lang,'غير مسند','Unassigned')} size="sm"/>
+            <span>
+              <small>{tr(lang,'الفني المسؤول','Assigned technician')}</small>
+              <b>{ticket.technicianName||tr(lang,'بانتظار الإسناد','Awaiting assignment')}</b>
+            </span>
+          </div>
+          {technician&&ticket.technicianId===user.id&&(ticket.branchGoogleMapsUrl||ticket.branchAddress||ticket.branchLatitude!==null&&ticket.branchLatitude!==undefined||ticket.branchLongitude!==null&&ticket.branchLongitude!==undefined)&&<a className="branch-map-link" href={branchMapUrl(ticket.branchLatitude,ticket.branchLongitude,ticket.branchAddress,ticket.branchCity,ticket.branchGoogleMapsUrl)} target="_blank" rel="noreferrer" data-testid={`ticket-map-${ticket.id}`}><MapPinned size={15}/>{tr(lang,'افتح موقع الفرع في الخرائط','Open branch on Maps')}<ArrowUpRight size={13}/></a>}
+        </section>
+
+        {/* Completed Resolution Details if Available */}
+        {(ticket.repairNotes || ticket.cause || ticket.resolution) && (
+          <section className="panel resolution-panel">
+            <span className="eyebrow">{tr(lang,'توثيق الإصلاح','REPAIR RECORD')}</span>
+            <h3>{tr(lang,'نتيجة فحص وإصلاح العطل','Repair notes')}</h3>
+            {ticket.cause && (
+              <div className="mb-2">
+                <small className="text-slate-500 font-bold text-xs">{tr(lang,'سبب العطل','Cause')}</small>
+                <p className="mt-1 text-sm font-semibold text-[#1f3363] dark:text-slate-200">{ticket.cause}</p>
+              </div>
+            )}
+            {(ticket.resolution || ticket.repairNotes) && (
+              <div>
+                <small className="text-slate-500 font-bold text-xs">{tr(lang,'الإجراء المنفذ','Action taken')}</small>
+                <p className="mt-1 text-sm text-[#1f3363] dark:text-slate-200">{ticket.resolution || ticket.repairNotes}</p>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Contextual Action Panel */}
+        <section className="action-panel" aria-busy={action.isPending}>
+          <span className="eyebrow">{tr(lang,'الخطوة التالية','NEXT STEP')}</span>
+
+          {ticket.status==='cancelled'&&<div className="cancelled-ticket-note" role="status"><CircleAlert size={18}/><span><b>{tr(lang,'أُلغي هذا البلاغ','This report was cancelled')}</b><small>{tr(lang,'حُفظ سجل الإلغاء للمراجعة.','The cancellation remains in the audit history.')}</small></span></div>}
+
+          {/* TECHNICIAN WORKFLOW */}
+          {technician && (
+            <>
+              {(ticket.status === 'new' || ticket.status === 'review') && (
+                <div className="tech-action-box">
+                  <div className="tech-action-meta">
+                    <span className="tech-action-badge">
+                      <Wrench size={13} />
+                      {tr(lang, 'إجراء الفني المطلوب', 'Technician Action')}
+                    </span>
+                    <h4>{tr(lang, 'استلام الطلب وبدء العمل', 'Acknowledge ticket & start work')}</h4>
+                    <p>{tr(lang, 'حدّث حالة البلاغ مباشرة إلى "قيد التنفيذ" لإشعار المبلّغ ببدء الصيانة.', 'Accept the ticket to move it to "In Progress".')}</p>
+                  </div>
+                  <Button
+                    kind="primary"
+                    className="tech-main-btn"
+                    onClick={() => act('start')}
+                    disabled={action.isPending}
+                    data-testid="button-tech-start"
+                  >
+                    <Wrench size={16} />
+                    {tr(lang, 'استلمت الطلب — بدء العمل', 'Acknowledge & Start Work')}
+                  </Button>
+                </div>
+              )}
+
+              {ticket.status === 'in_progress' && (
+                <div className="tech-action-box">
+                  <div className="tech-action-meta">
+                    <span className="tech-action-badge">
+                      <CheckCircle2 size={13} />
+                      {tr(lang, 'تقييم وتوثيق الإصلاح', 'Repair Assessment')}
+                    </span>
+                    <h4>{tr(lang, 'قيّم الإصلاح وسجّل الإجراء', 'Assess & document repair')}</h4>
+                  </div>
+                  <div className="tech-repair-form">
+                    <label className="field-label">
+                      <span>{tr(lang, 'سبب العطل (اختياري)', 'Cause of issue (optional)')}</span>
+                      <input
+                        value={cause}
+                        onChange={e => setCause(e.target.value)}
+                        placeholder={tr(lang, 'ما سبب المشكلة؟', 'What caused the issue?')}
+                        data-testid="input-tech-cause"
+                      />
+                    </label>
+                    <div className="field-label">
+                      <span>{tr(lang, 'إجراء وتقييم الإصلاح المنفذ', 'Repair action taken')}</span>
+                      <textarea
+                        value={resolution}
+                        onChange={e => setResolution(e.target.value)}
+                        rows={3}
+                        placeholder={tr(lang, 'ماذا فعلت لحل المشكلة؟', 'What was done to resolve the issue?')}
+                        data-testid="input-tech-resolution"
+                      />
+                      <VoiceRecorder lang={lang} onTranscript={text => setResolution(current => current ? `${current.trimEnd()} ${text}` : text)} />
+                    </div>
+                    <Button
+                      kind="primary"
+                      className="tech-main-btn"
+                      onClick={() => act('complete', { cause, resolution: resolution || note })}
+                      disabled={action.isPending || (!resolution && !note)}
+                      data-testid="button-tech-complete"
+                    >
+                      <CheckCircle2 size={16} />
+                      {tr(lang, 'قيّم الإصلاح — إرسال للتأكيد', 'Submit repair assessment')}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {ticket.status === 'awaiting_confirmation' && (
+                <div className="tech-status-card info">
+                  <Clock3 size={18} className="text-[#307190]" />
+                  <div>
+                    <b>{tr(lang, 'تم إرسال تقييم الإصلاح للمبلّغ', 'Repair assessment submitted')}</b>
+                    <p>{tr(lang, 'بانتظار مراجعة المبلّغ لتأكيد حل المشكلة وإغلاق البلاغ نهائياً.', 'Waiting for reporter confirmation to close the ticket.')}</p>
+                  </div>
+                </div>
+              )}
+
+              {ticket.status === 'closed' && (
+                <div className="tech-status-card success">
+                  <CheckCircle2 size={18} className="text-emerald-600" />
+                  <div>
+                    <b>{tr(lang, 'تم تأكيد الإصلاح وإغلاق البلاغ', 'Repair confirmed & ticket closed')}</b>
+                    <p>{tr(lang, 'أكد المبلّغ حل العطل وتمت أرشفة البلاغ بنجاح.', 'The issue is resolved and the ticket is archived.')}</p>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* REPORTER WORKFLOW */}
+          {reporter && (
+            <>
+              {/* Only allow cancellation when ticket is new before technician starts */}
+              {ticket.status === 'new' && (
+                <div className="reporter-pending-box">
+                  <div className="reporter-pending-info">
+                    <Clock3 size={15} />
+                    <span>{tr(lang, 'البلاغ مسجل وبانتظار استلام الفني', 'Report submitted — Awaiting technician')}</span>
+                  </div>
+                  <p>{tr(lang, 'تم إرسال البلاغ إلى الفريق. يمكنك إلغاؤه في حال حُلت المشكلة قبل بدء العمل.', 'Report sent. You can cancel it if resolved before work begins.')}</p>
+                  <div className="detail-cancel-zone">
+                    <TicketCancellationAction ticketId={ticket.id} ticketNumber={ticket.number} lang={lang} />
+                  </div>
+                </div>
+              )}
+
+              {/* Once technician starts work, delete option completely disappears */}
+              {ticket.status === 'in_progress' && (
+                <div className="reporter-in-progress-box">
+                  <div className="reporter-in-progress-icon">
+                    <Wrench size={18} />
+                  </div>
+                  <div>
+                    <b>{tr(lang, 'الفني يباشر العمل حالياً', 'Technician is actively working')}</b>
+                    <p>{tr(lang, 'بدأت أعمال الصيانة الميدانية. لا يمكن حذف البلاغ بعد بدء العمل. ستتلقى طلباً لتأكيد الحل فور اكتمال الإصلاح.', 'Work in progress. Cannot delete once started. You will be asked to confirm upon completion.')}</p>
+                  </div>
+                </div>
+              )}
+
+              {ticket.status === 'awaiting_confirmation' && (
+                <div className="reporter-confirm-box">
+                  <h4>{tr(lang, 'قيّم الفني الإصلاح — هل تم حل المشكلة؟', 'Technician completed repair — Was it fixed?')}</h4>
+                  <div className="reporter-confirm-actions">
+                    <Button kind="primary" onClick={() => act('confirm')} disabled={action.isPending} data-testid="button-reporter-confirm">
+                      <Check size={16} />
+                      {tr(lang, 'نعم، تم الإصلاح بنجاح', 'Yes, issue resolved')}
+                    </Button>
+                    <Button kind="outline" onClick={() => act('reject', { note })} disabled={action.isPending} data-testid="button-reporter-reject">
+                      <RotateCcw size={16} />
+                      {tr(lang, 'لا، ما زالت المشكلة قائمة', 'Still not fixed')}
+                    </Button>
+                  </div>
+                  <label className="field-label mt-2">
+                    <span>{tr(lang, 'ملاحظة للفني (اختياري)', 'Note for technician (optional)')}</span>
+                    <textarea value={note} onChange={e => setNote(e.target.value)} rows={2} placeholder={tr(lang, 'أضف أي ملاحظة تود إيصالها للفني...', 'Add any note for the technician...')} />
+                  </label>
+                </div>
+              )}
+
+              {ticket.status === 'closed' && (
+                <div className="closed-note">
+                  <CheckCircle2 size={18} />
+                  <span>{tr(lang, 'تم إغلاق البلاغ بنجاح بعد تأكيد الإصلاح.', 'Ticket closed successfully.')}</span>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* MANAGER WORKFLOW */}
+          {manager && ticket.status !== 'closed' && ticket.status !== 'cancelled' && (
+            <>
+              <p className="text-xs text-slate-500 mb-2">
+                {ticket.technicianName ? tr(lang, `مسند إلى ${ticket.technicianName}`, `Assigned to ${ticket.technicianName}`) : tr(lang, 'البلاغ بانتظار الإسناد.', 'This ticket is awaiting assignment.')}
+              </p>
+              <div className="field-label">
+                <span className="field-label-caption">{tr(lang, 'إعادة الإسناد إلى', 'Reassign to')}</span>
+                <TadarukSelect value={technicianId} onValueChange={setTechnicianId} ariaLabel={tr(lang, 'إعادة الإسناد إلى', 'Reassign to')} dir={lang === 'ar' ? 'rtl' : 'ltr'} placeholder={tr(lang, 'اختر فنياً', 'Choose a technician')} options={[{ value: '', label: tr(lang, 'اختر فنياً', 'Choose a technician') }, ...(technicians || []).filter(t => t.active && t.branchId === ticket.branchId).map(t => ({ value: t.id, label: `${t.name} · ${t.specialization}` }))]} />
+              </div>
+              <Button kind="outline" onClick={() => technicianId && act('reassign', { technicianId })} disabled={!technicianId || action.isPending}>
+                <Users size={16} />
+                {tr(lang, 'تحديث الإسناد', 'Update assignment')}
+              </Button>
+              <div className="detail-cancel-zone">
+                <TicketCancellationAction ticketId={ticket.id} ticketNumber={ticket.number} lang={lang} manager />
+              </div>
+            </>
+          )}
+
+          {ticket.status === 'closed' && !reporter && (
+            <div className="closed-note">
+              <CheckCircle2 size={18} />
+              <span>{tr(lang, 'أُغلق البلاغ بعد تأكيد الإصلاح.', 'The ticket was closed after repair confirmation.')}</span>
+            </div>
+          )}
+
+          <AnimatePresence mode="wait">
+            {(action.isPending || actionFeedback) && (
+              <motion.div className="action-feedback" role="status" aria-live="polite" initial={reduced ? false : { opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={reduced ? { opacity: 1 } : { opacity: 0, y: -3 }} transition={{ duration: reduced ? 0 : 0.16 }}>
+                {action.isPending ? (
+                  <>
+                    <LoaderCircle size={15} className="feedback-loader" />
+                    {tr(lang, 'جارٍ تحديث حالة البلاغ...', 'Updating ticket state...')}
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 size={15} />
+                    {actionFeedback}
+                  </>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {action.isError && (
+            <p className="inline-error">
+              {tr(lang, 'تعذر تنفيذ الخطوة، يرجى المحاولة مجدداً.', 'Could not complete that step. Please try again.')}
+            </p>
+          )}
+        </section>
+      </aside>
+    </div>
   </div>;
 }
 const TECHNICIAN_OTHER_SPECIALTY = '__other_specialty__';
