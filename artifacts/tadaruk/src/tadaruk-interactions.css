@@ -1578,12 +1578,31 @@
   font-size: 11px;
 }
 
+.ticket-row,
+.register-header {
+  grid-template-columns: 78px minmax(160px, 1fr) 102px minmax(190px, auto) 72px 16px;
+  gap: 12px;
+}
+
 .ticket-row {
-  grid-template-columns: 76px minmax(160px, 1fr) 112px 146px 72px 16px;
-  gap: 9px;
   min-height: 74px;
   padding-block: 14px;
+  align-items: center;
 }
+
+.register-header {
+  align-items: center;
+  padding: 12px 3px;
+  color: #91a0b2;
+  font-size: 11px;
+  font-weight: 700;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.register-header span:first-child { grid-column: span 2; }
+.register-header span:nth-child(2) { grid-column: 3; }
+.register-header span:nth-child(3) { grid-column: 4; }
+.register-header span:nth-child(4) { grid-column: 5; }
 
 .ticket-summary b {
   font-size: 14px;
@@ -1599,15 +1618,25 @@
   font-size: 11px;
 }
 
+.ticket-date {
+  white-space: nowrap;
+}
+
 /* Status uses a circular, status-specific icon; new reports are red. */
 .status-pill {
+  display: inline-flex;
+  align-items: center;
   justify-content: flex-start;
   gap: 7px;
   border-radius: 999px;
-  padding: 4px 10px 4px 4px;
-  font-size: 12px;
+  padding-block: 4px;
+  padding-inline: 4px 10px;
+  font-size: 11.5px;
   font-weight: 700;
   line-height: 1.2;
+  white-space: nowrap;
+  width: max-content;
+  max-width: 100%;
 }
 
 .status-icon {
@@ -1825,9 +1854,10 @@
     grid-column: span 2;
   }
 
-  .ticket-row {
-    grid-template-columns: 60px minmax(120px, 1fr) 96px 132px 58px 14px;
-    gap: 7px;
+  .ticket-row,
+  .register-header {
+    grid-template-columns: 70px minmax(130px, 1fr) 96px minmax(180px, auto) 64px 14px;
+    gap: 8px;
   }
 }
 

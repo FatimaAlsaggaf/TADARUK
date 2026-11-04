@@ -473,7 +473,7 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
       <div className="hero-copy">
         <motion.div className="hero-light-reveal" aria-hidden="true" initial={reduced?false:{opacity:0,x:'-28%',scaleX:.62}} animate={reduced?{opacity:0,x:0,scaleX:1}:{opacity:[0,.2,0],x:['-28%','0%','28%'],scaleX:[.62,1,.62]}} transition={reduced?{duration:0}:{duration:.95,delay:1.84,ease:[.22,.72,.18,1]}}/>
         <h1 id="landing-title" className={lang==='ar'?'display-ar':''}><BlurText text={tr(lang,'كل بلاغ يستحق أن يُتدارك','Every report deserves to be put right')} animateBy="words" trigger="load" startDelay={reduced?0:1880} reducedMotion={reduced} delay={70} stepDuration={.22} animationFrom={{opacity:0,y:12}} animationTo={[{opacity:.82,y:-1},{opacity:1,y:0}]} easing={[.22,.72,.18,1]} className="landing-headline-words" onAnimationComplete={()=>setHeadlineDone(true)}/></h1>
-        <motion.p className="hero-sub" initial={false} animate={headlineDone?{opacity:1,y:0}:{opacity:0,y:8}} transition={reduced?{duration:0}:{duration:.42,ease:[.22,.72,.18,1]}}>{tr(lang,'بلّغ. تابع. وتدارك.','Report. Follow through. Put it right.')}</motion.p>
+        <motion.p className="hero-sub" initial={false} animate={headlineDone?{opacity:1,y:0}:{opacity:0,y:8}} transition={reduced?{duration:0}:{duration:.42,ease:[.22,.72,.18,1]}}>{tr(lang,'بلّغ، تابع، تدارك','Report, follow through, put it right')}</motion.p>
       </div>
     </section>
     <section className="workflow-reveal wrap" id="how" ref={roadmapRef} aria-label={tr(lang,'مسار البلاغ','Report workflow')}>

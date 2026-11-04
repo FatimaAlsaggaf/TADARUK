@@ -62,7 +62,7 @@
 .dark .rw-link { color:#85dcd6; }
 .rw-link:hover { text-decoration:underline; text-underline-offset:4px; }
 .rw-ticket-list { display:flex; flex-direction:column; }
-.rw-ticket-link { display:grid; grid-template-columns:100px minmax(120px,1fr) minmax(90px,auto) minmax(105px,auto) 90px 16px; align-items:center; gap:13px; min-height:70px; padding:12px 4px; border-top:1px solid var(--rw-border); color:inherit; text-decoration:none; transition:background-color .16s ease,transform .16s ease; }
+.rw-ticket-link { display:grid; grid-template-columns:90px minmax(140px,1fr) minmax(90px,auto) minmax(180px,auto) 80px 16px; align-items:center; gap:12px; min-height:70px; padding:12px 4px; border-top:1px solid var(--rw-border); color:inherit; text-decoration:none; transition:background-color .16s ease,transform .16s ease; }
 .rw-ticket-link:hover { background:color-mix(in srgb,var(--rw-cyan-soft) 58%,transparent); transform:translateY(-1px); border-radius:8px; }
 .rw-ticket-no { color:var(--rw-muted); font-size:11px; font-weight:750; font-variant-numeric:tabular-nums; }
 .rw-ticket-main { min-width:0; display:flex; flex-direction:column; gap:4px; }
