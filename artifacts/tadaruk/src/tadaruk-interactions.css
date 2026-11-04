@@ -5037,4 +5037,531 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   letter-spacing: 0 !important;
 }
 
+/* ==========================================================================
+   TADARUK Top Sidebar Profile & Dropdown Layout
+   ========================================================================== */
+
+.sidebar {
+  overflow-y: auto !important;
+  overflow-x: visible !important;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(31, 51, 99, 0.2) transparent;
+}
+
+.dark .sidebar {
+  scrollbar-color: rgba(221, 240, 255, 0.2) transparent;
+}
+
+.side-user-section {
+  position: relative;
+  z-index: 25;
+  margin: 14px 2px 10px;
+}
+
+.sidebar .branch-switch {
+  margin: 6px 2px 18px;
+}
+
+.side-user-card {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(225, 233, 241, 0.9);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 14px rgba(31, 51, 99, 0.04);
+  cursor: pointer;
+  text-align: start;
+  transition: all 0.18s ease;
+  user-select: none;
+}
+
+.side-user-card:hover {
+  background: #ffffff;
+  border-color: #cbd8e6;
+  box-shadow: 0 6px 20px rgba(31, 51, 99, 0.08);
+  transform: translateY(-1px);
+}
+
+.side-user-card:focus-visible {
+  outline: 3px solid rgba(86, 244, 239, 0.7);
+  outline-offset: 2px;
+}
+
+.side-user-avatar-wrap {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.side-user-status-dot {
+  position: absolute;
+  bottom: 0;
+  inset-inline-end: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #34d399;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+.side-user-meta {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.side-user-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1f3363;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.side-user-role-badge {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1.5px 7px;
+  border-radius: 999px;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.side-user-chevron {
+  flex: none;
+  color: #71819a;
+  transition: transform 0.2s ease, color 0.18s ease;
+}
+
+.side-user-chevron.is-open {
+  transform: rotate(180deg);
+  color: #1f3363;
+}
+
+/* Dropdown menu */
+.side-account-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  inset-inline: 0;
+  z-index: 50;
+  background: #ffffff;
+  border: 1px solid #e1e9f1;
+  border-radius: 14px;
+  box-shadow: 0 14px 38px rgba(31, 51, 99, 0.14), 0 4px 12px rgba(31, 51, 99, 0.06);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.side-account-menu-head {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eef2f6;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.side-account-head-name {
+  font-size: 13px;
+  color: #1f3363;
+  font-weight: 700;
+}
+
+.side-account-head-branch {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #70829b;
+}
+
+.side-account-head-branch svg {
+  color: #2da19d;
+  flex: none;
+}
+
+.side-account-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 4px;
+}
+
+.side-account-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #3b4e6b;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: start;
+  transition: all 0.15s ease;
+}
+
+.side-account-item:hover {
+  background: #f1f6fb;
+  color: #1f3363;
+}
+
+.side-account-item-icon {
+  flex: none;
+  color: #627694;
+  transition: color 0.15s ease;
+}
+
+.side-account-item:hover .side-account-item-icon {
+  color: #1f3363;
+}
+
+.side-account-divider {
+  height: 1px;
+  background: #eef2f6;
+  margin: 4px 6px;
+}
+
+.side-account-signout {
+  color: #b23842;
+}
+
+.side-account-signout .side-account-item-icon {
+  color: #b23842;
+}
+
+.side-account-signout:hover:not(:disabled) {
+  background: rgba(178, 56, 66, 0.08);
+  color: #922b34;
+}
+
+.side-account-signout:hover:not(:disabled) .side-account-item-icon {
+  color: #922b34;
+}
+
+.side-account-signout:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* Dark mode overrides */
+.dark .side-user-card {
+  background: rgba(10, 28, 48, 0.48);
+  border-color: rgba(221, 240, 255, 0.14);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.dark .side-user-card:hover {
+  background: rgba(16, 42, 70, 0.68);
+  border-color: rgba(86, 244, 239, 0.35);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.dark .side-user-status-dot {
+  border-color: #152b43;
+}
+
+.dark .side-user-name {
+  color: #f5f8ff;
+}
+
+.dark .side-user-chevron {
+  color: #9bb1cb;
+}
+
+.dark .side-user-chevron.is-open {
+  color: #56f4ef;
+}
+
+.dark .side-account-dropdown {
+  background: #152b43;
+  border-color: rgba(221, 240, 255, 0.16);
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.5);
+}
+
+.dark .side-account-menu-head {
+  border-bottom-color: rgba(221, 240, 255, 0.1);
+}
+
+.dark .side-account-head-name {
+  color: #f5f8ff;
+}
+
+.dark .side-account-head-branch {
+  color: #9bb1cb;
+}
+
+.dark .side-account-item {
+  color: #d1dfed;
+}
+
+.dark .side-account-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.dark .side-account-item-icon {
+  color: #9bb1cb;
+}
+
+.dark .side-account-item:hover .side-account-item-icon {
+  color: #56f4ef;
+}
+
+.dark .side-account-divider {
+  background: rgba(221, 240, 255, 0.1);
+}
+
+.dark .side-account-signout {
+  color: #ff9a9e;
+}
+
+.dark .side-account-signout .side-account-item-icon {
+  color: #ff9a9e;
+}
+
+.dark .side-account-signout:hover:not(:disabled) {
+  background: rgba(255, 132, 138, 0.14);
+  color: #ffc1c4;
+}
+
+.dark .side-account-signout:hover:not(:disabled) .side-account-item-icon {
+  color: #ffc1c4;
+}
+
+/* Modals / Dialogs for Profile and Settings */
+.tadaruk-modal-dialog {
+  max-width: 480px;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.profile-dialog-title,
+.settings-dialog-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 750;
+}
+
+.dialog-title-icon {
+  color: #1f3363;
+  flex: none;
+}
+
+.dark .dialog-title-icon {
+  color: #56f4ef;
+}
+
+.profile-hero-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: rgba(86, 244, 239, 0.08);
+  border: 1px solid rgba(86, 244, 239, 0.22);
+  border-radius: 14px;
+  margin-top: 14px;
+  margin-bottom: 18px;
+}
+
+.dark .profile-hero-card {
+  background: rgba(86, 244, 239, 0.06);
+  border-color: rgba(86, 244, 239, 0.18);
+}
+
+.profile-hero-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.profile-hero-info h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 750;
+  color: hsl(var(--foreground));
+}
+
+.profile-hero-role {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.profile-hero-branch {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: hsl(var(--muted-foreground));
+}
+
+.profile-hero-branch svg {
+  color: #2da19d;
+}
+
+.profile-data-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid hsl(var(--border));
+  padding-top: 16px;
+}
+
+.profile-data-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.profile-data-label {
+  color: hsl(var(--muted-foreground));
+}
+
+.profile-data-value {
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+.profile-data-value code {
+  font-family: monospace;
+  font-size: 12px;
+  background: hsl(var(--muted));
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.status-active-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #059669;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dark .status-active-pill {
+  color: #34d399;
+}
+
+.status-active-pill .status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.profile-dialog-footer,
+.settings-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 14px;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.settings-option-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  margin-top: 14px;
+  background: hsl(var(--muted) / 0.35);
+}
+
+.settings-option-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.settings-option-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  color: #1f3363;
+  flex: none;
+}
+
+.dark .settings-option-icon {
+  color: #56f4ef;
+}
+
+.settings-option-meta b {
+  font-size: 14px;
+  display: block;
+}
+
+.settings-option-meta p {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: hsl(var(--muted-foreground));
+}
+
+.settings-lang-toggle {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-choice {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
+  font-size: 12px;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-choice:hover:not(.active) {
+  border-color: rgba(86, 244, 239, 0.6);
+  background: hsl(var(--muted) / 0.7);
+}
+
+.btn-choice.active {
+  background: #1f3363;
+  color: #ffffff;
+  border-color: #1f3363;
+}
+
+.dark .btn-choice.active {
+  background: #56f4ef;
+  color: #10283b;
+  border-color: #56f4ef;
+}
+
+
 

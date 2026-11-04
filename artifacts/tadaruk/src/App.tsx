@@ -679,7 +679,30 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
   const {data:session}=useGetDemoSession();
   const defaultUser: DemoUser = { id: 'demo-reporter', name: 'سارة القحطاني', role: 'reporter', initials: 'سق', branchId: 'branch-olaya', branchName: 'فرع العليا', specialization: null };
   const user=session?.user || (typeof window !== 'undefined' ? (() => { try { return JSON.parse(localStorage.getItem('tadaruk-demo-session-user') || 'null'); } catch { return null; } })() : null) || defaultUser; const [location,go]=useLocation(); const [menu,setMenu]=useState(false); const [mobile,setMobile]=useState(false);
+  const [showProfile,setShowProfile]=useState(false);
+  const [showSettings,setShowSettings]=useState(false);
+  const profileMenuRef=useRef<HTMLDivElement>(null);
   const branchContext=useContext(ReporterBranchContext);
+
+  useEffect(()=>{
+    if(!menu)return;
+    const handleClickOutside=(e:MouseEvent|TouchEvent)=>{
+      if(profileMenuRef.current&&!profileMenuRef.current.contains(e.target as Node)){
+        setMenu(false);
+      }
+    };
+    const handleKeyDown=(e:KeyboardEvent)=>{
+      if(e.key==='Escape')setMenu(false);
+    };
+    document.addEventListener('mousedown',handleClickOutside);
+    document.addEventListener('touchstart',handleClickOutside);
+    document.addEventListener('keydown',handleKeyDown);
+    return ()=>{
+      document.removeEventListener('mousedown',handleClickOutside);
+      document.removeEventListener('touchstart',handleClickOutside);
+      document.removeEventListener('keydown',handleKeyDown);
+    };
+  },[menu]);
   const qc=useQueryClient();const logout=useClearDemoSession();
   const reduced=useReducedMotion()===true || (typeof window!=='undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true);
   useEffect(()=>{if(session && !user && window.location.pathname.startsWith('/workspace'))go('/demo');},[session,user,go]);
@@ -704,6 +727,91 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
           :user.branchName||tr(lang,'يحدد من حسابك','Set by your account'));
   return <div className={`app-shell ${user.role==='reporter'?'reporter-shell':''}`} dir={lang==='ar'?'rtl':'ltr'}>
     <aside className={`sidebar ${mobile?'sidebar-open':''}`}><div className="side-brand"><Link href="/workspace"><Brand darkMode={dark}/></Link><button className="mobile-close" onClick={()=>setMobile(false)}><X size={18}/></button></div>
+
+      <div className="side-user-section" ref={profileMenuRef}>
+        <button
+          type="button"
+          className="side-user-card"
+          onClick={()=>setMenu(!menu)}
+          aria-label={tr(lang,'خيارات الحساب والملف الشخصي','Account and profile options')}
+          aria-expanded={menu}
+          aria-controls="side-account-menu"
+          data-testid="sidebar-profile-card"
+        >
+          <div className="side-user-avatar-wrap">
+            <Avatar name={user.name} size="md"/>
+            <span className="side-user-status-dot" aria-hidden="true"/>
+          </div>
+          <div className="side-user-meta">
+            <b className="side-user-name">{user.name}</b>
+            <span className={`side-user-role-badge role-badge-${user.role}`}>{roleText(user.role,lang)}</span>
+          </div>
+          <ChevronDown size={16} className={`side-user-chevron ${menu?'is-open':''}`} aria-hidden="true"/>
+        </button>
+
+        <AnimatePresence>
+          {menu&&<motion.div
+            id="side-account-menu"
+            className="side-account-dropdown tadaruk-dropdown-surface"
+            role="menu"
+            aria-label={tr(lang,'خيارات الحساب','Account options')}
+            initial={reduced?false:{opacity:0,y:-6,scale:0.98}}
+            animate={{opacity:1,y:0,scale:1}}
+            exit={reduced?{opacity:1}:{opacity:0,y:-4,scale:0.98}}
+            transition={{duration:reduced?0:0.16,ease:[0.22,0.72,0.18,1]}}
+          >
+            <div className="side-account-menu-head">
+              <b className="side-account-head-name">{user.name}</b>
+              <span className="side-account-head-branch">
+                <Building2 size={12} aria-hidden="true"/>
+                <span>{user.branchName||(user.role==='reporter'?branchLabel:tr(lang,'جميع الفروع','All branches'))}</span>
+              </span>
+            </div>
+
+            <div className="side-account-menu-list">
+              <button
+                type="button"
+                className="side-account-item"
+                role="menuitem"
+                onClick={()=>{setMenu(false);setShowProfile(true);}}
+                data-testid="button-open-profile-dialog"
+              >
+                <UserRound size={16} className="side-account-item-icon"/>
+                <span>{tr(lang,'الملف الشخصي','Profile')}</span>
+              </button>
+
+              <button
+                type="button"
+                className="side-account-item"
+                role="menuitem"
+                onClick={()=>{setMenu(false);setShowSettings(true);}}
+                data-testid="button-open-settings-dialog"
+              >
+                <Settings2 size={16} className="side-account-item-icon"/>
+                <span>{tr(lang,'الإعدادات','Settings')}</span>
+              </button>
+
+              <div className="side-account-divider" role="separator"/>
+
+              {logout.isError&&<p className="account-menu-error" role="alert">{tr(lang,'تعذر تسجيل الخروج، حاول مجدداً.','Could not sign out. Please try again.')}</p>}
+
+              <button
+                type="button"
+                className="side-account-item side-account-signout"
+                role="menuitem"
+                onClick={signOut}
+                disabled={logout.isPending}
+                aria-busy={logout.isPending}
+                data-testid="button-sidebar-signout"
+              >
+                <LogOut size={16} className="side-account-item-icon"/>
+                <span>{logout.isPending?tr(lang,'جارٍ تسجيل الخروج…','Signing out…'):tr(lang,'تسجيل الخروج','Sign out')}</span>
+              </button>
+            </div>
+          </motion.div>}
+        </AnimatePresence>
+      </div>
+
       {user.role==='reporter'&&reporterBranches.length>1
         ?<div className="branch-switch branch-switch-multi" data-testid="field-sidebar-branch"><span className="branch-icon"><Building2 size={16}/></span><span className="branch-switch-copy"><small>{tr(lang,'الموقع الحالي','CURRENT LOCATION')}</small><TadarukSelect value={branchContext?.selectedBranchId||selectedBranch?.id||reporterBranches[0]?.id||''} onValueChange={value=>branchContext?.selectBranch(value)} ariaLabel={tr(lang,'اختيار الفرع المصرح به','Choose an authorized branch')} dir={lang==='ar'?'rtl':'ltr'} placeholder={selectedBranch?.name||tr(lang,'فرع العليا','Olaya Branch')} testId="select-sidebar-branch" options={reporterBranches.map(branch=>({value:branch.id,label:branch.name}))}/></span></div>
         :<div className="branch-switch" data-testid={user.role==='reporter'?'text-sidebar-branch':'branch-indicator'}><span className="branch-icon"><Building2 size={16}/></span><span><small>{tr(lang,'الموقع الحالي','CURRENT LOCATION')}</small><b>{user.role==='reporter'?branchLabel:user.branchName||tr(lang,'جميع الفروع','All branches')}</b></span></div>}
@@ -721,13 +829,135 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
           <span>{tr(lang,ar as string,en as string)}</span>
         </Link>;
       })}</nav>
-      <div className="side-bottom"><div className="side-user">
-        <button className="side-user-trigger" onClick={()=>setMenu(!menu)} aria-label={tr(lang,'خيارات الملف الشخصي','Profile options')} aria-expanded={menu} aria-controls="account-menu"><Avatar name={user.name}/><span><b>{user.name}</b><small>{roleText(user.role,lang)}</small></span><ChevronDown size={16}/></button>
-        <AnimatePresence>{menu&&<motion.nav id="account-menu" className="account-menu tadaruk-dropdown-surface" aria-label={tr(lang,'خيارات الحساب','Account options')} initial={reduced?false:{opacity:0,y:6}} animate={{opacity:1,y:0}} exit={reduced?{opacity:1}:{opacity:0,y:5}} transition={{duration:reduced?0:.16,ease:[.22,.72,.18,1]}}><div className="account-menu-head"><b>{user.name}</b><small>{roleText(user.role,lang)}</small></div>{logout.isError&&<p className="account-menu-error" role="alert">{tr(lang,'تعذر تسجيل الخروج، حاول مجدداً.','Could not sign out. Please try again.')}</p>}<button type="button" className="account-menu-signout" onClick={signOut} disabled={logout.isPending} aria-busy={logout.isPending}><LogOut size={15}/>{logout.isPending?tr(lang,'جارٍ تسجيل الخروج…','Signing out…'):tr(lang,'تسجيل الخروج','Sign out')}</button></motion.nav>}</AnimatePresence>
-      </div></div>
     </aside>
     <AnimatePresence>{mobile&&<motion.button type="button" className="mobile-scrim" onClick={()=>setMobile(false)} aria-label={tr(lang,'إغلاق القائمة','Close navigation')} initial={reduced?false:{opacity:0}} animate={{opacity:1}} exit={reduced?{opacity:1}:{opacity:0}} transition={{duration:reduced?0:.16}}/>}</AnimatePresence>
     <div className="main-frame"><header className="topbar"><div className="topbar-title"><button className="mobile-menu" onClick={()=>setMobile(true)}><Menu size={20}/></button><span>{title}</span></div><div className="top-controls"><button onClick={()=>setLang(lang==='ar'?'en':'ar')} className="icon-control" aria-label={tr(lang,'تغيير اللغة','Switch language')}><Languages size={18}/><span>{lang==='ar'?'EN':'ع'}</span></button><SunMoonThemeToggle className="workspace-theme-toggle" theme={dark?'dark':'light'} onThemeChange={theme=>setDark(theme==='dark')} aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')} data-testid="theme-toggle-workspace" size={40} duration={860}/></div></header><main className="workspace-content">{children}</main></div>
+
+    <Dialog open={showProfile} onOpenChange={setShowProfile}>
+      <DialogContent className="tadaruk-modal-dialog profile-dialog" dir={lang==='ar'?'rtl':'ltr'}>
+        <DialogHeader>
+          <DialogTitle className="profile-dialog-title">
+            <UserRound size={20} className="dialog-title-icon"/>
+            <span>{tr(lang,'الملف الشخصي','User Profile')}</span>
+          </DialogTitle>
+          <DialogDescription>
+            {tr(lang,'معلومات الحساب والصلاحيات في نظام تدارك','Account information and permissions in TADARUK')}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="profile-dialog-body">
+          <div className="profile-hero-card">
+            <div className="profile-hero-avatar">
+              <Avatar name={user.name} size="lg"/>
+            </div>
+            <div className="profile-hero-info">
+              <h3>{user.name}</h3>
+              <span className={`profile-hero-role role-badge-${user.role}`}>{roleText(user.role,lang)}</span>
+              <span className="profile-hero-branch">
+                <Building2 size={13}/>
+                <span>{user.branchName||(user.role==='reporter'?branchLabel:tr(lang,'جميع الفروع','All branches'))}</span>
+              </span>
+            </div>
+          </div>
+          <div className="profile-data-list">
+            <div className="profile-data-row">
+              <span className="profile-data-label">{tr(lang,'معرف الحساب','User ID')}</span>
+              <span className="profile-data-value"><code>{user.id}</code></span>
+            </div>
+            <div className="profile-data-row">
+              <span className="profile-data-label">{tr(lang,'الدور في النظام','System Role')}</span>
+              <span className="profile-data-value">{roleText(user.role,lang)}</span>
+            </div>
+            <div className="profile-data-row">
+              <span className="profile-data-label">{tr(lang,'الفرع المسند','Assigned Branch')}</span>
+              <span className="profile-data-value">{user.branchName||(user.role==='reporter'?branchLabel:tr(lang,'جميع الفروع','All branches'))}</span>
+            </div>
+            {user.specialization&&(
+              <div className="profile-data-row">
+                <span className="profile-data-label">{tr(lang,'مجال التخصص','Specialization')}</span>
+                <span className="profile-data-value">{user.specialization}</span>
+              </div>
+            )}
+            <div className="profile-data-row">
+              <span className="profile-data-label">{tr(lang,'حالة الحساب','Account Status')}</span>
+              <span className="profile-data-value status-active-pill">
+                <span className="status-dot"/>
+                <span>{tr(lang,'نشط ومصرح له','Active & Authorized')}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="profile-dialog-footer">
+          <button type="button" className="btn btn-outline" onClick={()=>setShowProfile(false)}>
+            {tr(lang,'إغلاق','Close')}
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
+
+    <Dialog open={showSettings} onOpenChange={setShowSettings}>
+      <DialogContent className="tadaruk-modal-dialog settings-dialog" dir={lang==='ar'?'rtl':'ltr'}>
+        <DialogHeader>
+          <DialogTitle className="settings-dialog-title">
+            <Settings2 size={20} className="dialog-title-icon"/>
+            <span>{tr(lang,'الإعدادات والتفضيلات','Settings & Preferences')}</span>
+          </DialogTitle>
+          <DialogDescription>
+            {tr(lang,'تخصيص لغة النظام ومظهر الواجهة','Customize system language and appearance')}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="settings-dialog-body">
+          <div className="settings-option-card">
+            <div className="settings-option-meta">
+              <div className="settings-option-icon"><Languages size={18}/></div>
+              <div>
+                <b>{tr(lang,'لغة التطبيق','Interface Language')}</b>
+                <p>{tr(lang,'اختر اللغة المفضلة للواجهة (العربية / English)','Choose preferred display language')}</p>
+              </div>
+            </div>
+            <div className="settings-lang-toggle">
+              <button
+                type="button"
+                className={`btn-choice ${lang==='ar'?'active':''}`}
+                onClick={()=>setLang('ar')}
+              >
+                العربية
+              </button>
+              <button
+                type="button"
+                className={`btn-choice ${lang==='en'?'active':''}`}
+                onClick={()=>setLang('en')}
+              >
+                English
+              </button>
+            </div>
+          </div>
+          <div className="settings-option-card">
+            <div className="settings-option-meta">
+              <div className="settings-option-icon"><ShieldCheck size={18}/></div>
+              <div>
+                <b>{tr(lang,'المظهر والسمة','Appearance Theme')}</b>
+                <p>{tr(lang,'التبديل بين الوضع الفاتح والداكن','Switch between light and dark mode')}</p>
+              </div>
+            </div>
+            <div className="settings-theme-toggle">
+              <SunMoonThemeToggle
+                className="workspace-theme-toggle"
+                theme={dark?'dark':'light'}
+                onThemeChange={theme=>setDark(theme==='dark')}
+                aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')}
+                size={40}
+                duration={860}
+              />
+            </div>
+          </div>
+        </div>
+        <div className="settings-dialog-footer">
+          <button type="button" className="btn btn-primary" onClick={()=>setShowSettings(false)}>
+            {tr(lang,'حفظ وإغلاق','Save & Close')}
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
   </div>;
 }
 function PageTitle({title,description,action}:{eyebrow:string;title:string;description?:string;action?:ReactNode}) {
