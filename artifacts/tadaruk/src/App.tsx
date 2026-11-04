@@ -334,7 +334,7 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
     const observer=new IntersectionObserver(([entry])=>{
       if(entry.isIntersecting){
         setRoadmapProgress(0);
-        timers=[1,2,3].map((step)=>window.setTimeout(()=>setRoadmapProgress(step),step*1450));
+        timers=[1,2,3].map((step)=>window.setTimeout(()=>setRoadmapProgress(step),step*1250));
         observer.disconnect();
       }
     },{threshold:.28});
@@ -350,6 +350,8 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
     }
   };
   const labels=lang==='ar'?['بلاغ جديد','تحليل ذكي','إسناد للفني','تم الإصلاح']:['New report','Smart analysis','Technician assigned','Repair confirmed'];
+  const desktopRoadmapPath='M55 103 C185 103 176 19 315 22 S445 155 575 109 S748 59 810 81 S870 89 905 83';
+  const mobileRoadmapPath='M37 52 C37 99 13 143 37 191 S61 286 37 329 S13 421 37 468';
   const impact=lang==='ar'?[
     ['بلاغات لا تضيع','كل بلاغ في سجل واحد.'],
     ['مسؤولية واضحة','كل مهمة لها مسؤول وحالة.'],
@@ -405,13 +407,13 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
       <div className={`roadmap ${roadmapProgress>=0?'has-started':''}`} data-progress={roadmapProgress}>
         <svg className="roadmap-path roadmap-path-desktop" viewBox="0 0 1000 220" preserveAspectRatio="none" aria-hidden="true">
           <defs><linearGradient id="roadmap-gradient" x1="0" x2="1"><stop offset="0" stopColor={dark?'#6f8ba3':'#1e3263'}/><stop offset=".52" stopColor={dark?'#75aeb4':'#4d9aa8'}/><stop offset="1" stopColor={dark?'#71d0c9':'#56c9c4'}/></linearGradient></defs>
-          <motion.path className="roadmap-track" d="M55 126 C185 126 176 42 315 45 S445 178 575 132 S748 82 810 104 S870 112 905 106" pathLength="1" initial={{pathLength:reduced?1:0}} animate={{pathLength:roadmapProgress>=0?1:0}} transition={reduced?{duration:0}:{duration:4.7,ease:[.42,0,.58,1]}}/>
-          <motion.path className="roadmap-glint" d="M55 126 C185 126 176 42 315 45 S445 178 575 132 S748 82 810 104 S870 112 905 106" pathLength="1" initial={{pathLength:0,opacity:0}} animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.12,0],pathOffset:[0,.88,1],opacity:[0,.82,0]}:{pathLength:0,opacity:0}} transition={reduced?{duration:0}:{duration:4.7,ease:[.42,0,.58,1]}}/>
+          <motion.path className="roadmap-track" d={desktopRoadmapPath} pathLength="1" initial={{pathLength:reduced?1:0}} animate={{pathLength:roadmapProgress>=0?1:0}} transition={reduced?{duration:0}:{duration:4,ease:[.42,0,.58,1]}}/>
+          <motion.path className="roadmap-glint" d={desktopRoadmapPath} pathLength="1" initial={{pathLength:0,opacity:0}} animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.12,0],pathOffset:[0,.88,1],opacity:[0,.82,0]}:{pathLength:0,opacity:0}} transition={reduced?{duration:0}:{duration:4,ease:[.42,0,.58,1]}}/>
         </svg>
         <svg className="roadmap-path roadmap-path-mobile" viewBox="0 0 80 520" preserveAspectRatio="none" aria-hidden="true">
           <defs><linearGradient id="roadmap-gradient-mobile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={dark?'#6f8ba3':'#1e3263'}/><stop offset=".52" stopColor={dark?'#75aeb4':'#4d9aa8'}/><stop offset="1" stopColor={dark?'#71d0c9':'#56c9c4'}/></linearGradient></defs>
-          <motion.path className="roadmap-track" d="M37 33 C37 82 13 124 37 172 S61 258 37 310 S13 376 37 449" pathLength="1" initial={{pathLength:reduced?1:0}} animate={{pathLength:roadmapProgress>=0?1:0}} transition={reduced?{duration:0}:{duration:4.7,ease:[.42,0,.58,1]}}/>
-          <motion.path className="roadmap-glint" d="M37 33 C37 82 13 124 37 172 S61 258 37 310 S13 376 37 449" pathLength="1" initial={{pathLength:0,opacity:0}} animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.12,0],pathOffset:[0,.88,1],opacity:[0,.82,0]}:{pathLength:0,opacity:0}} transition={reduced?{duration:0}:{duration:4.7,ease:[.42,0,.58,1]}}/>
+          <motion.path className="roadmap-track" d={mobileRoadmapPath} pathLength="1" initial={{pathLength:reduced?1:0}} animate={{pathLength:roadmapProgress>=0?1:0}} transition={reduced?{duration:0}:{duration:4,ease:[.42,0,.58,1]}}/>
+          <motion.path className="roadmap-glint" d={mobileRoadmapPath} pathLength="1" initial={{pathLength:0,opacity:0}} animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.12,0],pathOffset:[0,.88,1],opacity:[0,.82,0]}:{pathLength:0,opacity:0}} transition={reduced?{duration:0}:{duration:4,ease:[.42,0,.58,1]}}/>
         </svg>
         <div className="workflow-steps">{labels.map((label,index)=>{
           const StepIcon=[ClipboardList,Activity,Wrench,CheckCircle2][index];
