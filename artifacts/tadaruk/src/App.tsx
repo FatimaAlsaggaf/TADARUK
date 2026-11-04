@@ -334,11 +334,7 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
     const observer=new IntersectionObserver(([entry])=>{
       if(entry.isIntersecting){
         setRoadmapProgress(0);
-        timers=[
-          window.setTimeout(()=>setRoadmapProgress(1), 1800),
-          window.setTimeout(()=>setRoadmapProgress(2), 3600),
-          window.setTimeout(()=>setRoadmapProgress(3), 5400)
-        ];
+        timers=[1,2,3].map((step)=>window.setTimeout(()=>setRoadmapProgress(step),step*1350));
         observer.disconnect();
       }
     },{threshold:.25});
@@ -354,33 +350,8 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
     }
   };
   const labels=lang==='ar'?['بلاغ جديد','تحليل ذكي','إسناد للفني','تم الإصلاح']:['New report','Smart analysis','Technician assigned','Repair confirmed'];
-  const isRtl=lang==='ar';
-  const desktopPoints=isRtl?[
-    {x:740,y:100},
-    {x:540,y:65},
-    {x:350,y:135},
-    {x:150,y:100}
-  ]:[
-    {x:150,y:100},
-    {x:350,y:65},
-    {x:540,y:135},
-    {x:740,y:100}
-  ];
-  const mobilePoints=isRtl?[
-    {x:80,y:55},
-    {x:80,y:175},
-    {x:80,y:295},
-    {x:80,y:415}
-  ]:[
-    {x:20,y:55},
-    {x:20,y:175},
-    {x:20,y:295},
-    {x:20,y:415}
-  ];
-  const desktopRoadmapPath=isRtl
-    ?'M 740 100 C 650 100, 630 65, 540 65 C 450 65, 430 135, 350 135 C 260 135, 240 100, 150 100'
-    :'M 150 100 C 240 100, 260 65, 350 65 C 430 65, 450 135, 540 135 C 650 135, 670 100, 740 100';
-  const mobileRoadmapPath=isRtl?'M 80 55 L 80 415':'M 20 55 L 20 415';
+  const desktopRoadmapPath='M 55 105 C 160 105, 210 45, 315 45 C 420 45, 470 115, 575 115 C 690 115, 790 85, 905 85';
+  const mobileRoadmapPath='M37 52 C37 99 13 143 37 191 S61 286 37 329 S13 421 37 468';
   const impact=lang==='ar'?[
     ['بلاغات لا تضيع','كل بلاغ في سجل واحد.'],
     ['مسؤولية واضحة','كل مهمة لها مسؤول وحالة.'],
@@ -434,33 +405,29 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
         <h2 className={lang==='ar'?'display-ar':''}>{tr(lang,'من البلاغ إلى الإصلاح','From report to repair')}</h2>
       </motion.div>
       <div className={`roadmap ${roadmapProgress>=0?'has-started':''}`} data-progress={roadmapProgress}>
-        <svg className="roadmap-path roadmap-path-desktop" viewBox="0 0 900 200" preserveAspectRatio="none" aria-hidden="true">
+        <svg className="roadmap-path roadmap-path-desktop" viewBox="0 0 1000 220" preserveAspectRatio="none" aria-hidden="true">
           <defs>
-            <linearGradient id="roadmap-gradient" x1={isRtl ? "1" : "0"} y1="0" x2={isRtl ? "0" : "1"} y2="0">
-              <stop offset="0" stopColor={dark?'#304c74':'#1F3363'}/>
-              <stop offset=".45" stopColor={dark?'#4a8e9e':'#307190'}/>
-              <stop offset="1" stopColor={dark?'#56F4EF':'#56F4EF'}/>
+            <linearGradient id="roadmap-gradient" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stopColor={dark?'#6f8ba3':'#1e3263'}/>
+              <stop offset=".52" stopColor={dark?'#75aeb4':'#4d9aa8'}/>
+              <stop offset="1" stopColor={dark?'#71d0c9':'#56c9c4'}/>
             </linearGradient>
           </defs>
-          <path className="roadmap-track-base" d={desktopRoadmapPath}/>
-          <motion.path className="roadmap-track" d={desktopRoadmapPath} pathLength="1" initial={{pathLength:reduced?1:0}} animate={{pathLength:roadmapProgress>=0?1:0}} transition={reduced?{duration:0}:{duration:5.4,ease:[.42,0,.58,1]}}/>
-          <motion.path className="roadmap-glint" d={desktopRoadmapPath} pathLength="1" initial={{pathLength:0,opacity:0}} animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.08,.08,0],pathOffset:[0,.02,.98,1],opacity:[0,.95,.95,0]}:{pathLength:0,opacity:0}} transition={reduced?{duration:0}:{duration:5.4,ease:[.42,0,.58,1]}}/>
+          <motion.path className="roadmap-track" d={desktopRoadmapPath} pathLength="1" initial={{pathLength:reduced?1:0}} animate={{pathLength:roadmapProgress>=0?1:0}} transition={reduced?{duration:0}:{duration:4.2,ease:[.42,0,.58,1]}}/>
+          <motion.path className="roadmap-glint" d={desktopRoadmapPath} pathLength="1" initial={{pathLength:0,opacity:0}} animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.12,0],pathOffset:[0,.88,1],opacity:[0,.85,0]}:{pathLength:0,opacity:0}} transition={reduced?{duration:0}:{duration:4.2,ease:[.42,0,.58,1]}}/>
         </svg>
-        <svg className="roadmap-path roadmap-path-mobile" viewBox="0 0 100 480" preserveAspectRatio="none" aria-hidden="true">
+        <svg className="roadmap-path roadmap-path-mobile" viewBox="0 0 80 520" preserveAspectRatio="none" aria-hidden="true">
           <defs>
             <linearGradient id="roadmap-gradient-mobile" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor={dark?'#304c74':'#1F3363'}/>
-              <stop offset=".45" stopColor={dark?'#4a8e9e':'#307190'}/>
-              <stop offset="1" stopColor={dark?'#56F4EF':'#56F4EF'}/>
+              <stop offset="0" stopColor={dark?'#6f8ba3':'#1e3263'}/>
+              <stop offset=".52" stopColor={dark?'#75aeb4':'#4d9aa8'}/>
+              <stop offset="1" stopColor={dark?'#71d0c9':'#56c9c4'}/>
             </linearGradient>
           </defs>
-          <path className="roadmap-track-base" d={mobileRoadmapPath}/>
-          <motion.path className="roadmap-track" d={mobileRoadmapPath} pathLength="1" initial={{pathLength:reduced?1:0}} animate={{pathLength:roadmapProgress>=0?1:0}} transition={reduced?{duration:0}:{duration:5.4,ease:[.42,0,.58,1]}}/>
-          <motion.path className="roadmap-glint" d={mobileRoadmapPath} pathLength="1" initial={{pathLength:0,opacity:0}} animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.08,.08,0],pathOffset:[0,.02,.98,1],opacity:[0,.95,.95,0]}:{pathLength:0,opacity:0}} transition={reduced?{duration:0}:{duration:5.4,ease:[.42,0,.58,1]}}/>
+          <motion.path className="roadmap-track" d={mobileRoadmapPath} pathLength="1" initial={{pathLength:reduced?1:0}} animate={{pathLength:roadmapProgress>=0?1:0}} transition={reduced?{duration:0}:{duration:4.2,ease:[.42,0,.58,1]}}/>
+          <motion.path className="roadmap-glint" d={mobileRoadmapPath} pathLength="1" initial={{pathLength:0,opacity:0}} animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.12,0],pathOffset:[0,.88,1],opacity:[0,.85,0]}:{pathLength:0,opacity:0}} transition={reduced?{duration:0}:{duration:4.2,ease:[.42,0,.58,1]}}/>
         </svg>
         <div className="workflow-steps">{labels.map((label,index)=>{
-          const pt=desktopPoints[index];
-          const mobPt=mobilePoints[index];
           const StepIcon=[ClipboardList,Activity,Wrench,CheckCircle2][index];
           const isReached=roadmapProgress>=index;
           const isCurrent=roadmapProgress===index;
@@ -468,26 +435,15 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
           return <motion.div
             className={`workflow-step ${isReached?'is-reached':''} ${isCurrent?'is-current':''} ${isFinal&&isReached?'is-success':''}`}
             key={label}
-            style={{
-              ['--step-x' as string]: `${(pt.x/900)*100}%`,
-              ['--step-y' as string]: `${(pt.y/200)*100}%`,
-              ['--mobile-x' as string]: `${mobPt.x}%`,
-              ['--mobile-y' as string]: `${(mobPt.y/480)*100}%`,
-            }}
-            initial={reduced?false:{opacity:0,scale:.92}}
-            animate={roadmapProgress>=0?{opacity:1,scale:1}:{opacity:0,scale:.92}}
-            transition={reduced?{duration:0}:{duration:.45,delay:index*.14,ease:[.22,.72,.18,1]}}
+            initial={reduced?false:{opacity:0,y:12}}
+            animate={roadmapProgress>=0?{opacity:1,y:0}:{opacity:0,y:12}}
+            transition={reduced?{duration:0}:{duration:.45,delay:index*.13,ease:[.22,.72,.18,1]}}
           >
-            <div className="workflow-node-anchor">
-              <span className="workflow-node">
-                <StepIcon size={24} strokeWidth={isFinal&&isReached?2.2:1.8}/>
-                {isFinal&&isReached&&<span className="repair-success-halo" aria-hidden="true"/>}
-              </span>
-            </div>
-            <div className="workflow-step-meta">
-              <span className="workflow-index">0{index+1}</span>
-              <span className="workflow-label">{label}</span>
-            </div>
+            <span className="workflow-node">
+              <StepIcon size={23} strokeWidth={isFinal&&isReached?2.2:1.7}/>
+            </span>
+            <span className="workflow-index">0{index+1}</span>
+            <span className="workflow-label">{label}</span>
           </motion.div>;
         })}</div>
       </div>
