@@ -1858,8 +1858,9 @@
 
   .ticket-row,
   .register-header {
-    grid-template-columns: 70px minmax(130px, 1fr) 96px minmax(180px, auto) 64px 14px;
-    gap: 8px;
+    grid-template-columns: 74px minmax(140px, 1fr) 96px minmax(215px, max-content) 72px 16px !important;
+    gap: 12px;
+    min-width: 710px;
   }
 }
 

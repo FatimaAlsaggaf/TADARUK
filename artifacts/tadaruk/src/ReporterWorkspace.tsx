@@ -5,7 +5,7 @@ import { motion, useReducedMotion } from 'motion/react';
 import {
   ArrowLeft, ArrowRight, ArrowUpLeft, ArrowUpRight, Building2, Camera, Check, CheckCircle2,
   ChevronLeft, ChevronRight, CircleAlert, ClipboardList, Clock3, FileText, ImagePlus,
-  LoaderCircle, MapPin, Plus, RotateCcw, Search, Send, ShieldCheck, Sparkles,
+  LoaderCircle, MapPin, Plus, RefreshCw, RotateCcw, Search, Send, ShieldCheck, Sparkles,
   Ticket as TicketIcon, Trash2, UserRound, Wrench, X
 } from 'lucide-react';
 import {
@@ -575,69 +575,108 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
 
             {/* Photo Attachment Section */}
             <div className="rw-field">
-              <span className="font-semibold text-sm">
-                {text(lang, 'صورة للمشكلة', 'A photo of the issue')}
-                <span className="rw-field-hint">{text(lang, 'اختياري ولكن يُفضل إرفاقها', 'Optional but recommended')}</span>
-              </span>
-              <div className="rw-photo-panel">
-                <div className="rw-photo-panel-copy">
-                  <span><ImagePlus size={20}/></span>
-                  <div>
-                    <b>{text(lang, 'أرفق صورة للمشكلة', 'Attach an issue photo')}</b>
-                    <small>{text(lang, 'اختر صورة من جهازك أو التقطها بالكاميرا مباشرة.', 'Choose a photo or take one directly.')}</small>
-                  </div>
-                </div>
-                <div className="rw-photo-actions">
-                  <label className="rw-button rw-button-secondary rw-upload" data-testid="button-upload-photo">
-                    {photo ? <RotateCcw size={16}/> : <ImagePlus size={17}/>}
-                    {text(lang, photo ? 'استبدال الصورة' : 'رفع صورة', photo ? 'Replace photo' : 'Upload photo')}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      aria-label={text(lang, 'اختيار صورة من الجهاز', 'Choose a photo from your device')}
-                      data-testid="input-upload-photo"
-                      onChange={event => {
-                        const file = event.currentTarget.files?.[0];
-                        event.currentTarget.value = '';
-                        void setPhotoFromFile(file);
-                      }}
-                    />
-                  </label>
-                  <label className="rw-button rw-button-quiet rw-upload" data-testid="button-capture-photo">
-                    <Camera size={17}/>
-                    {text(lang, 'التقاط بالكاميرا', 'Take photo')}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      capture="environment"
-                      aria-label={text(lang, 'التقاط صورة بالكاميرا', 'Take a photo with camera')}
-                      data-testid="input-capture-photo"
-                      onChange={event => {
-                        const file = event.currentTarget.files?.[0];
-                        event.currentTarget.value = '';
-                        void setPhotoFromFile(file);
-                      }}
-                    />
-                  </label>
-                </div>
+              <div className="rw-photo-header">
+                <span className="font-semibold text-sm">
+                  {text(lang, 'صورة للمشكلة', 'A photo of the issue')}
+                  <span className="rw-field-hint">{text(lang, 'اختياري ولكن يُفضل إرفاقها', 'Optional but recommended')}</span>
+                </span>
+                {photo && (
+                  <span className="rw-photo-attached-badge">
+                    <Check size={12} strokeWidth={2.6} />
+                    {text(lang, 'تم إرفاق صورة', 'Photo attached')}
+                  </span>
+                )}
               </div>
 
-              {photo && (
-                <div className="rw-photo-preview" data-testid="preview-report-photo">
-                  <img src={photo} alt={text(lang, 'معاينة صورة المشكلة', 'Issue photo preview')} />
-                  <div className="rw-photo-preview-bar">
-                    <span>{text(lang, 'معاينة الصورة المرفقة', 'Attached photo preview')}</span>
-                    <button
-                      type="button"
-                      className="rw-text-button"
-                      onClick={() => { setPhoto(''); setPhotoError(''); }}
-                      data-testid="button-remove-photo"
-                    >
-                      <Trash2 size={14}/>{text(lang, 'إزالة', 'Remove')}
-                    </button>
+              {!photo ? (
+                /* Upload & Capture panel when NO photo is selected */
+                <div className="rw-photo-uploader" data-testid="panel-photo-uploader">
+                  <div className="rw-photo-uploader-content">
+                    <div className="rw-photo-uploader-icon">
+                      <ImagePlus size={22} className="text-[#307190] dark:text-[#93c5fd]" />
+                    </div>
+                    <div className="rw-photo-uploader-text">
+                      <b>{text(lang, 'إرفاق صورة توضيحية للمشكلة', 'Attach an issue photo')}</b>
+                      <p>{text(lang, 'التقط صورة بالكاميرا أو اخترها من جهازك لتسهيل التشخيص على الفني.', 'Capture with camera or choose from device for quick technician diagnosis.')}</p>
+                    </div>
+                  </div>
+                  <div className="rw-photo-uploader-buttons">
+                    <label className="rw-photo-action-btn rw-photo-btn-upload" data-testid="button-upload-photo" title={text(lang, 'رفع صورة من الجهاز', 'Upload from device')}>
+                      <ImagePlus size={16} />
+                      <span>{text(lang, 'رفع صورة', 'Upload')}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        aria-label={text(lang, 'اختيار صورة من الجهاز', 'Choose a photo from your device')}
+                        data-testid="input-upload-photo"
+                        onChange={event => {
+                          const file = event.currentTarget.files?.[0];
+                          event.currentTarget.value = '';
+                          void setPhotoFromFile(file);
+                        }}
+                      />
+                    </label>
+                    <label className="rw-photo-action-btn rw-photo-btn-camera" data-testid="button-capture-photo" title={text(lang, 'التقاط صورة بالكاميرا', 'Take photo with camera')}>
+                      <Camera size={16} />
+                      <span>{text(lang, 'التقاط بالكاميرا', 'Camera')}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        aria-label={text(lang, 'التقاط صورة بالكاميرا', 'Take a photo with camera')}
+                        data-testid="input-capture-photo"
+                        onChange={event => {
+                          const file = event.currentTarget.files?.[0];
+                          event.currentTarget.value = '';
+                          void setPhotoFromFile(file);
+                        }}
+                      />
+                    </label>
+                  </div>
+                </div>
+              ) : (
+                /* Sleek preview: Uploader disappears, hover reveals ONLY icons with proper colors */
+                <div className="rw-photo-hover-card" data-testid="preview-report-photo">
+                  <img
+                    src={photo}
+                    alt={text(lang, 'معاينة صورة المشكلة', 'Issue photo preview')}
+                    className="rw-photo-img"
+                  />
+                  <div className="rw-photo-overlay" aria-label={text(lang, 'خيارات الصورة', 'Photo options')}>
+                    <div className="rw-photo-overlay-actions">
+                      <label
+                        className="rw-photo-icon-btn rw-photo-icon-replace"
+                        title={text(lang, 'تبديل الصورة', 'Replace photo')}
+                        aria-label={text(lang, 'تبديل الصورة', 'Replace photo')}
+                        data-testid="button-replace-photo"
+                      >
+                        <RefreshCw size={17} strokeWidth={2.2} />
+                        <input
+                          type="file"
+                          accept="image/*"
+                          aria-label={text(lang, 'تبديل الصورة', 'Replace photo')}
+                          onChange={event => {
+                            const file = event.currentTarget.files?.[0];
+                            event.currentTarget.value = '';
+                            void setPhotoFromFile(file);
+                          }}
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        className="rw-photo-icon-btn rw-photo-icon-delete"
+                        title={text(lang, 'حذف الصورة', 'Delete photo')}
+                        aria-label={text(lang, 'حذف الصورة', 'Delete photo')}
+                        onClick={() => { setPhoto(''); setPhotoError(''); }}
+                        data-testid="button-remove-photo"
+                      >
+                        <Trash2 size={17} strokeWidth={2.2} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
+
               {photoError && <p className="rw-inline-error" role="alert" data-testid="status-photo-error">{photoError}</p>}
             </div>
 
@@ -984,17 +1023,44 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
               {photo && (
                 <div className="rw-review-photo-block" data-testid="preview-review-photo">
                   <span className="rw-preview-label">{text(lang, 'الصورة المرفقة', 'ATTACHED PHOTO')}</span>
-                  <div className="rw-review-photo-frame">
-                    <img src={photo} alt={text(lang, 'الصورة المرفقة بالبلاغ', 'Photo attached to report')} />
-                    <button
-                      type="button"
-                      className="rw-photo-remove-btn"
-                      onClick={() => setPhoto('')}
-                      data-testid="button-remove-review-photo"
-                    >
-                      <X size={14} />
-                      {text(lang, 'إزالة الصورة', 'Remove photo')}
-                    </button>
+                  <div className="rw-photo-hover-card" style={{ maxWidth: '440px', marginTop: '8px' }}>
+                    <img
+                      src={photo}
+                      alt={text(lang, 'الصورة المرفقة بالبلاغ', 'Photo attached to report')}
+                      className="rw-photo-img"
+                    />
+                    <div className="rw-photo-overlay" aria-label={text(lang, 'خيارات الصورة', 'Photo options')}>
+                      <div className="rw-photo-overlay-actions">
+                        <label
+                          className="rw-photo-icon-btn rw-photo-icon-replace"
+                          title={text(lang, 'تبديل الصورة', 'Replace photo')}
+                          aria-label={text(lang, 'تبديل الصورة', 'Replace photo')}
+                          data-testid="button-replace-review-photo"
+                        >
+                          <RefreshCw size={17} strokeWidth={2.2} />
+                          <input
+                            type="file"
+                            accept="image/*"
+                            aria-label={text(lang, 'تبديل الصورة', 'Replace photo')}
+                            onChange={event => {
+                              const file = event.currentTarget.files?.[0];
+                              event.currentTarget.value = '';
+                              void setPhotoFromFile(file);
+                            }}
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          className="rw-photo-icon-btn rw-photo-icon-delete"
+                          title={text(lang, 'حذف الصورة', 'Delete photo')}
+                          aria-label={text(lang, 'حذف الصورة', 'Delete photo')}
+                          onClick={() => { setPhoto(''); setPhotoError(''); }}
+                          data-testid="button-remove-review-photo"
+                        >
+                          <Trash2 size={17} strokeWidth={2.2} />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
