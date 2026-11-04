@@ -5,7 +5,7 @@ import { motion, useReducedMotion } from 'motion/react';
 import {
   ArrowLeft, ArrowRight, ArrowUpLeft, ArrowUpRight, Camera, Check, CheckCircle2,
   ChevronLeft, ChevronRight, CircleAlert, ClipboardList, Clock3, FileText, ImagePlus,
-  LoaderCircle, MapPin, Plus, RotateCcw, Search, Send, ShieldCheck, Sparkles,
+  LoaderCircle, MapPin, Plus, RotateCcw, Search, Send, ShieldCheck,
   Trash2, UserRound, Wrench, X
 } from 'lucide-react';
 import {
@@ -49,7 +49,6 @@ const priorityLabel = (priority: string, lang: ReporterLang) => {
   return labels[priority]?.[lang === 'ar' ? 0 : 1] ?? priority;
 };
 const priorityClass = (priority: string) => `rw-priority rw-priority-${priority}`;
-const missingLocation = 'يحدد داخل الفرع';
 const locationChoices = ['المطبخ', 'صالة العملاء', 'المستودع', 'دورات المياه', 'مكان آخر'];
 const classificationOptions: Array<[string, string, string]> = [
   ['cooling', 'تكييف وتبريد', 'Cooling'],
@@ -255,11 +254,8 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
   const [selectedLocation, setSelectedLocation] = useState('');
   const [otherLocation, setOtherLocation] = useState('');
   const [needsLocation, setNeedsLocation] = useState(false);
-  const [locationWasClarified, setLocationWasClarified] = useState(false);
   const [photo, setPhoto] = useState('');
   const [photoError, setPhotoError] = useState('');
-  const [descriptionError, setDescriptionError] = useState('');
-  const [needsDescription, setNeedsDescription] = useState(false);
   const descriptionInputRef = useRef<HTMLTextAreaElement | null>(null);
   const [photoSaveFailed, setPhotoSaveFailed] = useState(false);
   const [submittedTicket, setSubmittedTicket] = useState<{ id: string; number: string } | null>(null);
@@ -307,8 +303,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
   };
 
   const beginReview = (suggestion: TicketAnalysis, preferredLocation = '') => {
-    const proposedLocation = suggestion.location === missingLocation ? '' : suggestion.location;
-    const finalLocation = preferredLocation || proposedLocation;
+    const finalLocation = preferredLocation || suggestion.location;
     setAnalysis(suggestion);
     setTitle(suggestion.title);
     setReviewDescription(suggestion.description);
@@ -322,20 +317,12 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
   const handleAnalyze = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const rawDescription = description.trim();
-    if (rawDescription.length < 4) {
-      if (!rawDescription && photo) setNeedsDescription(true);
-      else setDescriptionError(text(lang, 'اكتب وصفاً من 4 أحرف على الأقل أو سجّل وصفاً صوتياً.', 'Enter at least 4 characters or record a voice description.'));
-      return;
-    }
-    setNeedsDescription(false);
-    setDescriptionError('');
     const suppliedLocation = location.trim();
     analyze.mutate({ description: rawDescription, locale: lang, ...(suppliedLocation ? { location: suppliedLocation } : {}) }, {
       onSuccess: suggestion => {
-        if ((suggestion.needsClarification || !suggestion.location || suggestion.location === missingLocation) && !suppliedLocation) {
+        if ((suggestion.needsClarification || !suggestion.location) && !suppliedLocation) {
           setSelectedLocation('');
           setOtherLocation('');
-          setLocationWasClarified(true);
           setNeedsLocation(true);
           setAnalysis(suggestion);
           return;
@@ -359,14 +346,11 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
     catch (error) { setPhotoError(error instanceof Error ? error.message : text(lang, 'تعذر تجهيز الصورة.', 'Could not prepare the image.')); }
   };
   const appendTranscript = (transcript: string) => {
-    setNeedsDescription(false);
-    setDescriptionError('');
     setDescription(current => current ? `${current.trimEnd()} ${transcript}` : transcript);
   };
   const backToCompose = () => {
     setAnalysis(null);
     setNeedsLocation(false);
-    setLocationWasClarified(false);
     setReviewEditing(false);
     if (reviewLocation) setLocation(reviewLocation);
   };
@@ -403,21 +387,28 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
     const timer = window.setTimeout(() => navigate(`/workspace/tickets/${submittedTicket.id}`), 1700);
     return () => window.clearTimeout(timer);
   }, [submittedTicket, photoSaveFailed, navigate]);
-  const totalSteps = locationWasClarified ? 3 : 2;
-  const step = analysis ? totalSteps : needsLocation ? 2 : 1;
+  const step = analysis ? 3 : needsLocation || analyze.isPending ? 2 : 1;
   const nextIcon = lang === 'ar' ? <ArrowLeft size={17}/> : <ArrowRight size={17}/>;
 
   return <div className="reporter-view" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
     <ReporterHeading
       eyebrow={text(lang, 'بلاغ صيانة جديد', 'NEW MAINTENANCE REPORT')}
-      title={text(lang, 'خلّنا نعرف ما الذي حدث', 'Tell us what happened')}
-      description={text(lang, 'خطوات قليلة، ومراجعة منك قبل إرسال البلاغ.', 'A few simple steps, with your review before anything is sent.')}
+      title={analysis ? text(lang, 'مراجعة البلاغ', 'Review your report') : text(lang, 'خلّنا نعرف ما الذي حدث', 'Tell us what happened')}
+      description={analysis
+        ? text(lang, 'جهزنا التفاصيل لتراجعها قبل الإرسال.', 'Your report is ready for a final review.')
+        : text(lang, 'خطوات قليلة، ومراجعة منك قبل إرسال البلاغ.', 'A few simple steps, with your review before anything is sent.')}
       lang={lang}
     />
     <div className="rw-report">
-      <div className="rw-progress" aria-label={text(lang, `الخطوة ${step} من ${totalSteps}`, `Step ${step} of ${totalSteps}`)} data-testid="status-report-progress">
-        {[1, 2, 3].map(index => <span key={index} className={`rw-progress-dot ${step >= index ? 'is-active' : ''}`} aria-hidden="true"/> )}
-        <span>{text(lang, `الخطوة ${step}`, `Step ${step}`)}</span>
+      <div className="rw-progress" aria-label={text(lang, `الخطوة ${step} من 3`, `Step ${step} of 3`)} data-testid="status-report-progress">
+        {[
+          text(lang, 'وصف المشكلة', 'Describe the issue'),
+          text(lang, 'تجهيز البلاغ', 'Prepare the report'),
+          text(lang, 'مراجعة البلاغ', 'Review the report'),
+        ].map((label, index) => <div key={label} className={`rw-progress-step ${step >= index + 1 ? 'is-active' : ''} ${step > index + 1 ? 'is-complete' : ''}`}>
+          <span className="rw-progress-dot" aria-hidden="true">{step > index + 1 ? <Check size={12}/> : index + 1}</span>
+          <span>{label}</span>
+        </div>)}
       </div>
 
       {!analysis && !needsLocation && <motion.form
@@ -436,11 +427,9 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
         </div>
         {renderBranchChoice()}
         <label className="rw-field">
-          <span>{text(lang, 'وصف المشكلة', 'Describe the issue')} <span className="rw-field-hint">{text(lang, 'مطلوب', 'Required')}</span></span>
-          <textarea ref={descriptionInputRef} minLength={4} value={description} onChange={event => {
+          <span>{text(lang, 'وصف المشكلة', 'Describe the issue')} <span className="rw-field-hint">{text(lang, 'اختياري', 'Optional')}</span></span>
+          <textarea ref={descriptionInputRef} value={description} onChange={event => {
             setDescription(event.currentTarget.value);
-            setNeedsDescription(false);
-            setDescriptionError('');
           }}
             placeholder={text(lang, 'مثال: يوجد تسريب ماء بجانب حوض التحضير...', 'Example: There is a water leak beside the prep sink...')}
             data-testid="input-report-description"/>
@@ -449,10 +438,6 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
           <span className="rw-input-option-label">{text(lang, 'وصفك', 'YOUR DESCRIPTION')}</span>
           <AiVoiceInput lang={lang} onTranscript={appendTranscript} onManualEntry={() => descriptionInputRef.current?.focus()}/>
         </div>
-        {descriptionError && <p className="rw-inline-error" role="alert" data-testid="status-description-error">{descriptionError}</p>}
-        {needsDescription && <p className="rw-inline-error" role="alert" data-testid="status-photo-needs-description">
-          {text(lang, 'في العرض التجريبي لا يتم تحليل الصور تلقائياً. أضف وصفاً قصيراً للمشكلة أو سجّل وصفاً صوتياً.', 'In this demo, photos are not analyzed automatically. Add a short description of the issue or record a voice description.')}
-        </p>}
         <div className="rw-field">
           <span>{text(lang, 'صورة للمشكلة', 'A photo of the issue')} <span className="rw-field-hint">{text(lang, 'اختياري', 'Optional')}</span></span>
           <div className="rw-photo-panel">
@@ -484,10 +469,9 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
           </div>}
           {photoError && <p className="rw-inline-error" role="alert" data-testid="status-photo-error">{photoError}</p>}
         </div>
-        <div className="rw-demo-note"><Sparkles size={15}/><span><b>{text(lang, 'تحليل تجريبي', 'Demo analysis')}</b> — {text(lang, 'اقتراحات ثابتة للتجربة فقط؛ لا يوجد مزود ذكاء اصطناعي متصل. راجع كل التفاصيل قبل الإرسال.', 'Deterministic test suggestions only; no AI provider is connected. Review every detail before sending.')}</span></div>
         {analyze.isError && <p className="rw-inline-error" role="alert" data-testid="status-analyze-error">{text(lang, 'تعذر تجهيز الاقتراحات. راجع الوصف وحاول مجدداً.', 'Could not prepare suggestions. Check the description and try again.')}</p>}
         <div className="rw-form-actions">
-          <button type="submit" className="rw-button" disabled={!canUseBranch || (!description.trim() && !photo) || analyze.isPending} data-testid="button-continue-report">
+          <button type="submit" className="rw-button" disabled={!canUseBranch || analyze.isPending} data-testid="button-continue-report">
             {analyze.isPending ? <span className="rw-busy"><LoaderCircle size={16}/>{text(lang, 'جاري تحليل البلاغ...', 'Analyzing your report...')}</span> : <>{text(lang, 'تجهيز المراجعة', 'Prepare review')}{nextIcon}</>}
           </button>
           <small>{text(lang, 'لن يُرسل البلاغ إلا بعد مراجعتك وتأكيدك.', 'Nothing is sent until you review and confirm.')}</small>
@@ -553,20 +537,18 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
       >
         <div className="rw-report-intro">
           <span className="rw-report-icon"><CheckCircle2 size={22}/></span>
-          <div><h2>{text(lang, 'راجع البلاغ قبل إرساله', 'Review before sending')}</h2>
-            <p>{text(lang, 'عدّل ما يلزم. لن يصل البلاغ إلى الفريق حتى تضغط تأكيد وإرسال.', 'Edit anything you need. The team will not receive it until you confirm and send.')}</p>
+          <div><h2>{text(lang, 'جهزنا بلاغك', 'Your report is ready')}</h2>
+            <p>{text(lang, 'راجع التفاصيل، ويمكنك تعديلها قبل الإرسال.', 'Review the details and make any edits before sending.')}</p>
           </div>
         </div>
-        <div className="rw-demo-note"><Sparkles size={15}/><span><b>{text(lang, 'تحليل تجريبي', 'Demo analysis')}</b> — {text(lang, 'اقتراحات ثابتة للتجربة فقط. تحقق من كل حقل وعدّله قبل الإرسال.', 'Deterministic test suggestions only. Review and edit every field before sending.')}</span></div>
         <div className="rw-ticket-preview-card" data-testid="card-review-ticket">
           <header className="rw-ticket-preview-head">
             <div><span>{text(lang, 'معاينة البلاغ', 'REPORT PREVIEW')}</span><b>{text(lang, 'طلب صيانة', 'Maintenance request')}</b></div>
-            <span className="rw-preview-status">{text(lang, 'مسودة', 'Draft')}</span>
+            <span className="rw-preview-status">{text(lang, 'نسخة تجريبية', 'Demo')}</span>
           </header>
-          {renderBranchChoice()}
           {!reviewEditing ? <>
             <div className="rw-preview-title-block">
-              <span className="rw-preview-label">{text(lang, 'العنوان المقترح', 'GENERATED TITLE')}</span>
+              <span className="rw-preview-label">{text(lang, 'عنوان البلاغ', 'REPORT TITLE')}</span>
               <h3 data-testid="text-generated-title">{title}</h3>
               <p data-testid="text-generated-description">{reviewDescription}</p>
             </div>
@@ -611,10 +593,10 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
               </label>
             </div>
           </>}
-          <div className="rw-source-note">
-            <span>{text(lang, 'المعلومات التي قدمتها', 'YOUR ORIGINAL INPUT')}</span>
+          {description.trim() && <div className="rw-source-note">
+            <span>{text(lang, 'وصفك الأصلي', 'YOUR DESCRIPTION')}</span>
             <p>{description.trim()}</p>
-          </div>
+          </div>}
           {photo && <div className="rw-photo-preview" data-testid="preview-review-photo">
             <img src={photo} alt={text(lang, 'الصورة المرفقة بالبلاغ', 'Photo attached to the report')}/>
             <div className="rw-photo-preview-bar"><span>{text(lang, 'الصورة ستبقى في هذا المتصفح فقط.', 'This photo stays in this browser only.')}</span>
@@ -626,7 +608,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
         {create.isError && <p className="rw-inline-error" role="alert" data-testid="status-create-error">{text(lang, 'لم يُرسل البلاغ. يمكنك المحاولة مرة أخرى.', 'The report was not sent. You can try again.')}</p>}
         <div className="rw-form-actions">
           <button type="submit" className="rw-button" disabled={!canUseBranch || create.isPending || !title.trim() || !reviewLocation.trim()} data-testid="button-submit-report">
-            {create.isPending ? <span className="rw-busy"><LoaderCircle size={16}/>{text(lang, 'جارٍ إرسال البلاغ', 'Sending report')}</span> : <>{text(lang, 'إرسال البلاغ', 'Submit report')}<Send size={16}/></>}
+            {create.isPending ? <span className="rw-busy"><LoaderCircle size={16}/>{text(lang, 'جارٍ إرسال البلاغ', 'Sending report')}</span> : <>{text(lang, 'تأكيد وإرسال', 'Confirm & send')}<Send size={16}/></>}
           </button>
           {!reviewEditing
             ? <button type="button" className="rw-button rw-button-secondary" onClick={() => setReviewEditing(true)} disabled={create.isPending} data-testid="button-edit-report">{text(lang, 'تعديل', 'Edit')}</button>

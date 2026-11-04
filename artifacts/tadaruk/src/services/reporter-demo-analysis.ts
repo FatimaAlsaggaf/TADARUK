@@ -24,41 +24,41 @@ const scenarios: Scenario[] = [
     keywords: ['تسرب', 'تسريب', 'موية', 'ماء', 'water leak', 'leaking', 'leak'],
     category: 'plumbing',
     specialization: 'plumbing',
-    title: ['تسرب مياه يحتاج إلى فحص', 'Water leak requires inspection'],
-    description: ['تم الإبلاغ عن تسرب مياه، ويحتاج مصدره إلى فحص من فريق السباكة.', 'A water leak was reported and its source needs inspection by the plumbing team.'],
+    title: ['تسرب مياه أسفل حوض التحضير', 'Water leak beneath the prep sink'],
+    description: ['لوحظ تسرب مياه أسفل حوض التحضير. يُرجى فحص التوصيلات ومصدر التسرب.', 'A leak was noticed beneath the prep sink. Please inspect the connections and source of the leak.'],
     priority: 'medium',
     locationKeywords: ['مطبخ', 'حوض', 'sink', 'kitchen', 'bathroom', 'حمام', 'دورة المياه', 'مستودع', 'صالة'],
-    defaultLocation: ['موقع التسرب', 'Leak area'],
+    defaultLocation: ['أسفل حوض التحضير', 'Beneath the prep sink'],
   },
   {
     keywords: ['مكيف', 'تكييف', 'بارد', 'تبريد', 'ac', 'air conditioner', 'cooling', 'not cold', 'not cooling'],
     category: 'cooling',
     specialization: 'cooling',
-    title: ['مكيف لا يبرّد بالشكل المعتاد', 'Air conditioner is not cooling'],
-    description: ['تم الإبلاغ عن ضعف في التبريد، ويحتاج جهاز التكييف إلى فحص.', 'Reduced cooling was reported; the air-conditioning unit needs inspection.'],
+    title: ['ضعف تبريد وحدة التكييف', 'Air-conditioning unit cooling is weak'],
+    description: ['لوحظ ضعف في تبريد وحدة التكييف. يُرجى فحص أداء الوحدة وفتحات التهوية.', 'The air-conditioning unit is cooling poorly. Please inspect the unit and its vents.'],
     priority: 'medium',
     locationKeywords: ['مطبخ', 'مكتب', 'صالة', 'منطقة العملاء', 'kitchen', 'office', 'lobby', 'customer area', 'المستودع'],
-    defaultLocation: ['منطقة المكيف', 'Air-conditioning area'],
+    defaultLocation: ['منطقة التكييف', 'Air-conditioning area'],
   },
   {
     keywords: ['ثلاجة', 'براد', 'فريزر', 'refrigerator', 'fridge', 'freezer', 'لا تبرد'],
     category: 'cooling',
     specialization: 'cooling',
-    title: ['عطل في الثلاجة يحتاج إلى فحص', 'Refrigerator needs inspection'],
-    description: ['تم الإبلاغ عن خلل في الثلاجة، ويحتاج الجهاز إلى فحص للحفاظ على أدائه.', 'A refrigerator issue was reported and the unit needs inspection to restore normal operation.'],
+    title: ['صوت غير طبيعي من الثلاجة', 'Unusual noise from the refrigerator'],
+    description: ['يصدر من الثلاجة صوت غير معتاد. يُرجى فحص الجهاز والتأكد من سلامة تشغيله.', 'The refrigerator is making an unusual noise. Please inspect the unit and verify it is operating correctly.'],
     priority: 'high',
     locationKeywords: ['مطبخ', 'تحضير', 'مستودع', 'kitchen', 'prep', 'storage', 'back room'],
-    defaultLocation: ['منطقة الثلاجة', 'Refrigerator area'],
+    defaultLocation: ['منطقة التحضير', 'Preparation area'],
   },
   {
     keywords: ['لمبة', 'إنارة', 'اضاءة', 'ضوء', 'lighting', 'light', 'bulb', 'lamp'],
     category: 'electrical',
     specialization: 'electrical',
-    title: ['تعطل الإنارة في الموقع', 'Lighting is not working'],
-    description: ['تم الإبلاغ عن تعطل الإنارة، ويحتاج مصدر الضوء والتوصيلات إلى فحص.', 'A lighting fault was reported; the light source and connections need inspection.'],
+    title: ['عطل في إنارة منطقة الاستلام', 'Lighting fault in the pickup area'],
+    description: ['لا تعمل الإنارة في منطقة الاستلام بالشكل المعتاد. يُرجى فحص المصابيح والتوصيلات.', 'The lighting in the pickup area is not working as expected. Please inspect the fixtures and connections.'],
     priority: 'low',
     locationKeywords: ['مطبخ', 'صالة', 'مدخل', 'ممر', 'حمام', 'kitchen', 'lobby', 'entrance', 'hallway', 'restroom'],
-    defaultLocation: ['منطقة الإنارة', 'Lighting area'],
+    defaultLocation: ['منطقة الاستلام', 'Pickup area'],
   },
   {
     keywords: ['كهرباء', 'تماس', 'قاطع', 'فيش', 'مقبس', 'شرر', 'electrical', 'outlet', 'socket', 'breaker', 'sparking'],
@@ -68,7 +68,7 @@ const scenarios: Scenario[] = [
     description: ['تم الإبلاغ عن مشكلة كهربائية، ويحتاج الموقع إلى فحص آمن من فني مختص.', 'An electrical issue was reported and the area needs a safe inspection by a qualified technician.'],
     priority: 'high',
     locationKeywords: ['مطبخ', 'لوحة', 'مكتب', 'مستودع', 'kitchen', 'panel', 'office', 'storage', 'server room'],
-    defaultLocation: ['موقع المشكلة الكهربائية', 'Electrical issue area'],
+    defaultLocation: ['موقع المشكلة', 'Issue area'],
   },
 ];
 
@@ -95,7 +95,8 @@ export const reporterDemoAnalysisAdapter = {
     // Small deliberate pause makes the analysis step visible without implying a live AI service.
     await new Promise(resolve => window.setTimeout(resolve, 520));
     const source = `${request.description} ${request.location ?? ''}`.toLocaleLowerCase();
-    const scenario = scenarios.find(item => includesAny(source, item.keywords)) ?? {
+    const matchedScenario = scenarios.find(item => includesAny(source, item.keywords));
+    const scenario = matchedScenario ?? (!request.description.trim() ? scenarios[0] : {
       keywords: [],
       category: 'general',
       specialization: 'general',
@@ -103,19 +104,19 @@ export const reporterDemoAnalysisAdapter = {
       description: ['تم الإبلاغ عن مشكلة صيانة، ويحتاج الموقع إلى فحص لتحديد الإجراء المناسب.', 'A maintenance issue was reported and needs inspection to determine the appropriate action.'],
       priority: 'medium',
       locationKeywords: [],
-      defaultLocation: ['', ''],
-    };
+      defaultLocation: ['موقع البلاغ داخل الفرع', 'Report location in the branch'],
+    });
     const localeIndex = request.locale === 'ar' ? 0 : 1;
     const providedLocation = request.location?.trim() || findProvidedLocation(source, scenario);
-    const needsClarification = !providedLocation;
+    const finalLocation = providedLocation || scenario.defaultLocation[localeIndex];
     return {
       title: scenario.title[localeIndex],
       description: scenario.description[localeIndex],
       category: scenario.category,
       specialization: scenario.specialization,
       priority: scenario.priority,
-      location: providedLocation || '',
-      needsClarification,
+      location: finalLocation,
+      needsClarification: false,
       mode: 'demo',
     };
   },
