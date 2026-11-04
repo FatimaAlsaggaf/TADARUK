@@ -75,6 +75,7 @@ export interface FolderFloatProps {
   label?: string;
   sublabel?: string;
   trigger?: 'hover' | 'click';
+  open?: boolean;
   defaultOpen?: boolean;
   closeOnSelect?: boolean;
   physics?: boolean;
@@ -106,6 +107,7 @@ export default function FolderFloat({
   label = 'ملف بلاغات تدارك',
   sublabel = '',
   trigger = 'hover',
+  open: controlledOpen,
   defaultOpen = true,
   closeOnSelect = false,
   physics = true,
@@ -131,7 +133,9 @@ export default function FolderFloat({
   bounce = 0.3,
   className = '',
 }: FolderFloatProps) {
-  const [open, setOpen] = useState(defaultOpen);
+  const isControlled = controlledOpen !== undefined;
+  const [internalOpen, setInternalOpen] = useState(defaultOpen);
+  const open = isControlled ? controlledOpen : internalOpen;
   const [popped, setPopped] = useState(-1);
   const [live, setLive] = useState(false);
   const [sizes, setSizes] = useState<ItemSize[]>([]);
@@ -305,13 +309,12 @@ export default function FolderFloat({
   const set = useCallback(
     (next: boolean) => {
       if (!next) stopPhysics();
-      setOpen(prev => {
-        if (prev === next) return prev;
-        latest.current.onOpenChange?.(next);
-        return next;
-      });
+      if (!isControlled) {
+        setInternalOpen(next);
+      }
+      latest.current.onOpenChange?.(next);
     },
-    [stopPhysics]
+    [isControlled, stopPhysics]
   );
 
   useEffect(() => {

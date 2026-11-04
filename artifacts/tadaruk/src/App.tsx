@@ -315,7 +315,10 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
   const [dividerPulse,setDividerPulse]=useState(0);
   const [activeSection,setActiveSection]=useState('top');
   const [roadmapProgress,setRoadmapProgress]=useState(reduced?3:-1);
+  const [folderOpen,setFolderOpen]=useState(true);
+  const [impactRevealed,setImpactRevealed]=useState(false);
   const roadmapRef=useRef<HTMLElement|null>(null);
+  const impactRef=useRef<HTMLElement|null>(null);
   const sectionIds=['top','how','impact','final'];
   const sectionLabels=lang==='ar'?['الرئيسية','رحلة البلاغ','الأثر','استكشف']:['Home','The journey','The impact','Explore'];
   useEffect(()=>{if(reduced)setHeadlineDone(true);},[reduced]);
@@ -333,32 +336,42 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
     const section=roadmapRef.current;
     if(!section)return;
     let timers:number[]=[];
-    let interval:number|null=null;
-    const startCycle=()=>{
-      timers.forEach(window.clearTimeout);
-      setRoadmapProgress(0);
-      timers=[
-        window.setTimeout(()=>setRoadmapProgress(1),1300),
-        window.setTimeout(()=>setRoadmapProgress(2),2600),
-        window.setTimeout(()=>setRoadmapProgress(3),3900)
-      ];
-    };
     const observer=new IntersectionObserver(([entry])=>{
       if(entry.isIntersecting){
-        startCycle();
-        interval=window.setInterval(startCycle,5600);
-      }else{
-        if(interval)window.clearInterval(interval);
-        timers.forEach(window.clearTimeout);
+        setRoadmapProgress(0);
+        timers=[
+          window.setTimeout(()=>setRoadmapProgress(1),1000),
+          window.setTimeout(()=>setRoadmapProgress(2),2000),
+          window.setTimeout(()=>setRoadmapProgress(3),3000)
+        ];
+        observer.disconnect();
+      }
+    },{threshold:.25});
+    observer.observe(section);
+    return ()=>{
+      observer.disconnect();
+      timers.forEach(window.clearTimeout);
+    };
+  },[reduced]);
+  useEffect(()=>{
+    const section=impactRef.current;
+    if(!section)return;
+    let closeTimer:number|null=null;
+    const observer=new IntersectionObserver(([entry])=>{
+      if(entry.isIntersecting){
+        setImpactRevealed(true);
+        closeTimer=window.setTimeout(()=>{
+          setFolderOpen(false);
+        },2300);
+        observer.disconnect();
       }
     },{threshold:.2});
     observer.observe(section);
     return ()=>{
       observer.disconnect();
-      if(interval)window.clearInterval(interval);
-      timers.forEach(window.clearTimeout);
+      if(closeTimer)window.clearTimeout(closeTimer);
     };
-  },[reduced]);
+  },[]);
   const goToSection=(id:string)=>{
     setMobileOpen(false);
     const target=document.getElementById(id);
@@ -483,16 +496,16 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
             d={desktopRoadmapPath}
             pathLength="1"
             initial={{pathLength:reduced?1:0}}
-            animate={{pathLength:reduced?1:roadmapProgress===0?0.04:roadmapProgress===1?0.36:roadmapProgress===2?0.69:1}}
-            transition={reduced?{duration:0}:{duration:1.1,ease:[.22,.72,.18,1]}}
+            animate={{pathLength:roadmapProgress>=0?1:0}}
+            transition={reduced?{duration:0}:{duration:3.0,ease:[.35,0,.25,1]}}
           />
           <motion.path
             className="roadmap-glint"
             d={desktopRoadmapPath}
             pathLength="1"
-            initial={{pathLength:0,opacity:0}}
-            animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.16,0],pathOffset:[0,.84,1],opacity:[0,1,0]}:{pathLength:0,opacity:0}}
-            transition={reduced?{duration:0}:{duration:3.9,repeat:Infinity,repeatDelay:1.7,ease:'easeInOut'}}
+            initial={{pathLength:0,pathOffset:0,opacity:0}}
+            animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.16,.16,0],pathOffset:[0,0,.84,1],opacity:[0,1,1,0]}:{pathLength:0,opacity:0}}
+            transition={reduced?{duration:0}:{duration:3.0,ease:[.35,0,.25,1]}}
           />
         </svg>
         <svg className="roadmap-path roadmap-path-mobile" viewBox="0 0 80 520" preserveAspectRatio="none" aria-hidden="true">
@@ -509,16 +522,16 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
             d={mobileRoadmapPath}
             pathLength="1"
             initial={{pathLength:reduced?1:0}}
-            animate={{pathLength:reduced?1:roadmapProgress===0?0.04:roadmapProgress===1?0.36:roadmapProgress===2?0.69:1}}
-            transition={reduced?{duration:0}:{duration:1.1,ease:[.22,.72,.18,1]}}
+            animate={{pathLength:roadmapProgress>=0?1:0}}
+            transition={reduced?{duration:0}:{duration:3.0,ease:[.35,0,.25,1]}}
           />
           <motion.path
             className="roadmap-glint"
             d={mobileRoadmapPath}
             pathLength="1"
-            initial={{pathLength:0,opacity:0}}
-            animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.16,0],pathOffset:[0,.84,1],opacity:[0,1,0]}:{pathLength:0,opacity:0}}
-            transition={reduced?{duration:0}:{duration:3.9,repeat:Infinity,repeatDelay:1.7,ease:'easeInOut'}}
+            initial={{pathLength:0,pathOffset:0,opacity:0}}
+            animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.16,.16,0],pathOffset:[0,0,.84,1],opacity:[0,1,1,0]}:{pathLength:0,opacity:0}}
+            transition={reduced?{duration:0}:{duration:3.0,ease:[.35,0,.25,1]}}
           />
         </svg>
         <div className="workflow-steps">{labels.map((label,index)=>{
@@ -542,7 +555,7 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
         })}</div>
       </div>
     </section>
-    <section className="landing-impact wrap" id="impact" aria-labelledby="impact-title">
+    <section className="landing-impact wrap" id="impact" ref={impactRef} aria-labelledby="impact-title">
       <div className="impact-heading">
         <motion.div initial={reduced?false:{opacity:0,y:14}} whileInView={{opacity:1,y:0}} viewport={{once:true,amount:.4}} transition={reduced?{duration:0}:{duration:.5,ease:[.22,.72,.18,1]}}>
           <span className="eyebrow">{tr(lang,'منظومة صيانة متكاملة','INTEGRATED OPERATIONS SYSTEM')}</span>
@@ -554,8 +567,11 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
         <div className="impact-folder-showcase">
           <FolderFloat
             items={tadarukDemoReports}
-            label={tr(lang,'سجل بلاغات تدارك','TADARUK Tickets Folder')}
+            label={tr(lang,'ملف بلاغات تدارك','TADARUK Tickets Folder')}
             sublabel={tr(lang,'٥ بلاغات مسجلة وموثقة','5 documented tickets')}
+            open={folderOpen}
+            onOpenChange={setFolderOpen}
+            trigger="click"
           />
         </div>
 
@@ -565,10 +581,9 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
             return <motion.article
               className={`impact-pillar-card impact-pillar-${index+1}`}
               key={item.title}
-              initial={reduced?false:{opacity:0,x:lang==='ar'?-16:16}}
-              whileInView={{opacity:1,x:0}}
-              viewport={{once:true,amount:.25}}
-              transition={reduced?{duration:0}:{duration:.45,delay:index*.1,ease:[.22,.72,.18,1]}}
+              initial={reduced?false:{opacity:0,x:lang==='ar'?-24:24,y:10}}
+              animate={impactRevealed?{opacity:1,x:0,y:0}:(reduced?{opacity:1}:{opacity:0,x:lang==='ar'?-24:24,y:10})}
+              transition={reduced?{duration:0}:{duration:.48,delay:index*.45,ease:[.22,.72,.18,1]}}
             >
               <div className="impact-pillar-head">
                 <span className="impact-pillar-index">0{index+1}</span>
