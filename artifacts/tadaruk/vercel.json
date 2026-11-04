@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "buildCommand": "pnpm --filter @workspace/tadaruk run typecheck && pnpm --filter @workspace/tadaruk run build",
+  "outputDirectory": "dist/public",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
