@@ -276,10 +276,17 @@ function State({title,detail,retry,loading=false}:{title:string;detail?:string;r
   return <div className="state-panel">{loading?<span className="loader-ring"><LoaderCircle/></span>:<CircleAlert size={25}/>}<strong>{title}</strong>{detail&&<p>{detail}</p>}{retry&&<Button kind="outline" onClick={retry}><RotateCcw size={16}/> إعادة المحاولة</Button>}</div>;
 }
 function TicketRow({ticket,lang}:{ticket:Ticket;lang:Lang}) {
+  const isRtl = lang === 'ar';
   return <Link href={`/workspace/tickets/${ticket.id}`} className="ticket-row" data-testid={`ticket-row-${ticket.id}`}>
-    <span className="ticket-number">{ticket.number}</span><span className="ticket-summary"><b>{ticket.title}</b><small>{ticket.branchName} · {ticket.location} · {ticket.technicianName||tr(lang,'بانتظار الإسناد','Awaiting assignment')}</small></span>
-    <PriorityBadge priority={ticket.priority} lang={lang}/><StatusBadge status={ticket.status} lang={lang}/>
-    <span className="ticket-date">{dateText(ticket.createdAt,lang)}</span><ChevronLeft size={16} className="row-arrow"/>
+    <span className="ticket-number">{ticket.number}</span>
+    <span className="ticket-summary">
+      <b title={ticket.title}>{ticket.title}</b>
+      <small>{ticket.branchName} · {ticket.location} · {ticket.technicianName||tr(lang,'بانتظار الإسناد','Awaiting assignment')}</small>
+    </span>
+    <PriorityBadge priority={ticket.priority} lang={lang}/>
+    <StatusBadge status={ticket.status} lang={lang}/>
+    <span className="ticket-date">{dateText(ticket.createdAt,lang)}</span>
+    {isRtl ? <ChevronLeft size={16} className="row-arrow" aria-hidden="true"/> : <ChevronRight size={16} className="row-arrow" aria-hidden="true"/>}
   </Link>;
 }
 function TicketList({tickets,lang,empty='لا توجد بلاغات هنا بعد'}:{tickets:Ticket[];lang:Lang;empty?:string}) {

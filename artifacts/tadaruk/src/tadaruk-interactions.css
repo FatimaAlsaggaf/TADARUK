@@ -1578,11 +1578,11 @@
   font-size: 11px;
 }
 
-.ticket-row,
+.register-panel .ticket-row,
 .register-header {
-  grid-template-columns: 78px minmax(160px, 1fr) minmax(96px, auto) minmax(210px, max-content) minmax(80px, auto) 16px !important;
+  grid-template-columns: 78px minmax(170px, 1.4fr) minmax(90px, auto) minmax(165px, auto) minmax(85px, auto) 20px !important;
   gap: 14px;
-  min-width: 680px;
+  min-width: 720px;
 }
 
 .ticket-row {
@@ -1856,9 +1856,9 @@
     grid-column: span 2;
   }
 
-  .ticket-row,
+  .register-panel .ticket-row,
   .register-header {
-    grid-template-columns: 74px minmax(140px, 1fr) 96px minmax(215px, max-content) 72px 16px !important;
+    grid-template-columns: 74px minmax(150px, 1.4fr) 90px minmax(165px, auto) 72px 16px !important;
     gap: 12px;
     min-width: 710px;
   }
@@ -4414,10 +4414,17 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   font-size: 12px;
 }
 
+.dashboard-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 285px;
+  gap: 20px;
+  align-items: start;
+}
+
 @media (min-width: 1440px) {
   .dashboard-columns {
-    grid-template-columns: minmax(0, 1.5fr) minmax(340px, 1fr);
-    gap: 18px;
+    grid-template-columns: minmax(0, 1fr) 290px;
+    gap: 22px;
   }
 
   .frequent-faults {
@@ -4425,14 +4432,16 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   }
 }
 
-@media (max-width: 1439px) and (min-width: 781px) {
+@media (max-width: 1180px) and (min-width: 781px) {
   .dashboard-columns {
     grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
   }
 
   .ops-aside {
     display: grid;
-    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 16px;
     align-items: stretch;
   }
 }
@@ -4915,4 +4924,111 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   background: rgba(220, 38, 38, 0.08);
   border-color: #dc2626;
 }
+
+/* Dashboard Activity Panel & Recent Tickets: Perfect fluid card layout without overflow */
+.activity-panel,
+.personal-tickets {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  position: relative;
+  padding: 22px 24px !important;
+  box-sizing: border-box;
+}
+
+.activity-panel .ticket-list,
+.personal-tickets .ticket-list {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+.activity-panel .ticket-row,
+.personal-tickets .ticket-row {
+  display: grid !important;
+  grid-template-columns: 74px minmax(130px, 1fr) auto auto 78px 18px !important;
+  gap: 10px 14px !important;
+  align-items: center !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 12px 12px !important;
+  border-radius: 9px !important;
+  border-bottom: 1px solid hsl(var(--border));
+  min-height: 64px !important;
+  transition: background-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.activity-panel .ticket-row:hover,
+.personal-tickets .ticket-row:hover {
+  background: hsl(var(--muted)) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.activity-panel .ticket-row .row-arrow,
+.personal-tickets .ticket-row .row-arrow {
+  justify-self: center !important;
+  flex-shrink: 0 !important;
+  color: #94a3b8;
+  transition: transform 0.18s ease, color 0.18s ease;
+}
+
+.activity-panel .ticket-row:hover .row-arrow,
+.personal-tickets .ticket-row:hover .row-arrow {
+  color: #1f3363;
+  transform: translateX(-3px);
+}
+
+[dir="ltr"] .activity-panel .ticket-row:hover .row-arrow,
+[dir="ltr"] .personal-tickets .ticket-row:hover .row-arrow {
+  transform: translateX(3px);
+}
+
+.dark .activity-panel .ticket-row:hover .row-arrow,
+.dark .personal-tickets .ticket-row:hover .row-arrow {
+  color: #56f4ef;
+}
+
+.activity-panel .ticket-summary,
+.personal-tickets .ticket-summary {
+  min-width: 0 !important;
+}
+
+.activity-panel .ticket-summary b,
+.personal-tickets .ticket-summary b {
+  font-size: 13.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.activity-panel .ticket-summary small,
+.personal-tickets .ticket-summary small {
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+/* Arabic letter-spacing safety rule */
+[dir="rtl"],
+[dir="rtl"] h1,
+[dir="rtl"] h2,
+[dir="rtl"] h3,
+[dir="rtl"] h4,
+[dir="rtl"] h5,
+[dir="rtl"] h6,
+[dir="rtl"] p,
+[dir="rtl"] span,
+[dir="rtl"] b,
+[dir="rtl"] strong,
+[dir="rtl"] .page-title h1,
+[dir="rtl"] .rw-heading h1 {
+  letter-spacing: 0 !important;
+}
+
 
