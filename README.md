@@ -4,14 +4,12 @@
 
 # TADARUK | تدارك
 
-### بلّغ وتابع وتدارك
+### Report. Track. Resolve.
 
-**منصة ذكية لإدارة بلاغات الصيانة، من الإبلاغ وحتى تأكيد الإصلاح.**
+**An intelligent maintenance management platform, from reporting an issue to confirming its resolution.**
 
 </div>
 
-تدارك يجمع بلاغات الصيانة في مكان واحد، ويحوّل وصف المشكلة المكتوب أو الصوتي إلى تذكرة منظمة بمساعدة التحليل الذكي، ثم يوجّهها للفني المناسب ويتابع مراحل الإصلاح.
+TADARUK brings maintenance reports into one place. It uses AI-assisted analysis to turn written or spoken issue descriptions into structured tickets, route them to the appropriate technician, and track repairs through completion.
 
-يوفّر ثلاث واجهات مترابطة: **المبلّغ** لإنشاء البلاغات ومتابعتها، و**الفني** لمعالجة المهام وتوثيق الإصلاح، و**مدير العمليات** لمتابعة البلاغات والفروع والفريق. كما يحتفظ بالحلول السابقة في قاعدة معرفة للاستفادة منها لاحقًا.
-
-> المشروع حاليًا نسخة تجريبية، ويستخدم بيانات وتحليلًا تجريبيًا لاستعراض تجربة الذكاء الاصطناعي.
+The platform connects three roles: **Reporters** submit and track issues, **Technicians** manage assigned tasks and document repairs, and **Operations Managers** oversee tickets, branches, and teams. Completed repairs also contribute to a shared knowledge base for future reference.
