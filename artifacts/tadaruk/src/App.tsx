@@ -333,15 +333,31 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
     const section=roadmapRef.current;
     if(!section)return;
     let timers:number[]=[];
+    let interval:number|null=null;
+    const startCycle=()=>{
+      timers.forEach(window.clearTimeout);
+      setRoadmapProgress(0);
+      timers=[
+        window.setTimeout(()=>setRoadmapProgress(1),1300),
+        window.setTimeout(()=>setRoadmapProgress(2),2600),
+        window.setTimeout(()=>setRoadmapProgress(3),3900)
+      ];
+    };
     const observer=new IntersectionObserver(([entry])=>{
       if(entry.isIntersecting){
-        setRoadmapProgress(0);
-        timers=[1,2,3].map((step)=>window.setTimeout(()=>setRoadmapProgress(step),step*1350));
-        observer.disconnect();
+        startCycle();
+        interval=window.setInterval(startCycle,5600);
+      }else{
+        if(interval)window.clearInterval(interval);
+        timers.forEach(window.clearTimeout);
       }
-    },{threshold:.25});
+    },{threshold:.2});
     observer.observe(section);
-    return ()=>{observer.disconnect();timers.forEach(window.clearTimeout);};
+    return ()=>{
+      observer.disconnect();
+      if(interval)window.clearInterval(interval);
+      timers.forEach(window.clearTimeout);
+    };
   },[reduced]);
   const goToSection=(id:string)=>{
     setMobileOpen(false);
@@ -353,10 +369,10 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
   };
   const labels=lang==='ar'?['بلاغ جديد','تحليل ذكي','إسناد للفني','تم الإصلاح']:['New report','Smart analysis','Technician assigned','Repair confirmed'];
   const desktopRoadmapPath=lang==='ar'
-    ?'M 780 110 C 680 110, 680 70, 580 70 C 480 70, 480 140, 380 140 C 280 140, 280 100, 180 100'
-    :'M 180 100 C 280 100, 280 140, 380 140 C 480 140, 480 70, 580 70 C 680 70, 680 110, 780 110';
-  const mobileRoadmapPath='M37 52 C37 99 13 143 37 191 S61 286 37 329 S13 421 37 468';
-  const whatsappDemoReports = lang === 'ar' ? [
+    ?'M 700 52 L 100 52'
+    :'M 100 52 L 700 52';
+  const mobileRoadmapPath='M 40 48 L 40 472';
+  const tadarukDemoReports = lang === 'ar' ? [
     { label: 'مكيف الفرع يقطر موية فوق الطاولات', value: 'ac-leak', time: '10:42 ص', branch: 'فرع العليا' },
     { label: 'تسريب ماء قوي تحت المغاسل', value: 'water-leak', time: '11:15 ص', branch: 'فرع النخيل' },
     { label: 'عطل لوحة الكهرباء الرئيسية', value: 'power-fault', time: '01:30 م', branch: 'فرع التخصصي' },
@@ -371,44 +387,44 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
   ];
   const impactPillars = lang === 'ar' ? [
     {
-      title: 'بلاغات لا تضيع في الواتساب',
-      copy: 'تحويل رسائل وصور وقروبات الواتساب المشتتة إلى سجلات صيانة موحدة برقم وتاريخ وموقع دقيق.',
+      title: 'توثيق فوري وشامل',
+      copy: 'سجل موحد لكل عطل برقم وتاريخ وموقع وتفاصيل واضحة تمنع فقدان أي بلاغ.',
       icon: ClipboardList
     },
     {
-      title: 'مسؤولية واضحة ومحددة',
-      copy: 'إسناد فوري لكل عطل إلى الفني المختص، مع تحديد وقت الاستجابة ومتابعة فورية للمسؤولية.',
+      title: 'مسؤولية وإسناد مباشر',
+      copy: 'إسناد لحظي للفني المختص مع تحديد وقت الاستجابة لضمان أعلى مستويات الالتزام.',
       icon: Users
     },
     {
-      title: 'متابعة مباشرة من مكان واحد',
-      copy: 'لوحة تحكم توضح مسار الإصلاح خطوة بخطوة من الفتح حتى الإغلاق بدقة وشفافية كاملة.',
+      title: 'متابعة لحظية شفافة',
+      copy: 'لوحة تحكم تفاعلية توضح مسار البلاغ بدقة من لحظة التسجيل حتى إتمام الإصلاح.',
       icon: Activity
     },
     {
-      title: 'معرفة متراكمة لا تتكرر',
-      copy: 'أرشيف ذكي يربط كل مشكلة بحلها وتكلفتها، مما يمنع تكرار الأعطال ويسرّع الصيانة مستقبلاً.',
+      title: 'معرفة تشغيلية تراكمية',
+      copy: 'أرشيف ذكي يربط كل عطل بحله وتكلفته لمنع تكرار الأعطال ورفع الكفاءة.',
       icon: BookOpen
     }
   ] : [
     {
-      title: 'No lost reports in WhatsApp',
-      copy: 'Transform scattered WhatsApp chat messages into verified maintenance records with photos and exact locations.',
+      title: 'Instant Structured Logging',
+      copy: 'A unified record for every ticket with number, timestamp, location, and photos.',
       icon: ClipboardList
     },
     {
-      title: 'Clear ownership and assignment',
-      copy: 'Immediate assignment to the right technician with response tracking, ending the chaos of unassigned tasks.',
+      title: 'Direct Ownership & SLAs',
+      copy: 'Immediate assignment to the specialist technician with clear response tracking.',
       icon: Users
     },
     {
-      title: 'Track progress from one place',
-      copy: 'A unified dashboard showing live repair status from submission to closure with complete transparency.',
+      title: 'Real-Time Visibility',
+      copy: 'An interactive dashboard showing live progress from submission to resolution.',
       icon: Activity
     },
     {
-      title: 'Accumulated maintenance knowledge',
-      copy: 'A smart historical archive linking issues with past solutions to prevent repeat faults and accelerate fixes.',
+      title: 'Cumulative Operational Knowledge',
+      copy: 'Smart archives linking issues to fixes and costs to prevent recurring faults.',
       icon: BookOpen
     }
   ];
@@ -453,7 +469,7 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
         <h2 className={lang==='ar'?'display-ar':''}>{tr(lang,'من البلاغ إلى الإصلاح','From report to repair')}</h2>
       </motion.div>
       <div className={`roadmap ${roadmapProgress>=0?'has-started':''}`} data-progress={roadmapProgress}>
-        <svg className="roadmap-path roadmap-path-desktop" viewBox="0 0 960 220" preserveAspectRatio="none" aria-hidden="true">
+        <svg className="roadmap-path roadmap-path-desktop" viewBox="0 0 800 140" preserveAspectRatio="none" aria-hidden="true">
           <defs>
             <linearGradient id="roadmap-gradient" x1={lang==='ar'?'1':'0'} y1="0" x2={lang==='ar'?'0':'1'} y2="0">
               <stop offset="0" stopColor={dark?'#6f8ba3':'#1e3263'}/>
@@ -462,8 +478,22 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
             </linearGradient>
           </defs>
           <path className="roadmap-track-base" d={desktopRoadmapPath} />
-          <motion.path className="roadmap-track" d={desktopRoadmapPath} pathLength="1" initial={{pathLength:reduced?1:0}} animate={{pathLength:roadmapProgress>=0?1:0}} transition={reduced?{duration:0}:{duration:4.2,ease:[.42,0,.58,1]}}/>
-          <motion.path className="roadmap-glint" d={desktopRoadmapPath} pathLength="1" initial={{pathLength:0,opacity:0}} animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.15,0],pathOffset:[0,.85,1],opacity:[0,.9,0]}:{pathLength:0,opacity:0}} transition={reduced?{duration:0}:{duration:4.2,ease:[.42,0,.58,1]}}/>
+          <motion.path
+            className="roadmap-track"
+            d={desktopRoadmapPath}
+            pathLength="1"
+            initial={{pathLength:reduced?1:0}}
+            animate={{pathLength:reduced?1:roadmapProgress===0?0.04:roadmapProgress===1?0.36:roadmapProgress===2?0.69:1}}
+            transition={reduced?{duration:0}:{duration:1.1,ease:[.22,.72,.18,1]}}
+          />
+          <motion.path
+            className="roadmap-glint"
+            d={desktopRoadmapPath}
+            pathLength="1"
+            initial={{pathLength:0,opacity:0}}
+            animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.16,0],pathOffset:[0,.84,1],opacity:[0,1,0]}:{pathLength:0,opacity:0}}
+            transition={reduced?{duration:0}:{duration:3.9,repeat:Infinity,repeatDelay:1.7,ease:'easeInOut'}}
+          />
         </svg>
         <svg className="roadmap-path roadmap-path-mobile" viewBox="0 0 80 520" preserveAspectRatio="none" aria-hidden="true">
           <defs>
@@ -474,8 +504,22 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
             </linearGradient>
           </defs>
           <path className="roadmap-track-base" d={mobileRoadmapPath} />
-          <motion.path className="roadmap-track" d={mobileRoadmapPath} pathLength="1" initial={{pathLength:reduced?1:0}} animate={{pathLength:roadmapProgress>=0?1:0}} transition={reduced?{duration:0}:{duration:4.2,ease:[.42,0,.58,1]}}/>
-          <motion.path className="roadmap-glint" d={mobileRoadmapPath} pathLength="1" initial={{pathLength:0,opacity:0}} animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.15,0],pathOffset:[0,.85,1],opacity:[0,.9,0]}:{pathLength:0,opacity:0}} transition={reduced?{duration:0}:{duration:4.2,ease:[.42,0,.58,1]}}/>
+          <motion.path
+            className="roadmap-track"
+            d={mobileRoadmapPath}
+            pathLength="1"
+            initial={{pathLength:reduced?1:0}}
+            animate={{pathLength:reduced?1:roadmapProgress===0?0.04:roadmapProgress===1?0.36:roadmapProgress===2?0.69:1}}
+            transition={reduced?{duration:0}:{duration:1.1,ease:[.22,.72,.18,1]}}
+          />
+          <motion.path
+            className="roadmap-glint"
+            d={mobileRoadmapPath}
+            pathLength="1"
+            initial={{pathLength:0,opacity:0}}
+            animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.16,0],pathOffset:[0,.84,1],opacity:[0,1,0]}:{pathLength:0,opacity:0}}
+            transition={reduced?{duration:0}:{duration:3.9,repeat:Infinity,repeatDelay:1.7,ease:'easeInOut'}}
+          />
         </svg>
         <div className="workflow-steps">{labels.map((label,index)=>{
           const StepIcon=[ClipboardList,Activity,Wrench,CheckCircle2][index];
@@ -501,19 +545,17 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
     <section className="landing-impact wrap" id="impact" aria-labelledby="impact-title">
       <div className="impact-heading">
         <motion.div initial={reduced?false:{opacity:0,y:14}} whileInView={{opacity:1,y:0}} viewport={{once:true,amount:.4}} transition={reduced?{duration:0}:{duration:.5,ease:[.22,.72,.18,1]}}>
-          <span className="eyebrow">{tr(lang,'من رسائل الواتساب إلى نظام منظم','FROM WHATSAPP TO STRUCTURED RECORDS')}</span>
+          <span className="eyebrow">{tr(lang,'منظومة صيانة متكاملة','INTEGRATED OPERATIONS SYSTEM')}</span>
           <h2 id="impact-title" className={lang==='ar'?'display-ar':''}>{tr(lang,'أثر تدارك على عملياتك','Tadaruk’s impact on operations')}</h2>
         </motion.div>
-        <p>{tr(lang,'بدلاً من ضياع البلاغات في قروبات ومحادثات الواتساب، يجمع تدارك كل عطل في ملف موحد يضمن المسؤولية وسرعة الإصلاح.','Instead of reports getting lost in WhatsApp groups, Tadaruk captures every issue into an organized file for clear accountability and rapid repair.')}</p>
       </div>
 
       <div className="impact-showcase-stage">
         <div className="impact-folder-showcase">
           <FolderFloat
-            items={whatsappDemoReports}
-            label={tr(lang,'ملف بلاغات تدارك','TADARUK Tickets Folder')}
-            sublabel={tr(lang,'٥ بلاغات مجمعة من الواتساب','5 reports filed from WhatsApp')}
-            hint={tr(lang,'اسحب رسائل الواتساب أو اضغط على الملف لفتحه','Drag WhatsApp reports or click the folder to interact')}
+            items={tadarukDemoReports}
+            label={tr(lang,'سجل بلاغات تدارك','TADARUK Tickets Folder')}
+            sublabel={tr(lang,'٥ بلاغات مسجلة وموثقة','5 documented tickets')}
           />
         </div>
 

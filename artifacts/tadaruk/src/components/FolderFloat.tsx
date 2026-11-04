@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import Matter from 'matter-js';
-import { MessageSquare, CheckCheck, FileText } from 'lucide-react';
+import { FileText, Clock, CheckCheck, Sparkles } from 'lucide-react';
 import './FolderFloat.css';
 
 const { Bodies, Body, Composite, Engine } = Matter;
@@ -12,23 +12,22 @@ export type FolderItem = string | {
   value: string;
   time?: string;
   branch?: string;
-  sender?: string;
 };
 
 const DEFAULT_ITEMS: FolderItem[] = [
   { label: 'مكيف الفرع يقطر موية فوق الطاولات', value: 'ac-leak', time: '10:42 ص', branch: 'فرع العليا' },
-  { label: 'تسريب ماء تحت المغاسل', value: 'water-leak', time: '11:15 ص', branch: 'فرع النخيل' },
-  { label: 'عطل لوحة الكهرباء الرئيسية', value: 'power-fault', time: '01:30 م', branch: 'فرع التخصصي' },
-  { label: 'قفل باب المستودع معلق', value: 'door-lock', time: '02:05 م', branch: 'فرع الصحافة' },
-  { label: 'ثلاجة المشروبات باردة ما تشتغل', value: 'fridge-cooling', time: '03:20 م', branch: 'فرع الملقا' },
+  { label: 'تسريب ماء تحت المغاسل الرئيسية', value: 'water-leak', time: '11:15 ص', branch: 'فرع النخيل' },
+  { label: 'عطل في لوحة الكهرباء الرئيسية', value: 'power-fault', time: '01:30 م', branch: 'فرع التخصصي' },
+  { label: 'قفل باب المستودع الخلفي معلق', value: 'door-lock', time: '02:05 م', branch: 'فرع الصحافة' },
+  { label: 'ثلاجة المشروبات متوقفة عن التبريد', value: 'fridge-cooling', time: '03:20 م', branch: 'فرع الملقا' },
 ];
 
-const PAD = 36;
-const CHAR = 7.2;
-const GAP = 14;
-const ROW = 54;
+const PAD = 32;
+const CHAR = 7.0;
+const GAP = 12;
+const ROW = 48;
 const DRAG_MIN = 4;
-const ZONE_PAD = 12;
+const ZONE_PAD = 8;
 
 const jitter = (i: number) => {
   const x = Math.sin(i * 12.9898 + 4.1414) * 43758.5453;
@@ -57,12 +56,12 @@ const layout = (list: { label: string; value: string }[], spread: number, lift: 
   const pos: { x: number; y: number; r: number }[] = [];
   rows.forEach((r, ri) => {
     let x = -r.width / 2;
-    const shift = (ri % 2 ? 1 : -1) * Math.min(18, spread * 0.1);
+    const shift = (ri % 2 ? 1 : -1) * Math.min(14, spread * 0.08);
     r.items.forEach(({ i, pw }) => {
       const j = jitter(i);
       pos[i] = {
-        x: x + pw / 2 + shift + (j - 0.5) * 6,
-        y: -lift - ri * ROW - j * 6,
+        x: x + pw / 2 + shift + (j - 0.5) * 4,
+        y: -lift - ri * ROW - j * 4,
         r: tilt * (j * 2 - 1)
       };
       x += pw + GAP;
@@ -100,7 +99,6 @@ export interface FolderFloatProps {
   stagger?: number;
   bounce?: number;
   className?: string;
-  hint?: string;
 }
 
 export default function FolderFloat({
@@ -111,7 +109,7 @@ export default function FolderFloat({
   defaultOpen = true,
   closeOnSelect = false,
   physics = true,
-  drift = 0.5,
+  drift = 0.35,
   onSelect,
   onOpenChange,
   folderColor = '#162544',
@@ -120,19 +118,18 @@ export default function FolderFloat({
   itemColor = '#ffffff',
   itemTextColor = '#1e3263',
   labelColor = '#ffffff',
-  width = 240,
-  height = 156,
+  width = 230,
+  height = 150,
   radius = 16,
-  spread = 220,
-  lift = 34,
-  tilt = 6,
+  spread = 190,
+  lift = 20,
+  tilt = 4,
   flapAngle = 36,
   restAngle = 14,
   openDuration = 520,
-  stagger = 50,
-  bounce = 0.32,
+  stagger = 45,
+  bounce = 0.3,
   className = '',
-  hint = 'حرّك البلاغات أو اضغط عليها للتفاعل'
 }: FolderFloatProps) {
   const [open, setOpen] = useState(defaultOpen);
   const [popped, setPopped] = useState(-1);
@@ -186,7 +183,7 @@ export default function FolderFloat({
   );
 
   const n = list.length;
-  const sub = sublabel || `${n} ${n === 1 ? 'بلاغ من الواتساب' : 'بلاغات مجمعة من الواتساب'}`;
+  const sub = sublabel || `${n} ${n === 1 ? 'بلاغ مسجل وموثق' : 'بلاغات مسجلة وموثقة'}`;
   const pos = layout(list, spread, lift, tilt, sizes);
 
   const labelsKey = list.map(item => item.label).join('|');
@@ -235,22 +232,25 @@ export default function FolderFloat({
     const engine = Engine.create({ gravity: { x: 0, y: 0 } });
     engine.enableSleeping = false;
     w.engine = engine;
-    w.sizes = els.map(el => ({ w: el?.offsetWidth ?? 180, h: el?.offsetHeight ?? 38 }));
-    const ys = pos.map(p => p.y);
+    w.sizes = els.map(el => ({ w: el?.offsetWidth ?? 170, h: el?.offsetHeight ?? 36 }));
+
+    // Tightly bounded zone so items never overlap headings or float away
+    const maxRowY = -lift - Math.ceil(n / 2) * ROW;
     const zone = {
       left: -spread - ZONE_PAD,
       right: spread + ZONE_PAD,
-      top: Math.min(...ys) - ZONE_PAD,
-      bottom: -lift + Math.max(...w.sizes.map(s => s.h))
+      top: maxRowY - 14,
+      bottom: -lift + 20
     };
     w.zone = zone;
+
     w.bodies = els.map((_el, i) => {
       const { w: bw, h: bh } = w.sizes[i];
       const b = Bodies.rectangle(pos[i].x, pos[i].y + bh / 2, bw, bh, {
-        chamfer: { radius: Math.min(bh / 2 - 1, 16) },
-        restitution: 0.55,
+        chamfer: { radius: Math.min(bh / 2 - 1, 14) },
+        restitution: 0.5,
         friction: 0,
-        frictionAir: 0.08,
+        frictionAir: 0.09,
         inertia: Infinity
       });
       (b as unknown as { plugin: { phase: number } }).plugin = { phase: jitter(i) * Math.PI * 2 };
@@ -277,14 +277,14 @@ export default function FolderFloat({
       const dt = s.last ? Math.min(32, now - s.last) : 16;
       s.last = now;
       const t = (now - s.t0) / 1000;
-      const k = latest.current.drift * 0.00005 * Math.min(1, t / 2);
+      const k = latest.current.drift * 0.00004 * Math.min(1, t / 2);
 
       s.bodies.forEach((b, i) => {
         if (s.drag && s.drag.i === i) return;
         const ph = (b as unknown as { plugin: { phase: number } }).plugin.phase;
         Body.applyForce(b, b.position, {
-          x: Math.sin(t * 0.9 + ph) * k * b.mass,
-          y: Math.cos(t * 1.3 + ph * 1.7) * k * b.mass
+          x: Math.sin(t * 0.85 + ph) * k * b.mass,
+          y: Math.cos(t * 1.1 + ph * 1.5) * k * b.mass
         });
       });
 
@@ -466,7 +466,7 @@ export default function FolderFloat({
                   pillRefs.current[i] = el;
                 }}
                 type="button"
-                className="folder-float__item whatsapp-report-pill"
+                className="folder-float__item tadaruk-report-pill"
                 tabIndex={open ? 0 : -1}
                 aria-hidden={!open}
                 data-pop={popped === i ? '' : undefined}
@@ -487,15 +487,15 @@ export default function FolderFloat({
                 }}
                 title={item.branch ? `${item.branch}: ${item.label}` : item.label}
               >
-                <span className="folder-float__drift whatsapp-bubble-inner">
-                  <span className="whatsapp-bubble-icon" aria-hidden="true">
-                    <MessageSquare size={13} strokeWidth={2.4} />
+                <span className="folder-float__drift report-pill-inner">
+                  <span className="report-pill-icon" aria-hidden="true">
+                    <Sparkles size={12} strokeWidth={2.4} />
                   </span>
-                  <span className="whatsapp-bubble-text">{item.label}</span>
+                  <span className="report-pill-text">{item.label}</span>
                   {item.time && (
-                    <span className="whatsapp-bubble-meta">
-                      <span className="whatsapp-bubble-time">{item.time}</span>
-                      <CheckCheck size={12} className="whatsapp-bubble-check" strokeWidth={2.2} />
+                    <span className="report-pill-meta">
+                      <Clock size={11} className="report-pill-clock" />
+                      <span className="report-pill-time">{item.time}</span>
                     </span>
                   )}
                 </span>
@@ -534,8 +534,6 @@ export default function FolderFloat({
           />
         </div>
       </div>
-      {hint && <p className="folder-float__hint">{hint}</p>}
     </div>
   );
 }
-

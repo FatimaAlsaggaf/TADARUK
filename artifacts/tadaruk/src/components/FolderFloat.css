@@ -5,12 +5,13 @@
   justify-content: center;
   position: relative;
   width: 100%;
-  padding-block: 40px 16px;
+  padding-top: 110px;
+  padding-bottom: 24px;
 }
 
 .folder-float {
-  --ff-w: 240px;
-  --ff-h: 156px;
+  --ff-w: 230px;
+  --ff-h: 150px;
   --ff-r: 16px;
   --ff-tab: 18px;
   --ff-back: #162544;
@@ -19,8 +20,8 @@
   --ff-item: #ffffff;
   --ff-item-ink: #1e3263;
   --ff-label: #ffffff;
-  --ff-spread: 220px;
-  --ff-lift: 34px;
+  --ff-spread: 180px;
+  --ff-lift: 18px;
   --ff-angle: 36deg;
   --ff-rest: 14deg;
   --ff-open: 520ms;
@@ -305,92 +306,82 @@
     box-shadow 180ms ease;
 }
 
-.folder-float[data-live] .folder-float__item.whatsapp-report-pill {
+.folder-float[data-live] .folder-float__item.tadaruk-report-pill {
   cursor: grab;
   transition: scale 180ms var(--ff-ease-out), box-shadow 180ms ease;
 }
 
-.folder-float__item.whatsapp-report-pill[data-drag] {
+.folder-float__item.tadaruk-report-pill[data-drag] {
   cursor: grabbing;
   box-shadow: 0 14px 32px rgba(86, 244, 239, 0.32), 0 0 0 2px #56F4EF;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .folder-float[data-open] .folder-float__item.whatsapp-report-pill:hover {
-    scale: 1.06;
-    border-color: #25D366;
-    box-shadow: 0 12px 28px rgba(37, 211, 102, 0.22), 0 0 0 2px rgba(37, 211, 102, 0.2);
+  .folder-float[data-open] .folder-float__item.tadaruk-report-pill:hover {
+    scale: 1.05;
+    border-color: #56F4EF;
+    box-shadow: 0 12px 28px rgba(86, 244, 239, 0.25), 0 0 0 1.5px rgba(86, 244, 239, 0.4);
   }
 }
 
-.folder-float[data-open] .folder-float__item.whatsapp-report-pill:active {
+.folder-float[data-open] .folder-float__item.tadaruk-report-pill:active {
   scale: 0.98;
 }
 
-.whatsapp-bubble-inner {
+.report-pill-inner {
   display: inline-flex;
   align-items: center;
   gap: 8px;
 }
 
-.whatsapp-bubble-icon {
+.report-pill-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #25D366;
+  color: #0ea5e9;
   flex-shrink: 0;
 }
 
-.whatsapp-bubble-text {
+.dark .report-pill-icon {
+  color: #56F4EF;
+}
+
+.report-pill-text {
   font-size: 13px;
   font-weight: 600;
   line-height: 1.4;
+  color: #1e3263;
 }
 
-.whatsapp-bubble-meta {
+.dark .report-pill-text {
+  color: #f1f5f9;
+}
+
+.report-pill-meta {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   margin-right: 4px;
   padding-right: 6px;
   border-right: 1px solid rgba(30, 50, 99, 0.12);
 }
 
-.dark .whatsapp-bubble-meta {
+.dark .report-pill-meta {
   border-right-color: rgba(207, 224, 233, 0.16);
 }
 
-.whatsapp-bubble-time {
-  font-size: 10px;
+.report-pill-time {
+  font-size: 11px;
   color: #61738b;
   font-weight: 500;
 }
 
-.dark .whatsapp-bubble-time {
+.dark .report-pill-time {
   color: #9bb4c0;
 }
 
-.whatsapp-bubble-check {
-  color: #34B7F1;
-}
-
-.folder-float__hint {
-  margin-top: 24px;
-  font-size: 13px;
-  color: var(--tadaruk-muted, #61738b);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border-radius: 20px;
-  background: rgba(30, 50, 99, 0.04);
-  border: 1px dashed rgba(30, 50, 99, 0.16);
-}
-
-.dark .folder-float__hint {
-  color: #a8b7c4;
-  background: rgba(207, 224, 233, 0.05);
-  border-color: rgba(207, 224, 233, 0.18);
+.report-pill-clock {
+  color: #94a3b8;
 }
 
 .folder-float__drift {

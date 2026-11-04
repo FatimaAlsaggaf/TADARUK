@@ -2348,13 +2348,13 @@
   letter-spacing: -.035em;
   line-height: 1.35;
 }
-/* Animated Roadmap - Wave passing directly through milestone boxes */
+/* Animated Roadmap - Direct continuous line passing through milestone boxes */
 .roadmap {
   position: relative;
-  max-width: 960px;
-  height: 230px;
-  min-height: 230px;
-  margin: 16px auto 0;
+  max-width: 800px;
+  height: 140px;
+  min-height: 140px;
+  margin: 20px auto 0;
   width: 100%;
 }
 .roadmap-path {
@@ -2362,29 +2362,30 @@
   z-index: 1;
   inset: 0;
   width: 100%;
-  height: 220px;
+  height: 140px;
   overflow: visible;
   pointer-events: none;
 }
 .roadmap-path-mobile { display: none; }
 .roadmap-track-base, .roadmap-track, .roadmap-glint { fill: none; stroke-linecap: round; }
 .roadmap-track-base {
-  stroke: rgba(30, 50, 99, .15);
-  stroke-width: 2.8;
+  stroke: rgba(30, 50, 99, .14);
+  stroke-width: 3.5;
 }
 .dark .roadmap-track-base {
   stroke: rgba(207, 224, 233, .16);
 }
 .roadmap-track {
   stroke: url(#roadmap-gradient);
-  stroke-width: 2.8;
-  opacity: .85;
+  stroke-width: 3.5;
+  opacity: .95;
+  filter: drop-shadow(0 0 6px rgba(86, 244, 239, .35));
 }
 .roadmap-glint {
   stroke: #56F4EF;
-  stroke-width: 5.5;
-  stroke-dasharray: .06 .94;
-  filter: drop-shadow(0 0 8px rgba(86, 244, 239, .85));
+  stroke-width: 6;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 10px #56F4EF) drop-shadow(0 0 4px #ffffff);
 }
 .workflow-steps {
   position: absolute;
@@ -2395,8 +2396,8 @@
 .workflow-step {
   position: absolute;
   display: flex;
-  width: 160px;
-  min-height: 0;
+  width: 130px;
+  top: 20px;
   flex-direction: column;
   align-items: center;
   gap: 7px;
@@ -2408,19 +2409,18 @@
   text-align: center;
   z-index: 2;
   pointer-events: auto;
+  transform: translateX(-50%);
 }
-.workflow-step:nth-child(1) { left: 18.75%; top: 100px; transform: translate(-50%, -32px); }
-.workflow-step:nth-child(2) { left: 39.583%; top: 140px; transform: translate(-50%, -32px); }
-.workflow-step:nth-child(3) { left: 60.417%; top: 70px; transform: translate(-50%, -32px); }
-.workflow-step:nth-child(4) { left: 81.25%; top: 110px; transform: translate(-50%, -32px); }
 
-.landing[dir="rtl"] .roadmap-path-desktop {
-  transform: none;
-}
-.landing[dir="rtl"] .workflow-step:nth-child(1) { left: auto; right: 18.75%; top: 110px; transform: translate(50%, -32px); }
-.landing[dir="rtl"] .workflow-step:nth-child(2) { left: auto; right: 39.583%; top: 70px; transform: translate(50%, -32px); }
-.landing[dir="rtl"] .workflow-step:nth-child(3) { left: auto; right: 60.417%; top: 140px; transform: translate(50%, -32px); }
-.landing[dir="rtl"] .workflow-step:nth-child(4) { left: auto; right: 81.25%; top: 100px; transform: translate(50%, -32px); }
+.landing[dir="ltr"] .workflow-step:nth-child(1) { left: 12.5%; }
+.landing[dir="ltr"] .workflow-step:nth-child(2) { left: 37.5%; }
+.landing[dir="ltr"] .workflow-step:nth-child(3) { left: 62.5%; }
+.landing[dir="ltr"] .workflow-step:nth-child(4) { left: 87.5%; }
+
+.landing[dir="rtl"] .workflow-step:nth-child(1) { left: 87.5%; }
+.landing[dir="rtl"] .workflow-step:nth-child(2) { left: 62.5%; }
+.landing[dir="rtl"] .workflow-step:nth-child(3) { left: 37.5%; }
+.landing[dir="rtl"] .workflow-step:nth-child(4) { left: 12.5%; }
 
 .workflow-step::after { display: none !important; }
 .workflow-node {
@@ -2431,57 +2431,66 @@
   height: 64px;
   place-items: center;
   border: 1.5px solid rgba(30, 50, 99, .14);
-  border-radius: 22px;
+  border-radius: 20px;
   color: #688394;
-  background: rgba(249, 251, 248, .98);
-  box-shadow: 0 11px 28px rgba(30, 50, 99, .09), inset 0 1px rgba(255,255,255,.85);
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(30, 50, 99, .08), inset 0 1px 1px rgba(255,255,255,.9);
   transition: color .35s ease, background-color .35s ease, border-color .35s ease, transform .35s ease, box-shadow .35s ease;
 }
 .workflow-step.is-reached .workflow-node {
-  border-color: rgba(71, 176, 170, .6);
-  color: #1e6d74;
-  background: #e8f5f1;
-  box-shadow: 0 13px 28px rgba(40, 105, 112, .13), inset 0 1px rgba(255,255,255,.9);
+  border-color: rgba(86, 244, 239, .8);
+  color: #0d9488;
+  background: #f0fdfa;
+  box-shadow: 0 12px 28px rgba(13, 148, 136, .15), 0 0 16px rgba(86, 244, 239, .35);
 }
 .workflow-step.is-current .workflow-node {
-  transform: translateY(-2px) scale(1.04);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--landing-teal) 13%, transparent), 0 13px 27px rgba(30,80,90,.15);
+  transform: scale(1.08);
+  box-shadow: 0 0 0 4px rgba(86, 244, 239, .3), 0 14px 30px rgba(13, 148, 136, .22);
 }
 .workflow-step:last-child.is-reached .workflow-node,
 .workflow-step.is-success .workflow-node {
   color: #56F4EF;
   background: #1e3263;
   border-color: #56F4EF;
-  box-shadow: 0 13px 30px rgba(30, 50, 99, .22), 0 0 16px rgba(86, 244, 239, .35);
+  transform: scale(1.08);
+  box-shadow: 0 14px 32px rgba(30, 50, 99, .3), 0 0 24px rgba(86, 244, 239, .6);
 }
 .workflow-index {
   order: 2;
   color: #5b999b;
-  font: 600 10px 'Anek Kannada', sans-serif;
+  font: 600 11px 'Anek Kannada', sans-serif;
   letter-spacing: .05em;
 }
 .workflow-label {
   order: 3;
   color: var(--landing-ink);
-  font-size: 15px;
+  font-size: 14.5px;
   font-weight: 750;
   line-height: 1.55;
   white-space: nowrap;
 }
 
 .dark .workflow-node {
-  border-color: rgba(207, 224, 233, .18);
+  border-color: rgba(207, 224, 233, .16);
   color: #9bb4c0;
-  background: rgba(27, 44, 66, .98);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, .28);
+  background: #1b2c42;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .35);
 }
 .dark .workflow-step.is-reached .workflow-node {
-  color: #a5e2d7;
-  background: #233f4a;
-  border-color: rgba(113, 208, 201, .5);
+  color: #56F4EF;
+  background: #183344;
+  border-color: rgba(86, 244, 239, .85);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, .4), 0 0 18px rgba(86, 244, 239, .3);
 }
 .dark .workflow-step.is-current .workflow-node {
-  box-shadow: 0 0 0 4px rgba(113, 208, 201, .14), 0 13px 27px rgba(0, 0, 0, .3);
+  box-shadow: 0 0 0 4px rgba(86, 244, 239, .3), 0 14px 30px rgba(0, 0, 0, .45);
+}
+.dark .workflow-step:last-child.is-reached .workflow-node,
+.dark .workflow-step.is-success .workflow-node {
+  color: #56F4EF;
+  background: #0f1c30;
+  border-color: #56F4EF;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, .5), 0 0 24px rgba(86, 244, 239, .55);
 }
 .dark .workflow-step:last-child.is-reached .workflow-node,
 .dark .workflow-step.is-success .workflow-node {
