@@ -369,8 +369,8 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
   };
   const labels=lang==='ar'?['بلاغ جديد','تحليل ذكي','إسناد للفني','تم الإصلاح']:['New report','Smart analysis','Technician assigned','Repair confirmed'];
   const desktopRoadmapPath=lang==='ar'
-    ?'M 700 52 L 100 52'
-    :'M 100 52 L 700 52';
+    ?'M 700 130 C 600 130, 600 50, 500 50 C 405 50, 405 135, 310 135 C 210 135, 210 75, 110 75'
+    :'M 110 75 C 210 75, 210 135, 310 135 C 405 135, 405 50, 500 50 C 600 50, 600 130, 700 130';
   const mobileRoadmapPath='M 40 48 L 40 472';
   const tadarukDemoReports = lang === 'ar' ? [
     { label: 'مكيف الفرع يقطر موية فوق الطاولات', value: 'ac-leak', time: '10:42 ص', branch: 'فرع العليا' },
@@ -469,7 +469,7 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
         <h2 className={lang==='ar'?'display-ar':''}>{tr(lang,'من البلاغ إلى الإصلاح','From report to repair')}</h2>
       </motion.div>
       <div className={`roadmap ${roadmapProgress>=0?'has-started':''}`} data-progress={roadmapProgress}>
-        <svg className="roadmap-path roadmap-path-desktop" viewBox="0 0 800 140" preserveAspectRatio="none" aria-hidden="true">
+        <svg className="roadmap-path roadmap-path-desktop" viewBox="0 0 820 200" preserveAspectRatio="none" aria-hidden="true">
           <defs>
             <linearGradient id="roadmap-gradient" x1={lang==='ar'?'1':'0'} y1="0" x2={lang==='ar'?'0':'1'} y2="0">
               <stop offset="0" stopColor={dark?'#6f8ba3':'#1e3263'}/>

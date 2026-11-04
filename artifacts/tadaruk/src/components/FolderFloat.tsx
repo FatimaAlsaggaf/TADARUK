@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import Matter from 'matter-js';
-import { FileText, Clock, CheckCheck, Sparkles } from 'lucide-react';
+import { MessageSquare, CheckCheck, FileText } from 'lucide-react';
 import './FolderFloat.css';
 
 const { Bodies, Body, Composite, Engine } = Matter;
@@ -466,7 +466,7 @@ export default function FolderFloat({
                   pillRefs.current[i] = el;
                 }}
                 type="button"
-                className="folder-float__item tadaruk-report-pill"
+                className="folder-float__item whatsapp-report-pill"
                 tabIndex={open ? 0 : -1}
                 aria-hidden={!open}
                 data-pop={popped === i ? '' : undefined}
@@ -487,15 +487,15 @@ export default function FolderFloat({
                 }}
                 title={item.branch ? `${item.branch}: ${item.label}` : item.label}
               >
-                <span className="folder-float__drift report-pill-inner">
-                  <span className="report-pill-icon" aria-hidden="true">
-                    <Sparkles size={12} strokeWidth={2.4} />
+                <span className="folder-float__drift whatsapp-bubble-inner">
+                  <span className="whatsapp-bubble-icon" aria-hidden="true">
+                    <MessageSquare size={13} strokeWidth={2.4} />
                   </span>
-                  <span className="report-pill-text">{item.label}</span>
+                  <span className="whatsapp-bubble-text">{item.label}</span>
                   {item.time && (
-                    <span className="report-pill-meta">
-                      <Clock size={11} className="report-pill-clock" />
-                      <span className="report-pill-time">{item.time}</span>
+                    <span className="whatsapp-bubble-meta">
+                      <span className="whatsapp-bubble-time">{item.time}</span>
+                      <CheckCheck size={12} className="whatsapp-bubble-check" strokeWidth={2.2} />
                     </span>
                   )}
                 </span>
