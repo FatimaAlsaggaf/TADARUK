@@ -65,7 +65,7 @@ const statusText = (status: string, lang: Lang) => {
   return m[status]?.[lang === 'ar' ? 0 : 1] || status;
 };
 const priorityText = (priority: string, lang: Lang) => {
-  const m: Record<string,[string,string]> = {urgent:['طارئ','Urgent'],high:['عالٍ','High'],medium:['متوسط','Medium'],low:['منخفض','Low']};
+  const m: Record<string,[string,string]> = {urgent:['طارئ','Urgent'],high:['عالية','High'],medium:['متوسطة','Medium'],low:['منخفضة','Low']};
   return m[priority]?.[lang === 'ar' ? 0 : 1] || priority;
 };
 const classificationText = (value: string, lang: Lang) => {
@@ -702,7 +702,7 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
   return <div className={`app-shell ${user.role==='reporter'?'reporter-shell':''}`} dir={lang==='ar'?'rtl':'ltr'}>
     <aside className={`sidebar ${mobile?'sidebar-open':''}`}><div className="side-brand"><Link href="/workspace"><Brand darkMode={dark}/></Link><button className="mobile-close" onClick={()=>setMobile(false)}><X size={18}/></button></div>
       {user.role==='reporter'&&reporterBranches.length>1
-        ?<div className="branch-switch branch-switch-multi" data-testid="field-sidebar-branch"><span className="branch-icon"><Building2 size={16}/></span><span className="branch-switch-copy"><small>{tr(lang,'الموقع الحالي','CURRENT LOCATION')}</small><TadarukSelect value={branchContext?.selectedBranchId||selectedBranch?.id||''} onValueChange={value=>branchContext?.selectBranch(value)} ariaLabel={tr(lang,'اختيار الفرع المصرح به','Choose an authorized branch')} dir={lang==='ar'?'rtl':'ltr'} testId="select-sidebar-branch" options={reporterBranches.map(branch=>({value:branch.id,label:branch.name}))}/></span></div>
+        ?<div className="branch-switch branch-switch-multi" data-testid="field-sidebar-branch"><span className="branch-icon"><Building2 size={16}/></span><span className="branch-switch-copy"><small>{tr(lang,'الموقع الحالي','CURRENT LOCATION')}</small><TadarukSelect value={branchContext?.selectedBranchId||selectedBranch?.id||reporterBranches[0]?.id||''} onValueChange={value=>branchContext?.selectBranch(value)} ariaLabel={tr(lang,'اختيار الفرع المصرح به','Choose an authorized branch')} dir={lang==='ar'?'rtl':'ltr'} placeholder={selectedBranch?.name||tr(lang,'فرع العليا','Olaya Branch')} testId="select-sidebar-branch" options={reporterBranches.map(branch=>({value:branch.id,label:branch.name}))}/></span></div>
         :<div className="branch-switch" data-testid={user.role==='reporter'?'text-sidebar-branch':'branch-indicator'}><span className="branch-icon"><Building2 size={16}/></span><span><small>{tr(lang,'الموقع الحالي','CURRENT LOCATION')}</small><b>{user.role==='reporter'?branchLabel:user.branchName||tr(lang,'جميع الفروع','All branches')}</b></span></div>}
       <nav className="side-nav">{links.map(([path,ar,en,Icon])=>{
         const selected=matchingLink===path;
@@ -1125,7 +1125,7 @@ function WorkspaceRouter({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)
   const {data:session}=useGetDemoSession();const user=session?.user;const [location]=useLocation();
   const branchQuery=useListReporterBranches({query:{enabled:user?.role==='reporter',queryKey:getListReporterBranchesQueryKey()}});
   const reporterBranches=(Array.isArray(branchQuery.data) && branchQuery.data.length > 0) ? branchQuery.data : (FALLBACK_REPORTER_BRANCHES as unknown as ReporterBranch[]);
-  const [selectedBranchId,setSelectedBranchId]=useState('');
+  const [selectedBranchId,setSelectedBranchId]=useState(reporterBranches[0]?.id || '');
   const allowedBranchKey=reporterBranches.map(branch=>branch.id).join('|');
   useEffect(()=>{
     if(!user||user.role!=='reporter'){setSelectedBranchId('');return;}

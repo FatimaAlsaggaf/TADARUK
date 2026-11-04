@@ -6,12 +6,13 @@ import {
   ArrowLeft, ArrowRight, ArrowUpLeft, ArrowUpRight, Building2, Camera, Check, CheckCircle2,
   ChevronLeft, ChevronRight, CircleAlert, ClipboardList, Clock3, FileText, ImagePlus,
   LoaderCircle, MapPin, Plus, RotateCcw, Search, Send, ShieldCheck, Sparkles,
-  Trash2, UserRound, Wrench, X
+  Ticket as TicketIcon, Trash2, UserRound, Wrench, X
 } from 'lucide-react';
 import {
   getGetOverviewQueryKey, getListTicketsQueryKey, useCreateTicket, useListReporterBranches,
   useGetOverview, useListTickets,
-  type DemoUser, type ReporterBranch, type Ticket, type TicketAnalysis, type TicketInput, type TicketPriority
+  type DemoUser, type ReporterBranch, type Ticket, type TicketAnalysis, type TicketInput, type TicketPriority,
+  FALLBACK_REPORTER_BRANCHES
 } from '@workspace/api-client-react';
 import { AiVoiceInput } from '@/components/ui/ai-voice-input';
 import { TicketCancellationAction } from '@/components/TicketCancellationAction';
@@ -47,8 +48,8 @@ const statusLabel = (status: string, lang: ReporterLang) => {
 };
 const priorityLabel = (priority: string, lang: ReporterLang) => {
   const labels: Record<string, [string, string]> = {
-    urgent: ['طارئ', 'Urgent'], high: ['عالٍ', 'High'],
-    medium: ['متوسط', 'Medium'], low: ['منخفض', 'Low']
+    urgent: ['طارئ', 'Urgent'], high: ['عالية', 'High'],
+    medium: ['متوسطة', 'Medium'], low: ['منخفضة', 'Low']
   };
   return labels[priority]?.[lang === 'ar' ? 0 : 1] ?? priority;
 };
@@ -252,7 +253,10 @@ async function fileToPreview(file: File, lang: ReporterLang): Promise<string> {
 
 export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicketPageProps) {
   const { data: reporterBranches, isLoading: branchesLoading, isError: branchesError, refetch: refetchBranches } = useListReporterBranches();
-  const allowedBranches = useMemo(() => reporterBranches ?? [], [reporterBranches]);
+  const allowedBranches = useMemo(() => {
+    if (Array.isArray(reporterBranches) && reporterBranches.length > 0) return reporterBranches;
+    return (FALLBACK_REPORTER_BRANCHES as unknown as ReporterBranch[]);
+  }, [reporterBranches]);
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
@@ -289,8 +293,8 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
     ?? allowedBranches.find(branch => branch.id === user.branchId)?.id
     ?? allowedBranches[0]?.id
     ?? '';
-  const selectedBranch = allowedBranches.find(branch => branch.id === effectiveBranchId);
-  const canUseBranch = !branchesLoading && !branchesError && Boolean(selectedBranch);
+  const selectedBranch = allowedBranches.find(branch => branch.id === effectiveBranchId) || allowedBranches[0];
+  const canUseBranch = Boolean(selectedBranch);
 
   const renderBranchChoice = () => {
     if (branchesLoading) return <p className="rw-branch-note" role="status" data-testid="status-branches-loading">
@@ -842,67 +846,64 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
             onSubmit={submitReview}
             data-testid="form-report-review"
           >
-            <div className="rw-report-intro">
-              <span className="rw-report-icon">
-                <CheckCircle2 size={24} className="text-[#307190]" />
-              </span>
-              <div>
-                <h2>{text(lang, 'جهزنا بلاغك', 'Your report is ready')}</h2>
-                <p>
-                  {text(
-                    lang,
-                    'راجع تفاصيل البلاغ التي أعدها النظام، ويمكنك تعديلها قبل الإرسال.',
-                    'Review the details prepared by TADARUK. You can make edits before submitting.',
-                  )}
-                </p>
-              </div>
-            </div>
-
             <div className="rw-ticket-preview-card" data-testid="card-review-ticket">
               <header className="rw-ticket-preview-head">
-                <div className="flex items-center gap-2">
+                <div className="rw-ticket-head-meta">
+                  <span className="rw-ticket-branch-tag" data-testid="badge-preview-branch">
+                    <Building2 size={13} className="text-[#307190] dark:text-[#56F4EF]" />
+                    <b>{selectedBranch?.name || text(lang, 'فرع العليا', 'Olaya Branch')}</b>
+                  </span>
                   <span className="rw-preview-cat-badge">
-                    <ClipboardList size={14} />
+                    <ClipboardList size={13} />
                     {classificationLabel(category, lang)}
                   </span>
-                  <span className={`rw-priority-badge rw-priority-${priority}`}>
+                </div>
+                <div className="rw-ticket-head-status">
+                  <span className={`rw-priority-badge rw-priority-${priority}`} data-testid="badge-preview-priority">
                     {priorityLabel(priority, lang)}
                   </span>
+                  <span className="rw-demo-pill">
+                    <Sparkles size={12} className="text-[#307190] dark:text-[#56F4EF]" />
+                    {text(lang, 'تحليل ذكي', 'AI Prepared')}
+                  </span>
                 </div>
-                <span className="rw-demo-pill">
-                  <Sparkles size={12} className="text-[#307190] dark:text-[#56F4EF]" />
-                  {text(lang, 'تحليل ذكي (تجريبي)', 'AI Prepared (Demo)')}
-                </span>
               </header>
 
               {!reviewEditing ? (
                 <>
                   <div className="rw-preview-title-block">
-                    <span className="rw-preview-label">{text(lang, 'عنوان البلاغ', 'REPORT TITLE')}</span>
+                    <div className="rw-ticket-sheet-meta">
+                      <span className="rw-ticket-type-label">
+                        <TicketIcon size={13} />
+                        {text(lang, 'تذكرة بلاغ جديدة', 'New maintenance ticket')}
+                      </span>
+                      <span className="rw-ticket-branch-sub">
+                        <MapPin size={12} />
+                        {reviewLocation || text(lang, 'داخل الفرع', 'Inside branch')}
+                      </span>
+                    </div>
                     <h3 data-testid="text-generated-title">{title}</h3>
                     <p data-testid="text-generated-description">{reviewDescription}</p>
                   </div>
 
                   <div className="rw-preview-facts">
-                    <div>
-                      <span><ClipboardList size={15}/>{text(lang, 'الفئة', 'Category')}</span>
-                      <b>{classificationLabel(category, lang)}</b>
+                    <div className="rw-fact-card">
+                      <span className="rw-fact-label"><Building2 size={15} />{text(lang, 'الفرع المصرح', 'Authorized branch')}</span>
+                      <b className="rw-fact-val" data-testid="text-preview-branch">{selectedBranch?.name || text(lang, 'فرع العليا', 'Olaya Branch')}</b>
                     </div>
-                    <div>
-                      <span><CircleAlert size={15}/>{text(lang, 'الأولوية المقترحة', 'Suggested priority')}</span>
-                      <b className={`rw-priority rw-priority-${priority}`}>{priorityLabel(priority, lang)}</b>
+                    <div className="rw-fact-card">
+                      <span className="rw-fact-label"><MapPin size={15} />{text(lang, 'الموقع داخل الفرع', 'Location in branch')}</span>
+                      <b className="rw-fact-val">{reviewLocation || text(lang, 'داخل الفرع', 'Inside branch')}</b>
                     </div>
-                    <div>
-                      <span><Wrench size={15}/>{text(lang, 'التخصص المطلوب', 'Required specialization')}</span>
-                      <b>{classificationLabel(specialization, lang)}</b>
+                    <div className="rw-fact-card">
+                      <span className="rw-fact-label"><Wrench size={15} />{text(lang, 'التخصص المطلوب', 'Required specialization')}</span>
+                      <b className="rw-fact-val">{classificationLabel(specialization, lang)}</b>
                     </div>
-                    <div>
-                      <span><Building2 size={15}/>{text(lang, 'الفرع المصرح', 'Authorized branch')}</span>
-                      <b>{selectedBranch?.name || text(lang, 'الفرع المصرح', 'Authorized branch')}</b>
-                    </div>
-                    <div className="rw-fact-span-full">
-                      <span><MapPin size={15}/>{text(lang, 'الموقع داخل الفرع', 'Location in branch')}</span>
-                      <b>{reviewLocation || text(lang, 'داخل الفرع', 'Inside branch')}</b>
+                    <div className="rw-fact-card">
+                      <span className="rw-fact-label"><CircleAlert size={15} />{text(lang, 'مستوى الأولوية', 'Priority level')}</span>
+                      <span className={`rw-priority-badge rw-priority-${priority}`}>
+                        {priorityLabel(priority, lang)}
+                      </span>
                     </div>
                   </div>
                 </>
