@@ -1580,9 +1580,9 @@
 
 .register-panel .ticket-row,
 .register-header {
-  grid-template-columns: 78px minmax(170px, 1.4fr) minmax(90px, auto) minmax(165px, auto) minmax(85px, auto) 20px !important;
+  grid-template-columns: 78px minmax(180px, 1.4fr) minmax(90px, auto) minmax(210px, auto) minmax(85px, auto) 20px !important;
   gap: 14px;
-  min-width: 720px;
+  min-width: 780px;
 }
 
 .ticket-row {
@@ -1858,9 +1858,9 @@
 
   .register-panel .ticket-row,
   .register-header {
-    grid-template-columns: 74px minmax(150px, 1.4fr) 90px minmax(165px, auto) 72px 16px !important;
+    grid-template-columns: 74px minmax(160px, 1.4fr) 90px minmax(205px, auto) 80px 16px !important;
     gap: 12px;
-    min-width: 710px;
+    min-width: 760px;
   }
 }
 
@@ -4416,8 +4416,8 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
 
 .dashboard-columns {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 285px;
-  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) 270px;
+  gap: 18px;
   align-items: start;
 }
 
@@ -4929,9 +4929,9 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
 .activity-panel,
 .personal-tickets {
   min-width: 0 !important;
-  overflow: hidden !important;
+  overflow: visible !important;
   position: relative;
-  padding: 22px 24px !important;
+  padding: 20px 22px !important;
   box-sizing: border-box;
 }
 
@@ -4940,20 +4940,19 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   width: 100% !important;
   min-width: 0 !important;
   max-width: 100% !important;
-  overflow: hidden !important;
 }
 
 .activity-panel .ticket-row,
 .personal-tickets .ticket-row {
   display: grid !important;
-  grid-template-columns: 74px minmax(130px, 1fr) auto auto 78px 18px !important;
-  gap: 10px 14px !important;
+  grid-template-columns: 60px minmax(130px, 1fr) auto auto minmax(54px, max-content) 16px !important;
+  gap: 8px 12px !important;
   align-items: center !important;
   min-width: 0 !important;
   width: 100% !important;
   max-width: 100% !important;
   box-sizing: border-box !important;
-  padding: 12px 12px !important;
+  padding: 12px 14px !important;
   border-radius: 9px !important;
   border-bottom: 1px solid hsl(var(--border));
   min-height: 64px !important;
@@ -4975,20 +4974,27 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   transition: transform 0.18s ease, color 0.18s ease;
 }
 
-.activity-panel .ticket-row:hover .row-arrow,
-.personal-tickets .ticket-row:hover .row-arrow {
+[dir="rtl"] .activity-panel .ticket-row:hover .row-arrow,
+[dir="rtl"] .personal-tickets .ticket-row:hover .row-arrow {
   color: #1f3363;
-  transform: translateX(-3px);
+  transform: translateX(-2px);
 }
 
 [dir="ltr"] .activity-panel .ticket-row:hover .row-arrow,
 [dir="ltr"] .personal-tickets .ticket-row:hover .row-arrow {
-  transform: translateX(3px);
+  color: #1f3363;
+  transform: translateX(2px);
 }
 
-.dark .activity-panel .ticket-row:hover .row-arrow,
-.dark .personal-tickets .ticket-row:hover .row-arrow {
+.dark [dir="rtl"] .activity-panel .ticket-row:hover .row-arrow,
+.dark [dir="rtl"] .personal-tickets .ticket-row:hover .row-arrow,
+.dark [dir="ltr"] .activity-panel .ticket-row:hover .row-arrow,
+.dark [dir="ltr"] .personal-tickets .ticket-row:hover .row-arrow {
   color: #56f4ef;
+}
+
+.ticket-date {
+  white-space: nowrap;
 }
 
 .activity-panel .ticket-summary,

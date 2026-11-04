@@ -517,7 +517,7 @@ export default function Stepper({
         '--stepper-width': size(width),
         ...accentVars,
         ...style,
-      } as CSSProperties}
+      } as unknown as CSSProperties}
     >
       <div className={`stepper__header stepper__header--${kind} ${stepContainerClassName}`.trim()}>{header()}</div>
       <div className="stepper__body">
