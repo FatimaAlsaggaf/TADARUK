@@ -18,28 +18,10 @@ const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
 let _baseUrl: string | null = null;
 let _authTokenGetter: AuthTokenGetter | null = null;
 
-/**
- * Set a base URL that is prepended to every relative request URL
- * (i.e. paths that start with `/`).
- *
- * Useful for Expo bundles that need to call a remote API server.
- * Pass `null` to clear the base URL.
- */
 export function setBaseUrl(url: string | null): void {
   _baseUrl = url ? url.replace(/\/+$/, "") : null;
 }
 
-/**
- * Register a getter that supplies a bearer auth token.  Before every fetch
- * the getter is invoked; when it returns a non-null string, an
- * `Authorization: Bearer <token>` header is attached to the request.
- *
- * Useful for Expo bundles making token-gated API calls.
- * Pass `null` to clear the getter.
- *
- * NOTE: This function should never be used in web applications where session
- * token cookies are automatically associated with API calls by the browser.
- */
 export function setAuthTokenGetter(getter: AuthTokenGetter | null): void {
   _authTokenGetter = getter;
 }
@@ -54,8 +36,6 @@ function resolveMethod(input: RequestInfo | URL, explicitMethod?: string): strin
   return "GET";
 }
 
-// Use loose check for URL — some runtimes (e.g. React Native) polyfill URL
-// differently, so `instanceof URL` can fail.
 function isUrl(input: RequestInfo | URL): input is URL {
   return typeof URL !== "undefined" && input instanceof URL;
 }
@@ -63,7 +43,6 @@ function isUrl(input: RequestInfo | URL): input is URL {
 function applyBaseUrl(input: RequestInfo | URL): RequestInfo | URL {
   if (!_baseUrl) return input;
   const url = resolveUrl(input);
-  // Only prepend to relative paths (starting with /)
   if (!url.startsWith("/")) return input;
 
   const absolute = `${_baseUrl}${url}`;
@@ -111,12 +90,6 @@ function isTextMediaType(mediaType: string | null): boolean {
   );
 }
 
-// Use strict equality: in browsers, `response.body` is `null` when the
-// response genuinely has no content.  In React Native, `response.body` is
-// always `undefined` because the ReadableStream API is not implemented —
-// even when the response carries a full payload readable via `.text()` or
-// `.json()`.  Loose equality (`== null`) matches both `null` and `undefined`,
-// which causes every React Native response to be treated as empty.
 function hasNoBody(response: Response, method: string): boolean {
   if (method === "HEAD") return true;
   if (NO_BODY_STATUS.has(response.status)) return true;
@@ -258,16 +231,14 @@ async function parseErrorBody(response: Response, method: string): Promise<unkno
 
   const mediaType = getMediaType(response.headers);
 
-  // Fall back to text when blob() is unavailable (e.g. some React Native builds).
   if (mediaType && !isJsonMediaType(mediaType) && !isTextMediaType(mediaType)) {
     return typeof response.blob === "function" ? response.blob() : response.text();
   }
 
   const raw = await response.text();
   const normalized = stripBom(raw);
-  const trimmed = normalized.trim();
 
-  if (trimmed === "") {
+  if (normalized.trim() === "") {
     return null;
   }
 
@@ -349,8 +320,6 @@ export async function customFetch<T = unknown>(
     headers.set("accept", DEFAULT_JSON_ACCEPT);
   }
 
-  // Attach bearer token when an auth getter is configured and no
-  // Authorization header has been explicitly provided.
   if (_authTokenGetter && !headers.has("authorization")) {
     const token = await _authTokenGetter();
     if (token) {
@@ -360,42 +329,57 @@ export async function customFetch<T = unknown>(
 
   const requestInfo = { method, url: resolveUrl(input) };
 
-  try {
-    const response = await fetch(input, { ...init, method, headers });
+  // Intercept all /api/ requests for SPA / Vercel static environments
+  if (requestInfo.url.includes("/api/")) {
+    try {
+      const response = await fetch(input, { ...init, method, headers });
+      const contentType = (response.headers.get("content-type") || "").toLowerCase();
 
-    if (response.ok) {
-      const mediaType = getMediaType(response.headers);
-      if (responseType === "json" && mediaType && isTextMediaType(mediaType)) {
+      // If the response is HTML, it means Vercel or Vite SPA fallback served index.html instead of a real API endpoint!
+      if (contentType.includes("text/html")) {
+        const fallback = tryHandleClientFallback<T>(requestInfo.url, method, init.body);
+        if (fallback !== undefined) return fallback;
+      }
+
+      if (response.ok) {
         const textContent = await response.text();
-        if (!looksLikeJson(textContent)) {
-          const fallback = tryHandleClientFallback<T>(requestInfo.url, method, init.body);
-          if (fallback !== undefined) return fallback;
-        } else {
+        if (looksLikeJson(textContent)) {
           try {
             return JSON.parse(stripBom(textContent)) as T;
           } catch {
-            const fallback = tryHandleClientFallback<T>(requestInfo.url, method, init.body);
-            if (fallback !== undefined) return fallback;
+            // fallthrough
           }
         }
+        // If not JSON, try fallback
+        const fallback = tryHandleClientFallback<T>(requestInfo.url, method, init.body);
+        if (fallback !== undefined) return fallback;
+        return textContent as unknown as T;
       }
-      return (await parseSuccessBody(response, responseType, requestInfo)) as T;
-    }
 
-    const fallback = tryHandleClientFallback<T>(requestInfo.url, method, init.body);
-    if (fallback !== undefined) {
-      return fallback;
-    }
+      // If !response.ok (404, 502, etc.), try fallback
+      const fallback = tryHandleClientFallback<T>(requestInfo.url, method, init.body);
+      if (fallback !== undefined) {
+        return fallback;
+      }
 
+      const errorData = await parseErrorBody(response, method);
+      throw new ApiError(response, errorData, requestInfo);
+    } catch (error) {
+      const fallback = tryHandleClientFallback<T>(requestInfo.url, method, init.body);
+      if (fallback !== undefined) {
+        return fallback;
+      }
+      throw error;
+    }
+  }
+
+  // Non-API fetch
+  const response = await fetch(input, { ...init, method, headers });
+  if (!response.ok) {
     const errorData = await parseErrorBody(response, method);
     throw new ApiError(response, errorData, requestInfo);
-  } catch (error) {
-    const fallback = tryHandleClientFallback<T>(requestInfo.url, method, init.body);
-    if (fallback !== undefined) {
-      return fallback;
-    }
-    throw error;
   }
+  return (await parseSuccessBody(response, responseType, requestInfo)) as T;
 }
 
 // ---------------------------------------------------------------------------
@@ -684,29 +668,47 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
     if (q) searchParams = new URLSearchParams(q);
   }
 
-  // Ensure path belongs to /api/
   if (!pathname.includes("/api/")) return undefined;
   const apiPath = pathname.substring(pathname.indexOf("/api/"));
 
-  // 1. Health check
-  if (apiPath === "/api/health") {
+  // 1. Health check (/api/healthz or /api/health)
+  if (apiPath === "/api/health" || apiPath === "/api/healthz") {
     return { status: "ok" } as unknown as T;
   }
 
-  // 2. Demo users list
+  // 2. Demo users list (/api/demo/users)
   if (apiPath === "/api/demo/users") {
     return FALLBACK_DEMO_USERS as unknown as T;
   }
 
-  // 3. Demo session
-  if (apiPath === "/api/demo/session") {
+  // 3. Demo session (/api/session or /api/demo/session)
+  if (apiPath === "/api/session" || apiPath === "/api/demo/session") {
     if (method === "GET") {
       const user = getActiveUser();
       return { user } as unknown as T;
     }
+    if (method === "PUT" || method === "POST") {
+      try {
+        const parsedBody = typeof body === "string" ? JSON.parse(body) : body;
+        const targetId = parsedBody?.userId;
+        const found = FALLBACK_DEMO_USERS.find(u => u.id === targetId) || FALLBACK_DEMO_USERS[0];
+        window.localStorage.setItem("tadaruk-demo-session-user", JSON.stringify(found));
+        return { user: found } as unknown as T;
+      } catch {
+        return { user: FALLBACK_DEMO_USERS[0] } as unknown as T;
+      }
+    }
+    if (method === "DELETE") {
+      try {
+        window.localStorage.removeItem("tadaruk-demo-session-user");
+      } catch {
+        // ignore
+      }
+      return { user: null } as unknown as T;
+    }
   }
 
-  // 4. Select demo account
+  // 4. Select demo account (/api/demo/session/select)
   if (apiPath === "/api/demo/session/select") {
     try {
       const parsedBody = typeof body === "string" ? JSON.parse(body) : body;
@@ -719,7 +721,7 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
     }
   }
 
-  // 5. Clear demo session
+  // 5. Clear demo session (/api/demo/session/clear)
   if (apiPath === "/api/demo/session/clear") {
     try {
       window.localStorage.removeItem("tadaruk-demo-session-user");
@@ -729,7 +731,7 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
     return { user: null } as unknown as T;
   }
 
-  // 6. Overview
+  // 6. Overview (/api/overview)
   if (apiPath === "/api/overview") {
     const tickets = getStoredTickets();
     const openTickets = tickets.filter(t => t.status !== "closed" && t.status !== "cancelled").length;
@@ -748,7 +750,7 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
     } as unknown as T;
   }
 
-  // 7. Reporter branches
+  // 7. Reporter branches (/api/reporter/branches)
   if (apiPath === "/api/reporter/branches") {
     return [
       { id: "branch-olaya", name: "فرع العليا", city: "الرياض" },
@@ -756,7 +758,7 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
     ] as unknown as T;
   }
 
-  // 8. Reporter access
+  // 8. Reporter access (/api/reporter/access)
   if (apiPath === "/api/reporter/access") {
     return [
       { id: "access-1", reporterId: "demo-reporter", branchId: "branch-olaya", active: true },
@@ -764,22 +766,22 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
     ] as unknown as T;
   }
 
-  // 9. Branches
+  // 9. Branches (/api/branches)
   if (apiPath === "/api/branches") {
     return FALLBACK_BRANCHES as unknown as T;
   }
 
-  // 10. Technicians
+  // 10. Technicians (/api/technicians)
   if (apiPath === "/api/technicians") {
     return FALLBACK_TECHNICIANS as unknown as T;
   }
 
-  // 11. Knowledge
+  // 11. Knowledge (/api/knowledge)
   if (apiPath === "/api/knowledge") {
     return FALLBACK_KNOWLEDGE as unknown as T;
   }
 
-  // 12. Tickets
+  // 12. Tickets (/api/tickets)
   if (apiPath === "/api/tickets") {
     if (method === "GET") {
       const tickets = getStoredTickets();

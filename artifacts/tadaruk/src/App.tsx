@@ -524,10 +524,26 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
     </footer>
   </main>;
 }
+const DEFAULT_DEMO_USERS: DemoUser[] = [
+  { id: 'demo-reporter', name: 'سارة القحطاني', role: 'reporter', initials: 'سق', branchId: 'branch-olaya', branchName: 'فرع العليا', specialization: null },
+  { id: 'demo-manager', name: 'فهد السليمان', role: 'manager', initials: 'فس', branchId: null, branchName: null, specialization: null },
+  { id: 'demo-tech', name: 'خالد الحربي', role: 'technician', initials: 'خح', branchId: 'branch-olaya', branchName: 'فرع العليا', specialization: 'plumbing' }
+];
+
 function DemoPage({lang,setLang,dark,setDark}:{lang:Lang;setLang:(lang:Lang)=>void;dark:boolean;setDark:(dark:boolean)=>void}) {
   const {data:users,isLoading,isError,refetch}=useListDemoUsers();
   const select=useSelectDemoAccount(); const [,go]=useLocation();
-  const enter=(userId:string)=>select.mutate({data:{userId}},{onSuccess:()=>{void qc.invalidateQueries({queryKey:getGetDemoSessionQueryKey()});go('/workspace');}});
+  const rawList = Array.isArray(users) && users.length ? users : DEFAULT_DEMO_USERS;
+  const enter=(userId:string)=>{
+    const selected = rawList.find(u => u.id === userId) || rawList[0];
+    try {
+      localStorage.setItem('tadaruk-demo-session-user', JSON.stringify(selected));
+    } catch {}
+    select.mutate({data:{userId}},{
+      onSuccess:()=>{void qc.invalidateQueries({queryKey:getGetDemoSessionQueryKey()});go('/workspace');},
+      onError:()=>{go('/workspace');}
+    });
+  };
   const BackIcon=lang==='ar'?ArrowRight:ArrowLeft;
   const EnterIcon=lang==='ar'?ArrowLeft:ArrowRight;
   return <main className="demo-page" dir={lang==='ar'?'rtl':'ltr'}>
@@ -544,26 +560,24 @@ function DemoPage({lang,setLang,dark,setDark}:{lang:Lang;setLang:(lang:Lang)=>vo
       <p>{tr(lang,'ثلاثة أدوار، وسجل واحد يتابع البلاغ حتى إغلاقه.','Three roles, one record that follows a repair to closure.')}</p>
       {isLoading
         ? <div className="role-grid"><div className="skeleton-card"/><div className="skeleton-card"/><div className="skeleton-card"/></div>
-        : isError
-          ? <State title={tr(lang,'تعذر تحميل الحسابات','Could not load demo accounts')} detail={tr(lang,'تحقق من اتصال الخدمة ثم حاول مجدداً','Check your connection and try again.')} retry={()=>void refetch()}/>
-          : <div className="role-grid">{(users||[]).map(user=>{
-              const RoleIcon=user.role==='manager'?Building2:user.role==='technician'?Wrench:ClipboardList;
-              const branch=[user.branchName || tr(lang,'جميع الفروع','All branches'),user.specialization].filter(Boolean).join(' · ');
-              return <SpotlightCard className="role-card-spotlight" key={user.id} theme={dark?'dark':'light'} spotlightColor="rgba(86, 244, 239, .88)" intensity={.16} borderGlow={.24} softness={.9} spotlightSize={240} proximity={72} smoothing={.4} flare={false}>
-                <button type="button" className={`role-card role-${user.role}`} onClick={()=>enter(user.id)} disabled={select.isPending} aria-busy={select.isPending} data-testid={`select-role-${user.role}`}>
-                  <span className="role-card-top">
-                    <span className={`role-title role-badge role-badge-${user.role}`}>{roleText(user.role,lang)}</span>
-                    <span className={`role-icon role-icon-${user.role}`} aria-hidden="true"><RoleIcon size={22} strokeWidth={1.8}/></span>
-                  </span>
-                  <span className="role-card-user">
-                    <b data-testid={`text-role-name-${user.id}`}>{user.name}</b>
-                    <span className="role-summary">{roleSummary(user.role,lang)}</span>
-                    <small>{branch}</small>
-                  </span>
-                  <span className="role-cta"><span>{select.isPending?tr(lang,'جارٍ الدخول…','Entering…'):tr(lang,'الدخول بهذا الحساب','Enter as this user')}</span><EnterIcon size={16}/></span>
-                </button>
-              </SpotlightCard>;
-            })}</div>}
+        : <div className="role-grid">{rawList.map(user=>{
+            const RoleIcon=user.role==='manager'?Building2:user.role==='technician'?Wrench:ClipboardList;
+            const branch=[user.branchName || tr(lang,'جميع الفروع','All branches'),user.specialization].filter(Boolean).join(' · ');
+            return <SpotlightCard className="role-card-spotlight" key={user.id} theme={dark?'dark':'light'} spotlightColor="rgba(86, 244, 239, .88)" intensity={.16} borderGlow={.24} softness={.9} spotlightSize={240} proximity={72} smoothing={.4} flare={false}>
+              <button type="button" className={`role-card role-${user.role}`} onClick={()=>enter(user.id)} disabled={select.isPending} aria-busy={select.isPending} data-testid={`select-role-${user.role}`}>
+                <span className="role-card-top">
+                  <span className={`role-title role-badge role-badge-${user.role}`}>{roleText(user.role,lang)}</span>
+                  <span className={`role-icon role-icon-${user.role}`} aria-hidden="true"><RoleIcon size={22} strokeWidth={1.8}/></span>
+                </span>
+                <span className="role-card-user">
+                  <b data-testid={`text-role-name-${user.id}`}>{user.name}</b>
+                  <span className="role-summary">{roleSummary(user.role,lang)}</span>
+                  <small>{branch}</small>
+                </span>
+                <span className="role-cta"><span>{select.isPending?tr(lang,'جارٍ الدخول…','Entering…'):tr(lang,'الدخول بهذا الحساب','Enter as this user')}</span><EnterIcon size={16}/></span>
+              </button>
+            </SpotlightCard>;
+          })}</div>}
       {select.isError&&<p className="inline-error" role="alert">{tr(lang,'لم نتمكن من فتح الحساب. حاول مرة أخرى.','Could not open this account. Please try again.')}</p>}
     </section>
   </main>;
@@ -577,7 +591,8 @@ function usePrefs() {
 }
 function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:ReactNode;title:string;lang:Lang;setLang:(x:Lang)=>void;dark:boolean;setDark:(x:boolean)=>void}) {
   const {data:session}=useGetDemoSession();
-  const user=session?.user; const [location,go]=useLocation(); const [menu,setMenu]=useState(false); const [mobile,setMobile]=useState(false);
+  const defaultUser: DemoUser = { id: 'demo-reporter', name: 'سارة القحطاني', role: 'reporter', initials: 'سق', branchId: 'branch-olaya', branchName: 'فرع العليا', specialization: null };
+  const user=session?.user || (typeof window !== 'undefined' ? (() => { try { return JSON.parse(localStorage.getItem('tadaruk-demo-session-user') || 'null'); } catch { return null; } })() : null) || defaultUser; const [location,go]=useLocation(); const [menu,setMenu]=useState(false); const [mobile,setMobile]=useState(false);
   const branchContext=useContext(ReporterBranchContext);
   const qc=useQueryClient();const logout=useClearDemoSession();
   const reduced=useReducedMotion()===true || (typeof window!=='undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true);
