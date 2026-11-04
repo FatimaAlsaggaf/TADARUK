@@ -336,17 +336,6 @@ export function TechnicianTicketDetail({
     ticket.branchGoogleMapsUrl
   );
 
-  // Minimal activity events
-  const historyEvents = ticket.history || [
-    {
-      id: 'default-1',
-      label: tr(lang, 'تم تسجيل البلاغ', 'Report submitted'),
-      actorName: ticket.reporterName,
-      createdAt: ticket.createdAt,
-      note: tr(lang, 'بلاغ جديد تم توجيهه إلى الفرع', 'New ticket created and routed'),
-    },
-  ];
-
   return (
     <div className="tech-detail-page">
       {/* 1. Top Navigation & Context */}
@@ -746,70 +735,43 @@ export function TechnicianTicketDetail({
         )}
       </section>
 
-      {/* 4. Bottom Grid: Priority 3 & 4 (Description & Photo) and Priority 5 (Activity Log) */}
-      <div className="tech-info-grid">
-        {/* Priority 3 & 4: Compact Issue Description + Small Preview of Reported Photo */}
-        <section className="tech-info-card">
-          <div className="tech-info-header">
-            <ClipboardList size={16} className="text-[#307190]" />
-            <h3>{tr(lang, 'وصف المشكلة في البلاغ', 'Reported Issue Description')}</h3>
-          </div>
+      {/* Issue Description & Small Preview of Reported Photo */}
+      <section className="tech-info-card">
+        <div className="tech-info-header">
+          <ClipboardList size={16} className="text-[#307190]" />
+          <h3>{tr(lang, 'وصف المشكلة في البلاغ', 'Reported Issue Description')}</h3>
+        </div>
 
-          <p className="tech-issue-description">{ticket.description}</p>
+        <p className="tech-issue-description">{ticket.description}</p>
 
-          <div className="tech-reported-photo-block">
-            <span className="tech-sublabel">{tr(lang, 'صورة العطل المرفقة:', 'Attached issue photo:')}</span>
-            {reportedPhotoUrl ? (
-              <div className="tech-reported-photo-wrap">
-                <button
-                  type="button"
-                  className="tech-photo-thumb-trigger"
-                  onClick={() => setExpandedPhoto(reportedPhotoUrl)}
-                  aria-label={tr(lang, 'تكبير صورة المشكلة', 'Expand issue photo')}
-                >
-                  <img
-                    src={reportedPhotoUrl}
-                    alt={tr(lang, 'صورة المشكلة المرفقة', 'Attached issue photo')}
-                    className="tech-photo-thumb-img"
-                  />
-                  <span className="tech-photo-zoom-overlay">
-                    <Maximize2 size={16} />
-                    <span>{tr(lang, 'اضغط للتكبير', 'Click to expand')}</span>
-                  </span>
-                </button>
-              </div>
-            ) : (
-              <p className="tech-no-photo-note">
-                {tr(lang, 'لم يرفق المبلّغ صورة مع هذا البلاغ.', 'No photo was attached to this report.')}
-              </p>
-            )}
-          </div>
-        </section>
-
-        {/* Priority 5: Minimal Activity Timeline */}
-        <section className="tech-info-card">
-          <div className="tech-info-header">
-            <Clock3 size={16} className="text-[#307190]" />
-            <h3>{tr(lang, 'سجل متابعة البلاغ', 'Ticket Activity')}</h3>
-          </div>
-
-          <div className="tech-timeline">
-            {historyEvents.map((ev: any, idx: number) => (
-              <div className="tech-timeline-step" key={ev.id || idx}>
-                <div className="tech-timeline-marker" />
-                <div className="tech-timeline-body">
-                  <div className="tech-timeline-top">
-                    <b className="tech-timeline-label">{ev.label}</b>
-                    <time className="tech-timeline-time">{dateText(ev.createdAt, lang)}</time>
-                  </div>
-                  <small className="tech-timeline-actor">{ev.actorName}</small>
-                  {ev.note && <p className="tech-timeline-note">{ev.note}</p>}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
+        <div className="tech-reported-photo-block">
+          <span className="tech-sublabel">{tr(lang, 'صورة العطل المرفقة:', 'Attached issue photo:')}</span>
+          {reportedPhotoUrl ? (
+            <div className="tech-reported-photo-wrap">
+              <button
+                type="button"
+                className="tech-photo-thumb-trigger"
+                onClick={() => setExpandedPhoto(reportedPhotoUrl)}
+                aria-label={tr(lang, 'تكبير صورة المشكلة', 'Expand issue photo')}
+              >
+                <img
+                  src={reportedPhotoUrl}
+                  alt={tr(lang, 'صورة المشكلة المرفقة', 'Attached issue photo')}
+                  className="tech-photo-thumb-img"
+                />
+                <span className="tech-photo-zoom-overlay">
+                  <Maximize2 size={16} />
+                  <span>{tr(lang, 'اضغط للتكبير', 'Click to expand')}</span>
+                </span>
+              </button>
+            </div>
+          ) : (
+            <p className="tech-no-photo-note">
+              {tr(lang, 'لم يرفق المبلّغ صورة مع هذا البلاغ.', 'No photo was attached to this report.')}
+            </p>
+          )}
+        </div>
+      </section>
 
       {/* Lightbox / Modal for High-Resolution Photo Expansion */}
       {expandedPhoto && (
@@ -839,3 +801,4 @@ export function TechnicianTicketDetail({
     </div>
   );
 }
+
