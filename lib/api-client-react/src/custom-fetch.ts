@@ -386,7 +386,7 @@ export async function customFetch<T = unknown>(
 // In-Browser Demo Fallback for Static Hostings (e.g. Vercel)
 // ---------------------------------------------------------------------------
 
-const FALLBACK_DEMO_USERS = [
+export const FALLBACK_DEMO_USERS = [
   {
     id: "demo-reporter",
     name: "سارة القحطاني",
@@ -422,12 +422,12 @@ const FALLBACK_DEMO_USERS = [
   },
 ];
 
-const FALLBACK_BRANCHES = [
+export const FALLBACK_BRANCHES = [
   {
     id: "branch-olaya",
     name: "فرع العليا",
     city: "الرياض",
-    address: "شارع التحلية",
+    address: "طريق العروبة، تقاطع الملك فهد، حي العليا",
     googleMapsUrl: "https://maps.google.com/?q=24.7003,46.6806",
     latitude: 24.7003,
     longitude: 46.6806,
@@ -438,7 +438,7 @@ const FALLBACK_BRANCHES = [
     id: "branch-nakheel",
     name: "فرع النخيل",
     city: "الرياض",
-    address: "طريق الملك فهد",
+    address: "طريق الإمام سعود بن عبد العزيز، حي النخيل",
     googleMapsUrl: "https://maps.google.com/?q=24.7500,46.6400",
     latitude: 24.7500,
     longitude: 46.6400,
@@ -446,19 +446,30 @@ const FALLBACK_BRANCHES = [
     openTickets: 1,
   },
   {
-    id: "branch-jeddah",
+    id: "branch-rawdah",
     name: "فرع الروضة",
     city: "جدة",
-    address: "شارع الأمير سلطان",
+    address: "شارع الأمير سلطان، حي الروضة",
     googleMapsUrl: "https://maps.google.com/?q=21.5700,39.1600",
     latitude: 21.5700,
     longitude: 39.1600,
+    active: true,
+    openTickets: 1,
+  },
+  {
+    id: "branch-corniche",
+    name: "فرع الكورنيش",
+    city: "الخبر",
+    address: "طريق الملك تركي، الكورنيش الشمالي",
+    googleMapsUrl: "https://maps.google.com/?q=26.3100,50.2200",
+    latitude: 26.3100,
+    longitude: 50.2200,
     active: true,
     openTickets: 0,
   },
 ];
 
-const FALLBACK_TECHNICIANS = [
+export const FALLBACK_TECHNICIANS = [
   {
     id: "demo-tech",
     name: "خالد الحربي",
@@ -466,10 +477,10 @@ const FALLBACK_TECHNICIANS = [
     branchId: "branch-olaya",
     branchName: "فرع العليا",
     specialization: "plumbing",
+    phone: "0551234567",
     available: true,
     active: true,
-    activeTickets: 1,
-    resolvedThisMonth: 14,
+    workload: 1,
   },
   {
     id: "tech-cooling",
@@ -478,156 +489,267 @@ const FALLBACK_TECHNICIANS = [
     branchId: "branch-olaya",
     branchName: "فرع العليا",
     specialization: "cooling",
+    phone: "0559876543",
     available: true,
     active: true,
-    activeTickets: 2,
-    resolvedThisMonth: 9,
+    workload: 2,
   },
   {
     id: "tech-electrical",
     name: "هند الشهري",
     initials: "هش",
-    branchId: "branch-olaya",
-    branchName: "فرع العليا",
+    branchId: "branch-nakheel",
+    branchName: "فرع النخيل",
     specialization: "electrical",
+    phone: "0502233445",
     available: true,
     active: true,
-    activeTickets: 0,
-    resolvedThisMonth: 12,
+    workload: 0,
+  },
+  {
+    id: "tech-general",
+    name: "سعد الغامدي",
+    initials: "سغ",
+    branchId: "branch-rawdah",
+    branchName: "فرع الروضة",
+    specialization: "general",
+    phone: "0563344556",
+    available: false,
+    active: true,
+    workload: 1,
   },
 ];
 
-const FALLBACK_KNOWLEDGE = [
+export const FALLBACK_KNOWLEDGE = [
   {
     id: "kb-1",
-    title: "خطوات التعامل مع تسرب المياه العاجل",
+    ticketId: "ticket-demo-2401",
+    ticketNumber: "TDR-2401",
+    title: "إصلاح تسرب مياه تحت حوض التحضير",
     category: "plumbing",
-    summary: "إجراءات إيقاف المحبس الرئيسي وعزل المنطقة قبل وصول الفني المختص.",
-    content: "١. تحديد موقع المحبس الفرعي وإغلاقه فوراً.\n٢. وضع علامات تحذيرية لمنع الانزلاق.\n٣. فصل التيار الكهربائي عن الأجهزة القريبة.\n٤. التواصل مع فني السباكة المعتمد للفرع.",
-    updatedAt: new Date().toISOString(),
+    branchId: "branch-olaya",
+    branchName: "فرع العليا",
+    technicianName: "خالد الحربي",
+    cause: "اهتراء الحشوة المطاطية لصمام الصرف مع ضغط الماء الزائد.",
+    resolution: "استبدال الوصلة المطاطية بأخرى مقاومة للحرارة وضبط ضغط الصمام واختبار التدفق.",
+    createdAt: "2026-11-01T10:30:00.000Z",
   },
   {
     id: "kb-2",
-    title: "إعادة ضبط قواطع الكهرباء الذكية",
-    category: "electrical",
-    summary: "دليل التعامل مع انقطاع التيار الجزئي في صالة الفرع.",
-    content: "١. التأكد من عدم وجود حمل زائد على الدائرة.\n٢. فحص لوحة التوزيع الرئيسية.\n٣. إعادة رفع القاطع بحذر مرة واحدة فقط.\n٤. إذا تكرر الفصل، استدعاء فني الكهرباء فوراً.",
-    updatedAt: new Date().toISOString(),
+    ticketId: "ticket-demo-2402",
+    ticketNumber: "TDR-2402",
+    title: "معالجة توقف التبريد في غرفة الحفظ الرئيسية",
+    category: "cooling",
+    branchId: "branch-nakheel",
+    branchName: "فرع النخيل",
+    technicianName: "مازن القحطاني",
+    cause: "تراكم الغبار على المكثف الخارجي وانخفاض كفاءة سائل التبريد.",
+    resolution: "تنظيف زعانف المكثف بالضغط الهوائي وإعادة شحن غاز R404A وضبط الثرموستات عند ٤ درجات مئوية.",
+    createdAt: "2026-10-29T14:15:00.000Z",
   },
   {
     id: "kb-3",
-    title: "فحص فلاتر التكييف المركزي دورياً",
-    category: "cooling",
-    summary: "جدول الصيانة الوقائية لفلاتر الهواء في صالات الاستقبال.",
-    content: "١. تنظيف الفلاتر أسبوعياً لضمان كفاءة التبريد.\n٢. التحقق من ثرموستات الغرفة وضبطه على ٢٣ درجة مئوية.\n٣. الإبلاغ الفوري عند سماع أصوات اهتزاز غير طبيعية.",
-    updatedAt: new Date().toISOString(),
+    ticketId: "ticket-demo-2403",
+    ticketNumber: "TDR-2403",
+    title: "إصلاح انقطاع الإنارة وتذبذب الجهد في صالة الاستقبال",
+    category: "electrical",
+    branchId: "branch-olaya",
+    branchName: "فرع العليا",
+    technicianName: "هند الشهري",
+    cause: "ارتخاء في القاطع الفرعي المغذي للوحة التوزيع الثانوية.",
+    resolution: "إعادة شد التوصيلات واستبدال القاطع التالف بقاطع شنايدر ٢٠ أمبير وموازنة الأحمال الكهربائية.",
+    createdAt: "2026-10-26T09:00:00.000Z",
+  },
+  {
+    id: "kb-4",
+    ticketId: "ticket-demo-2404",
+    ticketNumber: "TDR-2404",
+    title: "إصلاح باب الطوارئ الذاتي الإغلاق",
+    category: "general",
+    branchId: "branch-rawdah",
+    branchName: "فرع الروضة",
+    technicianName: "سعد الغامدي",
+    cause: "تراجع ضغط ذراع الهيدروليك وتآكل المفصلة العلوية.",
+    resolution: "تزييت المفصلات وضبط سرعة الإغلاق في ذراع الهيدروليك لضمان الإغلاق الآمن التلقائي.",
+    createdAt: "2026-10-20T16:45:00.000Z",
   },
 ];
 
-const FALLBACK_INITIAL_TICKETS = [
+export const FALLBACK_REPORTER_ACCESS = [
+  {
+    id: "demo-reporter",
+    name: "سارة القحطاني",
+    branchIds: ["branch-olaya", "branch-nakheel", "branch-rawdah"],
+  },
+  {
+    id: "rep-2",
+    name: "عبدالرحمن الدوسري",
+    branchIds: ["branch-olaya"],
+  },
+  {
+    id: "rep-3",
+    name: "نورة العتيبي",
+    branchIds: ["branch-corniche"],
+  },
+];
+
+export const FALLBACK_REPORTER_BRANCHES = [
+  { id: "branch-olaya", name: "فرع العليا", city: "الرياض" },
+  { id: "branch-nakheel", name: "فرع النخيل", city: "الرياض" },
+  { id: "branch-rawdah", name: "فرع الروضة", city: "جدة" },
+  { id: "branch-corniche", name: "فرع الكورنيش", city: "الخبر" },
+];
+
+export const FALLBACK_INITIAL_TICKETS = [
   {
     id: "ticket-demo-2401",
     number: "TDR-2401",
     title: "تسرب ماء أسفل حوض التحضير",
-    description: "يوجد تسرب مستمر تحت حوض التحضير في المطبخ، والأرضية أصبحت زلقة.",
+    description: "يوجد تسرب مستمر تحت حوض التحضير في المطبخ، والأرضية أصبحت زلقة وتؤثر على حركة الفريق.",
     category: "plumbing",
     priority: "high",
     specialization: "plumbing",
     location: "المطبخ — منطقة التحضير",
     status: "awaiting_confirmation",
+    cancelledAt: null,
+    cancelledBy: null,
     reporterId: "demo-reporter",
     reporterName: "سارة القحطاني",
     branchId: "branch-olaya",
     branchName: "فرع العليا",
+    branchCity: "الرياض",
+    branchAddress: "طريق العروبة، حي العليا",
+    branchLatitude: 24.7003,
+    branchLongitude: 46.6806,
+    branchGoogleMapsUrl: "https://maps.google.com/?q=24.7003,46.6806",
     technicianId: "demo-tech",
     technicianName: "خالد الحربي",
-    repairNotes: "تم استبدال الوصلة المطاطية وإحكام ربط الصمام.",
-    cause: "تآكل الوصلة بسبب الاستخدام اليومي.",
-    resolution: "تغيير الوصلة واختبار تدفق الماء لمدة خمس دقائق.",
+    repairNotes: "تم استبدال الوصلة المطاطية وإحكام ربط الصمام واختبار تدفق الماء لمدة 5 دقائق.",
+    cause: "تآكل الوصلة المطاطية بسبب الاستخدام اليومي وضغط الماء المرتفع.",
+    resolution: "تغيير الوصلة واختبار التدفق والتأكد من عدم وجود تسرب.",
     imageUrl: null,
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString(),
-    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
+    createdAt: "2026-11-04T02:30:00.000Z",
+    updatedAt: "2026-11-04T05:00:00.000Z",
+    history: [
+      { id: "ev-1", label: "تم تسجيل البلاغ", actorName: "سارة القحطاني", note: "بلاغ جديد عبر النظام الذكي", createdAt: "2026-11-04T02:30:00.000Z" },
+      { id: "ev-2", label: "إسناد للفني", actorName: "النظام التلقائي", note: "إسناد لخالد الحربي (سباكة)", createdAt: "2026-11-04T02:35:00.000Z" },
+      { id: "ev-3", label: "بدء العمل", actorName: "خالد الحربي", note: "الفني متواجد بالموقع", createdAt: "2026-11-04T03:10:00.000Z" },
+      { id: "ev-4", label: "إكمال الإصلاح", actorName: "خالد الحربي", note: "تم تغيير الوصلة وفحص التسريب، بانتظار تأكيد المبلّغ", createdAt: "2026-11-04T05:00:00.000Z" },
+    ],
   },
   {
     id: "ticket-demo-2402",
     number: "TDR-2402",
     title: "وحدة التبريد لا تصل للدرجة المطلوبة",
-    description: "الثلاجة تعرض ٩ درجات بدلاً من ٤ درجات، ويظهر صوت غير معتاد.",
+    description: "الثلاجة تعرض ٩ درجات بدلاً من ٤ درجات، ويظهر صوت اهتزاز غير معتاد في المحرك.",
     category: "cooling",
     priority: "urgent",
     specialization: "cooling",
     location: "المطبخ — غرفة التبريد",
     status: "in_progress",
+    cancelledAt: null,
+    cancelledBy: null,
     reporterId: "demo-reporter",
     reporterName: "سارة القحطاني",
     branchId: "branch-olaya",
     branchName: "فرع العليا",
+    branchCity: "الرياض",
+    branchAddress: "طريق العروبة، حي العليا",
+    branchLatitude: 24.7003,
+    branchLongitude: 46.6806,
+    branchGoogleMapsUrl: "https://maps.google.com/?q=24.7003,46.6806",
     technicianId: "tech-cooling",
     technicianName: "مازن القحطاني",
     repairNotes: null,
     cause: null,
     resolution: null,
     imageUrl: null,
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
-    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 1).toISOString(),
+    createdAt: "2026-11-04T03:15:00.000Z",
+    updatedAt: "2026-11-04T04:20:00.000Z",
+    history: [
+      { id: "ev-5", label: "تم تسجيل البلاغ", actorName: "سارة القحطاني", note: "وحدة تبريد حرجة", createdAt: "2026-11-04T03:15:00.000Z" },
+      { id: "ev-6", label: "إسناد للفني", actorName: "النظام التلقائي", note: "إسناد لمازن القحطاني (تكييف وتبريد)", createdAt: "2026-11-04T03:16:00.000Z" },
+      { id: "ev-7", label: "جاري الفحص", actorName: "مازن القحطاني", note: "فحص مستوى الفريون وضغط الكمبروسر", createdAt: "2026-11-04T04:20:00.000Z" },
+    ],
   },
   {
     id: "ticket-demo-2403",
     number: "TDR-2403",
     title: "مصباح منطقة الاستلام لا يعمل",
-    description: "المصباح فوق نقطة استلام الطلبات مطفأ منذ بداية الوردية.",
+    description: "المصباح فوق نقطة استلام الطلبات مطفأ منذ بداية الوردية، وتوجد إضاءة ضعيفة.",
     category: "electrical",
     priority: "medium",
     specialization: "electrical",
     location: "صالة العملاء — نقطة الاستلام",
     status: "review",
+    cancelledAt: null,
+    cancelledBy: null,
     reporterId: "demo-reporter",
     reporterName: "سارة القحطاني",
-    branchId: "branch-olaya",
-    branchName: "فرع العليا",
+    branchId: "branch-nakheel",
+    branchName: "فرع النخيل",
+    branchCity: "الرياض",
+    branchAddress: "طريق الإمام سعود، حي النخيل",
+    branchLatitude: 24.7500,
+    branchLongitude: 46.6400,
+    branchGoogleMapsUrl: "https://maps.google.com/?q=24.7500,46.6400",
     technicianId: "tech-electrical",
     technicianName: "هند الشهري",
     repairNotes: null,
     cause: null,
     resolution: null,
     imageUrl: null,
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString(),
+    createdAt: "2026-11-03T18:00:00.000Z",
+    updatedAt: "2026-11-03T18:30:00.000Z",
+    history: [
+      { id: "ev-8", label: "تم تسجيل البلاغ", actorName: "سارة القحطاني", note: null, createdAt: "2026-11-03T18:00:00.000Z" },
+    ],
   },
   {
     id: "ticket-demo-2404",
     number: "TDR-2404",
-    title: "صوت من وحدة التكييف",
-    description: "صوت اهتزاز متقطع عند تشغيل المكيف في صالة الجلسات.",
+    title: "صوت اهتزاز من وحدة التكييف المركزية",
+    description: "صوت طقطقة مستمر مع خروج هواء غير بارد في صالة الجلوس العائلية.",
     category: "cooling",
     priority: "low",
     specialization: "cooling",
-    location: "صالة العملاء",
-    status: "new",
+    location: "صالة العائلات — الجناح الأيمن",
+    status: "closed",
+    cancelledAt: null,
+    cancelledBy: null,
     reporterId: "demo-reporter",
     reporterName: "سارة القحطاني",
-    branchId: "branch-nakheel",
-    branchName: "فرع النخيل",
-    technicianId: null,
-    technicianName: null,
-    repairNotes: null,
-    cause: null,
-    resolution: null,
+    branchId: "branch-olaya",
+    branchName: "فرع العليا",
+    branchCity: "الرياض",
+    branchAddress: "طريق العروبة، حي العليا",
+    branchLatitude: 24.7003,
+    branchLongitude: 46.6806,
+    branchGoogleMapsUrl: "https://maps.google.com/?q=24.7003,46.6806",
+    technicianId: "tech-cooling",
+    technicianName: "مازن القحطاني",
+    repairNotes: "تم تنظيف فلتر الهواء وشد سير المروحة واختبار الصوت.",
+    cause: "ارتخاء سير المروحة الداخلية وتراكم الأتربة على الفلتر.",
+    resolution: "استبدال السير وتنظيف الفلتر وضبط التثبيت.",
     imageUrl: null,
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 30).toISOString(),
-    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 30).toISOString(),
+    createdAt: "2026-11-02T11:00:00.000Z",
+    updatedAt: "2026-11-02T16:30:00.000Z",
+    history: [
+      { id: "ev-9", label: "تم تسجيل البلاغ", actorName: "سارة القحطاني", note: null, createdAt: "2026-11-02T11:00:00.000Z" },
+      { id: "ev-10", label: "تم تأكيد الإصلاح وإغلاق البلاغ", actorName: "سارة القحطاني", note: "التكييف يعمل بكفاءة والصوت اختفى تماماً", createdAt: "2026-11-02T16:30:00.000Z" },
+    ],
   },
 ];
 
 function getStoredTickets(): Array<Record<string, unknown>> {
-  if (typeof window === "undefined") return FALLBACK_INITIAL_TICKETS;
+  if (typeof window === "undefined") return FALLBACK_INITIAL_TICKETS as unknown as Array<Record<string, unknown>>;
   try {
     const raw = window.localStorage.getItem("tadaruk_mock_tickets");
     if (raw) return JSON.parse(raw);
     window.localStorage.setItem("tadaruk_mock_tickets", JSON.stringify(FALLBACK_INITIAL_TICKETS));
-    return FALLBACK_INITIAL_TICKETS;
+    return FALLBACK_INITIAL_TICKETS as unknown as Array<Record<string, unknown>>;
   } catch {
-    return FALLBACK_INITIAL_TICKETS;
+    return FALLBACK_INITIAL_TICKETS as unknown as Array<Record<string, unknown>>;
   }
 }
 
@@ -635,9 +757,64 @@ function saveStoredTickets(tickets: Array<Record<string, unknown>>): void {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem("tadaruk_mock_tickets", JSON.stringify(tickets));
+  } catch {}
+}
+
+function getStoredBranches(): Array<Record<string, unknown>> {
+  if (typeof window === "undefined") return FALLBACK_BRANCHES as unknown as Array<Record<string, unknown>>;
+  try {
+    const raw = window.localStorage.getItem("tadaruk_mock_branches");
+    if (raw) return JSON.parse(raw);
+    window.localStorage.setItem("tadaruk_mock_branches", JSON.stringify(FALLBACK_BRANCHES));
+    return FALLBACK_BRANCHES as unknown as Array<Record<string, unknown>>;
   } catch {
-    // Ignore storage quota
+    return FALLBACK_BRANCHES as unknown as Array<Record<string, unknown>>;
   }
+}
+
+function saveStoredBranches(branches: Array<Record<string, unknown>>): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem("tadaruk_mock_branches", JSON.stringify(branches));
+  } catch {}
+}
+
+function getStoredTechnicians(): Array<Record<string, unknown>> {
+  if (typeof window === "undefined") return FALLBACK_TECHNICIANS as unknown as Array<Record<string, unknown>>;
+  try {
+    const raw = window.localStorage.getItem("tadaruk_mock_technicians");
+    if (raw) return JSON.parse(raw);
+    window.localStorage.setItem("tadaruk_mock_technicians", JSON.stringify(FALLBACK_TECHNICIANS));
+    return FALLBACK_TECHNICIANS as unknown as Array<Record<string, unknown>>;
+  } catch {
+    return FALLBACK_TECHNICIANS as unknown as Array<Record<string, unknown>>;
+  }
+}
+
+function saveStoredTechnicians(techs: Array<Record<string, unknown>>): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem("tadaruk_mock_technicians", JSON.stringify(techs));
+  } catch {}
+}
+
+function getStoredReporterAccess(): Array<Record<string, unknown>> {
+  if (typeof window === "undefined") return FALLBACK_REPORTER_ACCESS as unknown as Array<Record<string, unknown>>;
+  try {
+    const raw = window.localStorage.getItem("tadaruk_mock_reporter_access");
+    if (raw) return JSON.parse(raw);
+    window.localStorage.setItem("tadaruk_mock_reporter_access", JSON.stringify(FALLBACK_REPORTER_ACCESS));
+    return FALLBACK_REPORTER_ACCESS as unknown as Array<Record<string, unknown>>;
+  } catch {
+    return FALLBACK_REPORTER_ACCESS as unknown as Array<Record<string, unknown>>;
+  }
+}
+
+function saveStoredReporterAccess(access: Array<Record<string, unknown>>): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem("tadaruk_mock_reporter_access", JSON.stringify(access));
+  } catch {}
 }
 
 function getActiveUser(): Record<string, unknown> | null {
@@ -669,7 +846,7 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
   }
 
   if (!pathname.includes("/api/")) return undefined;
-  const apiPath = pathname.substring(pathname.indexOf("/api/"));
+  const apiPath = pathname.substring(pathname.indexOf("/api/")).replace(/\/+$/, "");
 
   // 1. Health check (/api/healthz or /api/health)
   if (apiPath === "/api/health" || apiPath === "/api/healthz") {
@@ -701,9 +878,7 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
     if (method === "DELETE") {
       try {
         window.localStorage.removeItem("tadaruk-demo-session-user");
-      } catch {
-        // ignore
-      }
+      } catch {}
       return { user: null } as unknown as T;
     }
   }
@@ -725,9 +900,7 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
   if (apiPath === "/api/demo/session/clear") {
     try {
       window.localStorage.removeItem("tadaruk-demo-session-user");
-    } catch {
-      // ignore
-    }
+    } catch {}
     return { user: null } as unknown as T;
   }
 
@@ -741,44 +914,153 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
     return {
       totalTickets: tickets.length,
       openTickets,
+      urgentTickets: tickets.filter(t => t.priority === "urgent" && t.status !== "closed" && t.status !== "cancelled").length,
+      pendingAssignment: tickets.filter(t => !t.technicianId && t.status !== "closed" && t.status !== "cancelled").length,
       inProgressTickets: inProgress,
       awaitingConfirmationTickets: awaitingConfirmation,
-      resolvedThisMonth: closed + 4,
-      activeTechnicians: FALLBACK_TECHNICIANS.length,
-      branchesCount: FALLBACK_BRANCHES.length,
+      awaitingConfirmation: awaitingConfirmation,
+      resolvedThisMonth: closed + 3,
+      activeTechnicians: FALLBACK_TECHNICIANS.filter(t => t.active).length,
+      branchesCount: FALLBACK_BRANCHES.filter(b => b.active).length,
       averageResolutionHours: 3.5,
+      recentTickets: tickets.slice(0, 5),
     } as unknown as T;
   }
 
   // 7. Reporter branches (/api/reporter/branches)
   if (apiPath === "/api/reporter/branches") {
-    return [
-      { id: "branch-olaya", name: "فرع العليا", city: "الرياض" },
-      { id: "branch-nakheel", name: "فرع النخيل", city: "الرياض" },
-    ] as unknown as T;
+    return FALLBACK_REPORTER_BRANCHES as unknown as T;
   }
 
   // 8. Reporter access (/api/reporter/access)
   if (apiPath === "/api/reporter/access") {
-    return [
-      { id: "access-1", reporterId: "demo-reporter", branchId: "branch-olaya", active: true },
-      { id: "access-2", reporterId: "demo-reporter", branchId: "branch-nakheel", active: true },
-    ] as unknown as T;
+    if (method === "GET") {
+      return getStoredReporterAccess() as unknown as T;
+    }
+  }
+  if (apiPath.startsWith("/api/reporter/access/")) {
+    const parts = apiPath.split("/");
+    const repId = parts[4];
+    const accessList = getStoredReporterAccess();
+    try {
+      const parsedBody = typeof body === "string" ? JSON.parse(body) : (body || {});
+      const branchIds = parsedBody.branchIds || [];
+      const idx = accessList.findIndex(a => a.id === repId);
+      if (idx >= 0) {
+        accessList[idx] = { ...accessList[idx], branchIds };
+      } else {
+        accessList.push({ id: repId, name: "مبلّغ", branchIds });
+      }
+      saveStoredReporterAccess(accessList);
+      return { success: true, branchIds } as unknown as T;
+    } catch {
+      return { success: true } as unknown as T;
+    }
   }
 
   // 9. Branches (/api/branches)
   if (apiPath === "/api/branches") {
-    return FALLBACK_BRANCHES as unknown as T;
+    if (method === "GET") {
+      return getStoredBranches() as unknown as T;
+    }
+    if (method === "POST") {
+      try {
+        const payload = typeof body === "string" ? JSON.parse(body) : (body || {});
+        const branches = getStoredBranches();
+        const newBranch = {
+          id: `branch-${Date.now()}`,
+          name: payload.name || "فرع جديد",
+          city: payload.city || "الرياض",
+          address: payload.address || "",
+          googleMapsUrl: payload.googleMapsUrl || null,
+          latitude: 24.7,
+          longitude: 46.7,
+          active: payload.active !== false,
+          openTickets: 0,
+        };
+        const updated = [...branches, newBranch];
+        saveStoredBranches(updated);
+        return newBranch as unknown as T;
+      } catch {
+        return FALLBACK_BRANCHES[0] as unknown as T;
+      }
+    }
+  }
+  if (apiPath.startsWith("/api/branches/")) {
+    const parts = apiPath.split("/");
+    const branchId = parts[3];
+    const branches = getStoredBranches();
+    const idx = branches.findIndex(b => b.id === branchId);
+    if (idx >= 0) {
+      if (method === "GET") return branches[idx] as unknown as T;
+      try {
+        const payload = typeof body === "string" ? JSON.parse(body) : (body || {});
+        branches[idx] = { ...branches[idx], ...payload };
+        saveStoredBranches(branches);
+        return branches[idx] as unknown as T;
+      } catch {
+        return branches[idx] as unknown as T;
+      }
+    }
   }
 
   // 10. Technicians (/api/technicians)
   if (apiPath === "/api/technicians") {
-    return FALLBACK_TECHNICIANS as unknown as T;
+    if (method === "GET") {
+      return getStoredTechnicians() as unknown as T;
+    }
+    if (method === "POST") {
+      try {
+        const payload = typeof body === "string" ? JSON.parse(body) : (body || {});
+        const techs = getStoredTechnicians();
+        const branches = getStoredBranches();
+        const br = branches.find(b => b.id === payload.branchId) || branches[0];
+        const newTech = {
+          id: `tech-${Date.now()}`,
+          name: payload.name || "فني جديد",
+          initials: (payload.name || "ف").slice(0, 2),
+          branchId: br.id,
+          branchName: br.name,
+          specialization: payload.specialization || "general",
+          phone: payload.phone || "0500000000",
+          available: payload.available !== false,
+          active: true,
+          workload: 0,
+        };
+        const updated = [...techs, newTech];
+        saveStoredTechnicians(updated);
+        return newTech as unknown as T;
+      } catch {
+        return FALLBACK_TECHNICIANS[0] as unknown as T;
+      }
+    }
+  }
+  if (apiPath.startsWith("/api/technicians/")) {
+    const parts = apiPath.split("/");
+    const techId = parts[3];
+    const techs = getStoredTechnicians();
+    const idx = techs.findIndex(t => t.id === techId);
+    if (idx >= 0) {
+      if (method === "GET") return techs[idx] as unknown as T;
+      try {
+        const payload = typeof body === "string" ? JSON.parse(body) : (body || {});
+        techs[idx] = { ...techs[idx], ...payload };
+        saveStoredTechnicians(techs);
+        return techs[idx] as unknown as T;
+      } catch {
+        return techs[idx] as unknown as T;
+      }
+    }
   }
 
   // 11. Knowledge (/api/knowledge)
   if (apiPath === "/api/knowledge") {
-    return FALLBACK_KNOWLEDGE as unknown as T;
+    const category = searchParams.get("category");
+    const branchId = searchParams.get("branchId");
+    let list = FALLBACK_KNOWLEDGE;
+    if (category) list = list.filter(k => k.category === category);
+    if (branchId) list = list.filter(k => k.branchId === branchId);
+    return list as unknown as T;
   }
 
   // 12. Tickets (/api/tickets)
@@ -787,6 +1069,7 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
       const tickets = getStoredTickets();
       const search = searchParams.get("search")?.toLowerCase().trim();
       const status = searchParams.get("status")?.trim();
+      const branchId = searchParams.get("branchId")?.trim();
       let filtered = tickets;
       if (search) {
         filtered = filtered.filter(t =>
@@ -798,6 +1081,9 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
       if (status) {
         filtered = filtered.filter(t => t.status === status);
       }
+      if (branchId) {
+        filtered = filtered.filter(t => t.branchId === branchId);
+      }
       return filtered as unknown as T;
     }
 
@@ -806,8 +1092,11 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
         const payload = typeof body === "string" ? JSON.parse(body) : (body || {});
         const user = getActiveUser();
         const tickets = getStoredTickets();
+        const branches = getStoredBranches();
+        const techs = getStoredTechnicians();
         const randNum = Math.floor(2500 + Math.random() * 500);
-        const assignedTech = FALLBACK_TECHNICIANS.find(tech => tech.specialization === payload.specialization) || FALLBACK_TECHNICIANS[0];
+        const assignedTech = techs.find(tech => tech.specialization === payload.specialization) || techs[0];
+        const targetBranch = branches.find(b => b.id === payload.branchId) || branches[0];
         const newTicket = {
           id: `ticket-demo-${Date.now()}`,
           number: `TDR-${randNum}`,
@@ -818,10 +1107,17 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
           specialization: payload.specialization || "general",
           location: payload.location || "داخل الفرع",
           status: "new",
+          cancelledAt: null,
+          cancelledBy: null,
           reporterId: user?.id || "demo-reporter",
           reporterName: user?.name || "سارة القحطاني",
-          branchId: payload.branchId || "branch-olaya",
-          branchName: "فرع العليا",
+          branchId: targetBranch.id,
+          branchName: targetBranch.name,
+          branchCity: targetBranch.city,
+          branchAddress: targetBranch.address,
+          branchLatitude: targetBranch.latitude,
+          branchLongitude: targetBranch.longitude,
+          branchGoogleMapsUrl: targetBranch.googleMapsUrl,
           technicianId: assignedTech?.id || null,
           technicianName: assignedTech?.name || null,
           repairNotes: null,
@@ -830,6 +1126,10 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
           imageUrl: payload.imageUrl || null,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
+          history: [
+            { id: `ev-${Date.now()}`, label: "تم تسجيل البلاغ", actorName: user?.name || "سارة القحطاني", note: "بلاغ صيانة ذكي", createdAt: new Date().toISOString() },
+            { id: `ev-${Date.now() + 1}`, label: "إسناد للفني", actorName: "النظام التلقائي", note: `مسند إلى ${assignedTech?.name}`, createdAt: new Date().toISOString() }
+          ],
         };
         const updated = [newTicket, ...tickets];
         saveStoredTickets(updated);
@@ -855,11 +1155,22 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
           current.status = "closed";
         } else if (action === "cancel") {
           current.status = "cancelled";
+          current.cancelledAt = new Date().toISOString();
+          current.cancelledBy = "المبلّغ";
         } else if (action === "start") {
           current.status = "in_progress";
-        } else if (action === "resolve") {
+        } else if (action === "complete" || action === "resolve") {
           current.status = "awaiting_confirmation";
-          current.repairNotes = parsedBody?.notes || "تم استكمال أعمال الصيانة بنجاح.";
+          current.repairNotes = parsedBody?.note || "تم استكمال أعمال الصيانة بنجاح.";
+        } else if (action === "reject") {
+          current.status = "in_progress";
+        } else if (action === "reassign") {
+          const techs = getStoredTechnicians();
+          const t = techs.find(x => x.id === parsedBody?.technicianId);
+          if (t) {
+            current.technicianId = t.id;
+            current.technicianName = t.name;
+          }
         }
         current.updatedAt = new Date().toISOString();
         tickets[ticketIndex] = current;

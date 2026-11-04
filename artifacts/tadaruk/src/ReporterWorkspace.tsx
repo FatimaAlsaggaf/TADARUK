@@ -125,7 +125,7 @@ function TicketLoadingState() {
 export function ReporterHomePage({ lang, user }: ReporterPageProps) {
   const { data: overview, isLoading: overviewLoading, isError: overviewError, refetch: refetchOverview } = useGetOverview();
   const { data: tickets, isLoading, isError, refetch } = useListTickets();
-  const rows = tickets ?? [];
+  const rows = Array.isArray(tickets) ? tickets : [];
   const openCount = rows.filter(ticket => ticket.status !== 'closed').length;
   const waitingCount = rows.filter(ticket => ticket.status === 'awaiting_confirmation').length;
   const resolvedCount = overview?.resolvedThisMonth ?? rows.filter(ticket => ticket.status === 'closed').length;
@@ -182,7 +182,7 @@ export function ReporterTicketsPage({ lang }: ReporterPageProps) {
   const [status, setStatus] = useState('');
   const params = useMemo(() => ({ search: search.trim() || undefined, status: status || undefined }), [search, status]);
   const { data: tickets, isLoading, isError, refetch } = useListTickets(params);
-  const shown = tickets ?? [];
+  const shown = Array.isArray(tickets) ? tickets : [];
   const hasFilter = Boolean(search.trim() || status);
 
   return <div className="reporter-view" dir={lang === 'ar' ? 'rtl' : 'ltr'}>

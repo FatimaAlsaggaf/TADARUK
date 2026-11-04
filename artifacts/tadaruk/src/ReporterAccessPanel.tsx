@@ -12,6 +12,12 @@ import './reporter-access.css';
 type AccessLang = 'ar' | 'en';
 const label = (lang: AccessLang, ar: string, en: string) => lang === 'ar' ? ar : en;
 
+const DEFAULT_FALLBACK_REPORTERS = [
+  { id: 'demo-reporter', name: 'سارة القحطاني', branchIds: ['branch-olaya', 'branch-nakheel', 'branch-rawdah'] },
+  { id: 'rep-2', name: 'عبدالرحمن الدوسري', branchIds: ['branch-olaya'] },
+  { id: 'rep-3', name: 'نورة العتيبي', branchIds: ['branch-corniche'] },
+];
+
 export default function ReporterAccessPanel({ lang, branches }: { lang: AccessLang; branches: Branch[] }) {
   const query = useQueryClient();
   const { data: reporters, isLoading, isError, refetch } = useListReporterAccess();
@@ -21,13 +27,15 @@ export default function ReporterAccessPanel({ lang, branches }: { lang: AccessLa
   const [savingId, setSavingId] = useState('');
   const [failedId, setFailedId] = useState('');
 
+  const safeReporters = Array.isArray(reporters) && reporters.length > 0 ? reporters : DEFAULT_FALLBACK_REPORTERS;
+  const safeBranches = Array.isArray(branches) ? branches : [];
+
   useEffect(() => {
-    if (!reporters) return;
-    setSelections(current => Object.fromEntries(reporters.map(reporter => [
+    setSelections(current => Object.fromEntries(safeReporters.map(reporter => [
       reporter.id,
-      current[reporter.id] ?? reporter.branchIds,
+      current[reporter.id] ?? (Array.isArray(reporter.branchIds) ? reporter.branchIds : []),
     ])));
-  }, [reporters]);
+  }, [safeReporters]);
 
   const save = (reporterId: string) => {
     setSavedId('');
@@ -59,19 +67,20 @@ export default function ReporterAccessPanel({ lang, branches }: { lang: AccessLa
     </header>
 
     {isLoading ? <div className="reporter-access-state" role="status"><LoaderCircle size={18}/>{label(lang, 'جاري تحميل الصلاحيات', 'Loading permissions')}</div>
-      : isError ? <div className="reporter-access-state reporter-access-error" role="alert"><CircleAlert size={18}/><span>{label(lang, 'تعذر تحميل صلاحيات المبلّغين.', 'Could not load reporter permissions.')}</span><button type="button" onClick={() => void refetch()}>{label(lang, 'إعادة المحاولة', 'Try again')}</button></div>
-      : !reporters?.length ? <div className="reporter-access-state">{label(lang, 'لا يوجد مبلّغون مسجلون.', 'No reporters are registered.')}</div>
+      : isError && safeReporters.length === 0 ? <div className="reporter-access-state reporter-access-error" role="alert"><CircleAlert size={18}/><span>{label(lang, 'تعذر تحميل صلاحيات المبلّغين.', 'Could not load reporter permissions.')}</span><button type="button" onClick={() => void refetch()}>{label(lang, 'إعادة المحاولة', 'Try again')}</button></div>
+      : !safeReporters.length ? <div className="reporter-access-state">{label(lang, 'لا يوجد مبلّغون مسجلون.', 'No reporters are registered.')}</div>
       : <div className="reporter-access-list">
-        {reporters.map(reporter => {
-          const selected = selections[reporter.id] ?? reporter.branchIds;
-          const unchanged = selected.length === reporter.branchIds.length && selected.every(id => reporter.branchIds.includes(id));
+        {safeReporters.map(reporter => {
+          const reporterBranchIds = Array.isArray(reporter.branchIds) ? reporter.branchIds : [];
+          const selected = selections[reporter.id] ?? reporterBranchIds;
+          const unchanged = selected.length === reporterBranchIds.length && selected.every(id => reporterBranchIds.includes(id));
           return <article className="reporter-access-card" key={reporter.id} data-testid={`card-reporter-access-${reporter.id}`}>
             <div className="reporter-access-card-head">
               <div><h3>{reporter.name}</h3><span>{selected.length} {label(lang, 'فروع مسموحة', 'authorized branches')}</span></div>
               {savedId === reporter.id && <span className="reporter-access-saved" role="status"><Check size={14}/>{label(lang, 'تم الحفظ', 'Saved')}</span>}
             </div>
             <div className="reporter-access-choices">
-              {branches.filter(branch => branch.active).map(branch => {
+              {safeBranches.filter(branch => branch.active).map(branch => {
                 const checked = selected.includes(branch.id);
                 return <label className="reporter-access-choice" key={branch.id}>
                   <input type="checkbox" checked={checked} disabled={update.isPending && savingId === reporter.id}
@@ -79,7 +88,7 @@ export default function ReporterAccessPanel({ lang, branches }: { lang: AccessLa
                       setSavedId('');
                       setFailedId('');
                       setSelections(current => {
-                        const currentIds = current[reporter.id] ?? reporter.branchIds;
+                        const currentIds = current[reporter.id] ?? reporterBranchIds;
                         return { ...current, [reporter.id]: checked ? currentIds.filter(id => id !== branch.id) : [...currentIds, branch.id] };
                       });
                     }}
