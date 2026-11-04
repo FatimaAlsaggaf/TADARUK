@@ -558,7 +558,11 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
   const reduced=useReducedMotion()===true || (typeof window!=='undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true);
   useEffect(()=>{if(session && !user && window.location.pathname.startsWith('/workspace'))go('/demo');},[session,user,go]);
   if(!user)return <div className="workspace-loading"><div className="skeleton-bar"/><div className="skeleton-card"/></div>;
-  const links=user.role==='manager'?[['/workspace','نظرة عامة','Overview',LayoutDashboard],['/workspace/tickets','البلاغات','Tickets',ClipboardList],['/workspace/tickets/new','بلاغ جديد','New report',Plus],['/workspace/technicians','الفنيون','Technicians',Users],['/workspace/branches','الفروع','Branches',Building2],['/workspace/knowledge','قاعدة المعرفة','Knowledge',BookOpen]]:user.role==='technician'?[['/workspace','مهامي','My tasks',Wrench],['/workspace/tickets','كل المهام','Tasks',ClipboardList],['/workspace/branches','الفروع','Branches',Building2],['/workspace/knowledge','قاعدة المعرفة','Knowledge',BookOpen]]:[['/workspace','الرئيسية','Home',LayoutDashboard],['/workspace/tickets/new','بلاغ جديد','New report',Plus],['/workspace/tickets','بلاغاتي','My reports',ClipboardList],['/workspace/branches','الفروع','Branches',Building2],['/workspace/knowledge','قاعدة المعرفة','Knowledge',BookOpen]];
+  const links=user.role==='manager'
+    ?[['/workspace','نظرة عامة','Overview',LayoutDashboard],['/workspace/tickets','البلاغات','Tickets',ClipboardList],['/workspace/tickets/new','بلاغ جديد','New report',Plus],['/workspace/technicians','الفنيون','Technicians',Users],['/workspace/branches','الفروع','Branches',Building2],['/workspace/knowledge','قاعدة المعرفة','Knowledge',BookOpen]]
+    :user.role==='technician'
+      ?[['/workspace','مهامي','My tasks',Wrench],['/workspace/tickets','كل المهام','Tasks',ClipboardList]]
+      :[['/workspace','الرئيسية','Home',LayoutDashboard],['/workspace/tickets/new','بلاغ جديد','New report',Plus],['/workspace/tickets','بلاغاتي','My reports',ClipboardList]];
   const signOut=()=>logout.mutate(undefined,{onSuccess:()=>{qc.clear();setMenu(false);setMobile(false);go('/demo');}});
   const matchingLink=links.map(([path])=>path as string)
     .filter(path=>path==='/workspace'?location===path:location===path||location.startsWith(`${path}/`))
@@ -1033,9 +1037,9 @@ function WorkspaceRouter({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)
         <Route path="/workspace/tickets/new">{user?.role==='reporter'?<ReporterNewTicketPage lang={lang} user={user} selectedBranchId={selectedBranchId}/>:user?<State title={tr(lang,'إنشاء البلاغات متاح للمبلّغ فقط','Only reporters can create tickets')}/>:<State title={tr(lang,'جاري استعادة الحساب','Restoring account')} loading/>}</Route>
         <Route path="/workspace/tickets/:ticketId">{user?<TicketDetail lang={lang} user={user}/>:<State title={tr(lang,'جاري استعادة الحساب','Restoring account')} loading/>}</Route>
         <Route path="/workspace/tickets">{user?user.role==='reporter'?<ReporterTicketsPage lang={lang} user={user}/>:<TicketsPage lang={lang} user={user}/>:<State title={tr(lang,'جاري استعادة الحساب','Restoring account')} loading/>}</Route>
-        <Route path="/workspace/technicians"><TechniciansPage lang={lang}/></Route>
-        <Route path="/workspace/branches"><BranchesPage lang={lang}/></Route>
-        <Route path="/workspace/knowledge"><KnowledgePage lang={lang}/></Route>
+        <Route path="/workspace/technicians">{user?.role==='manager'?<TechniciansPage lang={lang}/>:<State title={tr(lang,'متاح لمدير العمليات فقط','Only available for operations manager')}/>}</Route>
+        <Route path="/workspace/branches">{user?.role==='manager'?<BranchesPage lang={lang}/>:<State title={tr(lang,'متاح لمدير العمليات فقط','Only available for operations manager')}/>}</Route>
+        <Route path="/workspace/knowledge">{user?.role==='manager'?<KnowledgePage lang={lang}/>:<State title={tr(lang,'متاح لمدير العمليات فقط','Only available for operations manager')}/>}</Route>
         <Route component={NotFound}/>
       </Switch>
     </WorkspaceShell>
