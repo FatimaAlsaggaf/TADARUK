@@ -365,20 +365,15 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
   useEffect(()=>{
     const section=impactRef.current;
     if(!section)return;
-    let closeTimer:number|null=null;
     const observer=new IntersectionObserver(([entry])=>{
       if(entry.isIntersecting){
         setImpactRevealed(true);
-        closeTimer=window.setTimeout(()=>{
-          setFolderOpen(false);
-        },2300);
         observer.disconnect();
       }
     },{threshold:.2});
     observer.observe(section);
     return ()=>{
       observer.disconnect();
-      if(closeTimer)window.clearTimeout(closeTimer);
     };
   },[]);
   const goToSection=(id:string)=>{
@@ -577,7 +572,6 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
           <FolderFloat
             items={tadarukDemoReports}
             label={tr(lang,'ملف بلاغات تدارك','TADARUK Tickets Folder')}
-            sublabel={tr(lang,'٥ بلاغات مسجلة وموثقة','5 documented tickets')}
             open={folderOpen}
             onOpenChange={setFolderOpen}
             trigger="click"

@@ -187,7 +187,7 @@ export default function FolderFloat({
   );
 
   const n = list.length;
-  const sub = sublabel || `${n} ${n === 1 ? 'بلاغ مسجل وموثق' : 'بلاغات مسجلة وموثقة'}`;
+  const sub = sublabel || '';
   const pos = layout(list, spread, lift, tilt, sizes);
 
   const labelsKey = list.map(item => item.label).join('|');
@@ -526,13 +526,13 @@ export default function FolderFloat({
               <span>أرشيف البلاغات</span>
             </span>
             <span className="folder-float__label">{label}</span>
-            <span className="folder-float__sub">{sub}</span>
+            {sub ? <span className="folder-float__sub">{sub}</span> : null}
           </span>
           <button
             type="button"
             className="folder-float__trigger"
             aria-expanded={open}
-            aria-label={`${label}, ${sub}`}
+            aria-label={sub ? `${label}, ${sub}` : label}
             onClick={() => set(!open)}
           />
         </div>
