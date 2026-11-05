@@ -126,7 +126,7 @@ function TicketLoadingState() {
 export function ReporterHomePage({ lang, user }: ReporterPageProps) {
   const { data: overview, isLoading: overviewLoading, isError: overviewError, refetch: refetchOverview } = useGetOverview();
   const { data: tickets, isLoading, isError, refetch } = useListTickets();
-  const rows = Array.isArray(tickets) ? tickets : [];
+  const rows = Array.isArray(tickets) ? tickets.filter(ticket => !user || ticket.reporterId === user.id) : [];
   const openCount = rows.filter(ticket => ticket.status !== 'closed').length;
   const waitingCount = rows.filter(ticket => ticket.status === 'awaiting_confirmation').length;
   const resolvedCount = overview?.resolvedThisMonth ?? rows.filter(ticket => ticket.status === 'closed').length;
@@ -178,12 +178,12 @@ export function ReporterHomePage({ lang, user }: ReporterPageProps) {
   </div>;
 }
 
-export function ReporterTicketsPage({ lang }: ReporterPageProps) {
+export function ReporterTicketsPage({ lang, user }: ReporterPageProps) {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
   const params = useMemo(() => ({ search: search.trim() || undefined, status: status || undefined }), [search, status]);
   const { data: tickets, isLoading, isError, refetch } = useListTickets(params);
-  const shown = Array.isArray(tickets) ? tickets : [];
+  const shown = Array.isArray(tickets) ? tickets.filter(ticket => !user || ticket.reporterId === user.id) : [];
   const hasFilter = Boolean(search.trim() || status);
 
   return <div className="reporter-view" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
@@ -225,8 +225,12 @@ export function ReporterTicketsPage({ lang }: ReporterPageProps) {
 }
 
 async function fileToPreview(file: File, lang: ReporterLang): Promise<string> {
-  if (!file.type.startsWith('image/')) {
-    throw new Error(text(lang, 'اختر ملف صورة صالحاً.', 'Choose a valid image file.'));
+  const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/jpg'];
+  const ALLOWED_EXTENSIONS = ['.png', '.jpg', '.jpeg'];
+  const lowerName = file.name.toLowerCase();
+  const hasValidExt = ALLOWED_EXTENSIONS.some(ext => lowerName.endsWith(ext));
+  if (!ALLOWED_MIME_TYPES.includes(file.type) && !hasValidExt) {
+    throw new Error(text(lang, 'صيغة الملف غير مدعومة. الصيغ المقبولة هي: PNG, JPG, JPEG فقط.', 'Unsupported file format. Accepted formats are: PNG, JPG, JPEG only.'));
   }
   if (file.size > 12 * 1024 * 1024) {
     throw new Error(text(lang, 'حجم الصورة أكبر من ١٢ ميغابايت.', 'The image is larger than 12 MB.'));
@@ -235,7 +239,7 @@ async function fileToPreview(file: File, lang: ReporterLang): Promise<string> {
   try {
     bitmap = await createImageBitmap(file);
   } catch {
-    throw new Error(text(lang, 'تعذر قراءة هذا النوع من الصور. جرّب صورة JPG أو PNG.', 'This image format could not be read. Try a JPG or PNG image.'));
+    throw new Error(text(lang, 'تعذر قراءة هذا النوع من الصور. يرجى اختيار صورة صالحة بصيغة PNG أو JPG أو JPEG.', 'This image format could not be read. Please choose a valid PNG, JPG, or JPEG image.'));
   }
   const scale = Math.min(1, 1280 / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement('canvas');
@@ -617,6 +621,9 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                     <div className="rw-photo-uploader-text">
                       <b>{text(lang, 'إرفاق صورة توضيحية للمشكلة (إلزامي)', 'Attach an issue photo (Required)')}</b>
                       <p>{text(lang, 'التقط صورة بالكاميرا أو اخترها من جهازك لتوثيق المشكلة للفني قبل المتابعة.', 'Capture with camera or choose from device to document the issue for the technician.')}</p>
+                      <span className="rw-photo-formats-tag">
+                        {text(lang, 'الصيغ المدعومة: PNG, JPG, JPEG (الحد الأقصى ١٢ ميغابايت)', 'Supported formats: PNG, JPG, JPEG (Max 12 MB)')}
+                      </span>
                     </div>
                   </div>
                   <div className="rw-photo-uploader-buttons">
@@ -625,7 +632,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                       <span>{text(lang, 'رفع صورة', 'Upload')}</span>
                       <input
                         type="file"
-                        accept="image/*"
+                        accept=".png,.jpg,.jpeg,image/png,image/jpeg"
                         aria-label={text(lang, 'اختيار صورة من الجهاز', 'Choose a photo from your device')}
                         data-testid="input-upload-photo"
                         onChange={event => {
@@ -640,7 +647,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                       <span>{text(lang, 'التقاط بالكاميرا', 'Camera')}</span>
                       <input
                         type="file"
-                        accept="image/*"
+                        accept=".png,.jpg,.jpeg,image/png,image/jpeg"
                         capture="environment"
                         aria-label={text(lang, 'التقاط صورة بالكاميرا', 'Take a photo with camera')}
                         data-testid="input-capture-photo"
@@ -1065,7 +1072,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                             <RefreshCw size={17} strokeWidth={2.2} />
                             <input
                               type="file"
-                              accept="image/*"
+                              accept=".png,.jpg,.jpeg,image/png,image/jpeg"
                               aria-label={text(lang, 'تبديل الصورة', 'Replace photo')}
                               onChange={event => {
                                 const file = event.currentTarget.files?.[0];

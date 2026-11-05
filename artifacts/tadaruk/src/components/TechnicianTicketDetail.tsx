@@ -312,11 +312,27 @@ export function TechnicianTicketDetail({
 
   // Reported issue photo
   const reportedPhotoUrl = ticket.imageUrl || localPhoto || null;
+  const [photoError, setPhotoError] = useState('');
 
   // Handle repair photo upload
   const handleRepairPhotoChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/jpg'];
+    const ALLOWED_EXTENSIONS = ['.png', '.jpg', '.jpeg'];
+    const lowerName = file.name.toLowerCase();
+    const hasValidExt = ALLOWED_EXTENSIONS.some(ext => lowerName.endsWith(ext));
+    if (!ALLOWED_TYPES.includes(file.type) && !hasValidExt) {
+      setPhotoError(tr(lang, 'صيغة الصورة غير مدعومة. الصيغ المقبولة هي: PNG, JPG, JPEG فقط.', 'Unsupported image format. Accepted formats are: PNG, JPG, JPEG only.'));
+      e.target.value = '';
+      return;
+    }
+    if (file.size > 12 * 1024 * 1024) {
+      setPhotoError(tr(lang, 'حجم الصورة أكبر من ١٢ ميجابايت.', 'The image is larger than 12 MB.'));
+      e.target.value = '';
+      return;
+    }
+    setPhotoError('');
     const reader = new FileReader();
     reader.onload = ev => {
       const dataUrl = ev.target?.result as string;
@@ -580,33 +596,39 @@ export function TechnicianTicketDetail({
               </div>
             )}
 
-            {/* Optional Photo Upload: "صورة بعد الإصلاح" */}
+            {/* Mandatory Photo Upload: "صورة توثيق الحل (إلزامي)" */}
             <div className="tech-after-photo-section">
               <div className="tech-after-photo-head">
                 <span className="tech-after-photo-title">
                   <Camera size={14} />
-                  {tr(lang, 'صورة بعد الإصلاح (اختياري)', 'Photo after repair (optional)')}
+                  <span>{tr(lang, 'صورة توثيق الحل', 'Solution documentation photo')}</span>
+                  <span className="rw-field-required-badge">{tr(lang, 'إلزامي', 'Required')}</span>
                 </span>
                 {repairPhoto && (
                   <span className="tech-after-photo-badge">
                     <Check size={12} strokeWidth={2.8} />
-                    {tr(lang, 'تم إرفاق صورة', 'Photo attached')}
+                    {tr(lang, 'تم إرفاق صورة الحل', 'Solution photo attached')}
                   </span>
                 )}
               </div>
 
               {!repairPhoto ? (
-                <label className="tech-photo-upload-btn" data-testid="button-upload-repair-photo">
-                  <Camera size={16} />
-                  <span>{tr(lang, 'التقاط أو رفع صورة للحل', 'Capture or upload repair photo')}</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    className="sr-only"
-                    onChange={handleRepairPhotoChange}
-                  />
-                </label>
+                <div className="tech-photo-upload-wrap">
+                  <label className="tech-photo-upload-btn" data-testid="button-upload-repair-photo">
+                    <Camera size={16} />
+                    <span>{tr(lang, 'التقاط أو رفع صورة للحل (إلزامي)', 'Capture or upload repair photo (Required)')}</span>
+                    <input
+                      type="file"
+                      accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+                      capture="environment"
+                      className="sr-only"
+                      onChange={handleRepairPhotoChange}
+                    />
+                  </label>
+                  <p className="tech-photo-formats-hint">
+                    {tr(lang, 'الصيغ المدعومة: PNG, JPG, JPEG (الحد الأقصى ١٢ ميجابايت)', 'Supported formats: PNG, JPG, JPEG (Max 12 MB)')}
+                  </p>
+                </div>
               ) : (
                 <div className="tech-repair-photo-preview">
                   <img
@@ -638,17 +660,33 @@ export function TechnicianTicketDetail({
                   </div>
                 </div>
               )}
+
+              {photoError && (
+                <p className="tech-photo-error-msg" role="alert">
+                  <CircleAlert size={14} />
+                  <span>{photoError}</span>
+                </p>
+              )}
+
+              {!repairPhoto && solutionText.trim() && (
+                <p className="tech-photo-missing-hint" role="status">
+                  <CircleAlert size={14} />
+                  <span>{tr(lang, 'يلزم إرفاق صورة توضح اكتمال الإصلاح لإتاحة إرسال البلاغ للتأكيد.', 'A photo confirming the fix is required before submitting for confirmation.')}</span>
+                </p>
+              )}
             </div>
 
             {/* Single Clear Primary Action to Submit for Confirmation */}
             <button
               type="button"
               className="tech-primary-action-btn"
-              disabled={!solutionText.trim() || action.isPending || !isAssignedToMe}
+              disabled={!solutionText.trim() || !repairPhoto || action.isPending || !isAssignedToMe}
               onClick={() => {
-                if (repairPhoto) {
-                  localStorage.setItem(`tadaruk-repair-photo:${ticket.id}`, repairPhoto);
+                if (!repairPhoto) {
+                  setPhotoError(tr(lang, 'إرفاق صورة الحل إلزامي لإتمام الإصلاح.', 'Attaching a solution photo is required to complete the repair.'));
+                  return;
                 }
+                localStorage.setItem(`tadaruk-repair-photo:${ticket.id}`, repairPhoto);
                 act('complete', {
                   note: solutionText.trim(),
                   resolution: solutionText.trim(),

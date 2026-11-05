@@ -395,6 +395,16 @@
   color: var(--rw-muted);
   line-height: 1.5;
 }
+.rw-photo-formats-tag {
+  display: inline-block;
+  font-size: 10.5px;
+  color: #307190;
+  font-weight: 600;
+  margin-top: 2px;
+}
+.dark .rw-photo-formats-tag {
+  color: #93c5fd;
+}
 .rw-photo-uploader-buttons {
   display: flex;
   align-items: center;

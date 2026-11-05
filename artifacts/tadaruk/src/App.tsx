@@ -964,8 +964,15 @@ function OverviewPage({lang,user}:{lang:Lang;user:DemoUser}) {
   const manager=user.role==='manager',tech=user.role==='technician';
   const title=manager?tr(lang,'نظرة عامة','Overview'):tech?tr(lang,'مهامي اليوم','My work today'):tr(lang,'مرحباً، '+user.name.split(' ')[0],'Welcome, '+user.name.split(' ')[0]);
   const safeTickets = Array.isArray(tickets) && tickets.length > 0 ? tickets : (FALLBACK_INITIAL_TICKETS as unknown as Ticket[]);
-  const safeRecent = (overview?.recentTickets && Array.isArray(overview.recentTickets) && overview.recentTickets.length > 0) ? overview.recentTickets : safeTickets.slice(0, 4);
-  const own=safeTickets.slice(0,4);
+  const userFilteredTickets = useMemo(() => {
+    if (tech) return safeTickets.filter(t => t.technicianId === user.id);
+    if (!manager) return safeTickets.filter(t => t.reporterId === user.id);
+    return safeTickets;
+  }, [safeTickets, tech, manager, user.id]);
+  const safeRecent = (overview?.recentTickets && Array.isArray(overview.recentTickets) && overview.recentTickets.length > 0)
+    ? (tech ? overview.recentTickets.filter(t => t.technicianId === user.id) : !manager ? overview.recentTickets.filter(t => t.reporterId === user.id) : overview.recentTickets)
+    : userFilteredTickets.slice(0, 4);
+  const own=userFilteredTickets.slice(0,4);
   return <div className="page-enter"><PageTitle eyebrow={manager?tr(lang,'العمليات · ٠١','OPERATIONS / 01'):tr(lang,'مساحة العمل','YOUR WORKSPACE')} title={title} description={manager?tr(lang,'كل بلاغ واضح، وكل خطوة لها صاحب.','Every report has an owner and a clear next step.'):tech?tr(lang,'ابدأ بالأولوية، وسجّل ما أصلحته للفريق.','Start with the highest priority and record the repair.'):tr(lang,'أخبرنا بما يحتاج إلى عناية. سنبقيك على اطلاع حتى يكتمل الإصلاح.','Tell us what needs attention. We will keep you updated through resolution.')}/>
      {manager?<><div className="overview-grid"><div className="metric-lead metric-open"><div className="metric-lead-head"><span className="metric-label">{tr(lang,'البلاغات المفتوحة','Open tickets')}</span><span className="metric-lead-icon" aria-hidden="true"><Activity size={21}/></span></div><strong>{overview?.openTickets??0}</strong><span className="metric-foot"><Building2 size={16}/>{tr(lang,'عبر جميع الفروع','Across all branches')}</span></div><div className="metric-card metric-urgent"><div className="metric-card-head"><span>{tr(lang,'طارئة','Urgent')}</span><span className="metric-card-icon" aria-hidden="true"><CircleAlert size={20}/></span></div><strong>{overview?.urgentTickets??0}</strong><small>{tr(lang,'تحتاج إلى متابعة سريعة','Needs prompt follow-up')}</small></div><div className="metric-card metric-pending"><div className="metric-card-head"><span>{tr(lang,'بانتظار الإسناد','Awaiting assignment')}</span><span className="metric-card-icon" aria-hidden="true"><Users size={20}/></span></div><strong>{overview?.pendingAssignment??0}</strong><small>{tr(lang,'تحتاج إلى توجيه','Needs routing')}</small></div><div className="metric-card metric-confirm"><div className="metric-card-head"><span>{tr(lang,'بانتظار التأكيد','Awaiting confirmation')}</span><span className="metric-card-icon" aria-hidden="true"><Clock3 size={20}/></span></div><strong>{overview?.awaitingConfirmation??0}</strong><small>{tr(lang,'تنتظر المبلّغ','Waiting on reporter')}</small></div></div>
        <div className="dashboard-columns"><section className="panel activity-panel"><div className="panel-heading"><div><span className="eyebrow">{tr(lang,'سجل البلاغات المباشر','LIVE REGISTER')}</span><h2>{tr(lang,'آخر البلاغات','Recent tickets')}</h2></div><Link href="/workspace/tickets" className="text-link">{tr(lang,'كل البلاغات','All tickets')} <ArrowLeft size={15}/></Link></div><TicketList tickets={safeRecent} lang={lang}/></section><aside className="ops-aside"><section className="resolved-callout"><span className="callout-symbol"><Check size={19}/></span><small>{tr(lang,'هذا الشهر','This month')}</small><strong>{overview?.resolvedThisMonth??0}</strong><b>{tr(lang,'إصلاحاً مؤكداً','Confirmed repairs')}</b><p>{tr(lang,'كل حل موثق يجعل الاستجابة التالية أذكى.','A documented fix helps the team respond faster next time.')}</p></section><FrequentFaults tickets={safeTickets} isLoading={ticketsLoading} isError={ticketsError} retry={()=>void refetchTickets()} lang={lang}/></aside></div></>:<div className="personal-layout"><section className="personal-feature"><div className="personal-feature-copy"><span className="eyebrow">{tech?tr(lang,'قائمة المهام','TASK QUEUE'):tr(lang,'صيانة أوضح','MAINTENANCE, MADE SIMPLE')}</span><h2 className={lang==='ar'?'display-ar':''}>{tech?tr(lang,'ما الذي يحتاج إليك الآن؟','What needs your attention?'):tr(lang,'بلاغك يصل إلى الشخص المناسب.','Your report reaches the right person.')}</h2><p>{tech?tr(lang,'البلاغات المسندة إليك مرتبة لتبدأ العمل دون بحث.','Your assigned tickets are organized so you can get started.'):tr(lang,'وصف واضح كافٍ. سنرتب البلاغ ونتابعه معك.','A clear description is enough. We will route and track the report.')}</p><Button href={tech?'/workspace/tickets':'/workspace/tickets/new'} kind="outline">{tech?tr(lang,'افتح قائمة المهام','Open task list'):tr(lang,'ابدأ بلاغاً جديداً','Create a report')}<ArrowLeft size={16}/></Button></div><div className="feature-mark"><Wrench size={34}/><span/></div></section><section className="panel personal-tickets"><div className="panel-heading"><div><span className="eyebrow">{tr(lang,tech?'مسندة إليك':'بلاغاتي',tech?'ASSIGNED TO YOU':'YOUR REPORTS')}</span><h2>{tech?tr(lang,'المهام الأخيرة','Recent tasks'):tr(lang,'بلاغاتي الأخيرة','Recent reports')}</h2></div><Link href="/workspace/tickets" className="text-link">{tr(lang,'عرض الكل','View all')} <ArrowLeft size={15}/></Link></div><TicketList tickets={own} lang={lang} empty={tech?tr(lang,'لا توجد مهام مسندة إليك','No tasks assigned to you'):tr(lang,'لم ترسل بلاغاً بعد','You have not submitted a report yet')}/></section></div>}
@@ -979,7 +986,16 @@ function TicketsPage({lang,user}:{lang:Lang;user:DemoUser}) {
   const {data:tickets,isLoading,isError,refetch}=useListTickets(params);
   const safeBranches = Array.isArray(branches) && branches.length > 0 ? branches : (FALLBACK_BRANCHES as unknown as Branch[]);
   const safeTickets = Array.isArray(tickets) && tickets.length > 0 ? tickets : (FALLBACK_INITIAL_TICKETS as unknown as Ticket[]);
-  const empty=search||status||branchId?tr(lang,'لا توجد نتائج مطابقة','No matching reports'):user.role==='reporter'?tr(lang,'لم ترسل بلاغاً بعد','You have not submitted a report yet'):tr(lang,'لا توجد بلاغات هنا بعد','No tickets here yet');
+  const displayedTickets = useMemo(() => {
+    if (user.role === 'technician') {
+      return safeTickets.filter(t => t.technicianId === user.id);
+    }
+    if (user.role === 'reporter') {
+      return safeTickets.filter(t => t.reporterId === user.id);
+    }
+    return safeTickets;
+  }, [safeTickets, user.role, user.id]);
+  const empty=search||status||branchId?tr(lang,'لا توجد نتائج مطابقة','No matching reports'):user.role==='reporter'?tr(lang,'لم ترسل بلاغاً بعد','You have not submitted a report yet'):user.role==='technician'?tr(lang,'لا توجد مهام مسندة إليك حالياً','No tasks assigned to you right now'):tr(lang,'لا توجد بلاغات هنا بعد','No tickets here yet');
   const title=user.role==='reporter'?tr(lang,'بلاغاتي','My reports'):user.role==='technician'?tr(lang,'المهام المسندة','Assigned tasks'):tr(lang,'سجل البلاغات','Ticket register');
   const description=user.role==='reporter'?tr(lang,'تابع البلاغات التي أرسلتها وحالة كل منها.','Track the reports you submitted and their current status.'):user.role==='manager'?tr(lang,'تابع الحالة، الأولوية، والمسؤول عن كل بلاغ.','Track status, priority, and ownership for each ticket.'):tr(lang,'كل مهمة مسندة إليك في سجل واحد.','All tasks assigned to you in one register.');
   return <div className="page-enter"><PageTitle eyebrow={tr(lang,'سجل البلاغات','MAINTENANCE REGISTER')} title={title} description={description}/>
@@ -988,7 +1004,7 @@ function TicketsPage({lang,user}:{lang:Lang;user:DemoUser}) {
       <div className="filter-select"><Filter size={16}/><TadarukSelect value={status} onValueChange={setStatus} ariaLabel={tr(lang,'تصفية حسب الحالة','Filter by status')} dir={lang==='ar'?'rtl':'ltr'} options={[{value:'',label:tr(lang,'كل الحالات','All statuses')},{value:'new',label:tr(lang,'جديد','New')},{value:'review',label:tr(lang,'قيد المراجعة','In review')},{value:'in_progress',label:tr(lang,'جاري العمل','In progress')},{value:'awaiting_confirmation',label:tr(lang,'بانتظار التأكيد','Awaiting confirmation')},{value:'closed',label:tr(lang,'مغلق','Closed')},...(isManager?[{value:'cancelled',label:tr(lang,'ملغي — سجل تاريخي','Cancelled — history')}]:[])]}/></div>
       {isManager&&<div className="filter-select"><Building2 size={16}/><TadarukSelect value={branchId} onValueChange={setBranchId} ariaLabel={tr(lang,'تصفية حسب الفرع','Filter by branch')} dir={lang==='ar'?'rtl':'ltr'} testId="select-ticket-branch" options={[{value:'',label:tr(lang,'جميع الفروع','All branches')},...safeBranches.map(branch=>({value:branch.id,label:branch.name}))]}/></div>}
     </div>
-     {isLoading?<State title={tr(lang,'جاري تحميل البلاغات','Loading tickets')} loading/>:isError?<State title={tr(lang,'تعذر تحميل السجل','Could not load ticket register')} retry={()=>void refetch()}/>:<section className="panel register-panel"><div className="register-header"><span>{tr(lang,'البلاغ / الفرع','Ticket / Branch')}</span><span>{tr(lang,'الأولوية','Priority')}</span><span>{tr(lang,'الحالة','Status')}</span><span>{tr(lang,'تاريخ الإرسال','Submitted')}</span><span/></div><TicketList tickets={safeTickets} lang={lang} empty={empty}/></section>}
+     {isLoading?<State title={tr(lang,'جاري تحميل البلاغات','Loading tickets')} loading/>:isError?<State title={tr(lang,'تعذر تحميل السجل','Could not load ticket register')} retry={()=>void refetch()}/>:<section className="panel register-panel"><div className="register-header"><span>{tr(lang,'البلاغ / الفرع','Ticket / Branch')}</span><span>{tr(lang,'الأولوية','Priority')}</span><span>{tr(lang,'الحالة','Status')}</span><span>{tr(lang,'تاريخ الإرسال','Submitted')}</span><span/></div><TicketList tickets={displayedTickets} lang={lang} empty={empty}/></section>}
   </div>;
 }
 function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
@@ -999,6 +1015,7 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
   const [localPhoto,setLocalPhoto]=useState(()=>localStorage.getItem(`tadaruk-photo:${id}`)||'');
   useEffect(()=>{setLocalPhoto(localStorage.getItem(`tadaruk-photo:${id}`)||'');},[id]);
   const [technicianId,setTechnicianId]=useState('');
+  const [pendingTechnicianId,setPendingTechnicianId]=useState<string | null>(null);
   const act=(a:'start'|'complete'|'confirm'|'reject'|'reassign',extra:Record<string,string>={})=>{setActionFeedback('');action.mutate({ticketId:id,data:{action:a,note,...extra}},{onSuccess:()=>{void query.invalidateQueries({queryKey:getGetTicketQueryKey(id)});void query.invalidateQueries({queryKey:getListTicketsQueryKey()});void query.invalidateQueries({queryKey:getGetOverviewQueryKey()});void query.invalidateQueries({queryKey:getListKnowledgeQueryKey()});setNote('');setActionFeedback(a==='start'?tr(lang,'بدأ العمل على البلاغ.','Work has started on this report.'):a==='complete'?tr(lang,'أُرسل تقييم الإصلاح للمراجعة.','The repair was submitted for confirmation.'):a==='confirm'?tr(lang,'تم تأكيد الإصلاح وإغلاق البلاغ.','The repair was confirmed and the report closed.'):a==='reject'?tr(lang,'تمت إعادة البلاغ للفني للمتابعة.','The report was returned to the technician.'):tr(lang,'تم تحديث إسناد الفني.','The technician assignment was updated.'));}});};
   const ticket = rawTicket || (FALLBACK_INITIAL_TICKETS as unknown as Ticket[]).find(t => t.id === id) || (FALLBACK_INITIAL_TICKETS[0] as unknown as Ticket);
   const manager=user.role==='manager',technician=user.role==='technician',reporter=user.role==='reporter';
@@ -1317,9 +1334,30 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
               </p>
               <div className="field-label">
                 <span className="field-label-caption">{tr(lang, 'إعادة الإسناد إلى', 'Reassign to')}</span>
-                <TadarukSelect value={technicianId} onValueChange={setTechnicianId} ariaLabel={tr(lang, 'إعادة الإسناد إلى', 'Reassign to')} dir={lang === 'ar' ? 'rtl' : 'ltr'} placeholder={tr(lang, 'اختر فنياً', 'Choose a technician')} options={[{ value: '', label: tr(lang, 'اختر فنياً', 'Choose a technician') }, ...(technicians || []).filter(t => t.active && t.branchId === ticket.branchId).map(t => ({ value: t.id, label: `${t.name} · ${t.specialization}` }))]} />
+                <TadarukSelect
+                  value={technicianId}
+                  onValueChange={(val) => {
+                    setTechnicianId(val);
+                    if (val && val !== ticket.technicianId) {
+                      setPendingTechnicianId(val);
+                    }
+                  }}
+                  ariaLabel={tr(lang, 'إعادة الإسناد إلى', 'Reassign to')}
+                  dir={lang === 'ar' ? 'rtl' : 'ltr'}
+                  placeholder={tr(lang, 'اختر فنياً', 'Choose a technician')}
+                  options={[{ value: '', label: tr(lang, 'اختر فنياً', 'Choose a technician') }, ...(technicians || []).filter(t => t.active && t.branchId === ticket.branchId).map(t => ({ value: t.id, label: `${t.name} · ${t.specialization}` }))]}
+                />
               </div>
-              <Button kind="outline" onClick={() => technicianId && act('reassign', { technicianId })} disabled={!technicianId || action.isPending}>
+              <Button
+                kind="outline"
+                onClick={() => {
+                  if (technicianId && technicianId !== ticket.technicianId) {
+                    setPendingTechnicianId(technicianId);
+                  }
+                }}
+                disabled={!technicianId || technicianId === ticket.technicianId || action.isPending}
+                data-testid="button-manager-reassign"
+              >
                 <Users size={16} />
                 {tr(lang, 'تحديث الإسناد', 'Update assignment')}
               </Button>
@@ -1362,6 +1400,63 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
         </section>
       </aside>
     </div>
+
+    {/* Manager Reassignment Confirmation Dialog */}
+    <AlertDialog open={Boolean(pendingTechnicianId)} onOpenChange={open => { if (!open) setPendingTechnicianId(null); }}>
+      <AlertDialogContent className="confirm-dialog" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <Users size={19} className="text-[#307190]" />
+            <span>{tr(lang, 'تأكيد تغيير الفني المسؤول', 'Confirm Technician Reassignment')}</span>
+          </AlertDialogTitle>
+          <AlertDialogDescription asChild>
+            <div className="reassign-confirm-body text-sm space-y-3">
+              <p className="reassign-confirm-intro text-slate-600 dark:text-slate-300">
+                {tr(
+                  lang,
+                  `هل ترغب في تغيير إسناد البلاغ (${ticket.number})؟`,
+                  `Are you sure you want to change the technician assigned to ticket (${ticket.number})?`
+                )}
+              </p>
+              <div className="reassign-comparison-grid p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-500 font-semibold">{tr(lang, 'الفني الحالي:', 'Current Technician:')}</span>
+                  <span className="font-bold text-slate-700 dark:text-slate-200">{ticket.technicianName || tr(lang, 'غير مسند', 'Unassigned')}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-200 dark:border-slate-700">
+                  <span className="text-slate-500 font-semibold">{tr(lang, 'الفني الجديد:', 'New Technician:')}</span>
+                  <span className="font-bold text-[#1f3363] dark:text-[#56f4ef]">
+                    {(technicians || []).find(t => t.id === pendingTechnicianId)?.name || ''}
+                    {((technicians || []).find(t => t.id === pendingTechnicianId)?.specialization) && ` · ${(technicians || []).find(t => t.id === pendingTechnicianId)?.specialization}`}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={() => setPendingTechnicianId(null)} disabled={action.isPending}>
+            {tr(lang, 'إلغاء', 'Cancel')}
+          </AlertDialogCancel>
+          <AlertDialogAction
+            className="branch-confirm-action"
+            disabled={action.isPending}
+            onClick={(e) => {
+              e.preventDefault();
+              if (pendingTechnicianId) {
+                const targetId = pendingTechnicianId;
+                act('reassign', { technicianId: targetId });
+                setTechnicianId(targetId);
+                setPendingTechnicianId(null);
+              }
+            }}
+            data-testid="button-confirm-reassign"
+          >
+            {action.isPending ? tr(lang, 'جارٍ التحديث...', 'Updating...') : tr(lang, 'تأكيد التغيير', 'Confirm Reassignment')}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   </div>;
 }
 const TECHNICIAN_OTHER_SPECIALTY = '__other_specialty__';

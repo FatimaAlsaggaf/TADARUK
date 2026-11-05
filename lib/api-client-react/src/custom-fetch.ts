@@ -907,14 +907,21 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
   // 6. Overview (/api/overview)
   if (apiPath === "/api/overview") {
     const tickets = getStoredTickets();
-    const openTickets = tickets.filter(t => t.status !== "closed" && t.status !== "cancelled").length;
-    const inProgress = tickets.filter(t => t.status === "in_progress").length;
-    const awaitingConfirmation = tickets.filter(t => t.status === "awaiting_confirmation").length;
-    const closed = tickets.filter(t => t.status === "closed").length;
+    const activeUser = getActiveUser();
+    let relevantTickets = tickets;
+    if (activeUser?.role === "technician") {
+      relevantTickets = tickets.filter(t => t.technicianId === activeUser.id);
+    } else if (activeUser?.role === "reporter") {
+      relevantTickets = tickets.filter(t => t.reporterId === activeUser.id);
+    }
+    const openTickets = relevantTickets.filter(t => t.status !== "closed" && t.status !== "cancelled").length;
+    const inProgress = relevantTickets.filter(t => t.status === "in_progress").length;
+    const awaitingConfirmation = relevantTickets.filter(t => t.status === "awaiting_confirmation").length;
+    const closed = relevantTickets.filter(t => t.status === "closed").length;
     return {
-      totalTickets: tickets.length,
+      totalTickets: relevantTickets.length,
       openTickets,
-      urgentTickets: tickets.filter(t => t.priority === "urgent" && t.status !== "closed" && t.status !== "cancelled").length,
+      urgentTickets: relevantTickets.filter(t => t.priority === "urgent" && t.status !== "closed" && t.status !== "cancelled").length,
       pendingAssignment: tickets.filter(t => !t.technicianId && t.status !== "closed" && t.status !== "cancelled").length,
       inProgressTickets: inProgress,
       awaitingConfirmationTickets: awaitingConfirmation,
@@ -923,7 +930,7 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
       activeTechnicians: FALLBACK_TECHNICIANS.filter(t => t.active).length,
       branchesCount: FALLBACK_BRANCHES.filter(b => b.active).length,
       averageResolutionHours: 3.5,
-      recentTickets: tickets.slice(0, 5),
+      recentTickets: relevantTickets.slice(0, 5),
     } as unknown as T;
   }
 
@@ -1087,10 +1094,16 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
   if (apiPath === "/api/tickets") {
     if (method === "GET") {
       const tickets = getStoredTickets();
+      const activeUser = getActiveUser();
       const search = searchParams.get("search")?.toLowerCase().trim();
       const status = searchParams.get("status")?.trim();
       const branchId = searchParams.get("branchId")?.trim();
       let filtered = tickets;
+      if (activeUser?.role === "technician") {
+        filtered = filtered.filter(t => t.technicianId === activeUser.id);
+      } else if (activeUser?.role === "reporter") {
+        filtered = filtered.filter(t => t.reporterId === activeUser.id);
+      }
       if (search) {
         filtered = filtered.filter(t =>
           String(t.number || "").toLowerCase().includes(search) ||
