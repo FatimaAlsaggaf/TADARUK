@@ -680,7 +680,6 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
   const defaultUser: DemoUser = { id: 'demo-reporter', name: 'سارة القحطاني', role: 'reporter', initials: 'سق', branchId: 'branch-olaya', branchName: 'فرع العليا', specialization: null };
   const user=session?.user || (typeof window !== 'undefined' ? (() => { try { return JSON.parse(localStorage.getItem('tadaruk-demo-session-user') || 'null'); } catch { return null; } })() : null) || defaultUser; const [location,go]=useLocation(); const [menu,setMenu]=useState(false); const [mobile,setMobile]=useState(false);
   const [showProfile,setShowProfile]=useState(false);
-  const [showSettings,setShowSettings]=useState(false);
   const profileMenuRef=useRef<HTMLDivElement>(null);
   const branchContext=useContext(ReporterBranchContext);
 
@@ -778,17 +777,6 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
               >
                 <UserRound size={16} className="side-account-item-icon"/>
                 <span>{tr(lang,'الملف الشخصي','Profile')}</span>
-              </button>
-
-              <button
-                type="button"
-                className="side-account-item"
-                role="menuitem"
-                onClick={()=>{setMenu(false);setShowSettings(true);}}
-                data-testid="button-open-settings-dialog"
-              >
-                <Settings2 size={16} className="side-account-item-icon"/>
-                <span>{tr(lang,'الإعدادات','Settings')}</span>
               </button>
 
               <div className="side-account-divider" role="separator"/>
@@ -889,71 +877,6 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
         <div className="profile-dialog-footer">
           <button type="button" className="btn btn-outline" onClick={()=>setShowProfile(false)}>
             {tr(lang,'إغلاق','Close')}
-          </button>
-        </div>
-      </DialogContent>
-    </Dialog>
-
-    <Dialog open={showSettings} onOpenChange={setShowSettings}>
-      <DialogContent className="tadaruk-modal-dialog settings-dialog" dir={lang==='ar'?'rtl':'ltr'}>
-        <DialogHeader>
-          <DialogTitle className="settings-dialog-title">
-            <Settings2 size={20} className="dialog-title-icon"/>
-            <span>{tr(lang,'الإعدادات والتفضيلات','Settings & Preferences')}</span>
-          </DialogTitle>
-          <DialogDescription>
-            {tr(lang,'تخصيص لغة النظام ومظهر الواجهة','Customize system language and appearance')}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="settings-dialog-body">
-          <div className="settings-option-card">
-            <div className="settings-option-meta">
-              <div className="settings-option-icon"><Languages size={18}/></div>
-              <div>
-                <b>{tr(lang,'لغة التطبيق','Interface Language')}</b>
-                <p>{tr(lang,'اختر اللغة المفضلة للواجهة (العربية / English)','Choose preferred display language')}</p>
-              </div>
-            </div>
-            <div className="settings-lang-toggle">
-              <button
-                type="button"
-                className={`btn-choice ${lang==='ar'?'active':''}`}
-                onClick={()=>setLang('ar')}
-              >
-                العربية
-              </button>
-              <button
-                type="button"
-                className={`btn-choice ${lang==='en'?'active':''}`}
-                onClick={()=>setLang('en')}
-              >
-                English
-              </button>
-            </div>
-          </div>
-          <div className="settings-option-card">
-            <div className="settings-option-meta">
-              <div className="settings-option-icon"><ShieldCheck size={18}/></div>
-              <div>
-                <b>{tr(lang,'المظهر والسمة','Appearance Theme')}</b>
-                <p>{tr(lang,'التبديل بين الوضع الفاتح والداكن','Switch between light and dark mode')}</p>
-              </div>
-            </div>
-            <div className="settings-theme-toggle">
-              <SunMoonThemeToggle
-                className="workspace-theme-toggle"
-                theme={dark?'dark':'light'}
-                onThemeChange={theme=>setDark(theme==='dark')}
-                aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')}
-                size={40}
-                duration={860}
-              />
-            </div>
-          </div>
-        </div>
-        <div className="settings-dialog-footer">
-          <button type="button" className="btn btn-primary" onClick={()=>setShowSettings(false)}>
-            {tr(lang,'حفظ وإغلاق','Save & Close')}
           </button>
         </div>
       </DialogContent>
