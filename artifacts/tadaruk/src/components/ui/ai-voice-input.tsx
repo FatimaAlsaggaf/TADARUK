@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Check, LoaderCircle, Mic, Mic2, RotateCcw, Sparkles, Square, X } from "lucide-react";
+import { Check, LoaderCircle, Mic, RotateCcw, Sparkles, Square, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
