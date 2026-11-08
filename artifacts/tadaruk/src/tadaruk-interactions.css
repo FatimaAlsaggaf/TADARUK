@@ -7210,3 +7210,96 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
     border-radius: 0 !important;
   }
 }
+
+
+/* Reporter header polish: blend with canvas, soft interactive controls. */
+.reporter-shell .reporter-main-area {
+  background: #f7f9fb !important;
+}
+.dark .reporter-shell .reporter-main-area {
+  background: hsl(var(--background)) !important;
+}
+.reporter-shell .reporter-header,
+.dark .reporter-shell .reporter-header {
+  border: 0 !important;
+  border-block-start: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+/* No white/contrasting overlay or old decorative divider above the controls. */
+.reporter-shell .reporter-header::before,
+.reporter-shell .reporter-header::after {
+  content: none !important;
+  display: none !important;
+}
+.reporter-shell .reporter-header-controls {
+  align-items: center !important;
+  gap: 9px !important;
+}
+.reporter-shell .reporter-control-btn {
+  min-width: 39px;
+  min-height: 39px;
+  border-radius: 11px;
+  transition: background-color .18s ease, color .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+.reporter-shell .reporter-control-btn:hover {
+  background: #e8f0f5 !important;
+  color: #1f3363 !important;
+  transform: translateY(-1px);
+}
+.reporter-shell .reporter-control-btn:active {
+  transform: translateY(0);
+}
+.dark .reporter-shell .reporter-control-btn:hover {
+  background: #263c53 !important;
+  color: #f5f8ff !important;
+}
+.reporter-shell .reporter-theme-pill-wrap {
+  border-radius: 999px;
+  transition: transform .18s ease, filter .18s ease;
+}
+.reporter-shell .reporter-theme-pill-wrap:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+}
+/* Profile is gently highlighted at rest; only a subtle lift on hover/open. */
+.reporter-shell .reporter-account-card {
+  padding: 5px 10px !important;
+  border: 1px solid #dbe7ee !important;
+  border-radius: 14px !important;
+  background: rgba(255,255,255,.68) !important;
+  box-shadow: 0 2px 9px rgba(31,51,99,.035) !important;
+  transition: background-color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease !important;
+}
+.reporter-shell .reporter-account-card:hover,
+.reporter-shell .reporter-account-card[aria-expanded="true"] {
+  background: #edf5f8 !important;
+  border-color: #b9d5e2 !important;
+  box-shadow: 0 5px 15px rgba(31,51,99,.085) !important;
+  transform: translateY(-1px);
+}
+.dark .reporter-shell .reporter-account-card {
+  background: rgba(27,48,69,.52) !important;
+  border-color: #354d64 !important;
+  box-shadow: none !important;
+}
+.dark .reporter-shell .reporter-account-card:hover,
+.dark .reporter-shell .reporter-account-card[aria-expanded="true"] {
+  background: #243e57 !important;
+  border-color: #547289 !important;
+  box-shadow: 0 5px 15px rgba(0,0,0,.17) !important;
+}
+.reporter-shell .reporter-control-btn:focus-visible,
+.reporter-shell .reporter-account-card:focus-visible {
+  outline: 2px solid #5c9dac !important;
+  outline-offset: 2px !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reporter-shell .reporter-control-btn,
+  .reporter-shell .reporter-account-card,
+  .reporter-shell .reporter-theme-pill-wrap {
+    transition: none !important;
+    transform: none !important;
+  }
+}
