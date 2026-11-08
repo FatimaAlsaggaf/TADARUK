@@ -7900,3 +7900,70 @@ body:has(.dark .reporter-shell) #root {
     order: -2 !important;
   }
 }
+
+/* Technician header final placement: compact controls on the LEFT, readable menu in viewport. */
+.app-shell .technician-frame .workspace-compact-topbar {
+  /* Flex-end is the visual left in RTL; in LTR it is the visual right. */
+  justify-content: flex-end !important;
+  position: relative !important;
+  z-index: 60 !important; /* above the fixed sidebar (z-index:20) */
+  isolation: auto !important;
+  overflow: visible !important;
+}
+.app-shell .technician-frame {
+  overflow: visible !important;
+}
+.app-shell .technician-frame .technician-header-account {
+  order: 0 !important;
+  position: relative !important;
+  z-index: 62 !important;
+  flex-shrink: 0 !important;
+}
+.app-shell .technician-frame .technician-notifications-cluster {
+  order: -1 !important; /* RTL: bell to the right of the account */
+  flex: 0 0 auto !important;
+}
+.app-shell .technician-frame .technician-header-menu {
+  position: absolute !important;
+  top: calc(100% + 9px) !important;
+  /* Anchor the popover at the LEFT edge of account when RTL, so it grows
+     into the content area rather than underneath the right sidebar. */
+  inset-inline-start: auto !important;
+  inset-inline-end: 0 !important;
+  width: 280px !important;
+  max-width: min(280px, calc(100vw - 32px)) !important;
+  z-index: 100 !important;
+  direction: inherit !important;
+  overflow: hidden !important;
+  border-radius: 14px !important;
+  box-shadow: 0 14px 36px rgba(31, 51, 99, .16) !important;
+}
+.app-shell .technician-frame .technician-menu-option {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  min-height: 44px !important;
+  padding: 10px 12px !important;
+  text-align: start !important;
+  white-space: normal !important;
+  line-height: 1.5 !important;
+}
+.app-shell .technician-frame .technician-menu-option > span:not(.technician-menu-option-value) {
+  flex: 1;
+  min-width: 0;
+}
+.app-shell .technician-frame .technician-menu-option-value {
+  margin-inline-start: auto;
+  flex-shrink: 0;
+}
+.app-shell .technician-frame .technician-menu-theme-action:hover {
+  cursor: pointer;
+}
+@media (max-width: 900px) {
+  .app-shell .technician-frame .workspace-compact-topbar {
+    justify-content: flex-end !important;
+  }
+  .app-shell .technician-frame .mobile-menu {
+    margin-inline-end: auto !important;
+  }
+}
