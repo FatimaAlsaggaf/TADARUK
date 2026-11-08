@@ -1883,3 +1883,110 @@
   line-height: 1.7;
   margin: 0 0 20px;
 }
+
+
+/* Report creation refresh: compact layout and a clearly selected step.
+   Scoped to this wizard; no impact on other role pages. */
+.reporter-view .rw-new-report-stepper {
+  width: min(100%, 1020px) !important;
+  max-width: 1020px !important;
+  margin-inline: auto !important;
+  --stepper-frame-shadow: 0 7px 24px rgba(31,51,99,.045);
+  --stepper-well: #edf2f6;
+}
+.reporter-view .rw-new-report-stepper.stepper--framed {
+  padding: 10px !important;
+  border-radius: 18px !important;
+}
+.reporter-view .rw-new-report-stepper .stepper__body {
+  padding-top: 14px !important;
+}
+.reporter-view .rw-new-report-stepper .stepper__track {
+  padding: 5px !important;
+  background: #e9eff4 !important;
+  border-color: #d5e1ea !important;
+}
+.reporter-view .rw-new-report-stepper .stepper__segment {
+  height: 45px !important;
+  color: #6a7b90 !important;
+}
+.reporter-view .rw-new-report-stepper .stepper__segment[aria-current="step"],
+.reporter-view .rw-new-report-stepper .stepper__segment:has(.stepper__badge[data-status="active"]) {
+  background: #fff !important;
+  border-radius: 11px !important;
+  color: #1f3363 !important;
+  box-shadow: 0 2px 10px rgba(31,51,99,.13) !important;
+}
+.reporter-view .rw-new-report-stepper .stepper__segment:has(.stepper__badge[data-status="active"]) .stepper__title {
+  color: #1f3363 !important;
+  font-weight: 700 !important;
+}
+.reporter-view .rw-new-report-stepper .stepper__segment:has(.stepper__badge[data-status="active"]) .stepper__badge {
+  background: #1f3363 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+.reporter-view .rw-new-report-stepper .stepper__segment:not(:has(.stepper__badge[data-status="active"])) .stepper__title {
+  color: #697c94 !important;
+  font-weight: 500 !important;
+}
+.reporter-view .rw-new-report-stepper .rw-report-intro {
+  margin-bottom: 14px !important;
+  padding-bottom: 13px !important;
+}
+.reporter-view .rw-new-report-stepper .rw-report-intro-text h2 {
+  font-size: 23px !important;
+}
+.reporter-view .rw-new-report-stepper .rw-field textarea {
+  min-height: 106px !important;
+  padding: 12px 14px !important;
+  resize: vertical;
+}
+.reporter-view .rw-new-report-stepper .rw-preset-bar {
+  padding: 10px 12px !important;
+  margin-bottom: 13px !important;
+  background: #f2f6f9 !important;
+  border: 1px solid #dbe6ed !important;
+}
+.reporter-view .rw-new-report-stepper .rw-input-options {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin: -4px 0 13px !important;
+  padding: 7px 11px !important;
+}
+.reporter-view .rw-new-report-stepper .rw-photo-uploader {
+  gap: 13px !important;
+  padding: 12px 14px !important;
+  border-radius: 12px !important;
+}
+.reporter-view .rw-new-report-stepper .rw-photo-uploader-text p {
+  font-size: 12.5px !important;
+  line-height: 1.5 !important;
+}
+.reporter-view .rw-new-report-stepper .rw-photo-uploader-icon {
+  width: 38px !important;
+  height: 38px !important;
+}
+.dark .reporter-view .rw-new-report-stepper {
+  --stepper-well: #203348;
+}
+.dark .reporter-view .rw-new-report-stepper .stepper__track {
+  background: #203348 !important;
+  border-color: #38516a !important;
+}
+.dark .reporter-view .rw-new-report-stepper .stepper__segment:has(.stepper__badge[data-status="active"]) {
+  background: #2e4864 !important;
+}
+.dark .reporter-view .rw-new-report-stepper .stepper__segment:has(.stepper__badge[data-status="active"]) .stepper__title { color: #fff !important; }
+.dark .reporter-view .rw-new-report-stepper .rw-preset-bar {
+  background: #192b40 !important;
+  border-color: #35516b !important;
+}
+@media (max-width: 640px) {
+  .reporter-view .rw-new-report-stepper.stepper--framed { padding: 6px !important; }
+  .reporter-view .rw-new-report-stepper .stepper__segment { height: 42px !important; padding-inline: 5px !important; }
+  .reporter-view .rw-new-report-stepper .stepper__title { font-size: 12px !important; }
+  .reporter-view .rw-new-report-stepper .rw-photo-uploader { flex-wrap: wrap !important; }
+  .reporter-view .rw-new-report-stepper .rw-input-options { flex-wrap: wrap !important; }
+}
