@@ -1277,13 +1277,18 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
                 <Languages size={16}/><span>{tr(lang,'اللغة','Language')}</span>
                 <span className="technician-menu-option-value">{lang==='ar'?'English':'العربية'}</span>
               </button>
-              <button type="button" className="technician-menu-option technician-menu-theme-action"
-                onClick={()=>setDark(!dark)} data-testid="theme-toggle-technician"
-                aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')}>
-                <SunMoon size={16}/>
-                <span>{tr(lang,'المظهر','Appearance')}</span>
-                <span className="technician-menu-option-value">{dark?tr(lang,'داكن','Dark'):tr(lang,'فاتح','Light')}</span>
-              </button>
+              <div className="technician-menu-theme-row">
+                <span className="technician-menu-theme-label"><SunMoon size={16}/>{tr(lang,'المظهر','Appearance')}</span>
+                <SunMoonThemeToggle
+                  className="workspace-theme-toggle technician-menu-animated-theme"
+                  theme={dark?'dark':'light'}
+                  onThemeChange={theme=>setDark(theme==='dark')}
+                  aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')}
+                  data-testid="theme-toggle-technician"
+                  size={40}
+                  duration={860}
+                />
+              </div>
               <div className="side-account-divider" role="separator"/>
               {logout.isError&&<p className="account-menu-error" role="alert">{tr(lang,'تعذر تسجيل الخروج، حاول مجدداً.','Could not sign out. Please try again.')}</p>}
               <button type="button" className="technician-menu-option technician-menu-signout"
