@@ -8346,3 +8346,115 @@ body:has(.dark .reporter-shell) #root {
     margin-right: 0 !important;
   }
 }
+
+/* Landing roadmap finish: refined stage tiles with an arrival pulse, readable supporting text. */
+/* Keep all node dimensions/positions intact: the continuous path is already aligned. */
+.landing .roadmap .workflow-node {
+  isolation: isolate;
+  border-radius: 20px !important;
+  border: 1.5px solid #cbdce6 !important;
+  background: linear-gradient(145deg,#fff 7%,#f0f5f9 100%) !important;
+  color: #365d7c !important;
+  box-shadow: 0 8px 19px rgba(31,51,99,.075), inset 0 1px rgba(255,255,255,.85) !important;
+  transition: background-color .3s ease, border-color .3s ease, color .3s ease, box-shadow .3s ease !important;
+}
+.landing .roadmap .workflow-node > svg { position: relative; z-index: 2; }
+.landing .roadmap .workflow-step.is-reached .workflow-node {
+  background: linear-gradient(145deg,#f9fcff,#e3eff6) !important;
+  color: #265578 !important;
+  border-color: #94b5ca !important;
+}
+.landing .roadmap .workflow-step.is-current .workflow-node {
+  animation: tadaruk-roadmap-arrival .9s cubic-bezier(.18,.68,.25,1) both !important;
+}
+.landing .roadmap .workflow-step.is-current .workflow-node > svg {
+  animation: tadaruk-roadmap-glyph .7s ease-out both;
+}
+.landing .roadmap .workflow-step.is-current .workflow-node::after {
+  display: block !important;
+  animation: workflow-node-sheen .95s cubic-bezier(.22,.72,.18,1) both !important;
+}
+.landing .roadmap .workflow-step.is-success .workflow-node {
+  background: linear-gradient(145deg,#2b4c79,#1f3363) !important;
+  border-color: #1f3363 !important;
+  color: #fff !important;
+  box-shadow: 0 11px 24px rgba(31,51,99,.22) !important;
+}
+.landing .roadmap .workflow-step.is-success.is-current .workflow-node {
+  animation: tadaruk-roadmap-success .9s ease-out both !important;
+}
+@keyframes tadaruk-roadmap-arrival {
+  0% { transform: scale(1); box-shadow: 0 8px 19px rgba(31,51,99,.075), 0 0 0 0 rgba(77,128,167,0); }
+  28% { transform: scale(1.095); box-shadow: 0 10px 23px rgba(31,51,99,.14), 0 0 0 8px rgba(77,128,167,.19); }
+  62% { transform: scale(1.035); box-shadow: 0 10px 22px rgba(31,51,99,.12), 0 0 0 4px rgba(77,128,167,.1); }
+  100% { transform: scale(1.045); box-shadow: 0 10px 22px rgba(31,51,99,.12), 0 0 0 4px rgba(77,128,167,.10); }
+}
+@keyframes tadaruk-roadmap-success {
+  0% { transform: scale(1); box-shadow: 0 10px 22px rgba(31,51,99,.16), 0 0 0 0 rgba(70,157,152,0); }
+  35% { transform: scale(1.1); box-shadow: 0 13px 27px rgba(31,51,99,.23), 0 0 0 9px rgba(70,157,152,.2); }
+  100% { transform: scale(1.045); box-shadow: 0 11px 24px rgba(31,51,99,.22), 0 0 0 3px rgba(70,157,152,.09); }
+}
+@keyframes tadaruk-roadmap-glyph {
+  0% { transform: scale(.85); opacity: .65; }
+  50% { transform: scale(1.17); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.dark .landing .roadmap .workflow-node {
+  background: linear-gradient(145deg,#24374e,#1b2c42) !important;
+  border-color: #405971 !important;
+  color: #b7d0e2 !important;
+  box-shadow: 0 8px 19px rgba(0,0,0,.22) !important;
+}
+.dark .landing .roadmap .workflow-step.is-reached .workflow-node {
+  background: linear-gradient(145deg,#2c4a63,#20394f) !important;
+  border-color: #759cb6 !important;
+  color: #f0f7fc !important;
+}
+.dark .landing .roadmap .workflow-step.is-success .workflow-node {
+  background: linear-gradient(145deg,#355a78,#264566) !important;
+  border-color: #7699b0 !important;
+  color: #fff !important;
+}
+
+/* Landing body text must be comfortably legible without inflating labels or
+   the geometric logo. Display headlines keep the existing Amiri hierarchy. */
+.landing .hero-sub {
+  font-size: clamp(23px,2.25vw,28px) !important;
+  line-height: 1.65 !important;
+}
+.landing .workflow-label {
+  font-size: 17px !important;
+  font-weight: 650 !important;
+}
+.landing .impact-pillar-copy,
+.landing .landing-end p,
+.landing .footer-brand p,
+.landing .explain-copy p {
+  font-size: 16px !important;
+  line-height: 1.85 !important;
+}
+.landing .eyebrow,
+.landing .workflow-heading .eyebrow,
+.landing .impact-heading .eyebrow {
+  font-size: 12.5px !important;
+  letter-spacing: .035em !important;
+}
+.landing .landing-nav-link { font-size: 13.5px !important; }
+.landing .workflow-index { font-size: 12px !important; }
+@media (max-width: 780px) {
+  .landing .hero-sub { font-size: 21px !important; }
+  .landing .workflow-label { font-size: 16px !important; }
+  .landing .impact-pillar-copy,
+  .landing .landing-end p,
+  .landing .footer-brand p,
+  .landing .explain-copy p { font-size: 15px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing .roadmap .workflow-step.is-current .workflow-node,
+  .landing .roadmap .workflow-step.is-success.is-current .workflow-node,
+  .landing .roadmap .workflow-step.is-current .workflow-node > svg,
+  .landing .roadmap .workflow-step.is-current .workflow-node::after {
+    animation: none !important;
+    transform: none !important;
+  }
+}
