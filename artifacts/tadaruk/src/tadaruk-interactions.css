@@ -5673,20 +5673,26 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
 }
 
 /* ==========================================================================
-   Reporter Dashboard Layout: Unified Header & Seamless Integrated Sidebar
-   Shared CSS variable --reporter-sidebar-width for mathematical alignment
+   Reporter Dashboard Layout: Unified Connected Application Shell (CSS Grid)
    ========================================================================== */
 
-/* Shell Canvas Background & CSS Variables */
+/* Shell Canvas: Single Connected CSS Grid */
 .reporter-shell {
   --reporter-sidebar-width: 260px;
   --reporter-header-height: 64px;
   min-height: 100dvh;
-  display: flex !important;
-  flex-direction: column !important;
+  display: grid !important;
+  grid-template-columns: 1fr var(--reporter-sidebar-width) !important;
+  grid-template-rows: 1fr !important;
   background: #f7f9fb !important;
   color: #1f3363 !important;
   font-family: 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+[dir="ltr"] .reporter-shell {
+  grid-template-columns: var(--reporter-sidebar-width) 1fr !important;
 }
 
 .dark .reporter-shell {
@@ -5694,114 +5700,125 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   color: #f1f5fa !important;
 }
 
-/* 1. Unified Full-Width Header with Flowing Curved Bottom Edge */
-.reporter-shell .reporter-topbar {
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  width: 100% !important;
-  height: var(--reporter-header-height) !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  border-radius: 0 !important;
-  display: flex !important;
-  align-items: stretch !important;
-  justify-content: space-between !important;
-  background: #ffffff !important;
-  border: 0 !important;
-  /* Straight border-bottom replaced by the organic flowing curved boundary below */
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
-  transition: background 0.25s ease !important;
-  overflow: visible !important;
-}
-
-.dark .reporter-shell .reporter-topbar {
-  background: #111e32 !important;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25) !important;
-}
-
-/* Organic Flowing Curved Bottom Edge */
-.reporter-topbar-curve-boundary {
-  position: absolute;
-  bottom: -16px;
-  inset-inline-start: 0;
-  width: 100%;
-  height: 18px;
-  pointer-events: none;
-  z-index: 2;
-  overflow: visible;
-}
-
-.reporter-curve-svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-[dir="ltr"] .reporter-curve-svg {
-  transform: scaleX(-1);
-}
-
-.reporter-curve-fill {
-  fill: #ffffff;
-  transition: fill 0.25s ease;
-}
-
-.dark .reporter-curve-fill {
-  fill: #111e32;
-}
-
-.reporter-curve-stroke {
-  fill: none;
-  stroke: #e1e9f0;
-  stroke-width: 1.2;
-  vector-effect: non-scaling-stroke;
-  transition: stroke 0.25s ease;
-}
-
-.dark .reporter-curve-stroke {
-  stroke: #1e324a;
-}
-
-/* Topbar Brand Section (Matches Sidebar Width & Aligns Boundary Exactly) */
-.reporter-topbar-brand-section {
+/* 1. Right Column: Full-Height Connected Sidebar (from very top of window to bottom) */
+.reporter-shell .reporter-sidebar {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  position: sticky !important;
+  top: 0 !important;
+  height: 100vh !important;
   width: var(--reporter-sidebar-width) !important;
-  flex: 0 0 var(--reporter-sidebar-width) !important;
-  height: 100% !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  border-inline-start: 0 !important;
+  border-inline-end: 1px solid #d6e6e6 !important;
+  box-sizing: border-box !important;
+  background:
+    radial-gradient(ellipse at 100% 0%, rgba(86, 244, 239, .28), transparent 38%),
+    linear-gradient(160deg, #f4f4f4 0%, #eff8f7 48%, #d9f3f1 100%) !important;
+  color: #1f3363 !important;
+  padding: 0 16px 24px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow-y: auto !important;
+  z-index: 20 !important;
+  inset-block: auto !important;
+  inset-inline-start: auto !important;
+  inset-inline-end: auto !important;
+  transform: none !important;
+}
+
+[dir="ltr"] .reporter-shell .reporter-sidebar {
+  grid-column: 1 !important;
+}
+
+.dark .reporter-shell .reporter-sidebar {
+  color: #f5f8ff !important;
+  background:
+    radial-gradient(ellipse at 100% 0%, rgba(86, 244, 239, .2), transparent 38%),
+    linear-gradient(160deg, #1f3363 0%, #183754 54%, #10283b 100%) !important;
+  border-inline-end: 1px solid #294662 !important;
+}
+
+/* Sidebar Logo Area (Top Row of Sidebar, Aligned with Header Height) */
+.reporter-sidebar-brand {
+  height: var(--reporter-header-height) !important;
+  min-height: var(--reporter-header-height) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  padding: 0 16px !important;
-  position: relative !important;
-  box-sizing: border-box !important;
-  border-inline-end: 1px solid #d6e6e6 !important;
-  background: #ffffff !important;
+  margin-bottom: 8px !important;
+  flex-shrink: 0 !important;
 }
 
-.dark .reporter-topbar-brand-section {
-  border-inline-end-color: #294662 !important;
-  background: #111e32 !important;
-}
-
-.reporter-brand-link {
+.reporter-sidebar-brand .reporter-brand-link {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   text-decoration: none !important;
 }
 
-.reporter-brand-link .brand-logo {
-  display: block !important;
+.reporter-sidebar-brand .brand-logo {
   width: 140px !important;
   height: auto !important;
+  display: block !important;
   margin: 0 auto !important;
 }
 
-.reporter-brand-divider {
-  display: none !important; /* Handled precisely by border-inline-end */
+/* 2. Left Column: Main Application Area */
+.reporter-main-area {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+  position: relative !important;
 }
 
-/* Mobile Menu Toggle Button */
+[dir="ltr"] .reporter-main-area {
+  grid-column: 2 !important;
+}
+
+/* Top Row: Header Controls (Ends cleanly at the sidebar boundary) */
+.reporter-header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 30 !important;
+  height: var(--reporter-header-height) !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  background: #ffffff !important;
+  border-bottom: 1px solid #e1e9f0 !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
+  padding: 0 24px !important;
+  box-sizing: border-box !important;
+  transition: background 0.25s ease !important;
+}
+
+.dark .reporter-header {
+  background: #111e32 !important;
+  border-bottom-color: #1e324a !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25) !important;
+}
+
+.reporter-mobile-brand {
+  display: none !important;
+}
+
+/* Header Controls Cluster: Aligned cleanly to the LEFT in RTL */
+.reporter-header-controls {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin-inline-start: 0 !important;
+}
+
+/* Mobile Menu Button */
 .reporter-mobile-menu {
   display: none;
   background: transparent;
@@ -5815,18 +5832,47 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   color: #f5f8ff;
 }
 
-/* Controls Cluster: Aligned cleanly to the LEFT in RTL, spacious and balanced */
-.reporter-topbar-controls {
-  flex: 1 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-end !important;
-  padding: 0 24px !important;
-  gap: 12px !important;
+/* Structural Rounded Inside Corner Junction (Fillet) */
+.reporter-inside-corner {
+  position: absolute !important;
+  top: var(--reporter-header-height) !important;
+  inset-inline-end: 0 !important;
+  width: 16px !important;
+  height: 16px !important;
+  pointer-events: none !important;
+  z-index: 15 !important;
+  overflow: hidden !important;
 }
 
-[dir="ltr"] .reporter-topbar-controls {
-  justify-content: flex-end !important;
+.reporter-inside-corner-svg {
+  width: 16px !important;
+  height: 16px !important;
+  display: block !important;
+}
+
+[dir="ltr"] .reporter-inside-corner {
+  transform: scaleX(-1) !important;
+}
+
+.reporter-corner-fill {
+  fill: #ffffff !important;
+  transition: fill 0.25s ease !important;
+}
+
+.dark .reporter-corner-fill {
+  fill: #111e32 !important;
+}
+
+.reporter-corner-stroke {
+  fill: none !important;
+  stroke: #e1e9f0 !important;
+  stroke-width: 1.25 !important;
+  vector-effect: non-scaling-stroke !important;
+  transition: stroke 0.25s ease !important;
+}
+
+.dark .reporter-corner-stroke {
+  stroke: #1e324a !important;
 }
 
 /* Vertical Hairline Divider */
@@ -6278,57 +6324,8 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
 }
 
 /* ==========================================================================
-   2. Main Layout & Original Integrated Sidebar (Reference 1)
+   2. Original Integrated Sidebar Elements (Branch Switch & Navigation)
    ========================================================================== */
-.reporter-body-layout,
-.reporter-main-layout {
-  display: flex !important;
-  flex: 1 !important;
-  width: 100% !important;
-  position: relative !important;
-  margin: 0 !important;
-  align-items: stretch !important;
-  gap: 0 !important;
-  padding: 0 !important;
-}
-
-/* Original Integrated TADARUK Sidebar — docked, NO floating card, NO outer rounded borders */
-.reporter-shell .reporter-sidebar {
-  position: sticky !important;
-  top: var(--reporter-header-height, 64px) !important;
-  height: calc(100vh - var(--reporter-header-height, 64px)) !important;
-  width: var(--reporter-sidebar-width, 260px) !important;
-  flex: 0 0 var(--reporter-sidebar-width, 260px) !important;
-  margin: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  border-top: 0 !important;
-  border-bottom: 0 !important;
-  border-inline-start: 0 !important;
-  border-inline-end: 1px solid #d6e6e6 !important;
-  box-sizing: border-box !important;
-  background:
-    radial-gradient(ellipse at 100% 0%, rgba(86, 244, 239, .28), transparent 38%),
-    linear-gradient(160deg, #f4f4f4 0%, #eff8f7 48%, #d9f3f1 100%) !important;
-  color: #1f3363 !important;
-  padding: 18px 16px 24px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  overflow-y: auto !important;
-  z-index: 10 !important;
-  inset-block: auto !important;
-  inset-inline-start: auto !important;
-  inset-inline-end: auto !important;
-  transform: none !important;
-}
-
-.dark .reporter-shell .reporter-sidebar {
-  color: #f5f8ff !important;
-  background:
-    radial-gradient(ellipse at 100% 0%, rgba(86, 244, 239, .2), transparent 38%),
-    linear-gradient(160deg, #1f3363 0%, #183754 54%, #10283b 100%) !important;
-  border-inline-end: 1px solid #294662 !important;
-}
 
 .reporter-sidebar-mobile-close {
   display: none;
@@ -6497,32 +6494,31 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
 
 /* Responsive adjustments */
 @media (max-width: 900px) {
-  .reporter-shell .reporter-topbar {
-    margin: 0 !important;
-    padding: 0 12px !important;
+  .reporter-shell {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .reporter-header {
     height: 60px !important;
-  }
-  .reporter-topbar-brand-section {
-    width: auto !important;
-    flex: 0 0 auto !important;
-    border-inline-end: 0 !important;
-    padding: 0 8px !important;
-    gap: 10px !important;
-  }
-  .reporter-brand-link .brand-logo {
-    width: 120px !important;
+    padding: 0 14px !important;
   }
   .reporter-mobile-menu {
     display: inline-grid !important;
     place-items: center !important;
   }
-  .reporter-topbar-controls {
-    padding: 0 6px !important;
+  .reporter-mobile-brand {
+    display: inline-flex !important;
+    align-items: center !important;
+  }
+  .reporter-mobile-brand .brand-logo {
+    width: 115px !important;
+    height: auto !important;
+  }
+  .reporter-header-controls {
     gap: 6px !important;
   }
-  .reporter-body-layout,
-  .reporter-main-layout {
-    margin-top: 0 !important;
+  .reporter-inside-corner {
+    display: none !important;
   }
   .reporter-shell .reporter-sidebar {
     position: fixed !important;
