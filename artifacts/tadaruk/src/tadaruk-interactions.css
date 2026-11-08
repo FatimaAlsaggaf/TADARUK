@@ -6884,57 +6884,68 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   font-weight: 700 !important;
 }
 
-/* Reporter shell: unified header and sidebar, direction-safe and scoped to this role.
-   CSS grid columns are numbered in inline direction: column 1 is RIGHT in RTL. */
+/* Reporter reference layout: one continuous rounded white top band with a
+   right-aligned logo, and an uninterrupted sidebar below it. */
 @media (min-width: 901px) {
   .reporter-shell {
+    --reporter-header-height: 82px;
     grid-template-columns: var(--reporter-sidebar-width) minmax(0, 1fr) !important;
     grid-template-rows: minmax(100dvh, auto) !important;
   }
-
   .reporter-shell .reporter-sidebar {
     grid-column: 1 !important;
     grid-row: 1 !important;
     border-inline-start: 0 !important;
     border-inline-end: 1px solid #d6e6e6 !important;
+    border-block-start: 0 !important;
+    padding-block-start: 0 !important;
   }
-
   .reporter-shell .reporter-main-area {
     grid-column: 2 !important;
     grid-row: 1 !important;
   }
-
-  /* The branding and header share a single top band, exactly 64px tall. */
+  /* This logo sits INSIDE the shared white header band, not on a separate card. */
   .reporter-shell .reporter-sidebar-brand {
-    box-sizing: border-box !important;
     height: var(--reporter-header-height) !important;
     min-height: var(--reporter-header-height) !important;
+    box-sizing: border-box !important;
     margin: 0 -16px 8px !important;
     padding: 0 16px !important;
     background: #fff !important;
     border-bottom: 1px solid #e1e9f0 !important;
+    box-shadow: 0 4px 14px rgba(31,51,99,.04);
   }
-
-  .dark .reporter-shell .reporter-sidebar-brand {
-    background: #111e32 !important;
-    border-bottom-color: #1e324a !important;
-  }
-
   .reporter-shell .reporter-header {
+    height: var(--reporter-header-height) !important;
+    min-height: var(--reporter-header-height) !important;
     justify-content: flex-end !important;
-    border-end-start-radius: 18px !important;
-    overflow: visible !important;
+    border-bottom: 1px solid #e1e9f0 !important;
+    border-radius: 0 !important;
+    box-shadow: 0 4px 14px rgba(31,51,99,.04) !important;
+    padding-inline: 32px !important;
   }
-
-  /* Keep the exact junction clean: no clipped/wavy SVG decorations. */
-  .reporter-shell .reporter-inside-corner {
-    display: none !important;
+  /* Visually round the outer ends, with no dip, wave, or floating junction. */
+  .reporter-shell .reporter-header {
+    border-start-end-radius: 18px !important;
+    border-end-end-radius: 18px !important;
+  }
+  .reporter-shell .reporter-sidebar-brand {
+    border-start-start-radius: 18px !important;
+    border-end-start-radius: 18px !important;
+  }
+  .reporter-shell .reporter-inside-corner { display:none !important; }
+  .dark .reporter-shell .reporter-sidebar-brand {
+    background:#111e32 !important;
+    border-bottom-color:#1e324a !important;
+    box-shadow:0 4px 14px rgba(0,0,0,.15);
+  }
+  .dark .reporter-shell .reporter-header {
+    border-bottom-color:#1e324a !important;
+    box-shadow:0 4px 14px rgba(0,0,0,.15) !important;
   }
 }
-
-/* On mobile the existing drawer controls placement; do not force desktop grid. */
-@media (max-width: 900px) {
+@media (max-width:900px) {
   .reporter-shell .reporter-sidebar-brand {
-    background: transparent !important;
+    background:transparent !important;
   }
 }
