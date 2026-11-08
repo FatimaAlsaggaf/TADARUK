@@ -5672,38 +5672,22 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   letter-spacing: 0 !important;
 }
 
-/* Refined Reporter Topbar Frame matching Sidebar Colors & Gradients */
+/* Refined Reporter Topbar Frame matching Sidebar Colors & Gradients seamlessly */
 .reporter-shell .topbar {
   height: 72px;
   padding: 0 clamp(20px, 3.5vw, 44px);
   color: #1f3363;
-  background:
-    radial-gradient(ellipse at 100% 0%, rgba(86, 244, 239, 0.28), transparent 42%),
-    linear-gradient(160deg, #f4f4f4 0%, #eff8f7 48%, #d9f3f1 100%);
+  background: linear-gradient(180deg, #f4f5f5 0%, #edf6f5 100%);
   border-bottom: 1px solid #d6e6e6;
-  box-shadow: 0 4px 18px rgba(31, 51, 99, 0.035);
+  box-shadow: 0 2px 10px rgba(31, 51, 99, 0.025);
   transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
-}
-
-[dir="ltr"] .reporter-shell .topbar {
-  background:
-    radial-gradient(ellipse at 0% 0%, rgba(86, 244, 239, 0.28), transparent 42%),
-    linear-gradient(160deg, #f4f4f4 0%, #eff8f7 48%, #d9f3f1 100%);
 }
 
 .dark .reporter-shell .topbar {
   color: #f5f8ff;
-  background:
-    radial-gradient(ellipse at 100% 0%, rgba(86, 244, 239, 0.2), transparent 42%),
-    linear-gradient(160deg, #1f3363 0%, #183754 54%, #10283b 100%);
+  background: linear-gradient(180deg, #1f3363 0%, #1a3854 100%);
   border-bottom: 1px solid #294662;
-  box-shadow: 0 4px 22px rgba(0, 0, 0, 0.3);
-}
-
-[dir="ltr"] .dark .reporter-shell .topbar {
-  background:
-    radial-gradient(ellipse at 0% 0%, rgba(86, 244, 239, 0.2), transparent 42%),
-    linear-gradient(160deg, #1f3363 0%, #183754 54%, #10283b 100%);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
 .reporter-shell .topbar .mobile-menu {
@@ -6300,6 +6284,312 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
     min-width: 38px;
   }
 }
+
+/* ==========================================================================
+   Comprehensive Secondary Font Scaling for Reporter Dashboard (IBM Plex Sans Arabic)
+   ========================================================================== */
+
+/* Base font on the entire reporter view */
+.reporter-shell {
+  font-family: 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 16px !important;
+}
+
+.reporter-shell .reporter-view {
+  font-family: 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-size: 16px !important;
+  line-height: 1.7 !important;
+}
+
+/* Headings in Amiri */
+.reporter-shell[dir="rtl"] .topbar-title > span,
+.reporter-shell[dir="rtl"] .rw-heading h1,
+.reporter-shell[dir="rtl"] .rw-home-copy h2,
+.reporter-shell[dir="rtl"] .rw-report-intro h2,
+.reporter-shell[dir="rtl"] .rw-section-head h2,
+.reporter-shell[dir="rtl"] .rw-ticket-head h1 {
+  font-family: 'Amiri', serif !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+}
+
+.reporter-shell .topbar-title > span {
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  color: #1f3363 !important;
+}
+.dark .reporter-shell .topbar-title > span {
+  color: #f5f8ff !important;
+}
+
+.reporter-shell .rw-heading h1 {
+  font-size: clamp(34px, 4.6vw, 46px) !important;
+  line-height: 1.3 !important;
+}
+
+.reporter-shell .rw-home-copy h2 {
+  font-size: clamp(30px, 4vw, 40px) !important;
+  line-height: 1.35 !important;
+}
+
+.reporter-shell .rw-section-head h2 {
+  font-size: 26px !important;
+}
+
+.reporter-shell .rw-report-intro h2 {
+  font-size: 26px !important;
+}
+
+.reporter-shell .rw-ticket-head h1 {
+  font-size: 34px !important;
+}
+
+/* Secondary Text / Body / Descriptions */
+.reporter-shell .rw-heading p {
+  font-size: 16.5px !important;
+  line-height: 1.85 !important;
+  color: #4b617d !important;
+  max-width: 640px !important;
+}
+.dark .reporter-shell .rw-heading p {
+  color: #a4b9d2 !important;
+}
+
+.reporter-shell .rw-home-copy p {
+  font-size: 16.5px !important;
+  line-height: 1.85 !important;
+  color: #e0f2fe !important;
+  max-width: 600px !important;
+}
+
+.reporter-shell .rw-kicker {
+  font-size: 13.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.1em !important;
+}
+
+.reporter-shell .rw-button {
+  font-size: 16px !important;
+  min-height: 48px !important;
+  padding: 0 22px !important;
+  font-weight: 700 !important;
+  border-radius: 12px !important;
+}
+
+/* Overview Summary Stats */
+.reporter-shell .rw-stat {
+  min-height: 94px !important;
+  padding: 16px 20px !important;
+  gap: 16px !important;
+}
+
+.reporter-shell .rw-stat b {
+  font-size: 30px !important;
+  font-weight: 700 !important;
+  line-height: 1.1 !important;
+}
+
+.reporter-shell .rw-stat small {
+  font-size: 14.5px !important;
+  font-weight: 600 !important;
+  color: #475d7a !important;
+  margin-top: 5px !important;
+}
+.dark .reporter-shell .rw-stat small {
+  color: #a4b9d2 !important;
+}
+
+.reporter-shell .rw-stat-icon {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 12px !important;
+}
+
+/* Branch note alert */
+.reporter-shell .rw-branch-note {
+  font-size: 14.5px !important;
+  font-weight: 600 !important;
+  margin: 0 0 22px !important;
+}
+
+/* Section links */
+.reporter-shell .rw-link {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+}
+
+/* Ticket List Items */
+.reporter-shell .rw-ticket-link {
+  min-height: 76px !important;
+  padding: 14px 6px !important;
+  gap: 14px !important;
+}
+
+.reporter-shell .rw-ticket-no {
+  font-size: 14px !important;
+  font-weight: 700 !important;
+}
+
+.reporter-shell .rw-ticket-main b {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  line-height: 1.4 !important;
+}
+
+.reporter-shell .rw-ticket-main small {
+  font-size: 13.5px !important;
+  line-height: 1.4 !important;
+}
+
+.reporter-shell .rw-ticket-technician {
+  font-size: 13.5px !important;
+}
+
+.reporter-shell .rw-tech-avatar {
+  width: 22px !important;
+  height: 22px !important;
+}
+
+.reporter-shell .rw-priority {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  padding: 4px 12px !important;
+}
+
+.reporter-shell .rw-status,
+.reporter-shell .reporter-view .rw-status {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  padding: 5px 12px !important;
+  min-height: 28px !important;
+}
+
+.reporter-shell .rw-date,
+.reporter-shell .reporter-view .rw-date {
+  font-size: 13.5px !important;
+}
+
+/* Form Fields (New Ticket Page) */
+.reporter-shell .rw-field {
+  font-size: 15.5px !important;
+  font-weight: 600 !important;
+  gap: 9px !important;
+  margin-bottom: 18px !important;
+}
+
+.reporter-shell .rw-field-hint {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+}
+
+.reporter-shell .rw-field input,
+.reporter-shell .rw-field textarea,
+.reporter-shell .rw-field select {
+  font-size: 15.5px !important;
+  min-height: 48px !important;
+  padding: 12px 16px !important;
+  border-radius: 11px !important;
+}
+
+.reporter-shell .rw-field textarea {
+  min-height: 136px !important;
+  line-height: 1.8 !important;
+}
+
+.reporter-shell .rw-chip {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  min-height: 40px !important;
+  padding: 0 16px !important;
+}
+
+.reporter-shell .rw-input-option-label {
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+}
+
+.reporter-shell .rw-photo-panel-copy b {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+.reporter-shell .rw-photo-panel-copy small {
+  font-size: 13px !important;
+}
+
+.reporter-shell .rw-report-intro p {
+  font-size: 15px !important;
+  line-height: 1.7 !important;
+}
+
+.reporter-shell .rw-search input {
+  font-size: 15px !important;
+}
+
+.reporter-shell .rw-filter select {
+  font-size: 14.5px !important;
+}
+
+/* Sidebar Links for Reporter Shell */
+.reporter-shell .sidebar .side-link {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  height: 50px !important;
+  gap: 14px !important;
+  padding: 0 14px !important;
+  color: #4b617d !important;
+}
+
+.reporter-shell .sidebar .side-link:hover {
+  color: #1f3363 !important;
+}
+
+.reporter-shell .sidebar .side-link.selected {
+  color: #1f3363 !important;
+  font-weight: 700 !important;
+}
+
+.dark .reporter-shell .sidebar .side-link {
+  color: #c4d0e0 !important;
+}
+
+.dark .reporter-shell .sidebar .side-link:hover,
+.dark .reporter-shell .sidebar .side-link.selected {
+  color: #ffffff !important;
+}
+
+.reporter-shell .sidebar .branch-switch {
+  padding: 12px 12px !important;
+}
+
+.reporter-shell .sidebar .branch-switch b {
+  font-size: 14.5px !important;
+  font-weight: 700 !important;
+}
+
+.reporter-shell .sidebar .branch-switch small {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+}
+
+/* Header Controls Typography */
+.reporter-shell .topbar-account-name {
+  font-size: 14.5px !important;
+  font-weight: 700 !important;
+}
+
+.reporter-shell .topbar-account-role-badge {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 2px 8px !important;
+}
+
+.reporter-shell .reporter-lang-label {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+
 
 
 
