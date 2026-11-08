@@ -7106,68 +7106,94 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   }
 }
 
-
-/* Unified reporter header: logo and controls belong to ONE normally scrolling bar.
-   The fixed sidebar begins below the header without a separate logo fragment. */
-.reporter-header-brand {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  text-decoration: none;
-}
+/* Reporter UX trial: independent, compact header and a full-height sidebar.
+   The header is never fixed/sticky and never overlaps the sidebar. */
 @media (min-width: 901px) {
+  .reporter-shell {
+    --reporter-sidebar-width: 260px;
+    --reporter-header-height: 62px;
+    display: block !important;
+    min-height: 100dvh !important;
+  }
   .reporter-shell .reporter-sidebar {
-    /* Leave room for the header at the page top, while the sidebar stays fixed. */
-    padding-top: calc(var(--reporter-header-top) + var(--reporter-header-height) + 10px) !important;
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    inset-inline-start: 0 !important;
+    inset-inline-end: auto !important;
+    width: var(--reporter-sidebar-width) !important;
+    height: 100dvh !important;
+    padding: 12px 16px 24px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    border-inline-end: 1px solid #d6e6e6 !important;
+    z-index: 35 !important;
+  }
+  /* Remove the former floating header's vertical separator and phantom curves. */
+  .reporter-shell .reporter-sidebar::after,
+  .reporter-shell .reporter-inside-corner {
+    display: none !important;
+    content: none !important;
+  }
+  .reporter-shell .reporter-sidebar-brand {
+    position: relative !important;
+    display: flex !important;
+    height: 68px !important;
+    min-height: 68px !important;
+    margin: 0 0 18px !important;
+    padding: 0 10px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  .reporter-shell .reporter-sidebar-brand .brand-logo {
+    width: 158px !important;
+    max-width: 100% !important;
+    height: auto !important;
+  }
+  .reporter-shell .reporter-main-area {
+    margin-inline-start: var(--reporter-sidebar-width) !important;
+    width: calc(100% - var(--reporter-sidebar-width)) !important;
+    padding-block-start: 0 !important;
+    min-width: 0 !important;
   }
   .reporter-shell .reporter-header {
     position: relative !important;
     top: auto !important;
-    inset-inline-start: auto !important;
-    inset-inline-end: auto !important;
+    inset: auto !important;
     display: flex !important;
-    justify-content: space-between !important;
-    width: calc(100vw - 2 * var(--reporter-header-gutter)) !important;
-    height: var(--reporter-header-height) !important;
-    min-height: var(--reporter-header-height) !important;
-    margin-block-start: var(--reporter-header-top) !important;
-    margin-inline-start: calc(-1 * (var(--reporter-sidebar-width) - var(--reporter-header-gutter))) !important;
-    margin-inline-end: var(--reporter-header-gutter) !important;
-    padding-inline: 18px 22px !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    width: calc(100% - 48px) !important;
+    min-height: 62px !important;
+    height: 62px !important;
+    margin: 16px 24px 0 !important;
+    padding: 0 16px !important;
     border: 1px solid #dce7f0 !important;
-    border-radius: 18px !important;
+    border-radius: 15px !important;
     background: #fff !important;
-    box-shadow: 0 5px 22px rgba(31,51,99,.055) !important;
-    z-index: 65 !important;
-  }
-  .reporter-shell .reporter-header-brand {
-    display: inline-flex !important;
-    width: calc(var(--reporter-sidebar-width) - var(--reporter-header-gutter) - 18px);
-    height: 100%;
-    flex-shrink: 0;
-  }
-  .reporter-shell .reporter-header-brand .brand-logo {
-    display: block;
-    width: 160px !important;
-    height: auto !important;
-    max-width: 100% !important;
+    box-shadow: 0 4px 16px rgba(31,51,99,.045) !important;
+    z-index: 15 !important;
   }
   .reporter-shell .reporter-header-controls {
     margin-inline-start: auto !important;
+    gap: 10px !important;
   }
-  /* Do not leave a fixed white strip in the sidebar when the header scrolls out. */
-  .reporter-shell .reporter-sidebar-brand { display: none !important; }
-  .reporter-shell .reporter-inside-corner { display: none !important; }
+  .reporter-shell .reporter-header-brand { display: none !important; }
+  .dark .reporter-shell .reporter-sidebar-brand {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
   .dark .reporter-shell .reporter-header {
     background: #111e32 !important;
     border-color: #29415b !important;
-    box-shadow: 0 5px 22px rgba(0,0,0,.16) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,.14) !important;
   }
 }
 @media (max-width: 900px) {
   .reporter-shell .reporter-header-brand { display: none !important; }
-  /* No sticky header on mobile either: it should not obstruct ticket reading. */
   .reporter-shell .reporter-header {
     position: relative !important;
     top: auto !important;
