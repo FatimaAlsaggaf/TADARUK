@@ -588,7 +588,6 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
               <AiVoiceInput
                 lang={lang}
                 onTranscript={appendTranscript}
-                onManualEntry={() => descriptionInputRef.current?.focus()}
               />
             </div>
 
