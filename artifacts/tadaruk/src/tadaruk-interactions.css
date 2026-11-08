@@ -8330,7 +8330,7 @@ body:has(.dark .reporter-shell) #root {
 /* Roadmap center alignment: Motion animates each step with inline transforms,
    which overrides CSS translateX(-50%) and shifts every node 65px away from
    the SVG endpoint. Use a layout margin instead of a competing transform. */
-@media (min-width: 761px) {
+@media (min-width: 781px) {
   .landing .roadmap .workflow-step {
     margin-left: -65px !important;
     margin-right: 0 !important;
@@ -8340,7 +8340,7 @@ body:has(.dark .reporter-shell) #root {
     flex: 0 0 64px;
   }
 }
-@media (max-width: 760px) {
+@media (max-width: 780px) {
   .landing .roadmap .workflow-step {
     margin-left: 0 !important;
     margin-right: 0 !important;
