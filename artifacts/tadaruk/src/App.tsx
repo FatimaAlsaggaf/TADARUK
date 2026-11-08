@@ -1278,8 +1278,9 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
                 <span className="technician-menu-option-value">{lang==='ar'?'English':'العربية'}</span>
               </button>
               <div className="technician-menu-theme-row">
-                <span className="technician-menu-theme-label"><SunMoon size={16}/>{tr(lang,'المظهر','Appearance')}</span>
+                <label htmlFor="technician-theme-toggle" className="technician-menu-theme-label"><SunMoon size={16}/>{tr(lang,'المظهر','Appearance')}</label>
                 <SunMoonThemeToggle
+                  id="technician-theme-toggle"
                   className="workspace-theme-toggle technician-menu-animated-theme"
                   theme={dark?'dark':'light'}
                   onThemeChange={theme=>setDark(theme==='dark')}
