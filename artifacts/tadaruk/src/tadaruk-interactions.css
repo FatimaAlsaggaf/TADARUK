@@ -7303,3 +7303,22 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
     transform: none !important;
   }
 }
+
+
+/* Prevent the reporter header's first-child top margin from collapsing through
+   its parent: the exposed body background previously looked like a white strip. */
+.reporter-shell .reporter-main-area {
+  display: flow-root !important;
+  background: #f7f9fb !important;
+}
+.dark .reporter-shell .reporter-main-area {
+  background: hsl(var(--background)) !important;
+}
+@media (min-width: 901px) {
+  .reporter-shell .reporter-main-area {
+    padding-block-start: 16px !important;
+  }
+  .reporter-shell .reporter-header {
+    margin-block-start: 0 !important;
+  }
+}
