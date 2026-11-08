@@ -539,17 +539,17 @@ export function AiVoiceInput({
           </DialogHeader>
 
           {/* Central Recording Visualizer Stage */}
-          <div className="relative my-4 flex flex-col items-center justify-center rounded-2xl border border-slate-200/80 bg-gradient-to-b from-[#1F3363]/5 via-[#56F4EF]/10 to-[#1F3363]/10 p-6 dark:border-slate-800 dark:from-[#1F3363]/30 dark:via-slate-900 dark:to-slate-900">
+          <div className="tadaruk-voice-stage relative my-3 flex flex-col items-center justify-center rounded-2xl border border-slate-200/80 bg-slate-50/80 p-5 dark:border-slate-700 dark:bg-slate-900/50">
             {/* Pulsing Central Mic Orb */}
-            <div className="relative mb-5 flex items-center justify-center">
+            <div className="relative mb-3 flex items-center justify-center">
               {isRecording && (
                 <>
                   <div
-                    className="absolute h-24 w-24 rounded-full bg-[#56F4EF]/25 animate-ping"
+                    className="absolute h-20 w-20 rounded-full bg-[#456e91]/10 animate-ping"
                     style={{ animationDuration: "2s" }}
                   />
                   <div
-                    className="absolute h-20 w-20 rounded-full bg-gradient-to-r from-[#56F4EF]/40 to-[#76DADD]/40 animate-pulse"
+                    className="absolute h-[72px] w-[72px] rounded-full border border-[#688eaa]/25 animate-pulse"
                     style={{ animationDuration: "1.4s" }}
                   />
                 </>
@@ -572,7 +572,7 @@ export function AiVoiceInput({
                 ) : stage === "transcribed" ? (
                   <Check className="h-7 w-7 text-[#56F4EF]" />
                 ) : isRecording ? (
-                  <Mic2 className="h-7 w-7 animate-pulse text-[#56F4EF]" />
+                  <span className="tadaruk-voice-recording-mark" aria-hidden="true" />
                 ) : (
                   <Mic className="h-7 w-7" />
                 )}
@@ -581,7 +581,7 @@ export function AiVoiceInput({
 
             {/* Waveform Visualizer Bars */}
             <div
-              className="flex h-12 w-full max-w-xs items-center justify-center gap-1 px-2"
+              className="tadaruk-voice-waveform flex h-10 w-full max-w-xs items-center justify-center gap-[3px] px-2"
               role="img"
               aria-label={text(lang, "موجة مستوى الصوت", "Audio waveform")}
             >
@@ -589,10 +589,10 @@ export function AiVoiceInput({
                 <div
                   key={i}
                   className={cn(
-                    "w-1 rounded-full transition-all duration-100",
+                    "w-[3px] rounded-full transition-[height,background-color] duration-100",
                     isRecording
-                      ? "bg-gradient-to-t from-[#1F3363] via-[#3A95AA] to-[#56F4EF] shadow-[0_0_6px_rgba(86,244,239,0.5)]"
-                      : "bg-slate-300 dark:bg-slate-700",
+                      ? "bg-[#426a8d] dark:bg-[#9ebbd0]"
+                      : "bg-slate-300/80 dark:bg-slate-600/70",
                   )}
                   style={{
                     height: isRecording ? `${height}px` : "6px",
