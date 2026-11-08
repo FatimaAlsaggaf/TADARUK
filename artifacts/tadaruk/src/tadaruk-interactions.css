@@ -8146,3 +8146,182 @@ body:has(.dark .reporter-shell) #root {
   .app-shell .rw-report-intro h2 { font-size: 21px !important; }
   .app-shell .rw-ticket-head h1 { font-size: 27px !important; }
 }
+
+/* TADARUK November visual refinements: technician hero, legibility and roadmap. */
+/* The technician's outline CTA is placed on a navy panel: never use the
+   generic pale-hover with a pale label. Preserve high text contrast. */
+.app-shell .personal-feature .btn-outline,
+.app-shell .personal-feature .btn-outline:visited {
+  color: #fff !important;
+  background: rgba(255,255,255,.035) !important;
+  border: 1px solid rgba(226,239,250,.42) !important;
+  box-shadow: none !important;
+  transition: color .2s ease, background-color .2s ease, border-color .2s ease !important;
+}
+.app-shell .personal-feature .btn-outline:hover,
+.app-shell .personal-feature .btn-outline:focus-visible {
+  color: #1f3363 !important;
+  background: #e6eef6 !important;
+  border-color: #e6eef6 !important;
+  box-shadow: 0 5px 16px rgba(5,23,54,.12) !important;
+}
+.app-shell .personal-feature .btn-outline:hover svg,
+.app-shell .personal-feature .btn-outline:focus-visible svg { color: #1f3363 !important; }
+.app-shell .personal-feature .btn-outline:focus-visible { outline: 2px solid #bcd3e7; outline-offset: 3px; }
+
+/* One complete, intentional orbit when the technician hero mounts; no infinite
+   spinning and no wrench movement. Original dot rests where it started. */
+.app-shell .personal-feature .feature-mark > span {
+  position: absolute;
+  top: 50% !important;
+  left: 50% !important;
+  right: auto !important;
+  width: 8px !important;
+  height: 8px !important;
+  margin: -4px 0 0 -4px !important;
+  transform-origin: center center;
+  transform: rotate(-56deg) translateX(89px);
+  animation: tadaruk-hero-dot-orbit 2.2s cubic-bezier(.55,.06,.42,1) .18s 1 both;
+  box-shadow: 0 0 12px rgba(86,244,239,.38);
+}
+@keyframes tadaruk-hero-dot-orbit {
+  0% { transform: rotate(-56deg) translateX(89px); }
+  100% { transform: rotate(304deg) translateX(89px); }
+}
+/* The exact arc radius adjusts to the smaller hero art on narrow screens. */
+@media (max-width: 640px) {
+  .app-shell .personal-feature .feature-mark > span {
+    transform: rotate(-56deg) translateX(66px);
+    animation-name: tadaruk-hero-dot-orbit-mobile;
+  }
+  @keyframes tadaruk-hero-dot-orbit-mobile {
+    0% { transform: rotate(-56deg) translateX(66px); }
+    100% { transform: rotate(304deg) translateX(66px); }
+  }
+}
+/* Sitewide readable UI scale, without oversized stat badges or tall cards. */
+.app-shell { font-size: 15px !important; line-height: 1.65 !important; }
+.app-shell .sidebar .side-link { font-size: 15px !important; }
+.app-shell .branch-switch b,
+.app-shell .side-user-name,
+.app-shell .reporter-account-name,
+.app-shell .technician-header-account-name {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+}
+.app-shell .branch-switch small,
+.app-shell .side-user-role-badge,
+.app-shell .reporter-account-role-badge { font-size: 11.5px !important; }
+.app-shell .page-title p,
+.app-shell .rw-heading p,
+.app-shell .rw-home-copy p,
+.app-shell .personal-feature p,
+.app-shell .knowledge-intro p,
+.app-shell .entry-solution p {
+  font-size: 15px !important;
+  line-height: 1.75 !important;
+}
+.app-shell .rw-ticket-main b,
+.app-shell .ticket-summary b,
+.app-shell .personal-tickets .ticket-summary b {
+  font-size: 14.5px !important;
+  font-weight: 600 !important;
+}
+.app-shell .rw-ticket-main small,
+.app-shell .rw-ticket-technician,
+.app-shell .rw-date,
+.app-shell .ticket-summary small,
+.app-shell .ticket-number,
+.app-shell .entry-foot { font-size: 12.5px !important; }
+.app-shell .rw-priority,
+.app-shell .rw-status,
+.app-shell .status-pill { font-size: 12px !important; font-weight: 600 !important; }
+.app-shell .btn:not(.icon-control),
+.app-shell .technician-menu-option,
+.app-shell .technician-menu-theme-label { font-size: 14px !important; }
+.app-shell .form-intro p,
+.app-shell .field-label { font-size: 13.5px !important; }
+.app-shell .metric-card-head,
+.app-shell .metric-card small { font-size: 13px !important; }
+@media (max-width: 640px) {
+  .app-shell { font-size: 14px !important; }
+  .app-shell .page-title p,
+  .app-shell .rw-heading p,
+  .app-shell .rw-home-copy p,
+  .app-shell .personal-feature p { font-size: 14px !important; }
+}
+
+/* The landing workflow is one continuous center-to-center route, not loose
+   decorative waves. Keep it behind all four nodes and visually readable. */
+.landing .roadmap {
+  isolation: isolate;
+  max-width: 820px !important; /* match the SVG's 820-unit viewBox exactly */
+  width: min(100%, 820px) !important;
+  margin-top: 32px !important;
+}
+.landing .roadmap-path-desktop {
+  inset: 0 !important;
+  width: 100% !important;
+  height: 200px !important;
+}
+.landing .roadmap-track-base {
+  stroke: rgba(44,82,119,.29) !important;
+  stroke-width: 4 !important;
+  opacity: 1 !important;
+}
+.dark .landing .roadmap-track-base { stroke: rgba(187,214,233,.3) !important; }
+.landing .roadmap-track {
+  stroke-width: 4 !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+.landing .roadmap-glint {
+  stroke: #73b5c0 !important;
+  stroke-width: 5 !important;
+  filter: drop-shadow(0 0 5px rgba(82,140,169,.35)) !important;
+}
+.landing .workflow-node {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: var(--landing-card);
+  box-shadow: 0 9px 20px rgba(31,51,99,.09);
+}
+.landing .workflow-step.is-reached .workflow-node {
+  border-color: #7eb8c6 !important;
+  background: #edf5f9 !important;
+  color: #285c7d !important;
+  box-shadow: 0 9px 20px rgba(31,51,99,.11) !important;
+}
+.landing .workflow-step.is-current .workflow-node {
+  transform: scale(1.045) !important;
+  box-shadow: 0 0 0 4px rgba(83,142,168,.15), 0 10px 23px rgba(31,51,99,.14) !important;
+}
+.landing .workflow-step.is-success .workflow-node {
+  color: #fff !important;
+  background: #1f3363 !important;
+  border-color: #1f3363 !important;
+  box-shadow: 0 10px 24px rgba(31,51,99,.22) !important;
+}
+.landing .workflow-label { font-size: 15.5px !important; font-weight: 600 !important; }
+.dark .landing .workflow-step.is-reached .workflow-node {
+  background: #2a435b !important;
+  border-color: #6d9eb3 !important;
+  color: #f1f7fc !important;
+}
+.dark .landing .workflow-step.is-success .workflow-node { background: #27486c !important; color: #fff !important; }
+.landing .landing-end p,
+.landing .impact-pillar-copy { font-size: 15px !important; }
+@media (max-width: 760px) {
+  .landing .roadmap {
+    min-height: 520px !important;
+    width: 100% !important;
+    margin-top: 16px !important;
+  }
+  .landing .roadmap-path-mobile { height: 100% !important; }
+  .landing .workflow-node { width: 58px !important; height: 58px !important; }
+  .landing .workflow-label { font-size: 15px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .personal-feature .feature-mark > span { animation: none !important; }
+}
