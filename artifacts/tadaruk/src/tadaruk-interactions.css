@@ -6945,8 +6945,17 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
     box-shadow: 0 5px 22px rgba(31,51,99,.055) !important;
   }
 
+  /* Keep the official logo a little larger without changing the shared band height. */
+  .reporter-shell .reporter-sidebar-brand .brand-logo {
+    width: 160px !important;
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
   /* Main header is the left/trailing half, with the matching outer gutter. */
   .reporter-shell .reporter-header {
+    position: sticky !important;
+    z-index: 40 !important;
     box-sizing: border-box !important;
     top: var(--reporter-header-top) !important;
     height: var(--reporter-header-height) !important;
