@@ -8325,3 +8325,24 @@ body:has(.dark .reporter-shell) #root {
 @media (prefers-reduced-motion: reduce) {
   .app-shell .personal-feature .feature-mark > span { animation: none !important; }
 }
+
+
+/* Roadmap center alignment: Motion animates each step with inline transforms,
+   which overrides CSS translateX(-50%) and shifts every node 65px away from
+   the SVG endpoint. Use a layout margin instead of a competing transform. */
+@media (min-width: 761px) {
+  .landing .roadmap .workflow-step {
+    margin-left: -65px !important;
+    margin-right: 0 !important;
+    /* Preserve Motion's inline entrance/activation animation. */
+  }
+  .landing .roadmap .workflow-node {
+    flex: 0 0 64px;
+  }
+}
+@media (max-width: 760px) {
+  .landing .roadmap .workflow-step {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
