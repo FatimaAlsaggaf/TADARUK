@@ -6884,38 +6884,57 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   font-weight: 700 !important;
 }
 
-
-
-
-
-
-
-
-/* Reporter shell directional layout fix: CSS Grid column 1 follows document direction.
-   In RTL it is the RIGHT column, and in LTR it is the LEFT column.
-   Keep navigation at the outer edge without flipping the whole document. */
+/* Reporter shell: unified header and sidebar, direction-safe and scoped to this role.
+   CSS grid columns are numbered in inline direction: column 1 is RIGHT in RTL. */
 @media (min-width: 901px) {
-  .reporter-shell,
-  [dir="ltr"].reporter-shell,
-  [dir="rtl"].reporter-shell {
+  .reporter-shell {
     grid-template-columns: var(--reporter-sidebar-width) minmax(0, 1fr) !important;
+    grid-template-rows: minmax(100dvh, auto) !important;
   }
 
-  .reporter-shell .reporter-sidebar,
-  [dir="ltr"].reporter-shell .reporter-sidebar {
+  .reporter-shell .reporter-sidebar {
     grid-column: 1 !important;
+    grid-row: 1 !important;
+    border-inline-start: 0 !important;
+    border-inline-end: 1px solid #d6e6e6 !important;
   }
 
-  .reporter-shell .reporter-main-area,
-  [dir="ltr"].reporter-shell .reporter-main-area {
+  .reporter-shell .reporter-main-area {
     grid-column: 2 !important;
+    grid-row: 1 !important;
+  }
+
+  /* The branding and header share a single top band, exactly 64px tall. */
+  .reporter-shell .reporter-sidebar-brand {
+    box-sizing: border-box !important;
+    height: var(--reporter-header-height) !important;
+    min-height: var(--reporter-header-height) !important;
+    margin: 0 -16px 8px !important;
+    padding: 0 16px !important;
+    background: #fff !important;
+    border-bottom: 1px solid #e1e9f0 !important;
+  }
+
+  .dark .reporter-shell .reporter-sidebar-brand {
+    background: #111e32 !important;
+    border-bottom-color: #1e324a !important;
   }
 
   .reporter-shell .reporter-header {
     justify-content: flex-end !important;
+    border-end-start-radius: 18px !important;
+    overflow: visible !important;
   }
 
+  /* Keep the exact junction clean: no clipped/wavy SVG decorations. */
   .reporter-shell .reporter-inside-corner {
     display: none !important;
+  }
+}
+
+/* On mobile the existing drawer controls placement; do not force desktop grid. */
+@media (max-width: 900px) {
+  .reporter-shell .reporter-sidebar-brand {
+    background: transparent !important;
   }
 }
