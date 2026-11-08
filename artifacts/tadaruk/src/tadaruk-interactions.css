@@ -6889,3 +6889,33 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
 
 
 
+
+
+/* Reporter shell directional layout fix: CSS Grid column 1 follows document direction.
+   In RTL it is the RIGHT column, and in LTR it is the LEFT column.
+   Keep navigation at the outer edge without flipping the whole document. */
+@media (min-width: 901px) {
+  .reporter-shell,
+  [dir="ltr"].reporter-shell,
+  [dir="rtl"].reporter-shell {
+    grid-template-columns: var(--reporter-sidebar-width) minmax(0, 1fr) !important;
+  }
+
+  .reporter-shell .reporter-sidebar,
+  [dir="ltr"].reporter-shell .reporter-sidebar {
+    grid-column: 1 !important;
+  }
+
+  .reporter-shell .reporter-main-area,
+  [dir="ltr"].reporter-shell .reporter-main-area {
+    grid-column: 2 !important;
+  }
+
+  .reporter-shell .reporter-header {
+    justify-content: flex-end !important;
+  }
+
+  .reporter-shell .reporter-inside-corner {
+    display: none !important;
+  }
+}
