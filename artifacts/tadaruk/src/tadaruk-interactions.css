@@ -7105,3 +7105,71 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
     z-index: 30 !important;
   }
 }
+
+
+/* Unified reporter header: logo and controls belong to ONE normally scrolling bar.
+   The fixed sidebar begins below the header without a separate logo fragment. */
+.reporter-header-brand {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  text-decoration: none;
+}
+@media (min-width: 901px) {
+  .reporter-shell .reporter-sidebar {
+    /* Leave room for the header at the page top, while the sidebar stays fixed. */
+    padding-top: calc(var(--reporter-header-top) + var(--reporter-header-height) + 10px) !important;
+  }
+  .reporter-shell .reporter-header {
+    position: relative !important;
+    top: auto !important;
+    inset-inline-start: auto !important;
+    inset-inline-end: auto !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    width: calc(100vw - 2 * var(--reporter-header-gutter)) !important;
+    height: var(--reporter-header-height) !important;
+    min-height: var(--reporter-header-height) !important;
+    margin-block-start: var(--reporter-header-top) !important;
+    margin-inline-start: calc(-1 * (var(--reporter-sidebar-width) - var(--reporter-header-gutter))) !important;
+    margin-inline-end: var(--reporter-header-gutter) !important;
+    padding-inline: 18px 22px !important;
+    border: 1px solid #dce7f0 !important;
+    border-radius: 18px !important;
+    background: #fff !important;
+    box-shadow: 0 5px 22px rgba(31,51,99,.055) !important;
+    z-index: 65 !important;
+  }
+  .reporter-shell .reporter-header-brand {
+    display: inline-flex !important;
+    width: calc(var(--reporter-sidebar-width) - var(--reporter-header-gutter) - 18px);
+    height: 100%;
+    flex-shrink: 0;
+  }
+  .reporter-shell .reporter-header-brand .brand-logo {
+    display: block;
+    width: 160px !important;
+    height: auto !important;
+    max-width: 100% !important;
+  }
+  .reporter-shell .reporter-header-controls {
+    margin-inline-start: auto !important;
+  }
+  /* Do not leave a fixed white strip in the sidebar when the header scrolls out. */
+  .reporter-shell .reporter-sidebar-brand { display: none !important; }
+  .reporter-shell .reporter-inside-corner { display: none !important; }
+  .dark .reporter-shell .reporter-header {
+    background: #111e32 !important;
+    border-color: #29415b !important;
+    box-shadow: 0 5px 22px rgba(0,0,0,.16) !important;
+  }
+}
+@media (max-width: 900px) {
+  .reporter-shell .reporter-header-brand { display: none !important; }
+  /* No sticky header on mobile either: it should not obstruct ticket reading. */
+  .reporter-shell .reporter-header {
+    position: relative !important;
+    top: auto !important;
+  }
+}
