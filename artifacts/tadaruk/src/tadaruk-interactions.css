@@ -8012,3 +8012,137 @@ body:has(.dark .reporter-shell) #root {
 .dark .app-shell .technician-frame .technician-menu-theme-label:hover {
   color: #fff;
 }
+
+
+/* TADARUK shared typography scale — all three workspaces.
+   Amiri remains only for editorial/display headlines; IBM Plex Sans Arabic is
+   the readable interface face for controls, navigation and data. */
+.app-shell {
+  --td-font-ui: 'IBM Plex Sans Arabic', sans-serif;
+  --td-font-display: 'Amiri', serif;
+  --td-text-xs: 12px;
+  --td-text-sm: 13px;
+  --td-text-base: 14px;
+  --td-text-md: 15px;
+  --td-text-lg: 17px;
+  font-family: var(--td-font-ui);
+  font-size: var(--td-text-base);
+  line-height: 1.65;
+}
+.app-shell button,
+.app-shell input,
+.app-shell textarea,
+.app-shell select,
+.app-shell label,
+.app-shell .side-nav,
+.app-shell .topbar,
+.app-shell .workspace-content,
+.app-shell .reporter-workspace-content,
+.app-shell .reporter-view,
+.app-shell .rw-ticket-main,
+.app-shell .technician-header-menu {
+  font-family: var(--td-font-ui);
+}
+.app-shell .sidebar .side-link {
+  font-family: var(--td-font-ui) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  line-height: 1.5 !important;
+}
+.app-shell .sidebar .side-link.selected {
+  font-weight: 600 !important;
+}
+.app-shell .branch-switch b,
+.app-shell .side-user-name,
+.app-shell .reporter-account-name,
+.app-shell .technician-header-account-name {
+  font-family: var(--td-font-ui) !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  line-height: 1.55 !important;
+}
+.app-shell .branch-switch small,
+.app-shell .side-user-role-badge,
+.app-shell .reporter-account-role-badge {
+  font-family: var(--td-font-ui) !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+}
+.app-shell .workspace-content > .page-title h1,
+.app-shell .page-title h1,
+.app-shell .rw-heading h1,
+.app-shell .rw-home-copy h2,
+.app-shell .rw-section-head h2,
+.app-shell .rw-report-intro h2,
+.app-shell .rw-ticket-head h1 {
+  font-family: var(--td-font-display) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+}
+.app-shell .page-title h1 {
+  font-size: clamp(29px, 2.8vw, 36px) !important;
+  line-height: 1.35 !important;
+}
+.app-shell .page-title p,
+.app-shell .rw-heading p {
+  font-family: var(--td-font-ui) !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 1.75 !important;
+}
+.app-shell .rw-heading h1 { font-size: clamp(29px, 2.8vw, 36px) !important; }
+.app-shell .rw-home-copy h2 { font-size: clamp(27px, 2.7vw, 34px) !important; }
+.app-shell .rw-section-head h2,
+.app-shell .rw-report-intro h2 { font-size: 22px !important; }
+.app-shell .rw-ticket-head h1 { font-size: 29px !important; }
+.app-shell .rw-home-copy p {
+  font-family: var(--td-font-ui) !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 1.75 !important;
+}
+.app-shell .rw-stat b {
+  font-family: var(--td-font-ui) !important;
+  font-weight: 700 !important;
+  font-variant-numeric: tabular-nums;
+}
+.app-shell .rw-stat small { font-size: 12px !important; font-weight: 400 !important; }
+.app-shell .rw-ticket-main b,
+.app-shell .technician-menu-option,
+.app-shell .rw-ticket-link,
+.app-shell .panel-heading b {
+  font-family: var(--td-font-ui) !important;
+}
+.app-shell .rw-ticket-main b { font-size: 13.5px !important; font-weight: 600 !important; }
+.app-shell .rw-ticket-main small,
+.app-shell .rw-ticket-technician,
+.app-shell .rw-date { font-size: 12px !important; font-weight: 400 !important; }
+.app-shell .rw-priority,
+.app-shell .rw-status {
+  font-family: var(--td-font-ui) !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+}
+.app-shell .technician-menu-option,
+.app-shell .technician-menu-theme-label,
+.app-shell .technician-header-account-button {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  line-height: 1.5 !important;
+}
+.app-shell .technician-menu-option-value { font-size: 11.5px !important; font-weight: 500 !important; }
+.app-shell .reporter-control-btn,
+.app-shell .icon-control {
+  font-family: var(--td-font-ui) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+}
+@media (max-width: 640px) {
+  .app-shell { font-size: 13.5px; }
+  .app-shell .page-title h1,
+  .app-shell .rw-heading h1 { font-size: 29px !important; }
+  .app-shell .rw-home-copy h2 { font-size: 27px !important; }
+  .app-shell .rw-section-head h2,
+  .app-shell .rw-report-intro h2 { font-size: 21px !important; }
+  .app-shell .rw-ticket-head h1 { font-size: 27px !important; }
+}
