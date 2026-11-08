@@ -7967,3 +7967,34 @@ body:has(.dark .reporter-shell) #root {
     margin-inline-end: auto !important;
   }
 }
+
+/* Technician account: preserve the original animated sun/moon theme switch. */
+.app-shell .technician-frame .technician-menu-theme-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 58px;
+  padding: 8px 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.app-shell .technician-frame .technician-menu-theme-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #31496b;
+  font: 600 13px 'IBM Plex Sans Arabic', sans-serif;
+  white-space: nowrap;
+}
+.app-shell .technician-frame .technician-menu-animated-theme {
+  flex: 0 0 auto;
+  display: inline-flex !important;
+  position: relative;
+  margin: 0 !important;
+  pointer-events: auto !important;
+  z-index: 1;
+}
+.dark .app-shell .technician-frame .technician-menu-theme-label {
+  color: #e1ecf6;
+}
