@@ -16,7 +16,7 @@
  --sidebar:222 52% 25%;--sidebar-foreground:0 0% 100%;--sidebar-border:222 42% 32%;--sidebar-primary:177 86% 65%;--sidebar-primary-foreground:222 52% 25%;--sidebar-accent:222 42% 32%;--sidebar-accent-foreground:0 0% 100%;
  --popover:0 0% 100%;--popover-foreground:222 52% 25%;--popover-border:210 18% 88%;--primary:222 52% 25%;--primary-foreground:0 0% 100%;--secondary:177 65% 90%;--secondary-foreground:222 52% 25%;
  --muted:210 20% 96%;--muted-foreground:215 15% 48%;--accent:177 75% 88%;--accent-foreground:222 52% 25%;--destructive:0 67% 53%;--destructive-foreground:0 0% 100%;--input:210 18% 88%;--ring:177 66% 56%;
- --chart-1:222 52% 25%;--chart-2:177 66% 56%;--chart-3:194 42% 63%;--chart-4:35 75% 65%;--chart-5:0 67% 53%;--app-font-sans:'Noto Sans Arabic',sans-serif;--app-font-serif:'Amiri',serif;--app-font-mono:'Anek Kannada',sans-serif;--radius:.85rem;
+ --chart-1:222 52% 25%;--chart-2:177 66% 56%;--chart-3:194 42% 63%;--chart-4:35 75% 65%;--chart-5:0 67% 53%;--app-font-sans:'IBM Plex Sans Arabic',sans-serif;--app-font-serif:'Amiri',serif;--app-font-mono:'Anek Kannada',sans-serif;--radius:.85rem;
  --button-outline:rgba(31,51,99,.12);--badge-outline:rgba(31,51,99,.08);--elevate-1:rgba(31,51,99,.035);--elevate-2:rgba(31,51,99,.075);--shadow:0 12px 32px rgba(31,51,99,.07);--spacing:.25rem;
  --tadaruk-surface:#f4f7f4;--tadaruk-surface-raised:#fbfcfa;--tadaruk-ink:#1e3263;--tadaruk-muted:#61738b;--tadaruk-accent:#51b9b4;--tadaruk-accent-soft:#e8f5f1;--tadaruk-border:rgba(30,50,99,.16);--tadaruk-radius:17px;--tadaruk-shadow:0 14px 32px rgba(31,51,99,.07);--tadaruk-motion-fast:180ms;--tadaruk-motion-base:360ms;--tadaruk-motion-story:680ms
 }
@@ -29,7 +29,7 @@
 }
 :root {
   --tadaruk-font-display:'Amiri',serif;
-  --tadaruk-font-body:'Noto Sans Arabic',sans-serif;
+  --tadaruk-font-body:'IBM Plex Sans Arabic',sans-serif;
   --tadaruk-type-display:clamp(36px,4.35vw,52px);
   --tadaruk-type-section:clamp(35px,4.25vw,50px);
   --tadaruk-type-body:14px;
