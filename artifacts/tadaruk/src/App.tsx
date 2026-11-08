@@ -683,7 +683,7 @@ function usePrefs() {
   useEffect(()=>{document.documentElement.classList.toggle('dark',dark);localStorage.setItem('tadaruk-theme',dark?'dark':'light');},[dark]);
   return {lang,setLang:(x:Lang)=>setLangState(x),dark,setDark};
 }
-function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:ReactNode;title:string;lang:Lang;setLang:(x:Lang)=>void;dark:boolean;setDark:(x:boolean)=>void}) {
+function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode;title:string;lang:Lang;setLang:(x:Lang)=>void;dark:boolean;setDark:(x:boolean)=>void}) {
   const {data:session}=useGetDemoSession();
   const defaultUser: DemoUser = { id: 'demo-reporter', name: 'سارة القحطاني', role: 'reporter', initials: 'سق', branchId: 'branch-olaya', branchName: 'فرع العليا', specialization: null };
   const user=session?.user || (typeof window !== 'undefined' ? (() => { try { return JSON.parse(localStorage.getItem('tadaruk-demo-session-user') || 'null'); } catch { return null; } })() : null) || defaultUser; const [location,go]=useLocation(); const [menu,setMenu]=useState(false); const [mobile,setMobile]=useState(false);
