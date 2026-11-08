@@ -891,99 +891,106 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
     <div className="main-frame"><header className="topbar"><div className="topbar-title"><button className="mobile-menu" onClick={()=>setMobile(true)}><Menu size={20}/></button><span>{title}</span></div><div className="top-controls">
       {isReporter ? (
         <>
-          {/* Reporter Notifications */}
-          <div className="reporter-notifications-section" ref={notificationsRef}>
+          {/* Reporter Utility Controls Cluster */}
+          <div className="reporter-utility-group">
+            {/* Reporter Notifications */}
+            <div className="reporter-notifications-section" ref={notificationsRef}>
+              <button
+                type="button"
+                className="reporter-action-btn reporter-notification-btn"
+                onClick={() => setShowNotifications(!showNotifications)}
+                aria-label={tr(lang, 'الإشعارات', 'Notifications')}
+                aria-expanded={showNotifications}
+                data-testid="button-reporter-notifications"
+              >
+                <Bell size={18}/>
+                {unreadCount > 0 && <span className="notification-badge-dot" aria-hidden="true"/>}
+              </button>
+              <AnimatePresence>
+                {showNotifications && (
+                  <motion.div
+                    className="notifications-dropdown tadaruk-dropdown-surface"
+                    role="region"
+                    aria-label={tr(lang, 'قائمة الإشعارات', 'Notifications list')}
+                    initial={reduced ? false : { opacity: 0, y: -6, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={reduced ? { opacity: 1 } : { opacity: 0, y: -4, scale: 0.98 }}
+                    transition={{ duration: reduced ? 0 : 0.16, ease: [0.22, 0.72, 0.18, 1] }}
+                  >
+                    <div className="notifications-head">
+                      <div className="notifications-title-wrap">
+                        <Bell size={15}/>
+                        <b>{tr(lang, 'الإشعارات', 'Notifications')}</b>
+                        {unreadCount > 0 && <span className="notifications-count-badge">{unreadCount}</span>}
+                      </div>
+                      {unreadCount > 0 && (
+                        <button
+                          type="button"
+                          className="notifications-mark-read"
+                          onClick={markAllNotificationsRead}
+                        >
+                          {tr(lang, 'تحديد الكل كمقروء', 'Mark all read')}
+                        </button>
+                      )}
+                    </div>
+                    <div className="notifications-list">
+                      {notificationsList.map(item => (
+                        <div
+                          key={item.id}
+                          className={`notification-item ${item.unread ? 'is-unread' : ''}`}
+                          onClick={() => {
+                            markNotificationRead(item.id);
+                            setShowNotifications(false);
+                            if (item.link) go(item.link);
+                          }}
+                        >
+                          <span className="notification-item-icon">
+                            {item.icon === 'check' ? <CheckCircle2 size={16}/> : item.icon === 'wrench' ? <Wrench size={16}/> : <Clock3 size={16}/>}
+                          </span>
+                          <div className="notification-item-content">
+                            <p className="notification-item-title">{item.title}</p>
+                            <small className="notification-item-desc">{item.desc}</small>
+                            <span className="notification-item-time">{item.time}</span>
+                          </div>
+                          {item.unread && <span className="notification-unread-dot" aria-hidden="true"/>}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="notifications-footer">
+                      <Link href="/workspace/tickets" onClick={() => setShowNotifications(false)}>
+                        {tr(lang, 'عرض جميع البلاغات', 'View all tickets')} {lang === 'ar' ? <ArrowLeft size={13}/> : <ArrowRight size={13}/>}
+                      </Link>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Language Switcher */}
             <button
               type="button"
-              className="icon-control reporter-notification-btn"
-              onClick={() => setShowNotifications(!showNotifications)}
-              aria-label={tr(lang, 'الإشعارات', 'Notifications')}
-              aria-expanded={showNotifications}
-              data-testid="button-reporter-notifications"
+              onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
+              className="reporter-action-btn reporter-lang-btn"
+              aria-label={tr(lang, 'تغيير اللغة', 'Switch language')}
+              data-testid="button-reporter-lang"
             >
-              <Bell size={18}/>
-              {unreadCount > 0 && <span className="notification-badge-dot" aria-hidden="true"/>}
+              <Languages size={17}/>
+              <span className="reporter-lang-label">{lang === 'ar' ? 'EN' : 'ع'}</span>
             </button>
-            <AnimatePresence>
-              {showNotifications && (
-                <motion.div
-                  className="notifications-dropdown tadaruk-dropdown-surface"
-                  role="region"
-                  aria-label={tr(lang, 'قائمة الإشعارات', 'Notifications list')}
-                  initial={reduced ? false : { opacity: 0, y: -6, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={reduced ? { opacity: 1 } : { opacity: 0, y: -4, scale: 0.98 }}
-                  transition={{ duration: reduced ? 0 : 0.16, ease: [0.22, 0.72, 0.18, 1] }}
-                >
-                  <div className="notifications-head">
-                    <div className="notifications-title-wrap">
-                      <Bell size={15}/>
-                      <b>{tr(lang, 'الإشعارات', 'Notifications')}</b>
-                      {unreadCount > 0 && <span className="notifications-count-badge">{unreadCount}</span>}
-                    </div>
-                    {unreadCount > 0 && (
-                      <button
-                        type="button"
-                        className="notifications-mark-read"
-                        onClick={markAllNotificationsRead}
-                      >
-                        {tr(lang, 'تحديد الكل كمقروء', 'Mark all read')}
-                      </button>
-                    )}
-                  </div>
-                  <div className="notifications-list">
-                    {notificationsList.map(item => (
-                      <div
-                        key={item.id}
-                        className={`notification-item ${item.unread ? 'is-unread' : ''}`}
-                        onClick={() => {
-                          markNotificationRead(item.id);
-                          setShowNotifications(false);
-                          if (item.link) go(item.link);
-                        }}
-                      >
-                        <span className="notification-item-icon">
-                          {item.icon === 'check' ? <CheckCircle2 size={16}/> : item.icon === 'wrench' ? <Wrench size={16}/> : <Clock3 size={16}/>}
-                        </span>
-                        <div className="notification-item-content">
-                          <p className="notification-item-title">{item.title}</p>
-                          <small className="notification-item-desc">{item.desc}</small>
-                          <span className="notification-item-time">{item.time}</span>
-                        </div>
-                        {item.unread && <span className="notification-unread-dot" aria-hidden="true"/>}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="notifications-footer">
-                    <Link href="/workspace/tickets" onClick={() => setShowNotifications(false)}>
-                      {tr(lang, 'عرض جميع البلاغات', 'View all tickets')} {lang === 'ar' ? <ArrowLeft size={13}/> : <ArrowRight size={13}/>}
-                    </Link>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+
+            {/* Theme Toggle */}
+            <div className="reporter-theme-toggle-wrap">
+              <SunMoonThemeToggle
+                className="workspace-theme-toggle"
+                theme={dark ? 'dark' : 'light'}
+                onThemeChange={theme => setDark(theme === 'dark')}
+                aria-label={dark ? tr(lang, 'تفعيل الوضع الفاتح', 'Switch to light mode') : tr(lang, 'تفعيل الوضع الداكن', 'Switch to dark mode')}
+                data-testid="theme-toggle-workspace"
+                size={38}
+                duration={860}
+              />
+            </div>
           </div>
-
-          {/* Language Switcher */}
-          <button
-            onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
-            className="icon-control"
-            aria-label={tr(lang, 'تغيير اللغة', 'Switch language')}
-          >
-            <Languages size={18}/>
-            <span>{lang === 'ar' ? 'EN' : 'ع'}</span>
-          </button>
-
-          {/* Theme Toggle */}
-          <SunMoonThemeToggle
-            className="workspace-theme-toggle"
-            theme={dark ? 'dark' : 'light'}
-            onThemeChange={theme => setDark(theme === 'dark')}
-            aria-label={dark ? tr(lang, 'تفعيل الوضع الفاتح', 'Switch to light mode') : tr(lang, 'تفعيل الوضع الداكن', 'Switch to dark mode')}
-            data-testid="theme-toggle-workspace"
-            size={40}
-            duration={860}
-          />
 
           {/* Topbar Divider */}
           <div className="topbar-divider" aria-hidden="true"/>

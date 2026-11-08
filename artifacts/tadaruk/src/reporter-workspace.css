@@ -618,9 +618,161 @@
   --rw-cyan-soft: #243f4b;
 }
 .rw-heading h1, .rw-home-copy h2, .rw-report-intro h2, .rw-section-head h2, .rw-ticket-head h1 {
-  font-family: 'Amiri', serif;
+  font-family: 'Amiri', serif !important;
   font-weight: 700;
-  letter-spacing: 0;
+  letter-spacing: 0 !important;
+}
+
+/* Scaled Typography for Reporter Dashboard (IBM Plex Sans Arabic & Amiri) */
+.reporter-view {
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.rw-heading h1 {
+  font-size: clamp(32px, 4.4vw, 44px) !important;
+  line-height: 1.3 !important;
+}
+
+.rw-home-copy h2 {
+  margin-top: 0;
+  font-size: clamp(28px, 3.8vw, 38px) !important;
+  line-height: 1.35 !important;
+}
+
+.rw-section-head h2 {
+  font-size: 24px !important;
+}
+
+.rw-report-intro h2 {
+  font-size: 25px !important;
+}
+
+.rw-ticket-head h1 {
+  font-size: 32px !important;
+}
+
+.rw-home-copy p {
+  font-size: 15.5px !important;
+  line-height: 1.85 !important;
+  max-width: 580px;
+}
+
+.rw-heading p {
+  font-size: 15.5px !important;
+  line-height: 1.8 !important;
+  max-width: 620px;
+}
+
+.rw-kicker {
+  font-size: 12.5px !important;
+}
+
+.rw-stat b {
+  font-size: 28px !important;
+}
+
+.rw-stat small {
+  font-size: 13.5px !important;
+  font-weight: 550 !important;
+}
+
+.rw-stat-icon {
+  width: 44px !important;
+  height: 44px !important;
+}
+
+.rw-button {
+  font-size: 14.5px !important;
+  min-height: 46px !important;
+  padding: 0 20px !important;
+  font-weight: 700 !important;
+}
+
+.rw-ticket-no {
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+}
+
+.rw-ticket-main b {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+}
+
+.rw-ticket-main small {
+  font-size: 12.5px !important;
+}
+
+.rw-ticket-technician {
+  font-size: 12.5px !important;
+}
+
+.rw-priority {
+  font-size: 12px !important;
+  padding: 4px 11px !important;
+}
+
+.rw-status, .reporter-view .rw-status {
+  font-size: 12px !important;
+  padding: 4px 11px !important;
+  min-height: 26px !important;
+}
+
+.rw-date, .reporter-view .rw-date {
+  font-size: 12.5px !important;
+}
+
+.rw-link {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+}
+
+.rw-field {
+  font-size: 14.5px !important;
+  font-weight: 600 !important;
+}
+
+.rw-field-hint {
+  font-size: 12.5px !important;
+}
+
+.rw-field input, .rw-field textarea, .rw-field select {
+  font-size: 14.5px !important;
+}
+
+.rw-chip {
+  font-size: 13px !important;
+  min-height: 38px !important;
+  padding: 0 15px !important;
+}
+
+.rw-photo-panel-copy b {
+  font-size: 14px !important;
+}
+
+.rw-photo-panel-copy small {
+  font-size: 12px !important;
+}
+
+.rw-input-option-label {
+  font-size: 12px !important;
+}
+
+.rw-report-intro p {
+  font-size: 14.5px !important;
+  line-height: 1.7 !important;
+}
+
+.rw-branch-note {
+  font-size: 13.5px !important;
+}
+
+.rw-search input {
+  font-size: 14.5px !important;
+}
+
+.rw-filter select {
+  font-size: 13.5px !important;
 }
 .rw-heading { margin-bottom: 21px; }
 .rw-home-intro {
