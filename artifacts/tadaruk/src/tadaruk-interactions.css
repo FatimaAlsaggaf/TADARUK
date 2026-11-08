@@ -8491,3 +8491,113 @@ body:has(.dark .reporter-shell) #root {
     font-size: 14.5px !important;
   }
 }
+
+/* Landing footer and original-inspired restrained neon CTA — November polish. */
+/* Footer: quiet, narrower column that doesn't read as a new hero section. */
+.landing .landing-footer.wrap {
+  width: min(calc(100% - 48px), 1040px) !important;
+  max-width: 1040px !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: 18px !important;
+  padding-block: 19px 23px !important;
+  margin-inline: auto !important;
+  border-top: 1px solid var(--landing-line) !important;
+}
+.landing .landing-footer .footer-brand {
+  display: flex !important;
+  align-items: center !important;
+  gap: 17px !important;
+  max-width: none !important;
+  min-width: 0;
+}
+.landing .landing-footer .footer-brand .brand-logo {
+  width: 112px !important;
+  flex-shrink: 0 !important;
+}
+.landing .landing-footer .footer-brand p {
+  margin: 0 !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+  max-width: 380px !important;
+}
+.landing .landing-footer .footer-meta {
+  font-size: 12px !important;
+  align-items: flex-end !important;
+}
+
+/* A lightweight reinterpretation of the supplied neon ring design:
+   animated edge highlight, rather than a constantly glowing cyan rectangle.
+   Keep the actual Link accessible and clickable. */
+.landing .landing-neon-cta {
+  position: relative !important;
+  isolation: isolate;
+  overflow: visible !important;
+  border: 1px solid #a8d2e2 !important;
+  border-radius: 12px !important;
+  background: #eaf4f8 !important;
+  color: #1f3363 !important;
+  box-shadow: 0 4px 18px rgba(18,55,90,.13) !important;
+  transition: box-shadow .25s ease, background-color .25s ease, color .25s ease, transform .2s ease !important;
+}
+.landing .landing-neon-cta::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  padding: 3px;
+  background: conic-gradient(from var(--td-neon-angle, 0deg), transparent 0 16%, #78b0d4 22%, #d6f5ff 28%, transparent 37% 65%, #6895c9 75%, transparent 84%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: .9;
+  pointer-events: none;
+  animation: tadaruk-neon-ring 3.8s linear infinite;
+}
+.landing .landing-neon-cta::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: inherit;
+  z-index: -1;
+  opacity: .55;
+  box-shadow: 0 0 16px rgba(85,146,195,.25);
+  pointer-events: none;
+  transition: opacity .2s ease, box-shadow .2s ease;
+}
+@property --td-neon-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@keyframes tadaruk-neon-ring { to { --td-neon-angle: 360deg; } }
+.landing .landing-neon-cta:hover,
+.landing .landing-neon-cta:focus-visible {
+  background: #dcebf3 !important;
+  color: #172e52 !important;
+  box-shadow: 0 5px 24px rgba(41,99,150,.2) !important;
+  transform: translateY(-1px);
+}
+.landing .landing-neon-cta:hover::after,
+.landing .landing-neon-cta:focus-visible::after {
+  opacity: 1;
+  box-shadow: 0 0 22px rgba(95,159,203,.42);
+}
+.dark .landing .landing-neon-cta {
+  background: #203b57 !important;
+  border-color: #5f89ae !important;
+  color: #f2f8fe !important;
+}
+.dark .landing .landing-neon-cta:hover { background: #2b4e6b !important; color: #fff !important; }
+@media (max-width: 640px) {
+  .landing .landing-footer.wrap {
+    width: calc(100% - 34px) !important;
+    grid-template-columns: 1fr !important;
+    gap: 11px !important;
+    padding-block: 17px 22px !important;
+  }
+  .landing .landing-footer .footer-brand { gap: 11px !important; }
+  .landing .landing-footer .footer-brand .brand-logo { width: 95px !important; }
+  .landing .landing-footer .footer-brand p { font-size: 12px !important; }
+  .landing .landing-footer .footer-meta { align-items: flex-start !important; font-size: 11px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing .landing-neon-cta::before { animation: none !important; }
+  .landing .landing-neon-cta:hover { transform: none !important; }
+}
