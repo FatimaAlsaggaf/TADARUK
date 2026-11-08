@@ -7669,3 +7669,147 @@ body:has(.dark .reporter-shell) #root {
   .app-shell:not(.reporter-shell) .workspace-header-bell:hover svg { animation: none !important; }
   .app-shell:not(.reporter-shell) .workspace-header-language:hover svg { transform: none !important; }
 }
+
+/* Technician-only header experiment: account settings inside the profile dropdown. */
+.app-shell:not(.reporter-shell):has(.technician-header-account) .workspace-compact-topbar {
+  gap: 10px;
+  justify-content: flex-end;
+}
+.technician-header-account {
+  position: relative;
+  display: flex;
+  align-items: center;
+  z-index: 75;
+}
+.technician-header-account-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 10px;
+  min-height: 46px;
+  border: 1px solid #dce5ee;
+  border-radius: 13px;
+  background: rgba(255,255,255,.68);
+  color: #1f3363;
+  font: 600 13px 'IBM Plex Sans Arabic', sans-serif;
+  cursor: pointer;
+  transition: background-color .18s ease, border-color .18s ease;
+}
+.technician-header-account-button:hover,
+.technician-header-account-button[aria-expanded="true"] {
+  background: #e6eef4;
+  border-color: #bdcfdd;
+}
+.technician-header-account-name { white-space: nowrap; }
+.technician-header-menu {
+  position: absolute;
+  top: calc(100% + 9px);
+  inset-inline-start: 0;
+  width: min(280px, 88vw);
+  z-index: 90;
+  padding: 8px;
+  border: 1px solid #dce5ed;
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 14px 32px rgba(31,51,99,.13);
+}
+.technician-menu-option,
+.technician-menu-theme {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 11px;
+  padding: 11px 12px;
+  color: #31496b;
+  font: 600 13px 'IBM Plex Sans Arabic',sans-serif;
+}
+.technician-menu-option {
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  text-align: start;
+  cursor: pointer;
+  transition: background-color .16s ease;
+}
+.technician-menu-option:hover:not(.technician-menu-signout) {
+  background: #edf2f7;
+}
+.technician-menu-option-value {
+  margin-inline-start: auto;
+  font-size: 11px;
+  color: #74839b;
+}
+.technician-menu-theme {
+  justify-content: space-between;
+}
+.technician-menu-theme > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+}
+.technician-menu-signout,
+.technician-menu-signout:hover,
+.technician-menu-signout:focus:not(:focus-visible) {
+  color: #c33f48 !important;
+  background: transparent !important;
+}
+.technician-menu-signout svg,
+.technician-menu-signout:hover svg {
+  color: #c33f48 !important;
+  transform: none !important;
+  filter: none !important;
+}
+.dark .technician-header-account-button {
+  background: rgba(32,52,75,.55);
+  color: #e8f1fa;
+  border-color: #38516b;
+}
+.dark .technician-header-account-button:hover,
+.dark .technician-header-account-button[aria-expanded="true"] {
+  background: #2c4460;
+}
+.dark .technician-header-menu {
+  background: #162b42;
+  border-color: #39516b;
+}
+.dark .technician-menu-option,
+.dark .technician-menu-theme {
+  color: #e1ecf6;
+}
+.dark .technician-menu-option:hover:not(.technician-menu-signout) {
+  background: #29425c;
+}
+.dark .technician-menu-signout,
+.dark .technician-menu-signout:hover {
+  color: #ffb2b5 !important;
+}
+
+/* Logout is intentionally static throughout all account menus.
+   Keep its color, but no hover highlight or icon movement. */
+.app-shell .side-account-signout:hover:not(:disabled),
+.dark .app-shell .side-account-signout:hover:not(:disabled),
+.app-shell .technician-menu-signout:hover:not(:disabled),
+.dark .app-shell .technician-menu-signout:hover:not(:disabled) {
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+.app-shell .side-account-signout:hover .side-account-item-icon,
+.dark .app-shell .side-account-signout:hover .side-account-item-icon,
+.app-shell .technician-menu-signout:hover svg,
+.dark .app-shell .technician-menu-signout:hover svg {
+  transform: none !important;
+  filter: none !important;
+}
+.app-shell .side-account-signout,
+.app-shell .technician-menu-signout {
+  transition: none !important;
+}
+@media (max-width: 900px) {
+  .technician-header-account-name { display: none; }
+  .technician-header-account-button { padding: 4px 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .technician-header-account-button,
+  .technician-menu-option { transition: none !important; }
+}
