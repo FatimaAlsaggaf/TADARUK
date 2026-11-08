@@ -332,7 +332,7 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
   const [dividerPulse,setDividerPulse]=useState(0);
   const [activeSection,setActiveSection]=useState('top');
   const [roadmapProgress,setRoadmapProgress]=useState(reduced?3:-1);
-  const [folderOpen,setFolderOpen]=useState(true);
+  const [folderOpen,setFolderOpen]=useState(false);
   const [impactRevealed,setImpactRevealed]=useState(false);
   const roadmapRef=useRef<HTMLElement|null>(null);
   const impactRef=useRef<HTMLElement|null>(null);
@@ -352,23 +352,15 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
     if(reduced){setRoadmapProgress(3);return;}
     const section=roadmapRef.current;
     if(!section)return;
-    let timers:number[]=[];
     const observer=new IntersectionObserver(([entry])=>{
       if(entry.isIntersecting){
+        // Path updates below activate nodes precisely when the line reaches them.
         setRoadmapProgress(0);
-        timers=[
-          window.setTimeout(()=>setRoadmapProgress(1),1200),
-          window.setTimeout(()=>setRoadmapProgress(2),2400),
-          window.setTimeout(()=>setRoadmapProgress(3),3600)
-        ];
         observer.disconnect();
       }
     },{threshold:.25});
     observer.observe(section);
-    return ()=>{
-      observer.disconnect();
-      timers.forEach(window.clearTimeout);
-    };
+    return ()=>observer.disconnect();
   },[reduced]);
   useEffect(()=>{
     const section=impactRef.current;
@@ -376,6 +368,7 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
     const observer=new IntersectionObserver(([entry])=>{
       if(entry.isIntersecting){
         setImpactRevealed(true);
+        setFolderOpen(true); // reveal report bubbles emerging from the closed folder
         observer.disconnect();
       }
     },{threshold:.2});
@@ -506,6 +499,13 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
           <motion.path
             className="roadmap-track"
             d={desktopRoadmapPath}
+            onUpdate={latest=>{
+              if(roadmapProgress<0 || reduced) return;
+              const fraction=Number(latest.pathLength ?? 0);
+              // Activate stages on the drawn path's actual progress, not timers.
+              const stage=fraction>=.985?3:fraction>=.65?2:fraction>=.32?1:0;
+              setRoadmapProgress(previous=>Math.max(previous,stage));
+            }}
             pathLength="1"
             initial={{pathLength:reduced?1:0}}
             animate={{pathLength:roadmapProgress>=0?1:0}}
@@ -532,10 +532,17 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
           <motion.path
             className="roadmap-track"
             d={mobileRoadmapPath}
+            onUpdate={latest=>{
+              if(roadmapProgress<0 || reduced) return;
+              const fraction=Number(latest.pathLength ?? 0);
+              // Activate stages on the drawn path's actual progress, not timers.
+              const stage=fraction>=.985?3:fraction>=.65?2:fraction>=.32?1:0;
+              setRoadmapProgress(previous=>Math.max(previous,stage));
+            }}
             pathLength="1"
             initial={{pathLength:reduced?1:0}}
             animate={{pathLength:roadmapProgress>=0?1:0}}
-            transition={reduced?{duration:0}:{duration:3.0,ease:[.35,0,.25,1]}}
+            transition={reduced?{duration:0}:{duration:3.6,ease:[.38,0,.25,1]}}
           />
           <motion.path
             className="roadmap-glint"
@@ -543,7 +550,7 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
             pathLength="1"
             initial={{pathLength:0,pathOffset:0,opacity:0}}
             animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.16,.16,0],pathOffset:[0,0,.84,1],opacity:[0,1,1,0]}:{pathLength:0,opacity:0}}
-            transition={reduced?{duration:0}:{duration:3.0,ease:[.35,0,.25,1]}}
+            transition={reduced?{duration:0}:{duration:3.6,ease:[.38,0,.25,1]}}
           />
         </svg>
         <div className="workflow-steps">{labels.map((label,index)=>{
