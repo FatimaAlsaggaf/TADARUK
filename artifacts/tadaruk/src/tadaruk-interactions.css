@@ -7456,3 +7456,90 @@ body:has(.dark .reporter-shell) #root {
   .reporter-shell .reporter-lang-btn > svg,
   .reporter-shell .reporter-account-avatar-wrap { transition: none !important; transform: none !important; }
 }
+
+/* All-role sidebar refinement: calm hover, clear active state and muted branch icon. */
+/* Shared with Reporter, Technician and Manager. Reference: quiet full-row hover,
+   restrained active pill and narrow edge indicator. Avoid bouncy/icon jitter. */
+.app-shell .sidebar .branch-icon,
+.reporter-shell .reporter-sidebar .branch-switch .branch-icon {
+  background: #d9e6ee !important;
+  color: #315572 !important;
+  border: 1px solid #c7d8e3 !important;
+  box-shadow: none !important;
+  border-radius: 9px !important;
+  transition: background-color 180ms ease, color 180ms ease !important;
+}
+.dark .app-shell .sidebar .branch-icon,
+.dark .reporter-shell .reporter-sidebar .branch-switch .branch-icon {
+  background: #2d455e !important;
+  color: #c5d8e6 !important;
+  border-color: #3c5872 !important;
+}
+
+/* No motion gimmicks on the icon; hover communicates the clickable row. */
+.app-shell .sidebar .side-link,
+.reporter-shell .reporter-sidebar .side-link {
+  border-radius: 11px !important;
+  background: transparent !important;
+  transform: none !important;
+  transition: background-color 200ms ease, color 200ms ease !important;
+}
+.app-shell .sidebar .side-link:hover,
+.reporter-shell .reporter-sidebar .side-link:hover {
+  background: #e8eef3 !important;
+  color: #203c62 !important;
+}
+.app-shell .sidebar .side-link.selected,
+.reporter-shell .reporter-sidebar .side-link.selected {
+  color: #1f3363 !important;
+  background: transparent !important;
+}
+.app-shell .sidebar .nav-shared-indicator,
+.reporter-shell .reporter-sidebar .nav-shared-indicator {
+  border-radius: 11px !important;
+  background: #e3eaf2 !important;
+  box-shadow: none !important;
+}
+.app-shell .sidebar .nav-active-mark,
+.reporter-shell .reporter-sidebar .nav-active-mark {
+  background: #365b80 !important;
+  width: 3px !important;
+  border-radius: 999px !important;
+}
+.app-shell .sidebar .side-link-icon,
+.app-shell .sidebar .side-link-icon svg {
+  transition: color 180ms ease !important;
+  transform: none !important;
+}
+.dark .app-shell .sidebar .side-link:hover,
+.dark .reporter-shell .reporter-sidebar .side-link:hover {
+  background: #2b4058 !important;
+  color: #f2f6fb !important;
+}
+.dark .app-shell .sidebar .side-link.selected,
+.dark .reporter-shell .reporter-sidebar .side-link.selected {
+  color: #f2f6fb !important;
+  background: transparent !important;
+}
+.dark .app-shell .sidebar .nav-shared-indicator,
+.dark .reporter-shell .reporter-sidebar .nav-shared-indicator {
+  background: #304863 !important;
+}
+.dark .app-shell .sidebar .nav-active-mark,
+.dark .reporter-shell .reporter-sidebar .nav-active-mark {
+  background: #a6c7e1 !important;
+}
+.dark .reporter-shell .reporter-sidebar .side-link.selected .side-link-icon svg {
+  color: #c6d9e8 !important;
+}
+.app-shell .sidebar .side-link:focus-visible {
+  outline: 2px solid #698fab;
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .sidebar .side-link,
+  .app-shell .sidebar .side-link-icon,
+  .app-shell .sidebar .branch-icon {
+    transition: none !important;
+  }
+}
