@@ -590,6 +590,8 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
             open={folderOpen}
             onOpenChange={setFolderOpen}
             trigger="click"
+            openDuration={660}
+            stagger={340}
           />
         </div>
 
@@ -616,10 +618,10 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
     </section>
     <section className="landing-end wrap" id="final">
       <div><span className="eyebrow"><span className="live-dot"/>{health.isLoading?tr(lang,'جارٍ الاتصال','CONNECTING'):health.isError?tr(lang,'العرض متاح','DEMO AVAILABLE'):tr(lang,'من البلاغ إلى الإصلاح','REPORT TO REPAIR')}</span><h2 className={lang==='ar'?'display-ar':''}>{tr(lang,'جاهز تبدأ مع تدارك؟','Ready to start with Tadaruk?')}</h2><p>{tr(lang,'من أول بلاغ إلى آخر خطوة، كل شيء أوضح.','From the first report to the final step, everything is clearer.')}</p></div>
-      <Button href="/demo">{tr(lang,'استكشف تدارك','Explore Tadaruk')}<ArrowLeft size={17}/></Button>
+      <Button href="/demo" className="landing-neon-cta">{tr(lang,'استكشف تدارك','Explore Tadaruk')}<ArrowLeft size={17}/></Button>
     </section>
     <footer className="landing-footer wrap">
-      <div className="footer-brand"><Brand darkMode={dark}/><p>{tr(lang,'منصة عربية تجمع بلاغات الصيانة ومسؤوليتها وتقدمها في سجل واضح.','An Arabic-first platform keeping maintenance reports, ownership and progress in one clear record.')}</p></div>
+      <div className="footer-brand"><Brand darkMode={dark}/><p>{tr(lang,'إدارة الصيانة بوضوح من البلاغ إلى الإصلاح.','Clearer maintenance, from report to repair.')}</p></div>
       <div className="footer-meta"><span>© {new Date().getFullYear()} TADARUK</span></div>
     </footer>
   </main>;
