@@ -7138,8 +7138,8 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   .reporter-shell .reporter-sidebar-brand {
     position: relative !important;
     display: flex !important;
-    height: 68px !important;
-    min-height: 68px !important;
+    height: 76px !important;
+    min-height: 76px !important;
     margin: 0 0 18px !important;
     padding: 0 10px !important;
     border: 0 !important;
@@ -7148,7 +7148,7 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
     box-shadow: none !important;
   }
   .reporter-shell .reporter-sidebar-brand .brand-logo {
-    width: 158px !important;
+    width: 178px !important;
     max-width: 100% !important;
     height: auto !important;
   }
@@ -7170,10 +7170,10 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
     height: 62px !important;
     margin: 16px 24px 0 !important;
     padding: 0 16px !important;
-    border: 1px solid #dce7f0 !important;
-    border-radius: 15px !important;
-    background: #fff !important;
-    box-shadow: 0 4px 16px rgba(31,51,99,.045) !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
     z-index: 15 !important;
   }
   .reporter-shell .reporter-header-controls {
@@ -7187,9 +7187,9 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
     box-shadow: none !important;
   }
   .dark .reporter-shell .reporter-header {
-    background: #111e32 !important;
-    border-color: #29415b !important;
-    box-shadow: 0 4px 16px rgba(0,0,0,.14) !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
   }
 }
 @media (max-width: 900px) {
@@ -7197,5 +7197,16 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   .reporter-shell .reporter-header {
     position: relative !important;
     top: auto !important;
+  }
+}
+
+/* Seamless header on mobile too: controls sit directly on the app background. */
+@media (max-width: 900px) {
+  .reporter-shell .reporter-header,
+  .dark .reporter-shell .reporter-header {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
   }
 }
