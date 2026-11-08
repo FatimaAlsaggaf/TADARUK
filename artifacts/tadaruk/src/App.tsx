@@ -396,7 +396,7 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
   const desktopRoadmapPath=lang==='ar'
     ?'M 700 130 C 628 130, 578 50, 500 50 S 389 135, 310 135 S 185 75, 110 75'
     :'M 110 75 C 185 75, 232 135, 310 135 S 422 50, 500 50 S 625 130, 700 130';
-  const mobileRoadmapPath='M 40 48 L 40 472';
+  const mobileRoadmapPath='M 40 29 L 40 445';
   const tadarukDemoReports = lang === 'ar' ? [
     { label: 'مكيف الفرع يقطر موية فوق الطاولات', value: 'ac-leak', time: '10:42 ص', branch: 'فرع العليا' },
     { label: 'تسريب ماء قوي تحت المغاسل', value: 'water-leak', time: '11:15 ص', branch: 'فرع النخيل' },
