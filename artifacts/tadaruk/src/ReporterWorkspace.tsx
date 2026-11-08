@@ -471,7 +471,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
     <div className="reporter-view" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       <ReporterHeading
         title={text(lang, 'تسجيل بلاغ جديد', 'Submit a new report')}
-        description={text(lang, 'نظام ذكي يحلل البلاغ ويحدد التخصص والأولوية المناسبة فوراً.', 'Intelligent system that analyzes reports and assigns specialization and priority instantly.')}
+        description={text(lang, 'صف المشكلة وسنجهّز بلاغك للمراجعة.', 'Describe the issue and review the prepared report.')}
         lang={lang}
       />
 
@@ -534,10 +534,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
               </span>
               <div className="rw-report-intro-text">
                 <h2>{text(lang, 'صف ما لاحظته في الفرع', 'Describe what you noticed')}</h2>
-                <div className="rw-report-assurance-badge">
-                  <ShieldCheck size={14} className="text-[#307190] dark:text-[#56f4ef] flex-shrink-0" />
-                  <span>{text(lang, 'سجّل تفاصيل العطل وأرفق الصورة، ولن يُرسل شيء للفني إلا بعد مراجعتك وتأكيدك.', 'Record issue details and photo. Nothing is sent to maintenance before your final review.')}</span>
-                </div>
+                
               </div>
             </div>
 
@@ -574,7 +571,6 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
             <label className="rw-field">
               <span className="font-semibold text-sm">
                 {text(lang, 'وصف المشكلة', 'Describe the issue')}
-                <span className="rw-field-hint">{text(lang, 'اكتب بكلماتك البسيطة', 'In your own words')}</span>
               </span>
               <textarea
                 ref={descriptionInputRef}
@@ -588,7 +584,6 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
 
             {/* Voice Input Section */}
             <div className="rw-input-options" aria-label={text(lang, 'طرق وصف المشكلة', 'Ways to describe the issue')}>
-              <span className="rw-input-option-label">{text(lang, 'الوصف الصوتي', 'VOICE DESCRIPTION')}</span>
               <AiVoiceInput
                 lang={lang}
                 onTranscript={appendTranscript}
@@ -600,8 +595,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
             <div className="rw-field">
               <div className="rw-photo-header">
                 <span className="font-semibold text-sm flex items-center">
-                  {text(lang, 'صورة للمشكلة', 'A photo of the issue')}
-                  <span className="rw-field-required-badge">{text(lang, 'إلزامي', 'Required')}</span>
+                  {text(lang, 'صورة للمشكلة', 'Issue photo')}
                 </span>
                 {photo && (
                   <span className="rw-photo-attached-badge">
@@ -619,11 +613,8 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                       <ImagePlus size={22} className={photoError ? 'text-red-500' : 'text-[#307190] dark:text-[#93c5fd]'} />
                     </div>
                     <div className="rw-photo-uploader-text">
-                      <b>{text(lang, 'إرفاق صورة توضيحية للمشكلة (إلزامي)', 'Attach an issue photo (Required)')}</b>
-                      <p>{text(lang, 'التقط صورة بالكاميرا أو اخترها من جهازك لتوثيق المشكلة للفني قبل المتابعة.', 'Capture with camera or choose from device to document the issue for the technician.')}</p>
-                      <span className="rw-photo-formats-tag">
-                        {text(lang, 'الصيغ المدعومة: PNG, JPG, JPEG (الحد الأقصى ١٢ ميغابايت)', 'Supported formats: PNG, JPG, JPEG (Max 12 MB)')}
-                      </span>
+                      <b>{text(lang, 'أرفق صورة للمشكلة', 'Attach an issue photo')}</b>
+                      <p>{text(lang, 'صوّر العطل أو اختر صورة من جهازك.', 'Take a photo or choose one from your device.')}</p>
                     </div>
                   </div>
                   <div className="rw-photo-uploader-buttons">
@@ -735,7 +726,6 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                   </>
                 )}
               </button>
-              <small>{text(lang, 'لن يُرسل البلاغ إلا بعد مراجعتك وتأكيدك.', 'Nothing is sent until you review and confirm.')}</small>
             </div>
           </form>
         </Step>
