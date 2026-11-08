@@ -859,6 +859,12 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
       <div className="app-shell reporter-shell" dir={lang==='ar'?'rtl':'ltr'}>
         {/* Right Column: Full-Height Connected Sidebar */}
         <aside className={`sidebar reporter-sidebar ${mobile ? 'sidebar-open' : ''}`}>
+          <div className="reporter-sidebar-brand">
+            <Link href="/workspace" className="reporter-brand-link" aria-label="TADARUK home">
+              <Brand darkMode={dark}/>
+            </Link>
+          </div>
+
           <div className="reporter-sidebar-mobile-close">
             <span className="mobile-menu-title">{tr(lang, 'القائمة', 'Menu')}</span>
             <button className="mobile-close" onClick={()=>setMobile(false)} aria-label={tr(lang, 'إغلاق القائمة', 'Close menu')}><X size={18}/></button>
@@ -926,11 +932,6 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
         <div className="reporter-main-area">
           {/* Top Row: Header Controls (Ends cleanly at the sidebar boundary) */}
           <header className="reporter-header">
-            {/* The complete desktop header, including the logo, scrolls away together. */}
-            <Link href="/workspace" className="reporter-header-brand" aria-label="TADARUK home">
-              <Brand darkMode={dark}/>
-            </Link>
-
             {/* Mobile menu trigger */}
             <button
               type="button"
