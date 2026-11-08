@@ -7543,3 +7543,129 @@ body:has(.dark .reporter-shell) #root {
     transition: none !important;
   }
 }
+
+/* Shared manager/technician topbar and definitive sidebar hover corrections. */
+/* Header has utilities only; the sidebar already communicates current page. */
+.app-shell:not(.reporter-shell) .workspace-compact-topbar {
+  justify-content: flex-end;
+  border-bottom: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  min-height: 62px;
+  height: 62px;
+  padding-inline: clamp(20px, 3vw, 42px);
+}
+.app-shell:not(.reporter-shell) .workspace-unified-controls {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+.app-shell:not(.reporter-shell) .workspace-unified-controls .icon-control {
+  min-width: 38px;
+  min-height: 38px;
+  padding: 6px 8px;
+  justify-content: center;
+  border-radius: 10px;
+  background: transparent;
+  color: #496481;
+  transition: background-color 170ms ease, color 170ms ease;
+}
+.app-shell:not(.reporter-shell) .workspace-unified-controls .icon-control:hover {
+  background: #dce7ef;
+  color: #1f3363;
+}
+.dark .app-shell:not(.reporter-shell) .workspace-unified-controls .icon-control:hover {
+  color: #f1f6fb;
+  background: #30485e;
+}
+.app-shell:not(.reporter-shell) .workspace-header-bell svg {
+  transform-origin: 50% 15%;
+}
+.app-shell:not(.reporter-shell) .workspace-header-bell:hover svg {
+  animation: reporter-bell-ring 620ms ease-in-out 1;
+}
+.app-shell:not(.reporter-shell) .workspace-header-language svg {
+  transition: transform 220ms ease;
+}
+.app-shell:not(.reporter-shell) .workspace-header-language:hover svg {
+  transform: rotate(-10deg);
+}
+.app-shell:not(.reporter-shell) .workspace-header-notifications {
+  position: relative;
+  display: inline-flex;
+}
+.app-shell:not(.reporter-shell) .workspace-header-notifications-popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  inset-inline-end: 0;
+  width: min(310px, 88vw);
+  z-index: 70;
+  border: 1px solid #dbe5ee;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 14px 32px rgba(31,51,99,.12);
+  overflow: hidden;
+}
+.app-shell:not(.reporter-shell) .workspace-notifications-empty {
+  padding: 20px 16px;
+  font-size: 12px;
+  color: #71849a;
+  line-height: 1.8;
+}
+.dark .app-shell:not(.reporter-shell) .workspace-header-notifications-popover {
+  background: #182d44;
+  border-color: #395069;
+}
+.dark .app-shell:not(.reporter-shell) .workspace-notifications-empty { color: #c2d0df; }
+
+/* Definitive override of the old exaggerated icon hover rules.
+   A subtle full-row highlight plus a steady active pill, like the reference. */
+.app-shell .sidebar .side-link {
+  position: relative;
+  isolation: isolate;
+  border-radius: 10px !important;
+}
+.app-shell .sidebar .side-link > span:not(.nav-shared-indicator),
+.app-shell .sidebar .side-link > .side-link-icon {
+  position: relative;
+  z-index: 2;
+}
+.app-shell .sidebar .side-link:not(.selected):hover {
+  background: #dce8f0 !important;
+  color: #203e60 !important;
+}
+.app-shell .sidebar .side-link.selected:hover .nav-shared-indicator {
+  background: #d3e2ed !important;
+}
+.app-shell .sidebar .side-link-icon,
+.app-shell .sidebar .side-link-icon svg,
+.app-shell .sidebar .side-link:hover .side-link-icon svg,
+.app-shell[dir="rtl"] .sidebar .side-link:hover .side-link-icon svg,
+.app-shell[dir="ltr"] .sidebar .side-link:hover .side-link-icon svg,
+.app-shell .sidebar .side-link:active .side-link-icon svg {
+  transform: none !important;
+  filter: none !important;
+}
+.app-shell .sidebar .side-link-icon svg {
+  transition: color 170ms ease !important;
+}
+.app-shell .sidebar .branch-switch:hover .branch-icon svg {
+  transform: none !important;
+}
+.dark .app-shell .sidebar .side-link:not(.selected):hover {
+  background: #304863 !important;
+  color: #fff !important;
+}
+.dark .app-shell .sidebar .side-link.selected:hover .nav-shared-indicator {
+  background: #3b5670 !important;
+}
+@media (max-width: 900px) {
+  .app-shell:not(.reporter-shell) .workspace-compact-topbar {
+    justify-content: space-between;
+    padding-inline: 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell:not(.reporter-shell) .workspace-header-bell:hover svg { animation: none !important; }
+  .app-shell:not(.reporter-shell) .workspace-header-language:hover svg { transform: none !important; }
+}
