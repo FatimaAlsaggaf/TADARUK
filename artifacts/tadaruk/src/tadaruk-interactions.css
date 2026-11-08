@@ -5673,11 +5673,14 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
 }
 
 /* ==========================================================================
-   Reporter Dashboard Layout: Reference 2 Header + Original Integrated Sidebar
+   Reporter Dashboard Layout: Unified Header & Seamless Integrated Sidebar
+   Shared CSS variable --reporter-sidebar-width for mathematical alignment
    ========================================================================== */
 
-/* Shell Canvas Background */
+/* Shell Canvas Background & CSS Variables */
 .reporter-shell {
+  --reporter-sidebar-width: 260px;
+  --reporter-header-height: 64px;
   min-height: 100dvh;
   display: flex !important;
   flex-direction: column !important;
@@ -5691,83 +5694,69 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   color: #f1f5fa !important;
 }
 
-/* 1. Full-width, Rounded Top Header (Reference 2) */
+/* 1. Unified Full-Width Header */
 .reporter-shell .reporter-topbar {
   position: sticky;
   top: 0;
   z-index: 40;
-  margin: 12px 18px 0 18px;
-  height: 66px;
-  padding: 0 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #ffffff;
-  border: 1px solid #e1e9f0;
-  border-radius: 16px;
-  box-shadow: 0 3px 14px rgba(15, 23, 42, 0.035);
-  transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  width: 100% !important;
+  height: var(--reporter-header-height) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: space-between !important;
+  background: #ffffff !important;
+  border: 0 !important;
+  border-bottom: 1px solid #e1e9f0 !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+  transition: background 0.25s ease, border-color 0.25s ease !important;
 }
 
 .dark .reporter-shell .reporter-topbar {
-  background: #111e32;
-  border-color: #1e324a;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  background: #111e32 !important;
+  border-bottom-color: #1e324a !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25) !important;
 }
 
-/* Topbar Brand Group (Right in RTL) */
-.reporter-topbar-brand-group {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+/* Topbar Brand Section (Matches Sidebar Width & Aligns Boundary Exactly) */
+.reporter-topbar-brand-section {
+  width: var(--reporter-sidebar-width) !important;
+  flex: 0 0 var(--reporter-sidebar-width) !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 20px !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+  border-inline-end: 1px solid #d6e6e6 !important;
+  background: #ffffff !important;
+}
+
+.dark .reporter-topbar-brand-section {
+  border-inline-end-color: #294662 !important;
+  background: #111e32 !important;
 }
 
 .reporter-brand-link {
-  display: flex;
-  align-items: center;
+  display: inline-flex !important;
+  align-items: center !important;
+  text-decoration: none !important;
 }
 
 .reporter-brand-link .brand-logo {
-  display: block;
-  width: 140px;
-  height: auto;
+  display: block !important;
+  width: 140px !important;
+  height: auto !important;
 }
 
-/* Vertical Hairline Divider */
-.reporter-header-divider {
-  width: 1px;
-  height: 24px;
-  background: #e2e8f0;
-  flex: none;
-  margin: 0 3px;
+.reporter-brand-divider {
+  display: none !important; /* Handled precisely by border-inline-end */
 }
 
-.dark .reporter-header-divider {
-  background: #1e324a;
-}
-
-/* Page Title in Topbar */
-.reporter-title-wrap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.reporter-header-title {
-  font-family: 'Amiri', serif !important;
-  font-size: 24px !important;
-  font-weight: 700 !important;
-  color: #1f3363;
-  letter-spacing: 0 !important;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-}
-
-.dark .reporter-header-title {
-  color: #f5f8ff;
-}
-
+/* Mobile Menu Toggle Button */
 .reporter-mobile-menu {
   display: none;
   background: transparent;
@@ -5781,11 +5770,31 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   color: #f5f8ff;
 }
 
-/* Controls Cluster (Left in RTL) */
+/* Controls Cluster (Left in RTL, Right in LTR) */
 .reporter-topbar-controls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  flex: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  padding: 0 24px !important;
+  gap: 10px !important;
+}
+
+[dir="ltr"] .reporter-topbar-controls {
+  justify-content: flex-end !important;
+}
+
+/* Vertical Hairline Divider */
+.reporter-header-divider {
+  width: 1px;
+  height: 24px;
+  background: #e2e8f0;
+  flex: none;
+  margin: 0 3px;
+}
+
+.dark .reporter-header-divider {
+  background: #1e324a;
 }
 
 /* Theme Toggle Pill */
@@ -6232,7 +6241,7 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   flex: 1 !important;
   width: 100% !important;
   position: relative !important;
-  margin-top: 12px !important;
+  margin: 0 !important;
   align-items: stretch !important;
   gap: 0 !important;
   padding: 0 !important;
@@ -6241,10 +6250,10 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
 /* Original Integrated TADARUK Sidebar — docked, NO floating card, NO outer rounded borders */
 .reporter-shell .reporter-sidebar {
   position: sticky !important;
-  top: 78px !important;
-  height: calc(100vh - 78px) !important;
-  width: 260px !important;
-  flex: 0 0 260px !important;
+  top: var(--reporter-header-height, 64px) !important;
+  height: calc(100vh - var(--reporter-header-height, 64px)) !important;
+  width: var(--reporter-sidebar-width, 260px) !important;
+  flex: 0 0 var(--reporter-sidebar-width, 260px) !important;
   margin: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
@@ -6252,6 +6261,7 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   border-bottom: 0 !important;
   border-inline-start: 0 !important;
   border-inline-end: 1px solid #d6e6e6 !important;
+  box-sizing: border-box !important;
   background:
     radial-gradient(ellipse at 100% 0%, rgba(86, 244, 239, .28), transparent 38%),
     linear-gradient(160deg, #f4f4f4 0%, #eff8f7 48%, #d9f3f1 100%) !important;
@@ -6428,7 +6438,7 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
 .reporter-shell .reporter-workspace-content {
   flex: 1 !important;
   min-width: 0 !important;
-  padding: 24px clamp(20px, 3.5vw, 44px) 48px !important;
+  padding: 32px clamp(20px, 3.5vw, 44px) 56px !important;
   max-width: none !important;
   margin: 0 !important;
   background: transparent !important;
@@ -6443,17 +6453,31 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
 /* Responsive adjustments */
 @media (max-width: 900px) {
   .reporter-shell .reporter-topbar {
-    margin: 8px 12px 0;
-    padding: 0 14px;
-    height: 60px;
+    margin: 0 !important;
+    padding: 0 12px !important;
+    height: 60px !important;
+  }
+  .reporter-topbar-brand-section {
+    width: auto !important;
+    flex: 0 0 auto !important;
+    border-inline-end: 0 !important;
+    padding: 0 8px !important;
+    gap: 10px !important;
+  }
+  .reporter-brand-link .brand-logo {
+    width: 120px !important;
   }
   .reporter-mobile-menu {
-    display: inline-grid;
-    place-items: center;
+    display: inline-grid !important;
+    place-items: center !important;
+  }
+  .reporter-topbar-controls {
+    padding: 0 6px !important;
+    gap: 6px !important;
   }
   .reporter-body-layout,
   .reporter-main-layout {
-    margin-top: 8px !important;
+    margin-top: 0 !important;
   }
   .reporter-shell .reporter-sidebar {
     position: fixed !important;
@@ -6478,7 +6502,7 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
     transform: translateX(0) !important;
   }
   .reporter-sidebar-mobile-close {
-    display: flex;
+    display: flex !important;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 16px;

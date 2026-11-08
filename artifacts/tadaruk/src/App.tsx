@@ -857,24 +857,21 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
   if (isReporter) {
     return (
       <div className="app-shell reporter-shell" dir={lang==='ar'?'rtl':'ltr'}>
-        {/* Full-width Floating Header */}
+        {/* Reporter Unified Top Header */}
         <header className="reporter-topbar">
-          <div className="reporter-topbar-brand-group">
+          <div className="reporter-topbar-brand-section">
             <Link href="/workspace" className="reporter-brand-link" aria-label="TADARUK home">
               <Brand darkMode={dark}/>
             </Link>
-            <div className="reporter-header-divider" aria-hidden="true"/>
-            <div className="reporter-title-wrap">
-              <button
-                type="button"
-                className="mobile-menu reporter-mobile-menu"
-                onClick={()=>setMobile(true)}
-                aria-label={tr(lang, 'فتح القائمة', 'Open menu')}
-              >
-                <Menu size={20}/>
-              </button>
-              <span className="reporter-header-title">{title}</span>
-            </div>
+            <button
+              type="button"
+              className="mobile-menu reporter-mobile-menu"
+              onClick={()=>setMobile(true)}
+              aria-label={tr(lang, 'فتح القائمة', 'Open menu')}
+            >
+              <Menu size={20}/>
+            </button>
+            <div className="reporter-brand-divider" aria-hidden="true"/>
           </div>
 
           <div className="reporter-topbar-controls">
