@@ -1067,7 +1067,7 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
                 >
                   <div className="reporter-account-meta">
                     <b className="reporter-account-name">{user.name}</b>
-                    <span className={`reporter-account-role-badge role-badge-${user.role}`}>{roleText(user.role, lang)}</span>
+
                   </div>
                   <div className="reporter-account-avatar-wrap">
                     <Avatar name={user.name} size="sm"/>
