@@ -7998,3 +7998,17 @@ body:has(.dark .reporter-shell) #root {
 .dark .app-shell .technician-frame .technician-menu-theme-label {
   color: #e1ecf6;
 }
+
+/* Technician: the appearance text is an accessible label for the actual
+   animated theme button. Both activate the same control, without double toggles. */
+.app-shell .technician-frame .technician-menu-theme-label {
+  cursor: pointer !important;
+  flex: 1 1 auto;
+  min-height: 40px;
+}
+.app-shell .technician-frame .technician-menu-theme-label:hover {
+  color: #1f3363;
+}
+.dark .app-shell .technician-frame .technician-menu-theme-label:hover {
+  color: #fff;
+}
