@@ -473,7 +473,7 @@ export function AiVoiceInput({
     <div className={cn("ai-voice-input-wrapper", className)} data-testid="component-ai-voice-input">
       <button
         type="button"
-        className="group relative inline-flex items-center gap-2.5 rounded-xl border border-cyan-500/30 bg-gradient-to-r from-[#1F3363]/5 via-[#56F4EF]/10 to-[#76DADD]/5 px-4 py-2 text-sm font-semibold text-[#1F3363] shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-cyan-400 hover:shadow-md dark:border-cyan-400/30 dark:bg-slate-900/60 dark:text-cyan-200"
+        className="group relative inline-flex items-center gap-2 rounded-xl border border-[#c7d7e5] bg-[#e8f0f6] px-3.5 py-2 text-sm font-semibold text-[#1F3363] transition-colors duration-200 hover:border-[#91afc6] hover:bg-[#dce9f2] dark:border-[#3c536d] dark:bg-[#263d54] dark:text-[#dceaf4] dark:hover:bg-[#304b67]"
         onClick={() => void start()}
         aria-label={text(lang, "تسجيل وصف صوتي", "Record a voice description")}
         data-testid="button-start-voice"
@@ -481,7 +481,7 @@ export function AiVoiceInput({
         <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#1F3363] via-[#2a4580] to-[#3a62aa] text-[#56F4EF] shadow-inner transition-transform group-hover:scale-105">
           <Mic className="h-4 w-4" />
         </span>
-        <span>{text(lang, "تسجيل صوتي ذكي", "Record voice description")}</span>
+        <span>{text(lang, "تسجيل صوتي", "Record voice")}</span>
       </button>
 
       {onManualEntry && (
