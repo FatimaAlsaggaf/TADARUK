@@ -357,9 +357,9 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
       if(entry.isIntersecting){
         setRoadmapProgress(0);
         timers=[
-          window.setTimeout(()=>setRoadmapProgress(1),1000),
-          window.setTimeout(()=>setRoadmapProgress(2),2000),
-          window.setTimeout(()=>setRoadmapProgress(3),3000)
+          window.setTimeout(()=>setRoadmapProgress(1),1200),
+          window.setTimeout(()=>setRoadmapProgress(2),2400),
+          window.setTimeout(()=>setRoadmapProgress(3),3600)
         ];
         observer.disconnect();
       }
