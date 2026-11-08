@@ -1056,6 +1056,24 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
               </AnimatePresence>
             </div>
           </div>
+
+          {/* Organic Flowing Curved Bottom Edge */}
+          <div className="reporter-topbar-curve-boundary" aria-hidden="true">
+            <svg
+              className="reporter-curve-svg"
+              viewBox="0 0 1200 20"
+              preserveAspectRatio="none"
+            >
+              <path
+                className="reporter-curve-fill"
+                d="M 0,0 L 0,6 C 280,2 620,10 920,6 C 942,5 956,10 960,18 L 1200,18 L 1200,0 Z"
+              />
+              <path
+                className="reporter-curve-stroke"
+                d="M 0,6 C 280,2 620,10 920,6 C 942,5 956,10 960,18 L 1200,18"
+              />
+            </svg>
+          </div>
         </header>
 
         {/* Reporter Body Layout */}

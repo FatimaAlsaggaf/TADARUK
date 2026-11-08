@@ -5694,7 +5694,7 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   color: #f1f5fa !important;
 }
 
-/* 1. Unified Full-Width Header */
+/* 1. Unified Full-Width Header with Flowing Curved Bottom Edge */
 .reporter-shell .reporter-topbar {
   position: sticky;
   top: 0;
@@ -5709,15 +5709,58 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   justify-content: space-between !important;
   background: #ffffff !important;
   border: 0 !important;
-  border-bottom: 1px solid #e1e9f0 !important;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
-  transition: background 0.25s ease, border-color 0.25s ease !important;
+  /* Straight border-bottom replaced by the organic flowing curved boundary below */
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
+  transition: background 0.25s ease !important;
+  overflow: visible !important;
 }
 
 .dark .reporter-shell .reporter-topbar {
   background: #111e32 !important;
-  border-bottom-color: #1e324a !important;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Organic Flowing Curved Bottom Edge */
+.reporter-topbar-curve-boundary {
+  position: absolute;
+  bottom: -16px;
+  inset-inline-start: 0;
+  width: 100%;
+  height: 18px;
+  pointer-events: none;
+  z-index: 2;
+  overflow: visible;
+}
+
+.reporter-curve-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+[dir="ltr"] .reporter-curve-svg {
+  transform: scaleX(-1);
+}
+
+.reporter-curve-fill {
+  fill: #ffffff;
+  transition: fill 0.25s ease;
+}
+
+.dark .reporter-curve-fill {
+  fill: #111e32;
+}
+
+.reporter-curve-stroke {
+  fill: none;
+  stroke: #e1e9f0;
+  stroke-width: 1.2;
+  vector-effect: non-scaling-stroke;
+  transition: stroke 0.25s ease;
+}
+
+.dark .reporter-curve-stroke {
+  stroke: #1e324a;
 }
 
 /* Topbar Brand Section (Matches Sidebar Width & Aligns Boundary Exactly) */
