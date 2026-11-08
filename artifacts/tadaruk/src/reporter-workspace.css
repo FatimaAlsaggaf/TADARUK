@@ -605,7 +605,7 @@
   --rw-navy: #1f3363;
   --rw-cyan: #56c8c5;
   --rw-cyan-soft: #e5f5f2;
-  font-family: 'Noto Sans Arabic', sans-serif;
+  font-family: 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 .dark .reporter-view {
   --rw-ink: #e4eef4;
@@ -617,9 +617,10 @@
   --rw-cyan: #76dadd;
   --rw-cyan-soft: #243f4b;
 }
-.rw-heading h1, .rw-home-copy h2, .rw-report-intro h2, .rw-section-head h2 {
-  font-family: 'Noto Sans Arabic', sans-serif;
-  letter-spacing: -.035em;
+.rw-heading h1, .rw-home-copy h2, .rw-report-intro h2, .rw-section-head h2, .rw-ticket-head h1 {
+  font-family: 'Amiri', serif;
+  font-weight: 700;
+  letter-spacing: 0;
 }
 .rw-heading { margin-bottom: 21px; }
 .rw-home-intro {
