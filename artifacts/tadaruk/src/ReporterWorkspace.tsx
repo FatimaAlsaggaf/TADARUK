@@ -476,10 +476,11 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
       />
 
       <Stepper
+        className="rw-new-report-stepper"
         step={step}
         showFooter={false}
         width="100%"
-        radius={22}
+        radius={18}
         accentColor="#1f3363"
         dir={lang === 'ar' ? 'rtl' : 'ltr'}
         onStepChange={target => {
