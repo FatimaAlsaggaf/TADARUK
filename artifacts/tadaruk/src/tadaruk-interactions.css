@@ -5727,8 +5727,8 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   height: 100% !important;
   display: flex !important;
   align-items: center !important;
-  justify-content: space-between !important;
-  padding: 0 20px !important;
+  justify-content: center !important;
+  padding: 0 16px !important;
   position: relative !important;
   box-sizing: border-box !important;
   border-inline-end: 1px solid #d6e6e6 !important;
@@ -5743,6 +5743,7 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
 .reporter-brand-link {
   display: inline-flex !important;
   align-items: center !important;
+  justify-content: center !important;
   text-decoration: none !important;
 }
 
@@ -5750,6 +5751,7 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   display: block !important;
   width: 140px !important;
   height: auto !important;
+  margin: 0 auto !important;
 }
 
 .reporter-brand-divider {
@@ -5770,14 +5772,14 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   color: #f5f8ff;
 }
 
-/* Controls Cluster (Left in RTL, Right in LTR) */
+/* Controls Cluster: Aligned cleanly to the LEFT in RTL, spacious and balanced */
 .reporter-topbar-controls {
   flex: 1 !important;
   display: flex !important;
   align-items: center !important;
-  justify-content: flex-start !important;
+  justify-content: flex-end !important;
   padding: 0 24px !important;
-  gap: 10px !important;
+  gap: 12px !important;
 }
 
 [dir="ltr"] .reporter-topbar-controls {
