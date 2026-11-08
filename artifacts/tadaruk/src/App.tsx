@@ -394,8 +394,8 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
   };
   const labels=lang==='ar'?['بلاغ جديد','تحليل ذكي','إسناد للفني','تم الإصلاح']:['New report','Smart analysis','Technician assigned','Repair confirmed'];
   const desktopRoadmapPath=lang==='ar'
-    ?'M 700 130 C 600 130, 600 50, 500 50 C 405 50, 405 135, 310 135 C 210 135, 210 75, 110 75'
-    :'M 110 75 C 210 75, 210 135, 310 135 C 405 135, 405 50, 500 50 C 600 50, 600 130, 700 130';
+    ?'M 700 130 C 628 130, 578 50, 500 50 S 389 135, 310 135 S 185 75, 110 75'
+    :'M 110 75 C 185 75, 232 135, 310 135 S 422 50, 500 50 S 625 130, 700 130';
   const mobileRoadmapPath='M 40 48 L 40 472';
   const tadarukDemoReports = lang === 'ar' ? [
     { label: 'مكيف الفرع يقطر موية فوق الطاولات', value: 'ac-leak', time: '10:42 ص', branch: 'فرع العليا' },
@@ -509,7 +509,7 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
             pathLength="1"
             initial={{pathLength:reduced?1:0}}
             animate={{pathLength:roadmapProgress>=0?1:0}}
-            transition={reduced?{duration:0}:{duration:3.0,ease:[.35,0,.25,1]}}
+            transition={reduced?{duration:0}:{duration:3.6,ease:[.38,0,.25,1]}}
           />
           <motion.path
             className="roadmap-glint"
@@ -517,7 +517,7 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
             pathLength="1"
             initial={{pathLength:0,pathOffset:0,opacity:0}}
             animate={roadmapProgress>=0&&!reduced?{pathLength:[0,.16,.16,0],pathOffset:[0,0,.84,1],opacity:[0,1,1,0]}:{pathLength:0,opacity:0}}
-            transition={reduced?{duration:0}:{duration:3.0,ease:[.35,0,.25,1]}}
+            transition={reduced?{duration:0}:{duration:3.6,ease:[.38,0,.25,1]}}
           />
         </svg>
         <svg className="roadmap-path roadmap-path-mobile" viewBox="0 0 80 520" preserveAspectRatio="none" aria-hidden="true">
