@@ -7813,3 +7813,15 @@ body:has(.dark .reporter-shell) #root {
   .technician-header-account-button,
   .technician-menu-option { transition: none !important; }
 }
+
+/* Do not recolor logout on hover, either. */
+.app-shell .side-account-signout:hover:not(:disabled) {
+  color: #c33f48 !important;
+}
+.app-shell .side-account-signout:hover:not(:disabled) .side-account-item-icon {
+  color: #c33f48 !important;
+}
+.dark .app-shell .side-account-signout:hover:not(:disabled),
+.dark .app-shell .side-account-signout:hover:not(:disabled) .side-account-item-icon {
+  color: #ff9a9e !important;
+}
