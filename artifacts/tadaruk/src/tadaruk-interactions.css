@@ -6884,68 +6884,90 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   font-weight: 700 !important;
 }
 
-/* Reporter reference layout: one continuous rounded white top band with a
-   right-aligned logo, and an uninterrupted sidebar below it. */
+/* Reporter only: inset, rounded header matching the approved visual reference.
+   Both white halves meet at the exact sidebar/grid boundary; the outer ends
+   are inset from the viewport and the mint sidebar continues below. */
 @media (min-width: 901px) {
   .reporter-shell {
-    --reporter-header-height: 82px;
+    --reporter-header-height: 72px;
+    --reporter-header-gutter: 28px;
+    --reporter-header-top: 16px;
     grid-template-columns: var(--reporter-sidebar-width) minmax(0, 1fr) !important;
     grid-template-rows: minmax(100dvh, auto) !important;
   }
+
   .reporter-shell .reporter-sidebar {
     grid-column: 1 !important;
     grid-row: 1 !important;
     border-inline-start: 0 !important;
     border-inline-end: 1px solid #d6e6e6 !important;
-    border-block-start: 0 !important;
     padding-block-start: 0 !important;
+    overflow-x: visible !important;
   }
+
   .reporter-shell .reporter-main-area {
     grid-column: 2 !important;
     grid-row: 1 !important;
   }
-  /* This logo sits INSIDE the shared white header band, not on a separate card. */
+
+  /* Sidebar logo is the right/leading half of the same floating white bar. */
   .reporter-shell .reporter-sidebar-brand {
-    height: var(--reporter-header-height) !important;
-    min-height: var(--reporter-header-height) !important;
+    position: relative !important;
     box-sizing: border-box !important;
-    margin: 0 -16px 8px !important;
-    padding: 0 16px !important;
-    background: #fff !important;
-    border-bottom: 1px solid #e1e9f0 !important;
-    box-shadow: 0 4px 14px rgba(31,51,99,.04);
-  }
-  .reporter-shell .reporter-header {
     height: var(--reporter-header-height) !important;
     min-height: var(--reporter-header-height) !important;
-    justify-content: flex-end !important;
-    border-bottom: 1px solid #e1e9f0 !important;
-    border-radius: 0 !important;
-    box-shadow: 0 4px 14px rgba(31,51,99,.04) !important;
-    padding-inline: 32px !important;
+    margin-block: var(--reporter-header-top) 8px !important;
+    margin-inline-start: 12px !important;
+    margin-inline-end: -16px !important;
+    padding-inline: 10px 16px !important;
+    background: #fff !important;
+    border: 1px solid #dce7f0 !important;
+    border-inline-end: 0 !important;
+    border-radius: 0 18px 18px 0 !important;
+    box-shadow: 0 5px 22px rgba(31,51,99,.055) !important;
   }
-  /* Visually round the outer ends, with no dip, wave, or floating junction. */
+
+  /* Main header is the left/trailing half, with the matching outer gutter. */
   .reporter-shell .reporter-header {
-    border-start-end-radius: 18px !important;
-    border-end-end-radius: 18px !important;
+    box-sizing: border-box !important;
+    top: var(--reporter-header-top) !important;
+    height: var(--reporter-header-height) !important;
+    min-height: var(--reporter-header-height) !important;
+    width: calc(100% - var(--reporter-header-gutter)) !important;
+    margin-block-start: var(--reporter-header-top) !important;
+    margin-inline-start: 0 !important;
+    margin-inline-end: var(--reporter-header-gutter) !important;
+    padding-inline: 22px !important;
+    justify-content: flex-end !important;
+    background: #fff !important;
+    border: 1px solid #dce7f0 !important;
+    border-inline-start: 0 !important;
+    border-radius: 18px 0 0 18px !important;
+    box-shadow: 0 5px 22px rgba(31,51,99,.055) !important;
+    overflow: visible !important;
   }
-  .reporter-shell .reporter-sidebar-brand {
-    border-start-start-radius: 18px !important;
-    border-end-start-radius: 18px !important;
+
+  /* Rounded corners must follow physical left/right when language changes. */
+  .reporter-shell[dir="ltr"] .reporter-sidebar-brand {
+    border-radius: 18px 0 0 18px !important;
   }
-  .reporter-shell .reporter-inside-corner { display:none !important; }
-  .dark .reporter-shell .reporter-sidebar-brand {
-    background:#111e32 !important;
-    border-bottom-color:#1e324a !important;
-    box-shadow:0 4px 14px rgba(0,0,0,.15);
+  .reporter-shell[dir="ltr"] .reporter-header {
+    border-radius: 0 18px 18px 0 !important;
   }
+
+  .reporter-shell .reporter-inside-corner { display: none !important; }
+
+  .dark .reporter-shell .reporter-sidebar-brand,
   .dark .reporter-shell .reporter-header {
-    border-bottom-color:#1e324a !important;
-    box-shadow:0 4px 14px rgba(0,0,0,.15) !important;
+    background: #111e32 !important;
+    border-color: #29415b !important;
+    box-shadow: 0 5px 22px rgba(0,0,0,.16) !important;
   }
 }
-@media (max-width:900px) {
+
+/* Keep the existing compact header + slide-out sidebar on mobile. */
+@media (max-width: 900px) {
   .reporter-shell .reporter-sidebar-brand {
-    background:transparent !important;
+    background: transparent !important;
   }
 }
