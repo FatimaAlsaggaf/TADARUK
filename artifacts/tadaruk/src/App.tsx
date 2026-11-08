@@ -1250,10 +1250,25 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
       })}</nav>
     </aside>
     <AnimatePresence>{mobile&&<motion.button type="button" className="mobile-scrim" onClick={()=>setMobile(false)} aria-label={tr(lang,'إغلاق القائمة','Close navigation')} initial={reduced?false:{opacity:0}} animate={{opacity:1}} exit={reduced?{opacity:1}:{opacity:0}} transition={{duration:reduced?0:.16}}/>}</AnimatePresence>
-    <div className="main-frame"><header className="topbar"><div className="topbar-title"><button className="mobile-menu" onClick={()=>setMobile(true)}><Menu size={20}/></button><span>{title}</span></div><div className="top-controls">
-      <button onClick={()=>setLang(lang==='ar'?'en':'ar')} className="icon-control" aria-label={tr(lang,'تغيير اللغة','Switch language')}><Languages size={18}/><span>{lang==='ar'?'EN':'ع'}</span></button>
-      <SunMoonThemeToggle className="workspace-theme-toggle" theme={dark?'dark':'light'} onThemeChange={theme=>setDark(theme==='dark')} aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')} data-testid="theme-toggle-workspace" size={40} duration={860}/>
-    </div></header><main className="workspace-content">{children}</main></div>
+    <div className="main-frame"><header className="topbar workspace-compact-topbar">
+      <button className="mobile-menu" type="button" onClick={()=>setMobile(true)} aria-label={tr(lang,'فتح القائمة','Open menu')}><Menu size={20}/></button>
+      <div className="top-controls workspace-unified-controls">
+        <div className="workspace-header-notifications" ref={notificationsRef}>
+          <button type="button" className="icon-control workspace-header-bell" onClick={()=>setShowNotifications(value=>!value)}
+            aria-label={tr(lang,'الإشعارات','Notifications')} aria-expanded={showNotifications}>
+            <Bell size={19}/>
+          </button>
+          {showNotifications&&(
+            <div className="workspace-header-notifications-popover" role="region" aria-label={tr(lang,'الإشعارات','Notifications')}>
+              <div className="notifications-head"><div className="notifications-title-wrap"><Bell size={15}/><b>{tr(lang,'الإشعارات','Notifications')}</b></div></div>
+              <p className="workspace-notifications-empty">{tr(lang,'لا توجد إشعارات جديدة حاليًا','No new notifications at the moment')}</p>
+            </div>
+          )}
+        </div>
+        <button type="button" onClick={()=>setLang(lang==='ar'?'en':'ar')} className="icon-control workspace-header-language" aria-label={tr(lang,'تغيير اللغة','Switch language')}><Languages size={18}/><span>{lang==='ar'?'EN':'ع'}</span></button>
+        <SunMoonThemeToggle className="workspace-theme-toggle" theme={dark?'dark':'light'} onThemeChange={theme=>setDark(theme==='dark')} aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')} data-testid="theme-toggle-workspace" size={40} duration={860}/>
+      </div>
+    </header><main className="workspace-content">{children}</main></div>
 
     {profileDialogElement}
   </div>;
