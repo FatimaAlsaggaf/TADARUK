@@ -900,7 +900,7 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
                     className="side-link-icon"
                     aria-hidden="true"
                     whileTap={reduced ? undefined : { scale: .92, y: 1 }}
-                    animate={selected && !reduced ? { scale: [1, 1.08, 1], y: [0, -1, 0] } : { scale: 1, y: 0 }}
+                    animate={{ scale: 1, y: 0 }}
                     transition={{ duration: reduced ? 0 : .32, ease: [.22, .72, .18, 1] }}
                   >
                     <Icon size={19}/>
@@ -1242,7 +1242,7 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
             className="side-link-icon"
             aria-hidden="true"
             whileTap={reduced?undefined:{scale:.92,y:1}}
-            animate={selected&&!reduced?{scale:[1,1.08,1],y:[0,-1,0]}:{scale:1,y:0}}
+            animate={{scale:1,y:0}}
             transition={{duration:reduced?0:.32,ease:[.22,.72,.18,1]}}
           ><Icon size={19}/></motion.span>
           <span>{tr(lang,ar as string,en as string)}</span>
