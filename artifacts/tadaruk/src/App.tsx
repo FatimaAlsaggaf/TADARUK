@@ -12,7 +12,7 @@ import {
   CheckCircle2, ChevronDown, ClipboardList, Clock3, Filter, Languages, LayoutDashboard,
   MapPin, Menu, Phone, Plus, Search, Settings2, ShieldCheck, Users, Wrench, X, CircleAlert,
   LogOut, UserRound, RotateCcw, Repeat2, ChevronLeft, ChevronRight, LoaderCircle, MapPinned,
-  Mic, Square, Bell
+  Mic, Square, Bell, SunMoon
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -1307,10 +1307,10 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
             </div>
           )}
         </div>
-        {user.role !== 'technician' && (
-        <button type="button" onClick={()=>setLang(lang==='ar'?'en':'ar')} className="icon-control workspace-header-language" aria-label={tr(lang,'تغيير اللغة','Switch language')}><Languages size={18}/><span>{lang==='ar'?'EN':'ع'}</span></button>
-        <SunMoonThemeToggle className="workspace-theme-toggle" theme={dark?'dark':'light'} onThemeChange={theme=>setDark(theme==='dark')} aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')} data-testid="theme-toggle-workspace" size={40} duration={860}/>
-        )}
+        {user.role !== 'technician' && (<>
+          <button type="button" onClick={()=>setLang(lang==='ar'?'en':'ar')} className="icon-control workspace-header-language" aria-label={tr(lang,'تغيير اللغة','Switch language')}><Languages size={18}/><span>{lang==='ar'?'EN':'ع'}</span></button>
+          <SunMoonThemeToggle className="workspace-theme-toggle" theme={dark?'dark':'light'} onThemeChange={theme=>setDark(theme==='dark')} aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')} data-testid="theme-toggle-workspace" size={40} duration={860}/>
+        </>)}
       </div>
     </header><main className="workspace-content">{children}</main></div>
 
