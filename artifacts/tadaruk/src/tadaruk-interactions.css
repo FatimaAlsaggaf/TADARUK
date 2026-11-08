@@ -6900,9 +6900,27 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
     grid-column: 1 !important;
     grid-row: 1 !important;
     border-inline-start: 0 !important;
-    border-inline-end: 1px solid #d6e6e6 !important;
+    border-inline-end: 0 !important;
     padding-block-start: 0 !important;
     overflow-x: visible !important;
+  }
+
+  /* The sidebar boundary only starts BELOW the floating top header.
+     No divider is allowed to cross the white header or its logo. */
+  .reporter-shell .reporter-sidebar::after {
+    content: "" !important;
+    position: absolute !important;
+    top: calc(var(--reporter-header-top) + var(--reporter-header-height)) !important;
+    bottom: 0 !important;
+    inset-inline-end: 0 !important;
+    width: 1px !important;
+    background: #d6e6e6 !important;
+    pointer-events: none !important;
+    z-index: 1 !important;
+  }
+
+  .dark .reporter-shell .reporter-sidebar::after {
+    background: #29415b !important;
   }
 
   .reporter-shell .reporter-main-area {
