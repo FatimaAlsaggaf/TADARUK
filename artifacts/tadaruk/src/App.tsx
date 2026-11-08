@@ -1069,11 +1069,11 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
                     <b className="reporter-account-name">{user.name}</b>
                     <span className={`reporter-account-role-badge role-badge-${user.role}`}>{roleText(user.role, lang)}</span>
                   </div>
-                  <ChevronDown size={14} className={`reporter-account-chevron ${headerMenu ? 'is-open' : ''}`} aria-hidden="true"/>
                   <div className="reporter-account-avatar-wrap">
                     <Avatar name={user.name} size="sm"/>
                     <span className="side-user-status-dot" aria-hidden="true"/>
                   </div>
+                  <ChevronDown size={14} className={`reporter-account-chevron ${headerMenu ? 'is-open' : ''}`} aria-hidden="true"/>
                 </button>
 
                 <AnimatePresence>
