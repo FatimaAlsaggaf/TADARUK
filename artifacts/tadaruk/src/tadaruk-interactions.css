@@ -7358,3 +7358,101 @@ body:has(.dark .reporter-shell) #root {
   border-top: 0 !important;
   box-shadow: none !important;
 }
+
+/* Reporter header: purposeful icon microinteractions and deeper slate-blue hover. */
+/* Keep the buttons stationary: only their icon moves according to its purpose. */
+.reporter-shell .reporter-control-btn {
+  background: transparent !important;
+  border-radius: 11px !important;
+  transform: none !important;
+  transition: background-color 180ms ease, color 180ms ease !important;
+}
+.reporter-shell .reporter-control-btn:hover,
+.reporter-shell .reporter-control-btn[aria-expanded="true"] {
+  background: #d8e5ef !important;
+  color: #203e66 !important;
+  transform: none !important;
+}
+.dark .reporter-shell .reporter-control-btn:hover,
+.dark .reporter-shell .reporter-control-btn[aria-expanded="true"] {
+  background: #324b65 !important;
+  color: #f1f6fd !important;
+}
+.reporter-shell .reporter-control-btn:active { transform: none !important; }
+
+/* The notification bell rocks briefly like a real bell, then settles.
+   Animate only its SVG, never the unread badge or the entire button. */
+@keyframes reporter-bell-ring {
+  0%, 100% { transform: rotate(0deg); }
+  17% { transform: rotate(13deg); }
+  36% { transform: rotate(-11deg); }
+  54% { transform: rotate(8deg); }
+  72% { transform: rotate(-4deg); }
+  88% { transform: rotate(2deg); }
+}
+.reporter-shell .reporter-bell-btn > svg {
+  display: block;
+  transform-origin: 50% 12%;
+  transition: color 180ms ease;
+}
+.reporter-shell .reporter-bell-btn:hover > svg,
+.reporter-shell .reporter-bell-btn:focus-visible > svg {
+  animation: reporter-bell-ring 620ms ease-in-out 1;
+}
+
+/* A brief translation-icon tilt; no whole-button lifting. */
+.reporter-shell .reporter-lang-btn > svg {
+  display: block;
+  transform-origin: center;
+  transition: transform 280ms cubic-bezier(.22,.72,.18,1);
+}
+.reporter-shell .reporter-lang-btn:hover > svg {
+  transform: rotate(-12deg) scale(1.06);
+}
+.reporter-shell .reporter-lang-btn .reporter-lang-label {
+  transition: color 180ms ease;
+}
+
+/* Theme switch already animates sun/moon internally. Keep its surrounding
+   surface still so the control feels intentional rather than bouncing. */
+.reporter-shell .reporter-theme-pill-wrap,
+.reporter-shell .reporter-theme-pill-wrap:hover {
+  transform: none !important;
+  filter: none !important;
+}
+.reporter-shell .reporter-theme-toggle:hover {
+  background: #d8e5ef !important;
+  border-color: #b2c7d9 !important;
+}
+.dark .reporter-shell .reporter-theme-toggle:hover {
+  background: #324b65 !important;
+  border-color: #56708a !important;
+}
+
+/* Account pill: darken its hover slightly; a tiny avatar focus,
+   and a chevron rotation only when the dropdown actually opens. */
+.reporter-shell .reporter-account-card:hover,
+.reporter-shell .reporter-account-card[aria-expanded="true"] {
+  background: #dce9f1 !important;
+  border-color: #acc4d5 !important;
+  transform: none !important;
+}
+.dark .reporter-shell .reporter-account-card:hover,
+.dark .reporter-shell .reporter-account-card[aria-expanded="true"] {
+  background: #324b65 !important;
+  border-color: #5c748c !important;
+}
+.reporter-shell .reporter-account-avatar-wrap {
+  transition: transform 220ms cubic-bezier(.22,.72,.18,1);
+}
+.reporter-shell .reporter-account-card:hover .reporter-account-avatar-wrap {
+  transform: scale(1.045);
+}
+
+/* Respect reduced motion, including existing sun/moon controls. */
+@media (prefers-reduced-motion: reduce) {
+  .reporter-shell .reporter-bell-btn:hover > svg,
+  .reporter-shell .reporter-bell-btn:focus-visible > svg { animation: none !important; }
+  .reporter-shell .reporter-lang-btn > svg,
+  .reporter-shell .reporter-account-avatar-wrap { transition: none !important; transform: none !important; }
+}
