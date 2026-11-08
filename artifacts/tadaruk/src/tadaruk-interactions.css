@@ -7825,3 +7825,78 @@ body:has(.dark .reporter-shell) #root {
 .dark .app-shell .side-account-signout:hover:not(:disabled) .side-account-item-icon {
   color: #ff9a9e !important;
 }
+
+/* Technician header containment and usable dropdown: role-scoped fix. */
+@media (min-width: 901px) {
+  /* Prevent the technician screen from expanding beyond its content column. */
+  .app-shell:has(.technician-frame) {
+    max-width: 100% !important;
+    overflow-x: clip !important;
+  }
+  .app-shell .technician-frame {
+    min-width: 0 !important;
+    width: auto !important;
+    max-width: calc(100% - 260px) !important;
+    box-sizing: border-box !important;
+  }
+}
+.app-shell .technician-frame .workspace-compact-topbar {
+  position: relative;
+  justify-content: flex-start !important;
+  gap: 12px !important;
+  padding-inline: clamp(20px,3vw,42px) !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+}
+.app-shell .technician-frame .technician-notifications-cluster {
+  order: -1 !important;
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+}
+.app-shell .technician-frame .technician-header-account {
+  order: 0 !important;
+  min-width: 0 !important;
+  z-index: 75 !important;
+}
+/* This menu opens INWARDS, never toward the outside viewport edge. */
+.app-shell .technician-frame .technician-header-menu {
+  inset-inline-start: auto !important;
+  inset-inline-end: 0 !important;
+  max-width: min(280px, calc(100vw - 32px)) !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+  text-align: start !important;
+}
+.app-shell .technician-frame .technician-menu-option {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  white-space: nowrap;
+}
+.app-shell .technician-frame .technician-menu-option-value {
+  white-space: nowrap;
+}
+.app-shell .technician-frame .technician-menu-theme-action {
+  border: 0;
+  cursor: pointer;
+}
+.app-shell .technician-frame .technician-menu-theme-action:focus-visible {
+  outline: 2px solid #698fab;
+  outline-offset: -2px;
+}
+.dark .app-shell .technician-frame .technician-menu-theme-action:hover {
+  background: #29425c !important;
+}
+@media (max-width: 900px) {
+  .app-shell .technician-frame {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+  .app-shell .technician-frame .workspace-compact-topbar {
+    justify-content: flex-start !important;
+    gap: 10px !important;
+  }
+  .app-shell .technician-frame .mobile-menu {
+    order: -2 !important;
+  }
+}
