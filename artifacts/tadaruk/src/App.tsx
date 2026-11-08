@@ -791,294 +791,7 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
       :branchContext?.status==='error'?tr(lang,'تعذر تحميل الفروع','Could not load branches')
         :branchContext?.status==='success'?tr(lang,'لا يوجد فرع مسموح به','No authorized branch')
           :user.branchName||tr(lang,'يحدد من حسابك','Set by your account'));
-  return <div className={`app-shell ${user.role==='reporter'?'reporter-shell':''}`} dir={lang==='ar'?'rtl':'ltr'}>
-    <aside className={`sidebar ${mobile?'sidebar-open':''}`}><div className="side-brand"><Link href="/workspace"><Brand darkMode={dark}/></Link><button className="mobile-close" onClick={()=>setMobile(false)}><X size={18}/></button></div>
-
-      {!isReporter && (
-        <div className="side-user-section" ref={profileMenuRef}>
-          <button
-            type="button"
-            className="side-user-card"
-            onClick={()=>setMenu(!menu)}
-            aria-label={tr(lang,'خيارات الحساب والملف الشخصي','Account and profile options')}
-            aria-expanded={menu}
-            aria-controls="side-account-menu"
-            data-testid="sidebar-profile-card"
-          >
-            <div className="side-user-avatar-wrap">
-              <Avatar name={user.name} size="md"/>
-              <span className="side-user-status-dot" aria-hidden="true"/>
-            </div>
-            <div className="side-user-meta">
-              <b className="side-user-name">{user.name}</b>
-              <span className={`side-user-role-badge role-badge-${user.role}`}>{roleText(user.role,lang)}</span>
-            </div>
-            <ChevronDown size={16} className={`side-user-chevron ${menu?'is-open':''}`} aria-hidden="true"/>
-          </button>
-
-          <AnimatePresence>
-            {menu&&<motion.div
-              id="side-account-menu"
-              className="side-account-dropdown tadaruk-dropdown-surface"
-              role="menu"
-              aria-label={tr(lang,'خيارات الحساب','Account options')}
-              initial={reduced?false:{opacity:0,y:-6,scale:0.98}}
-              animate={{opacity:1,y:0,scale:1}}
-              exit={reduced?{opacity:1}:{opacity:0,y:-4,scale:0.98}}
-              transition={{duration:reduced?0:0.16,ease:[0.22,0.72,0.18,1]}}
-            >
-              <div className="side-account-menu-head">
-                <b className="side-account-head-name">{user.name}</b>
-                <span className="side-account-head-branch">
-                  <Building2 size={12} aria-hidden="true"/>
-                  <span>{user.branchName||(user.role==='reporter'?branchLabel:tr(lang,'جميع الفروع','All branches'))}</span>
-                </span>
-              </div>
-
-              <div className="side-account-menu-list">
-                <button
-                  type="button"
-                  className="side-account-item"
-                  role="menuitem"
-                  onClick={()=>{setMenu(false);setShowProfile(true);}}
-                  data-testid="button-open-profile-dialog"
-                >
-                  <UserRound size={16} className="side-account-item-icon"/>
-                  <span>{tr(lang,'الملف الشخصي','Profile')}</span>
-                </button>
-
-                <div className="side-account-divider" role="separator"/>
-
-                {logout.isError&&<p className="account-menu-error" role="alert">{tr(lang,'تعذر تسجيل الخروج، حاول مجدداً.','Could not sign out. Please try again.')}</p>}
-
-                <button
-                  type="button"
-                  className="side-account-item side-account-signout"
-                  role="menuitem"
-                  onClick={signOut}
-                  disabled={logout.isPending}
-                  aria-busy={logout.isPending}
-                  data-testid="button-sidebar-signout"
-                >
-                  <LogOut size={16} className="side-account-item-icon"/>
-                  <span>{logout.isPending?tr(lang,'جارٍ تسجيل الخروج…','Signing out…'):tr(lang,'تسجيل الخروج','Sign out')}</span>
-                </button>
-              </div>
-            </motion.div>}
-          </AnimatePresence>
-        </div>
-      )}
-
-      {user.role==='reporter'&&reporterBranches.length>1
-        ?<div className="branch-switch branch-switch-multi" data-testid="field-sidebar-branch"><span className="branch-icon"><Building2 size={16}/></span><span className="branch-switch-copy"><small>{tr(lang,'الموقع الحالي','CURRENT LOCATION')}</small><TadarukSelect value={branchContext?.selectedBranchId||selectedBranch?.id||reporterBranches[0]?.id||''} onValueChange={value=>branchContext?.selectBranch(value)} ariaLabel={tr(lang,'اختيار الفرع المصرح به','Choose an authorized branch')} dir={lang==='ar'?'rtl':'ltr'} placeholder={selectedBranch?.name||tr(lang,'فرع العليا','Olaya Branch')} testId="select-sidebar-branch" options={reporterBranches.map(branch=>({value:branch.id,label:branch.name}))}/></span></div>
-        :<div className="branch-switch" data-testid={user.role==='reporter'?'text-sidebar-branch':'branch-indicator'}><span className="branch-icon"><Building2 size={16}/></span><span><small>{tr(lang,'الموقع الحالي','CURRENT LOCATION')}</small><b>{user.role==='reporter'?branchLabel:user.branchName||tr(lang,'جميع الفروع','All branches')}</b></span></div>}
-      <nav className="side-nav">{links.map(([path,ar,en,Icon])=>{
-        const selected=matchingLink===path;
-        return <Link key={path as string} href={path as string} onClick={()=>setMobile(false)} className={`side-link ${selected?'selected':''}`} aria-current={selected?'page':undefined} data-testid={`nav-${(path as string).replaceAll('/','-').replace(/^-/, 'root')}`}>
-          {selected&&<motion.span className="nav-shared-indicator" layoutId="workspace-nav-indicator" transition={reduced?{duration:0}:{duration:.3,ease:[.22,.72,.18,1]}}><span className="nav-active-mark"/></motion.span>}
-          <motion.span
-            className="side-link-icon"
-            aria-hidden="true"
-            whileTap={reduced?undefined:{scale:.92,y:1}}
-            animate={selected&&!reduced?{scale:[1,1.08,1],y:[0,-1,0]}:{scale:1,y:0}}
-            transition={{duration:reduced?0:.32,ease:[.22,.72,.18,1]}}
-          ><Icon size={19}/></motion.span>
-          <span>{tr(lang,ar as string,en as string)}</span>
-        </Link>;
-      })}</nav>
-    </aside>
-    <AnimatePresence>{mobile&&<motion.button type="button" className="mobile-scrim" onClick={()=>setMobile(false)} aria-label={tr(lang,'إغلاق القائمة','Close navigation')} initial={reduced?false:{opacity:0}} animate={{opacity:1}} exit={reduced?{opacity:1}:{opacity:0}} transition={{duration:reduced?0:.16}}/>}</AnimatePresence>
-    <div className="main-frame"><header className="topbar"><div className="topbar-title"><button className="mobile-menu" onClick={()=>setMobile(true)}><Menu size={20}/></button><span>{title}</span></div><div className="top-controls">
-      {isReporter ? (
-        <>
-          {/* Reporter Utility Controls Cluster */}
-          <div className="reporter-utility-group">
-            {/* Reporter Notifications */}
-            <div className="reporter-notifications-section" ref={notificationsRef}>
-              <button
-                type="button"
-                className="reporter-action-btn reporter-notification-btn"
-                onClick={() => setShowNotifications(!showNotifications)}
-                aria-label={tr(lang, 'الإشعارات', 'Notifications')}
-                aria-expanded={showNotifications}
-                data-testid="button-reporter-notifications"
-              >
-                <Bell size={18}/>
-                {unreadCount > 0 && <span className="notification-badge-dot" aria-hidden="true"/>}
-              </button>
-              <AnimatePresence>
-                {showNotifications && (
-                  <motion.div
-                    className="notifications-dropdown tadaruk-dropdown-surface"
-                    role="region"
-                    aria-label={tr(lang, 'قائمة الإشعارات', 'Notifications list')}
-                    initial={reduced ? false : { opacity: 0, y: -6, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={reduced ? { opacity: 1 } : { opacity: 0, y: -4, scale: 0.98 }}
-                    transition={{ duration: reduced ? 0 : 0.16, ease: [0.22, 0.72, 0.18, 1] }}
-                  >
-                    <div className="notifications-head">
-                      <div className="notifications-title-wrap">
-                        <Bell size={15}/>
-                        <b>{tr(lang, 'الإشعارات', 'Notifications')}</b>
-                        {unreadCount > 0 && <span className="notifications-count-badge">{unreadCount}</span>}
-                      </div>
-                      {unreadCount > 0 && (
-                        <button
-                          type="button"
-                          className="notifications-mark-read"
-                          onClick={markAllNotificationsRead}
-                        >
-                          {tr(lang, 'تحديد الكل كمقروء', 'Mark all read')}
-                        </button>
-                      )}
-                    </div>
-                    <div className="notifications-list">
-                      {notificationsList.map(item => (
-                        <div
-                          key={item.id}
-                          className={`notification-item ${item.unread ? 'is-unread' : ''}`}
-                          onClick={() => {
-                            markNotificationRead(item.id);
-                            setShowNotifications(false);
-                            if (item.link) go(item.link);
-                          }}
-                        >
-                          <span className="notification-item-icon">
-                            {item.icon === 'check' ? <CheckCircle2 size={16}/> : item.icon === 'wrench' ? <Wrench size={16}/> : <Clock3 size={16}/>}
-                          </span>
-                          <div className="notification-item-content">
-                            <p className="notification-item-title">{item.title}</p>
-                            <small className="notification-item-desc">{item.desc}</small>
-                            <span className="notification-item-time">{item.time}</span>
-                          </div>
-                          {item.unread && <span className="notification-unread-dot" aria-hidden="true"/>}
-                        </div>
-                      ))}
-                    </div>
-                    <div className="notifications-footer">
-                      <Link href="/workspace/tickets" onClick={() => setShowNotifications(false)}>
-                        {tr(lang, 'عرض جميع البلاغات', 'View all tickets')} {lang === 'ar' ? <ArrowLeft size={13}/> : <ArrowRight size={13}/>}
-                      </Link>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Language Switcher */}
-            <button
-              type="button"
-              onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
-              className="reporter-action-btn reporter-lang-btn"
-              aria-label={tr(lang, 'تغيير اللغة', 'Switch language')}
-              data-testid="button-reporter-lang"
-            >
-              <Languages size={17}/>
-              <span className="reporter-lang-label">{lang === 'ar' ? 'EN' : 'ع'}</span>
-            </button>
-
-            {/* Theme Toggle */}
-            <div className="reporter-theme-toggle-wrap">
-              <SunMoonThemeToggle
-                className="workspace-theme-toggle"
-                theme={dark ? 'dark' : 'light'}
-                onThemeChange={theme => setDark(theme === 'dark')}
-                aria-label={dark ? tr(lang, 'تفعيل الوضع الفاتح', 'Switch to light mode') : tr(lang, 'تفعيل الوضع الداكن', 'Switch to dark mode')}
-                data-testid="theme-toggle-workspace"
-                size={38}
-                duration={860}
-              />
-            </div>
-          </div>
-
-          {/* Topbar Divider */}
-          <div className="topbar-divider" aria-hidden="true"/>
-
-          {/* Reporter Topbar Account Section */}
-          <div className="topbar-account-section" ref={headerAccountRef}>
-            <button
-              type="button"
-              className="topbar-account-card"
-              onClick={() => setHeaderMenu(!headerMenu)}
-              aria-label={tr(lang, 'خيارات الحساب والملف الشخصي', 'Account and profile options')}
-              aria-expanded={headerMenu}
-              aria-controls="topbar-account-menu"
-              data-testid="header-profile-card"
-            >
-              <div className="topbar-account-avatar-wrap">
-                <Avatar name={user.name} size="sm"/>
-                <span className="side-user-status-dot" aria-hidden="true"/>
-              </div>
-              <div className="topbar-account-meta">
-                <b className="topbar-account-name">{user.name}</b>
-                <span className={`topbar-account-role-badge role-badge-${user.role}`}>{roleText(user.role, lang)}</span>
-              </div>
-              <ChevronDown size={15} className={`topbar-account-chevron ${headerMenu ? 'is-open' : ''}`} aria-hidden="true"/>
-            </button>
-
-            <AnimatePresence>
-              {headerMenu && (
-                <motion.div
-                  id="topbar-account-menu"
-                  className="topbar-account-dropdown tadaruk-dropdown-surface"
-                  role="menu"
-                  aria-label={tr(lang, 'خيارات الحساب', 'Account options')}
-                  initial={reduced ? false : { opacity: 0, y: -6, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={reduced ? { opacity: 1 } : { opacity: 0, y: -4, scale: 0.98 }}
-                  transition={{ duration: reduced ? 0 : 0.16, ease: [0.22, 0.72, 0.18, 1] }}
-                >
-                  <div className="side-account-menu-head">
-                    <b className="side-account-head-name">{user.name}</b>
-                    <span className="side-account-head-branch">
-                      <Building2 size={12} aria-hidden="true"/>
-                      <span>{user.branchName || branchLabel}</span>
-                    </span>
-                  </div>
-
-                  <div className="side-account-menu-list">
-                    <button
-                      type="button"
-                      className="side-account-item"
-                      role="menuitem"
-                      onClick={() => { setHeaderMenu(false); setShowProfile(true); }}
-                      data-testid="button-open-profile-dialog"
-                    >
-                      <UserRound size={16} className="side-account-item-icon"/>
-                      <span>{tr(lang, 'الملف الشخصي', 'Profile')}</span>
-                    </button>
-
-                    <div className="side-account-divider" role="separator"/>
-
-                    {logout.isError && <p className="account-menu-error" role="alert">{tr(lang, 'تعذر تسجيل الخروج، حاول مجدداً.', 'Could not sign out. Please try again.')}</p>}
-
-                    <button
-                      type="button"
-                      className="side-account-item side-account-signout"
-                      role="menuitem"
-                      onClick={signOut}
-                      disabled={logout.isPending}
-                      aria-busy={logout.isPending}
-                      data-testid="button-header-signout"
-                    >
-                      <LogOut size={16} className="side-account-item-icon"/>
-                      <span>{logout.isPending ? tr(lang, 'جارٍ تسجيل الخروج…', 'Signing out…') : tr(lang, 'تسجيل الخروج', 'Sign out')}</span>
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </>
-      ) : (
-        <>
-          <button onClick={()=>setLang(lang==='ar'?'en':'ar')} className="icon-control" aria-label={tr(lang,'تغيير اللغة','Switch language')}><Languages size={18}/><span>{lang==='ar'?'EN':'ع'}</span></button>
-          <SunMoonThemeToggle className="workspace-theme-toggle" theme={dark?'dark':'light'} onThemeChange={theme=>setDark(theme==='dark')} aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')} data-testid="theme-toggle-workspace" size={40} duration={860}/>
-        </>
-      )}
-    </div></header><main className="workspace-content">{children}</main></div>
-
+  const profileDialogElement = (
     <Dialog open={showProfile} onOpenChange={setShowProfile}>
       <DialogContent className="tadaruk-modal-dialog profile-dialog" dir={lang==='ar'?'rtl':'ltr'}>
         <DialogHeader>
@@ -1139,6 +852,389 @@ function WorkspaceShell({children,title,lang,setLang,dark,setDark}:{children:Rea
         </div>
       </DialogContent>
     </Dialog>
+  );
+
+  if (isReporter) {
+    return (
+      <div className="app-shell reporter-shell" dir={lang==='ar'?'rtl':'ltr'}>
+        {/* Full-width Floating Header */}
+        <header className="reporter-topbar">
+          <div className="reporter-topbar-brand-group">
+            <Link href="/workspace" className="reporter-brand-link" aria-label="TADARUK home">
+              <Brand darkMode={dark}/>
+            </Link>
+            <div className="reporter-header-divider" aria-hidden="true"/>
+            <div className="reporter-title-wrap">
+              <button
+                type="button"
+                className="mobile-menu reporter-mobile-menu"
+                onClick={()=>setMobile(true)}
+                aria-label={tr(lang, 'فتح القائمة', 'Open menu')}
+              >
+                <Menu size={20}/>
+              </button>
+              <span className="reporter-header-title">{title}</span>
+            </div>
+          </div>
+
+          <div className="reporter-topbar-controls">
+            {/* Theme Toggle Pill */}
+            <div className="reporter-theme-pill-wrap">
+              <SunMoonThemeToggle
+                className="workspace-theme-toggle reporter-theme-toggle"
+                theme={dark ? 'dark' : 'light'}
+                onThemeChange={theme => setDark(theme === 'dark')}
+                aria-label={dark ? tr(lang, 'تفعيل الوضع الفاتح', 'Switch to light mode') : tr(lang, 'تفعيل الوضع الداكن', 'Switch to dark mode')}
+                data-testid="theme-toggle-workspace"
+                size={36}
+                duration={860}
+              />
+            </div>
+
+            <div className="reporter-header-divider" aria-hidden="true"/>
+
+            {/* Language Switcher */}
+            <button
+              type="button"
+              onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
+              className="reporter-control-btn reporter-lang-btn"
+              aria-label={tr(lang, 'تغيير اللغة', 'Switch language')}
+              data-testid="button-reporter-lang"
+            >
+              <span className="reporter-lang-label">{lang === 'ar' ? 'EN' : 'ع'}</span>
+              <Languages size={16}/>
+            </button>
+
+            <div className="reporter-header-divider" aria-hidden="true"/>
+
+            {/* Notifications Bell */}
+            <div className="reporter-notifications-section" ref={notificationsRef}>
+              <button
+                type="button"
+                className="reporter-control-btn reporter-bell-btn"
+                onClick={() => setShowNotifications(!showNotifications)}
+                aria-label={tr(lang, 'الإشعارات', 'Notifications')}
+                aria-expanded={showNotifications}
+                data-testid="button-reporter-notifications"
+              >
+                <Bell size={18}/>
+                {unreadCount > 0 && <span className="notification-badge-dot" aria-hidden="true"/>}
+              </button>
+
+              <AnimatePresence>
+                {showNotifications && (
+                  <motion.div
+                    className="notifications-dropdown tadaruk-dropdown-surface"
+                    role="region"
+                    aria-label={tr(lang, 'قائمة الإشعارات', 'Notifications list')}
+                    initial={reduced ? false : { opacity: 0, y: -6, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={reduced ? { opacity: 1 } : { opacity: 0, y: -4, scale: 0.98 }}
+                    transition={{ duration: reduced ? 0 : 0.16, ease: [0.22, 0.72, 0.18, 1] }}
+                  >
+                    <div className="notifications-head">
+                      <div className="notifications-title-wrap">
+                        <Bell size={15}/>
+                        <b>{tr(lang, 'الإشعارات', 'Notifications')}</b>
+                        {unreadCount > 0 && <span className="notifications-count-badge">{unreadCount}</span>}
+                      </div>
+                      {unreadCount > 0 && (
+                        <button
+                          type="button"
+                          className="notifications-mark-read"
+                          onClick={markAllNotificationsRead}
+                        >
+                          {tr(lang, 'تحديد الكل كمقروء', 'Mark all read')}
+                        </button>
+                      )}
+                    </div>
+                    <div className="notifications-list">
+                      {notificationsList.map(item => (
+                        <div
+                          key={item.id}
+                          className={`notification-item ${item.unread ? 'is-unread' : ''}`}
+                          onClick={() => {
+                            markNotificationRead(item.id);
+                            setShowNotifications(false);
+                            if (item.link) go(item.link);
+                          }}
+                        >
+                          <span className="notification-item-icon">
+                            {item.icon === 'check' ? <CheckCircle2 size={16}/> : item.icon === 'wrench' ? <Wrench size={16}/> : <Clock3 size={16}/>}
+                          </span>
+                          <div className="notification-item-content">
+                            <p className="notification-item-title">{item.title}</p>
+                            <small className="notification-item-desc">{item.desc}</small>
+                            <span className="notification-item-time">{item.time}</span>
+                          </div>
+                          {item.unread && <span className="notification-unread-dot" aria-hidden="true"/>}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="notifications-footer">
+                      <Link href="/workspace/tickets" onClick={() => setShowNotifications(false)}>
+                        {tr(lang, 'عرض جميع البلاغات', 'View all tickets')} {lang === 'ar' ? <ArrowLeft size={13}/> : <ArrowRight size={13}/>}
+                      </Link>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <div className="reporter-header-divider" aria-hidden="true"/>
+
+            {/* User Account */}
+            <div className="topbar-account-section" ref={headerAccountRef}>
+              <button
+                type="button"
+                className="reporter-account-card"
+                onClick={() => setHeaderMenu(!headerMenu)}
+                aria-label={tr(lang, 'خيارات الحساب والملف الشخصي', 'Account and profile options')}
+                aria-expanded={headerMenu}
+                aria-controls="topbar-account-menu"
+                data-testid="header-profile-card"
+              >
+                <div className="reporter-account-meta">
+                  <b className="reporter-account-name">{user.name}</b>
+                  <span className={`reporter-account-role-badge role-badge-${user.role}`}>{roleText(user.role, lang)}</span>
+                </div>
+                <ChevronDown size={14} className={`reporter-account-chevron ${headerMenu ? 'is-open' : ''}`} aria-hidden="true"/>
+                <div className="reporter-account-avatar-wrap">
+                  <Avatar name={user.name} size="sm"/>
+                  <span className="side-user-status-dot" aria-hidden="true"/>
+                </div>
+              </button>
+
+              <AnimatePresence>
+                {headerMenu && (
+                  <motion.div
+                    id="topbar-account-menu"
+                    className="topbar-account-dropdown tadaruk-dropdown-surface"
+                    role="menu"
+                    aria-label={tr(lang, 'خيارات الحساب', 'Account options')}
+                    initial={reduced ? false : { opacity: 0, y: -6, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={reduced ? { opacity: 1 } : { opacity: 0, y: -4, scale: 0.98 }}
+                    transition={{ duration: reduced ? 0 : 0.16, ease: [0.22, 0.72, 0.18, 1] }}
+                  >
+                    <div className="side-account-menu-head">
+                      <b className="side-account-head-name">{user.name}</b>
+                      <span className="side-account-head-branch">
+                        <Building2 size={12} aria-hidden="true"/>
+                        <span>{user.branchName || branchLabel}</span>
+                      </span>
+                    </div>
+
+                    <div className="side-account-menu-list">
+                      <button
+                        type="button"
+                        className="side-account-item"
+                        role="menuitem"
+                        onClick={() => { setHeaderMenu(false); setShowProfile(true); }}
+                        data-testid="button-open-profile-dialog"
+                      >
+                        <UserRound size={16} className="side-account-item-icon"/>
+                        <span>{tr(lang, 'الملف الشخصي', 'Profile')}</span>
+                      </button>
+
+                      <div className="side-account-divider" role="separator"/>
+
+                      {logout.isError && <p className="account-menu-error" role="alert">{tr(lang, 'تعذر تسجيل الخروج، حاول مجدداً.', 'Could not sign out. Please try again.')}</p>}
+
+                      <button
+                        type="button"
+                        className="side-account-item side-account-signout"
+                        role="menuitem"
+                        onClick={signOut}
+                        disabled={logout.isPending}
+                        aria-busy={logout.isPending}
+                        data-testid="button-header-signout"
+                      >
+                        <LogOut size={16} className="side-account-item-icon"/>
+                        <span>{logout.isPending ? tr(lang, 'جارٍ تسجيل الخروج…', 'Signing out…') : tr(lang, 'تسجيل الخروج', 'Sign out')}</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+        </header>
+
+        {/* Reporter Body Layout */}
+        <div className="reporter-body-layout">
+          <aside className={`sidebar reporter-sidebar ${mobile ? 'sidebar-open' : ''}`}>
+            <div className="reporter-sidebar-mobile-close">
+              <span className="mobile-menu-title">{tr(lang, 'القائمة', 'Menu')}</span>
+              <button className="mobile-close" onClick={()=>setMobile(false)} aria-label={tr(lang, 'إغلاق القائمة', 'Close menu')}><X size={18}/></button>
+            </div>
+
+            {reporterBranches.length > 1
+              ? <div className="branch-switch branch-switch-multi" data-testid="field-sidebar-branch"><span className="branch-icon"><Building2 size={16}/></span><span className="branch-switch-copy"><small>{tr(lang,'الموقع الحالي','CURRENT LOCATION')}</small><TadarukSelect value={branchContext?.selectedBranchId||selectedBranch?.id||reporterBranches[0]?.id||''} onValueChange={value=>branchContext?.selectBranch(value)} ariaLabel={tr(lang,'اختيار الفرع المصرح به','Choose an authorized branch')} dir={lang==='ar'?'rtl':'ltr'} placeholder={selectedBranch?.name||tr(lang,'فرع العليا','Olaya Branch')} testId="select-sidebar-branch" options={reporterBranches.map(branch=>({value:branch.id,label:branch.name}))}/></span></div>
+              : <div className="branch-switch" data-testid="text-sidebar-branch"><span className="branch-icon"><Building2 size={16}/></span><span><small>{tr(lang,'الموقع الحالي','CURRENT LOCATION')}</small><b>{branchLabel}</b></span></div>
+            }
+
+            <nav className="side-nav">
+              {links.map(([path, ar, en, Icon]) => {
+                const selected = matchingLink === path;
+                return (
+                  <Link
+                    key={path as string}
+                    href={path as string}
+                    onClick={() => setMobile(false)}
+                    className={`side-link ${selected ? 'selected' : ''}`}
+                    aria-current={selected ? 'page' : undefined}
+                    data-testid={`nav-${(path as string).replaceAll('/', '-').replace(/^-/, 'root')}`}
+                  >
+                    {selected && (
+                      <motion.span
+                        className="nav-shared-indicator"
+                        layoutId="workspace-nav-indicator"
+                        transition={reduced ? { duration: 0 } : { duration: .3, ease: [.22, .72, .18, 1] }}
+                      >
+                        <span className="nav-active-mark" />
+                      </motion.span>
+                    )}
+                    <motion.span
+                      className="side-link-icon"
+                      aria-hidden="true"
+                      whileTap={reduced ? undefined : { scale: .92, y: 1 }}
+                      animate={selected && !reduced ? { scale: [1, 1.08, 1], y: [0, -1, 0] } : { scale: 1, y: 0 }}
+                      transition={{ duration: reduced ? 0 : .32, ease: [.22, .72, .18, 1] }}
+                    >
+                      <Icon size={19}/>
+                    </motion.span>
+                    <span>{tr(lang, ar as string, en as string)}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+          </aside>
+
+          <AnimatePresence>
+            {mobile && (
+              <motion.button
+                type="button"
+                className="mobile-scrim"
+                onClick={() => setMobile(false)}
+                aria-label={tr(lang, 'إغلاق القائمة', 'Close navigation')}
+                initial={reduced ? false : { opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={reduced ? { opacity: 1 } : { opacity: 0 }}
+                transition={{ duration: reduced ? 0 : .16 }}
+              />
+            )}
+          </AnimatePresence>
+
+          <main className="workspace-content reporter-workspace-content">
+            {children}
+          </main>
+        </div>
+
+        {profileDialogElement}
+      </div>
+    );
+  }
+
+  return <div className="app-shell" dir={lang==='ar'?'rtl':'ltr'}>
+    <aside className={`sidebar ${mobile?'sidebar-open':''}`}><div className="side-brand"><Link href="/workspace"><Brand darkMode={dark}/></Link><button className="mobile-close" onClick={()=>setMobile(false)}><X size={18}/></button></div>
+
+      <div className="side-user-section" ref={profileMenuRef}>
+        <button
+          type="button"
+          className="side-user-card"
+          onClick={()=>setMenu(!menu)}
+          aria-label={tr(lang,'خيارات الحساب والملف الشخصي','Account and profile options')}
+          aria-expanded={menu}
+          aria-controls="side-account-menu"
+          data-testid="sidebar-profile-card"
+        >
+          <div className="side-user-avatar-wrap">
+            <Avatar name={user.name} size="md"/>
+            <span className="side-user-status-dot" aria-hidden="true"/>
+          </div>
+          <div className="side-user-meta">
+            <b className="side-user-name">{user.name}</b>
+            <span className={`side-user-role-badge role-badge-${user.role}`}>{roleText(user.role,lang)}</span>
+          </div>
+          <ChevronDown size={16} className={`side-user-chevron ${menu?'is-open':''}`} aria-hidden="true"/>
+        </button>
+
+        <AnimatePresence>
+          {menu&&<motion.div
+            id="side-account-menu"
+            className="side-account-dropdown tadaruk-dropdown-surface"
+            role="menu"
+            aria-label={tr(lang,'خيارات الحساب','Account options')}
+            initial={reduced?false:{opacity:0,y:-6,scale:0.98}}
+            animate={{opacity:1,y:0,scale:1}}
+            exit={reduced?{opacity:1}:{opacity:0,y:-4,scale:0.98}}
+            transition={{duration:reduced?0:0.16,ease:[0.22,0.72,0.18,1]}}
+          >
+            <div className="side-account-menu-head">
+              <b className="side-account-head-name">{user.name}</b>
+              <span className="side-account-head-branch">
+                <Building2 size={12} aria-hidden="true"/>
+                <span>{user.branchName||tr(lang,'جميع الفروع','All branches')}</span>
+              </span>
+            </div>
+
+            <div className="side-account-menu-list">
+              <button
+                type="button"
+                className="side-account-item"
+                role="menuitem"
+                onClick={()=>{setMenu(false);setShowProfile(true);}}
+                data-testid="button-open-profile-dialog"
+              >
+                <UserRound size={16} className="side-account-item-icon"/>
+                <span>{tr(lang,'الملف الشخصي','Profile')}</span>
+              </button>
+
+              <div className="side-account-divider" role="separator"/>
+
+              {logout.isError&&<p className="account-menu-error" role="alert">{tr(lang,'تعذر تسجيل الخروج، حاول مجدداً.','Could not sign out. Please try again.')}</p>}
+
+              <button
+                type="button"
+                className="side-account-item side-account-signout"
+                role="menuitem"
+                onClick={signOut}
+                disabled={logout.isPending}
+                aria-busy={logout.isPending}
+                data-testid="button-sidebar-signout"
+              >
+                <LogOut size={16} className="side-account-item-icon"/>
+                <span>{logout.isPending?tr(lang,'جارٍ تسجيل الخروج…','Signing out…'):tr(lang,'تسجيل الخروج','Sign out')}</span>
+              </button>
+            </div>
+          </motion.div>}
+        </AnimatePresence>
+      </div>
+
+      <div className="branch-switch" data-testid="branch-indicator"><span className="branch-icon"><Building2 size={16}/></span><span><small>{tr(lang,'الموقع الحالي','CURRENT LOCATION')}</small><b>{user.branchName||tr(lang,'جميع الفروع','All branches')}</b></span></div>
+      <nav className="side-nav">{links.map(([path,ar,en,Icon])=>{
+        const selected=matchingLink===path;
+        return <Link key={path as string} href={path as string} onClick={()=>setMobile(false)} className={`side-link ${selected?'selected':''}`} aria-current={selected?'page':undefined} data-testid={`nav-${(path as string).replaceAll('/','-').replace(/^-/, 'root')}`}>
+          {selected&&<motion.span className="nav-shared-indicator" layoutId="workspace-nav-indicator" transition={reduced?{duration:0}:{duration:.3,ease:[.22,.72,.18,1]}}><span className="nav-active-mark"/></motion.span>}
+          <motion.span
+            className="side-link-icon"
+            aria-hidden="true"
+            whileTap={reduced?undefined:{scale:.92,y:1}}
+            animate={selected&&!reduced?{scale:[1,1.08,1],y:[0,-1,0]}:{scale:1,y:0}}
+            transition={{duration:reduced?0:.32,ease:[.22,.72,.18,1]}}
+          ><Icon size={19}/></motion.span>
+          <span>{tr(lang,ar as string,en as string)}</span>
+        </Link>;
+      })}</nav>
+    </aside>
+    <AnimatePresence>{mobile&&<motion.button type="button" className="mobile-scrim" onClick={()=>setMobile(false)} aria-label={tr(lang,'إغلاق القائمة','Close navigation')} initial={reduced?false:{opacity:0}} animate={{opacity:1}} exit={reduced?{opacity:1}:{opacity:0}} transition={{duration:reduced?0:.16}}/>}</AnimatePresence>
+    <div className="main-frame"><header className="topbar"><div className="topbar-title"><button className="mobile-menu" onClick={()=>setMobile(true)}><Menu size={20}/></button><span>{title}</span></div><div className="top-controls">
+      <button onClick={()=>setLang(lang==='ar'?'en':'ar')} className="icon-control" aria-label={tr(lang,'تغيير اللغة','Switch language')}><Languages size={18}/><span>{lang==='ar'?'EN':'ع'}</span></button>
+      <SunMoonThemeToggle className="workspace-theme-toggle" theme={dark?'dark':'light'} onThemeChange={theme=>setDark(theme==='dark')} aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')} data-testid="theme-toggle-workspace" size={40} duration={860}/>
+    </div></header><main className="workspace-content">{children}</main></div>
+
+    {profileDialogElement}
   </div>;
 }
 function PageTitle({title,description,action}:{eyebrow:string;title:string;description?:string;action?:ReactNode}) {
