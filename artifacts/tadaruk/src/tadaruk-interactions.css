@@ -5673,47 +5673,46 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
 }
 
 /* ==========================================================================
-   Reporter Dashboard Layout (Reference: media_1794163403526_41c4d555.jpg)
-   Unified Full-Width Floating Header + Under-Header Sidebar System
+   Reporter Dashboard Layout: Reference 2 Header + Original Integrated Sidebar
    ========================================================================== */
 
-/* Shell Canvas Background & Flow */
+/* Shell Canvas Background */
 .reporter-shell {
   min-height: 100dvh;
   display: flex !important;
   flex-direction: column !important;
-  background: #edf5f8 !important;
+  background: #f7f9fb !important;
   color: #1f3363 !important;
   font-family: 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
 .dark .reporter-shell {
-  background: #0b1523 !important;
+  background: hsl(var(--background)) !important;
   color: #f1f5fa !important;
 }
 
-/* Floating Topbar Header across full page width */
+/* 1. Full-width, Rounded Top Header (Reference 2) */
 .reporter-shell .reporter-topbar {
   position: sticky;
   top: 0;
   z-index: 40;
-  margin: 14px 24px 0;
+  margin: 12px 18px 0 18px;
   height: 66px;
-  padding: 0 22px;
+  padding: 0 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   background: #ffffff;
   border: 1px solid #e1e9f0;
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.035);
+  box-shadow: 0 3px 14px rgba(15, 23, 42, 0.035);
   transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .dark .reporter-shell .reporter-topbar {
   background: #111e32;
   border-color: #1e324a;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
 }
 
 /* Topbar Brand Group (Right in RTL) */
@@ -5786,7 +5785,7 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
 .reporter-topbar-controls {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 /* Theme Toggle Pill */
@@ -6225,33 +6224,41 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
 }
 
 /* ==========================================================================
-   Reporter Body Layout: Under-Header Sidebar + Main Workspace Content
+   2. Main Layout & Original Integrated Sidebar (Reference 1)
    ========================================================================== */
-.reporter-body-layout {
+.reporter-body-layout,
+.reporter-main-layout {
   display: flex !important;
   flex: 1 !important;
   width: 100% !important;
   position: relative !important;
-  padding: 34px 24px 44px !important;
-  gap: 28px !important;
-  align-items: flex-start !important;
+  margin-top: 12px !important;
+  align-items: stretch !important;
+  gap: 0 !important;
+  padding: 0 !important;
 }
 
-/* Under-Header Sidebar with solid panel background matching the first sidebar */
+/* Original Integrated TADARUK Sidebar — docked, NO floating card, NO outer rounded borders */
 .reporter-shell .reporter-sidebar {
   position: sticky !important;
-  top: 114px !important; /* 14px top + 66px header + 34px gap */
-  height: calc(100vh - 138px) !important;
+  top: 78px !important;
+  height: calc(100vh - 78px) !important;
   width: 260px !important;
-  flex: none !important;
-  background: linear-gradient(180deg, #f5f8f8 0%, #edf6f5 100%) !important;
-  border: 1px solid #d4e7e8 !important;
-  border-radius: 16px !important;
-  padding: 16px 14px !important;
-  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.025) !important;
+  flex: 0 0 260px !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  border-inline-start: 0 !important;
+  border-inline-end: 1px solid #d6e6e6 !important;
+  background:
+    radial-gradient(ellipse at 100% 0%, rgba(86, 244, 239, .28), transparent 38%),
+    linear-gradient(160deg, #f4f4f4 0%, #eff8f7 48%, #d9f3f1 100%) !important;
+  color: #1f3363 !important;
+  padding: 18px 16px 24px !important;
   display: flex !important;
   flex-direction: column !important;
-  gap: 12px !important;
   overflow-y: auto !important;
   z-index: 10 !important;
   inset-block: auto !important;
@@ -6261,142 +6268,175 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
 }
 
 .dark .reporter-shell .reporter-sidebar {
-  background: linear-gradient(180deg, #122136 0%, #0e1c2e 100%) !important;
-  border-color: #1a3450 !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+  color: #f5f8ff !important;
+  background:
+    radial-gradient(ellipse at 100% 0%, rgba(86, 244, 239, .2), transparent 38%),
+    linear-gradient(160deg, #1f3363 0%, #183754 54%, #10283b 100%) !important;
+  border-inline-end: 1px solid #294662 !important;
 }
 
 .reporter-sidebar-mobile-close {
   display: none;
 }
 
-/* Branch Switch in Reporter Sidebar */
+/* Original Branch Switcher */
 .reporter-shell .reporter-sidebar .branch-switch {
-  margin: 0 !important;
-  padding: 12px 14px !important;
+  margin: 4px 2px 20px !important;
+  padding: 12px 10px !important;
   background: #ffffff !important;
-  border: 1px solid #d8e7e8 !important;
-  border-radius: 12px !important;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03) !important;
+  border: 1px solid #e1e9f1 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 8px 22px rgba(31, 51, 99, .045) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 9px !important;
   color: #1f3363 !important;
 }
 
 .dark .reporter-shell .reporter-sidebar .branch-switch {
-  background: #142840 !important;
-  border-color: #1e3d60 !important;
+  background: rgba(10, 28, 48, .28) !important;
+  border-color: rgba(221, 240, 255, .15) !important;
   color: #f5f8ff !important;
 }
 
 .reporter-shell .reporter-sidebar .branch-switch .branch-icon {
-  background: #dcf2f3 !important;
-  color: #0e7490 !important;
-  width: 32px !important;
-  height: 32px !important;
+  width: 30px !important;
+  height: 30px !important;
   border-radius: 8px !important;
+  background: #56f4ef !important;
+  color: #1f3363 !important;
+  display: grid !important;
+  place-items: center !important;
+  flex: none !important;
 }
 
 .dark .reporter-shell .reporter-sidebar .branch-switch .branch-icon {
-  background: #133a4c !important;
-  color: #56f4ef !important;
-}
-
-.reporter-shell .reporter-sidebar .branch-switch b {
-  font-size: 14.5px !important;
-  font-weight: 700 !important;
+  background: #56f4ef !important;
   color: #1f3363 !important;
 }
 
+.reporter-shell .reporter-sidebar .branch-switch b {
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  color: #1f3363 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
 .dark .reporter-shell .reporter-sidebar .branch-switch b {
-  color: #ffffff !important;
+  color: #f5f8ff !important;
 }
 
 .reporter-shell .reporter-sidebar .branch-switch small {
-  font-size: 11px !important;
-  font-weight: 700 !important;
+  font: 600 10px 'Anek Kannada', sans-serif !important;
+  letter-spacing: .08em !important;
   color: #71819a !important;
 }
 
 .dark .reporter-shell .reporter-sidebar .branch-switch small {
-  color: #8da2bb !important;
+  color: #aab8d0 !important;
 }
 
-/* Navigation Links in Reporter Sidebar */
+/* Original Navigation Links & Active-Item Indicator */
 .reporter-shell .reporter-sidebar .side-nav {
   display: flex !important;
   flex-direction: column !important;
-  gap: 6px !important;
+  gap: 5px !important;
   background: transparent !important;
 }
 
 .reporter-shell .reporter-sidebar .side-link {
-  height: 48px !important;
-  padding: 0 14px !important;
-  border-radius: 10px !important;
-  color: #556987 !important;
-  font-size: 15.5px !important;
-  font-weight: 600 !important;
-  background: transparent !important;
-  transition: all 0.18s ease !important;
-  position: relative !important;
+  height: 46px !important;
   display: flex !important;
   align-items: center !important;
   gap: 12px !important;
+  padding: 0 12px !important;
+  border-radius: 9px !important;
+  color: #566783 !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  background: transparent !important;
+  position: relative !important;
+  isolation: isolate !important;
+  border: 0 !important;
+  transition: color 250ms ease, background-color 200ms ease !important;
 }
 
 .reporter-shell .reporter-sidebar .side-link:hover {
-  background: rgba(255, 255, 255, 0.85) !important;
   color: #1f3363 !important;
+  background: #e3ebf3 !important;
 }
 
 .reporter-shell .reporter-sidebar .side-link.selected {
-  background: #ffffff !important;
-  color: #0e7490 !important;
+  background: transparent !important;
+  color: #1f3363 !important;
   font-weight: 700 !important;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
+  border: 0 !important;
 }
 
-[dir="rtl"] .reporter-shell .reporter-sidebar .side-link.selected {
-  border-inline-end: 4px solid #0e7490 !important;
+.reporter-shell .reporter-sidebar .side-link.selected .side-link-icon svg {
+  color: #2f6488 !important;
 }
 
-[dir="ltr"] .reporter-shell .reporter-sidebar .side-link.selected {
-  border-inline-start: 4px solid #0e7490 !important;
+.reporter-shell .reporter-sidebar .nav-shared-indicator {
+  position: absolute !important;
+  z-index: 0 !important;
+  inset: 0 !important;
+  border-radius: 9px !important;
+  background: #dcecf0 !important;
+  pointer-events: none !important;
 }
 
+.reporter-shell .reporter-sidebar .nav-active-mark {
+  position: absolute !important;
+  inset-inline-start: 0 !important;
+  width: 3px !important;
+  height: 22px !important;
+  background: #35b8b2 !important;
+  border-radius: 4px !important;
+}
+
+/* Dark mode for sidebar navigation */
 .dark .reporter-shell .reporter-sidebar .side-link {
-  color: #9bb1cb !important;
+  color: #c4d0e0 !important;
 }
 
 .dark .reporter-shell .reporter-sidebar .side-link:hover {
-  background: #182f4c !important;
   color: #ffffff !important;
+  background: rgba(255, 255, 255, .08) !important;
 }
 
 .dark .reporter-shell .reporter-sidebar .side-link.selected {
-  background: #182f4c !important;
+  background: transparent !important;
+  color: #ffffff !important;
+}
+
+.dark .reporter-shell .reporter-sidebar .side-link.selected .side-link-icon svg {
   color: #56f4ef !important;
 }
 
-[dir="rtl"].dark .reporter-shell .reporter-sidebar .side-link.selected {
-  border-inline-end-color: #56f4ef !important;
+.dark .reporter-shell .reporter-sidebar .nav-shared-indicator {
+  background: #28415a !important;
 }
 
-[dir="ltr"].dark .reporter-shell .reporter-sidebar .side-link.selected {
-  border-inline-start-color: #56f4ef !important;
+.dark .reporter-shell .reporter-sidebar .nav-active-mark {
+  background: #56f4ef !important;
 }
 
 /* Main Workspace Content inside Reporter */
 .reporter-shell .reporter-workspace-content {
   flex: 1 !important;
   min-width: 0 !important;
-  padding: 4px 0 0 0 !important;
+  padding: 24px clamp(20px, 3.5vw, 44px) 48px !important;
   max-width: none !important;
   margin: 0 !important;
+  background: transparent !important;
 }
 
-/* Heading breathing space - not sticking to header */
+/* Heading spacing */
 .reporter-shell .rw-heading {
-  margin-top: 4px !important;
+  margin-top: 0 !important;
   margin-bottom: 24px !important;
 }
 
@@ -6411,8 +6451,9 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
     display: inline-grid;
     place-items: center;
   }
-  .reporter-body-layout {
-    padding: 12px !important;
+  .reporter-body-layout,
+  .reporter-main-layout {
+    margin-top: 8px !important;
   }
   .reporter-shell .reporter-sidebar {
     position: fixed !important;
@@ -6422,7 +6463,6 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
     inset-inline-end: 0 !important;
     width: 270px !important;
     height: 100dvh !important;
-    background: #ffffff !important;
     padding: 20px 16px !important;
     box-shadow: -8px 0 28px rgba(0, 0, 0, 0.15) !important;
     transform: translateX(110%) !important;
@@ -6437,19 +6477,16 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
   .reporter-shell .reporter-sidebar.sidebar-open {
     transform: translateX(0) !important;
   }
-  .dark .reporter-shell .reporter-sidebar {
-    background: #111e32 !important;
-  }
   .reporter-sidebar-mobile-close {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 16px;
     padding-bottom: 12px;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid #d6e6e6;
   }
   .dark .reporter-sidebar-mobile-close {
-    border-bottom-color: #1e324a;
+    border-bottom-color: #294662;
   }
   .mobile-menu-title {
     font-size: 16px;
