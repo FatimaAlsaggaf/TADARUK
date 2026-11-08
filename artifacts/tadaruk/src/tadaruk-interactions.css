@@ -8458,3 +8458,36 @@ body:has(.dark .reporter-shell) #root {
     transform: none !important;
   }
 }
+
+/* Landing section labels: readable hierarchy for How it works / impact / final. */
+.landing .workflow-heading .eyebrow,
+.landing .impact-heading .eyebrow,
+.landing .landing-end .eyebrow {
+  font-family: 'IBM Plex Sans Arabic', sans-serif !important;
+  font-size: 16px !important;
+  line-height: 1.6 !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+}
+.landing .workflow-heading {
+  margin-bottom: 28px !important;
+}
+.landing .workflow-heading .eyebrow {
+  color: #3d7084 !important;
+}
+.dark .landing .workflow-heading .eyebrow {
+  color: #9dc5d9 !important;
+}
+.landing .impact-heading .eyebrow {
+  color: #59758e !important;
+}
+.dark .landing .impact-heading .eyebrow {
+  color: #bfd2e1 !important;
+}
+@media (max-width: 780px) {
+  .landing .workflow-heading .eyebrow,
+  .landing .impact-heading .eyebrow,
+  .landing .landing-end .eyebrow {
+    font-size: 14.5px !important;
+  }
+}
