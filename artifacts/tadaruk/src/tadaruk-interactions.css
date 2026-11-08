@@ -7087,3 +7087,21 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(63,161,159,.55);outl
 @media (max-width: 900px) {
   .reporter-shell .reporter-view { font-size: 14px !important; }
 }
+
+/* Reporter header scrolls away naturally; sidebar remains independently fixed. */
+@media (min-width: 901px) {
+  .reporter-shell .reporter-main-area {
+    padding-block-start: 0 !important;
+  }
+  .reporter-shell .reporter-header {
+    position: relative !important;
+    top: auto !important;
+    inset-inline-start: auto !important;
+    inset-inline-end: auto !important;
+    margin-block-start: var(--reporter-header-top) !important;
+    margin-inline-start: 0 !important;
+    margin-inline-end: var(--reporter-header-gutter) !important;
+    width: calc(100% - var(--reporter-header-gutter)) !important;
+    z-index: 30 !important;
+  }
+}
