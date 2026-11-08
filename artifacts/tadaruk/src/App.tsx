@@ -1253,7 +1253,7 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
       })}</nav>
     </aside>
     <AnimatePresence>{mobile&&<motion.button type="button" className="mobile-scrim" onClick={()=>setMobile(false)} aria-label={tr(lang,'إغلاق القائمة','Close navigation')} initial={reduced?false:{opacity:0}} animate={{opacity:1}} exit={reduced?{opacity:1}:{opacity:0}} transition={{duration:reduced?0:.16}}/>}</AnimatePresence>
-    <div className="main-frame"><header className="topbar workspace-compact-topbar">
+    <div className={`main-frame ${user.role==='technician'?'technician-frame':''}`}><header className="topbar workspace-compact-topbar">
       <button className="mobile-menu" type="button" onClick={()=>setMobile(true)} aria-label={tr(lang,'فتح القائمة','Open menu')}><Menu size={20}/></button>
       {user.role === 'technician' && (
         <div className="technician-header-account" ref={profileMenuRef}>
@@ -1277,13 +1277,13 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
                 <Languages size={16}/><span>{tr(lang,'اللغة','Language')}</span>
                 <span className="technician-menu-option-value">{lang==='ar'?'English':'العربية'}</span>
               </button>
-              <div className="technician-menu-theme">
-                <span><SunMoon size={16}/>{tr(lang,'المظهر','Appearance')}</span>
-                <SunMoonThemeToggle className="workspace-theme-toggle" theme={dark?'dark':'light'}
-                  onThemeChange={theme=>setDark(theme==='dark')}
-                  aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')}
-                  data-testid="theme-toggle-technician" size={36} duration={860}/>
-              </div>
+              <button type="button" className="technician-menu-option technician-menu-theme-action"
+                onClick={()=>setDark(value=>!value)} data-testid="theme-toggle-technician"
+                aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')}>
+                <SunMoon size={16}/>
+                <span>{tr(lang,'المظهر','Appearance')}</span>
+                <span className="technician-menu-option-value">{dark?tr(lang,'داكن','Dark'):tr(lang,'فاتح','Light')}</span>
+              </button>
               <div className="side-account-divider" role="separator"/>
               {logout.isError&&<p className="account-menu-error" role="alert">{tr(lang,'تعذر تسجيل الخروج، حاول مجدداً.','Could not sign out. Please try again.')}</p>}
               <button type="button" className="technician-menu-option technician-menu-signout"
@@ -1294,7 +1294,7 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
           )}
         </div>
       )}
-      <div className="top-controls workspace-unified-controls">
+      <div className={`top-controls workspace-unified-controls ${user.role==='technician'?'technician-notifications-cluster':''}`}>
         <div className="workspace-header-notifications" ref={notificationsRef}>
           <button type="button" className="icon-control workspace-header-bell" onClick={()=>setShowNotifications(value=>!value)}
             aria-label={tr(lang,'الإشعارات','Notifications')} aria-expanded={showNotifications}>
