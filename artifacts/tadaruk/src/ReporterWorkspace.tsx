@@ -926,11 +926,6 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                   <h2>{text(lang, 'مراجعة وتأكيد البلاغ', 'Review and confirm report')}</h2>
                   <p>{text(lang, 'تحقق من تفاصيل البلاغ قبل إرساله', 'Review the report details before submitting')}</p>
                 </div>
-                <button type="button" className="rw-discard-draft-btn"
-                  onClick={() => setShowDiscardDialog(true)}
-                  disabled={create.isPending} data-testid="button-discard-draft">
-                  <X size={16}/>{text(lang, 'إلغاء المسودة', 'Discard draft')}
-                </button>
               </div>
 
               {!reviewEditing ? (
@@ -1141,7 +1136,6 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                 </div>
               )}
               {photoError && <p className="rw-inline-error" role="alert" data-testid="status-photo-storage-error">{photoError}</p>}
-            </div>
 
             {create.isError && (
               <p className="rw-inline-error" role="alert" data-testid="status-create-error">
@@ -1190,7 +1184,13 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                   {text(lang, 'العودة للمعاينة', 'Return to preview')}
                 </button>
               )}
+              <button type="button" className="rw-button rw-discard-draft-btn"
+                onClick={() => setShowDiscardDialog(true)} disabled={create.isPending}
+                data-testid="button-discard-draft">
+                <X size={16}/>{text(lang, 'إلغاء', 'Cancel')}
+              </button>
               <small>{text(lang, 'بالإرسال، سيصل البلاغ مباشرة للفني المختص.', 'Upon submission, the ticket will be assigned to the technician.')}</small>
+            </div>
             </div>
           </form>
           ) : (
