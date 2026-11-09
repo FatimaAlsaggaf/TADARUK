@@ -316,3 +316,69 @@
   .org-simple-invitations .org-share-actions{justify-content:center}
   .org-later-technicians{font-size:12px}
 }
+
+
+/* Animated branded invitation QR, modeled after the supplied rotating-light reference.
+   The glow stays outside the actual QR quiet zone for reliable scanning. */
+.tadaruk-invite-qr{
+  position:relative !important;
+  isolation:isolate;
+  width:178px !important;
+  min-height:178px !important;
+  overflow:visible;
+  border:0 !important;
+  border-radius:19px !important;
+  padding:14px !important;
+  background:#fff !important;
+  box-shadow:0 15px 30px #183f6b25,0 1px 8px #21405d1c;
+}
+.tadaruk-invite-qr-light{
+  position:absolute;
+  inset:-3px;
+  z-index:-1;
+  border-radius:22px;
+  padding:3px;
+  pointer-events:none;
+  background:conic-gradient(from 0deg,transparent 0deg,transparent 225deg,
+    #5f83d0 267deg,#eafcff 280deg,#ffffff 293deg,#6d8bff 310deg,transparent 342deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  mask-composite:exclude;
+  animation:tadaruk-invite-orbit 3.6s linear infinite;
+  filter:drop-shadow(0 0 7px #9cbeffb8);
+}
+@keyframes tadaruk-invite-orbit{to{transform:rotate(360deg)}}
+.tadaruk-invite-qr-link{
+  display:block;position:relative;
+  width:148px;height:148px;
+  text-decoration:none;
+  border-radius:4px;
+  background:#fff;
+  outline-offset:5px;
+}
+.tadaruk-invite-qr-link:focus-visible{outline:3px solid #326ca2}
+.tadaruk-invite-qr-image{height:148px;width:148px;display:block}
+.tadaruk-invite-qr-image img,
+.tadaruk-invite-qr-image canvas{
+  display:block !important;
+  width:148px !important;
+  height:148px !important;
+  image-rendering:pixelated;
+}
+.tadaruk-invite-qr-logo{
+  position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  width:26px;height:26px;
+  z-index:2;
+  display:grid;place-items:center;
+  padding:4px;
+  border-radius:7px;
+  background:#fff;
+  box-shadow:0 0 0 2px #fff;
+  pointer-events:none;
+}
+.tadaruk-invite-qr-logo img{width:100%;height:100%;object-fit:contain}
+.dark .tadaruk-invite-qr{background:#fff !important}
+@media(prefers-reduced-motion:reduce){
+  .tadaruk-invite-qr-light{animation:none;transform:rotate(290deg)}
+}
