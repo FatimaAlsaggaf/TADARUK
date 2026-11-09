@@ -726,6 +726,7 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
   const isReporter=user.role==='reporter';
   const [headerMenu,setHeaderMenu]=useState(false);
   const [showNotifications,setShowNotifications]=useState(false);
+  const [demoReadIds,setDemoReadIds]=useState<string[]>([]);
   const headerAccountRef=useRef<HTMLDivElement>(null);
   const notificationsRef=useRef<HTMLDivElement>(null);
   type UserNotification = { id:string; ticketId:string; kind:string; title:string; description:string; createdAt:string; readAt:string|null };
@@ -739,28 +740,70 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
   });
   // Reporter sees only updates that require a decision or confirm a final outcome.
   // Technician keeps assignment notifications; never mix role-specific actions.
-  const visibleNotifications=storedNotifications.filter(n=>user.role==='reporter'
+  // Demo-only preview: keep genuine notifications unchanged and never mix accounts.
+  const notificationAllowed=(n:UserNotification)=>user.role==='reporter'
     ? ['confirmation_required','closed','cancelled','reopened'].includes(n.kind)
     : user.role==='technician'
       ? ['assigned','removed'].includes(n.kind)
-      : true);
+      : true;
+  const demoOnly=user.id.startsWith('demo-')&&!storedNotifications.some(notificationAllowed);
+  const minutesAgo=(minutes:number)=>new Date(Date.now()-minutes*60_000).toISOString();
+  const demoBase=(id:string,ticketId:string,kind:string,title:string,description:string,minutes:number):UserNotification=>({
+    id:`demo-notif-${id}`,ticketId,kind,title,description,createdAt:minutesAgo(minutes),readAt:null
+  });
+  const demoNotifications:UserNotification[]=!demoOnly?[]:user.role==='reporter'?[
+    demoBase('reporter-confirm','ticket-demo-2401','confirmation_required',
+      tr(lang,'إصلاح بانتظار تأكيدك','Repair awaiting your confirmation'),
+      tr(lang,'اكتمل إصلاح البلاغ #241، يرجى مراجعة النتيجة.','Ticket #241 has been repaired. Please confirm the result.'),5),
+    demoBase('reporter-closed','ticket-demo-238','closed',
+      tr(lang,'تم إغلاق البلاغ #238','Ticket #238 closed'),
+      tr(lang,'تم تأكيد الإصلاح وإغلاق البلاغ بنجاح.','The repair was confirmed and the ticket is closed.'),25),
+    demoBase('reporter-reopened','ticket-demo-229','reopened',
+      tr(lang,'أُعيد فتح بلاغك','Your ticket was reopened'),
+      tr(lang,'عاد البلاغ #229 للمتابعة مع فريق الصيانة.','Ticket #229 is being reviewed by maintenance.'),55)
+  ]:user.role==='technician'?[
+    demoBase('tech-assigned-1','ticket-demo-2401','assigned',
+      tr(lang,'مهمة جديدة مسندة إليك','New task assigned'),
+      tr(lang,'تسرب مياه - الدور الثاني، البلاغ #241','Water leak - second floor, ticket #241'),4),
+    demoBase('tech-assigned-2','ticket-demo-245','assigned',
+      tr(lang,'مهمة صيانة عاجلة','Urgent repair task'),
+      tr(lang,'عطل تكييف في فرع العليا، البلاغ #245','AC fault at Olaya branch, ticket #245'),19),
+    demoBase('tech-removed','ticket-demo-236','removed',
+      tr(lang,'تغيير إسناد مهمة','Task assignment changed'),
+      tr(lang,'لم تعد مسؤولًا عن متابعة البلاغ #236.','Ticket #236 is no longer assigned to you.'),45)
+  ]:[
+    demoBase('manager-overdue','ticket-demo-2401','overdue',
+      tr(lang,'بلاغات تحتاج متابعة','Tickets need attention'),
+      tr(lang,'3 بلاغات متأخرة في فرع العليا.','3 overdue tickets in Olaya branch.'),6),
+    demoBase('manager-new','ticket-demo-245','new',
+      tr(lang,'بلاغ عالي الأولوية','High-priority report'),
+      tr(lang,'عطل كهربائي جديد يحتاج إلى إسناد فني.','A new electrical fault needs a technician.'),15),
+    demoBase('manager-closed','ticket-demo-238','closed',
+      tr(lang,'اكتملت مهمة صيانة','Maintenance task completed'),
+      tr(lang,'أنهى الفني إصلاح البلاغ #238.','The technician completed ticket #238.'),42)
+  ];
+  const visibleNotifications=(demoOnly?demoNotifications:storedNotifications).filter(notificationAllowed);
   const notificationsList=visibleNotifications.map(n=>({
     id:n.id,
-    icon:(n.kind==='confirmation_required'?'check':n.kind==='closed'?'check':n.kind==='cancelled'?'alert':n.kind==='removed'?'clock':'wrench') as 'check'|'clock'|'wrench'|'alert',
+    icon:(n.kind==='confirmation_required'?'check':n.kind==='closed'?'check':n.kind==='cancelled'||n.kind==='overdue'?'alert':n.kind==='removed'?'clock':'wrench') as 'check'|'clock'|'wrench'|'alert',
     kind:n.kind,
     title:n.title,
     desc:n.description,
     time:new Intl.DateTimeFormat(lang==='ar'?'ar-SA':'en-US',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}).format(new Date(n.createdAt)),
-    link:n.kind==='removed'?'/workspace/tickets':`/workspace/tickets/${n.ticketId}`,
-    unread:!n.readAt,
+    link:n.id.startsWith('demo-notif-')||n.kind==='removed'?'/workspace/tickets':`/workspace/tickets/${n.ticketId}`,
+    unread:n.id.startsWith('demo-notif-')?!demoReadIds.includes(n.id):!n.readAt,
   }));
   const unreadCount=notificationsList.filter(n=>n.unread).length;
   const markNotificationIdsRead=async(ids:string[])=>{
     if(!ids.length)return;
+    const sampleIds=ids.filter(id=>id.startsWith('demo-notif-'));
+    if(sampleIds.length)setDemoReadIds(previous=>Array.from(new Set([...previous,...sampleIds])));
+    const realIds=ids.filter(id=>!id.startsWith('demo-notif-'));
+    if(!realIds.length)return;
     try{
       await customFetch('/api/notifications/read',{
         method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ids}),
+        body:JSON.stringify({ids:realIds}),
       });
       void queryClient.invalidateQueries({queryKey:['tadaruk-notifications',user.id]});
     }catch { void queryClient.invalidateQueries({queryKey:['tadaruk-notifications',user.id]}); }
