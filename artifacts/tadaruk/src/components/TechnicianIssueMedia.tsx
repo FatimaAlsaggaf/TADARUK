@@ -31,7 +31,7 @@ function loadRealModelViewer():Promise<void>{
 
 export default function TechnicianIssueMedia({ticketId,imageUrl,lang}:{ticketId:string;imageUrl:string;lang:Lang}){
   const [open,setOpen]=useState(false);
-  const [mode,setMode]=useState<'photo'|'model'>('photo');
+  const [mode,setMode]=useState<'photo'|'model'|'demo'>('photo');
   const [zoom,setZoom]=useState(1);
   const [offset,setOffset]=useState({x:0,y:0});
   const [model,setModel]=useState<ModelStatus|null>(null);
@@ -81,6 +81,9 @@ export default function TechnicianIssueMedia({ticketId,imageUrl,lang}:{ticketId:
   },[open,mode,model]);
 
   const hasModel=isValidModel(model)&&!viewerFailed;
+  // An opt-in demo is available on this ONE seeded sink ticket only.
+  // It is a real procedural 3D scene, never claimed to be AI reconstruction.
+  const showSinkDemo=ticketId==='ticket-demo-2401';
   const reset=()=>{setZoom(1);setOffset({x:0,y:0});};
   const changeZoom=(n:number)=>setZoom(Math.min(5,Math.max(1,n)));
   const moveStart=(e:PointerEvent<HTMLDivElement>)=>{
@@ -107,6 +110,8 @@ export default function TechnicianIssueMedia({ticketId,imageUrl,lang}:{ticketId:
         <img src={imageUrl} alt={tr(lang,'صورة العطل الأصلية','Original issue photo')}/>
         <span><Maximize2 size={15}/>{tr(lang,'استعراض الصورة','View image')}</span>
       </button>
+      {showSinkDemo && <button className="tadaruk-photo-model-button" type="button" data-testid="button-technician-sink-demo-3d"
+        onClick={()=>{setMode('demo');setOpen(true);}}><Box size={17}/>{tr(lang,'تجربة نموذج 3D توضيحي','Try illustrative 3D demo')}</button>}
       {hasModel && <button className="tadaruk-photo-model-button" type="button"
         onClick={()=>{setMode('model');setOpen(true);}}><Box size={17}/>{tr(lang,'عرض ثلاثي الأبعاد','Explore 3D')}</button>}
     </div>
@@ -114,9 +119,11 @@ export default function TechnicianIssueMedia({ticketId,imageUrl,lang}:{ticketId:
       <div ref={fullscreenRef} className="tadaruk-media-dialog" onClick={e=>e.stopPropagation()} role="dialog"
         aria-modal="true" aria-label={tr(lang,'استعراض العطل','Inspect issue')}>
         <div className="tadaruk-media-toolbar">
-          <strong><Camera size={17}/>{mode==='photo'?tr(lang,'الصورة الأصلية','Original photo'):tr(lang,'استكشاف العطل ثلاثي الأبعاد','3D issue inspection')}</strong>
+          <strong><Camera size={17}/>{mode==='photo'?tr(lang,'الصورة الأصلية','Original photo'):mode==='demo'?tr(lang,'تجربة مجسم 3D توضيحي','Illustrative 3D demo'):tr(lang,'استكشاف العطل ثلاثي الأبعاد','3D issue inspection')}</strong>
           <div className="tadaruk-media-actions">
-            {hasModel&&<button onClick={()=>{setMode(mode==='photo'?'model':'photo');reset();}} type="button"><Box size={16}/>{mode==='photo'?tr(lang,'عرض 3D','View 3D'):tr(lang,'الأصلية','Original')}</button>}
+            {(hasModel||showSinkDemo)&&<button onClick={()=>{setMode('photo');reset();}} type="button"><Camera size={16}/>{tr(lang,'الصورة الأصلية','Original photo')}</button>}
+            {showSinkDemo&&mode!=='demo'&&<button onClick={()=>setMode('demo')} type="button"><Box size={16}/>{tr(lang,'مجسم تجريبي','Demo 3D')}</button>}
+            {hasModel&&mode!=='model'&&<button onClick={()=>setMode('model')} type="button"><Box size={16}/>{tr(lang,'3D حقيقي','Verified 3D')}</button>}
             {mode==='photo'&&<>
               <button onClick={()=>changeZoom(zoom+.3)} type="button" aria-label={tr(lang,'تكبير','Zoom in')}><Plus size={17}/></button>
               <button onClick={()=>{changeZoom(zoom-.3);if(zoom<=1.3)setOffset({x:0,y:0});}} type="button" aria-label={tr(lang,'تصغير','Zoom out')}><Minus size={17}/></button>
@@ -126,7 +133,14 @@ export default function TechnicianIssueMedia({ticketId,imageUrl,lang}:{ticketId:
             <button onClick={close} type="button" aria-label={tr(lang,'إغلاق','Close')}><X size={19}/></button>
           </div>
         </div>
-        {mode==='photo'?
+        {mode==='demo'?
+          <iframe
+            title={tr(lang,'نموذج تجريبي ثلاثي الأبعاد للمغسلة والتسريب','Interactive 3D sink leak demonstration')}
+            src="/demo-sink-3d.html"
+            className="tadaruk-media-demo-frame"
+            sandbox="allow-scripts allow-same-origin"
+          />
+        :mode==='photo'?
           <div className="tadaruk-media-stage" onPointerDown={moveStart} onPointerMove={move}
             onPointerUp={moveEnd} onPointerCancel={moveEnd} onWheel={wheel}
             style={{cursor:zoom>1?'grab':'zoom-in'}}>
@@ -148,6 +162,7 @@ export default function TechnicianIssueMedia({ticketId,imageUrl,lang}:{ticketId:
         }
         <div className="tadaruk-media-footer">
           {mode==='photo'?<><Move size={15}/><span>{tr(lang,'قرّب الصورة ثم اسحب للتحريك. تبقى الصورة الأصلية دون تعديل.','Zoom, then drag to pan. The original photo is unchanged.')}</span></>:
+          mode==='demo'?<span>{tr(lang,'هذا مجسم توضيحي مُعد يدويًا للتجربة، وليس توليدًا من صورة البلاغ.','This is an illustrative hand-built 3D scene, not a reconstruction of the ticket photo.')}</span>:
           <span>{tr(lang,'النموذج المولد تقديري؛ تحقق من الصورة الأصلية قبل أي إصلاح.','Generated geometry is approximate; always verify the original photo.')}</span>}
         </div>
       </div>
