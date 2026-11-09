@@ -1573,12 +1573,14 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
               <p className="compact-timeline-empty">{tr(lang, 'لا توجد أحداث مسجلة بعد.', 'No events recorded yet.')}</p>
             ) : (
               [...(ticket.history || [])].sort((a,b)=>new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime()).map((ev,index) => {
-                const isAssignment = /إسناد|إسناد|فني آخر|assigned|reassign/i.test(ev.label);
+                const isCancelled = /أُلغي|ألغى|إلغاء|cancel/i.test(ev.label);
+                const isAssignment = /إسناد|تعيين|فني آخر|assigned|reassign/i.test(ev.label);
                 const isDone = /أكمل|أكد|إغلاق|إصلاح|closed|completed|confirmed/i.test(ev.label);
-                const isStart = /بدأ|تنفيذ|work started|started/i.test(ev.label);
-                const TimelineIcon = isDone ? CheckCircle2 : isAssignment ? Users : isStart ? Wrench : Clock3;
-                return <div className={`compact-timeline-item compact-timeline-item--refined ${index===0?'is-latest':''}`} key={ev.id}>
-                  <span className={`compact-timeline-event-icon ${isDone?'is-complete':isAssignment?'is-assignment':isStart?'is-work':'is-general'}`}>
+                const isStart = /بدأ|تنفيذ|فحص|work started|started/i.test(ev.label);
+                const kind = isCancelled ? 'is-cancelled' : isDone ? 'is-complete' : isAssignment ? 'is-assignment' : isStart ? 'is-work' : 'is-general';
+                const TimelineIcon = isCancelled ? CircleAlert : isDone ? CheckCircle2 : isAssignment ? Users : isStart ? Wrench : ClipboardList;
+                return <div className={`compact-timeline-item compact-timeline-item--refined ${kind} ${index===0?'is-latest':''}`} key={ev.id}>
+                  <span className={`compact-timeline-event-icon ${kind}`}>
                     <TimelineIcon size={17}/>
                   </span>
                   <div className="compact-timeline-content">
