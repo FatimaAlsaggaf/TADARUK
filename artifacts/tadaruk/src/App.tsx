@@ -18,7 +18,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { TadarukSelect } from '@/components/TadarukSelect';
 import {
-  useHealthCheck, useListDemoUsers, useGetDemoSession, useSelectDemoAccount, useClearDemoSession, useGetOverview,
+  customFetch, useHealthCheck, useListDemoUsers, useGetDemoSession, useSelectDemoAccount, useClearDemoSession, useGetOverview,
   useListTickets, useGetTicket, usePerformTicketAction,
   useListBranches, useCreateBranch, useUpdateBranch, useListTechnicians, useCreateTechnician,
   useUpdateTechnician, useListKnowledge, useListReporterBranches, getListReporterBranchesQueryKey,
@@ -720,11 +720,7 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
   const queryClient=useQueryClient();
   const {data:storedNotifications=[],isError:notificationsError}=useQuery<UserNotification[]>({
     queryKey:['tadaruk-notifications',user.id],
-    queryFn:async ()=>{
-      const response=await fetch('/api/notifications',{credentials:'same-origin'});
-      if(!response.ok)throw new Error('Notifications could not be loaded');
-      return response.json() as Promise<UserNotification[]>;
-    },
+    queryFn:()=>customFetch<UserNotification[]>('/api/notifications'),
     refetchInterval:15000,
     refetchOnWindowFocus:true,
     retry:1,
@@ -742,11 +738,10 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
   const markNotificationIdsRead=async(ids:string[])=>{
     if(!ids.length)return;
     try{
-      const response=await fetch('/api/notifications/read',{
-        method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},
+      await customFetch('/api/notifications/read',{
+        method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({ids}),
       });
-      if(!response.ok)throw new Error('Could not update notification');
       void queryClient.invalidateQueries({queryKey:['tadaruk-notifications',user.id]});
     }catch { void queryClient.invalidateQueries({queryKey:['tadaruk-notifications',user.id]}); }
   };
