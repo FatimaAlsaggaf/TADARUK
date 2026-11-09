@@ -1938,22 +1938,8 @@
   .reporter-view .rw-new-report-stepper .rw-input-options { flex-wrap: wrap !important; }
 }
 
-/* Functional voice recorder: compact audio-responsive visualizer with brand palette. */
-/* Only animate the record-state mark, not the whole microphone button. */
-.tadaruk-voice-recording-mark {
-  display: block;
-  width: 24px;
-  height: 24px;
-  flex-shrink: 0;
-  border-radius: 5px;
-  background: #e6f3f8;
-  box-shadow: 0 2px 7px rgba(10,25,51,.16);
-  animation: tadaruk-voice-square-spin 2.5s ease-in-out infinite;
-}
-@keyframes tadaruk-voice-square-spin {
-  0%, 100% { transform: rotate(0deg); }
-  50% { transform: rotate(180deg); }
-}
+/* Voice recorder: animate the existing outer action square (no nested square).
+   The real analyser-driven waveform and microphone controls remain untouched. */
 .tadaruk-voice-stage {
   min-height: 210px;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.5);
@@ -1968,13 +1954,43 @@
   max-height: 40px;
   border-radius: 999px;
 }
-.dark .tadaruk-voice-recording-mark {
-  background: #c8e0ef;
+.tadaruk-voice-stage .tadaruk-voice-active-square {
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(135deg, #1f3363 0%, #244f79 55%, #307190 100%);
+  box-shadow: 0 10px 25px rgba(31, 51, 99, .2);
+  transform-origin: center;
+  animation: tadaruk-voice-square-spin 3.2s ease-in-out infinite;
+}
+.tadaruk-voice-stage .tadaruk-voice-active-square::before,
+.tadaruk-voice-stage .tadaruk-voice-active-square::after {
+  content: "";
+  position: absolute;
+  inset: -9px;
+  border: 2px solid rgba(48, 173, 190, .48);
+  border-radius: 22px;
+  pointer-events: none;
+  animation: tadaruk-voice-square-wave 2s ease-out infinite;
+}
+.tadaruk-voice-stage .tadaruk-voice-active-square::after {
+  animation-delay: 1s;
+}
+@keyframes tadaruk-voice-square-spin {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(180deg); }
+}
+@keyframes tadaruk-voice-square-wave {
+  0% { transform: scale(.9); opacity: .85; }
+  75%, 100% { transform: scale(1.28); opacity: 0; }
+}
+.dark .tadaruk-voice-stage .tadaruk-voice-active-square {
+  background: linear-gradient(135deg, #1f3363, #307190 65%, #48a5b2);
 }
 @media (prefers-reduced-motion: reduce) {
-  .tadaruk-voice-recording-mark { animation: none !important; }
+  .tadaruk-voice-active-square,
+  .tadaruk-voice-active-square::before,
+  .tadaruk-voice-active-square::after { animation: none !important; }
 }
-
 /* No wide outlined bar around the voice button: one centered action and hint. */
 .reporter-view .rw-new-report-stepper .rw-voice-inline {
   display: flex !important;
