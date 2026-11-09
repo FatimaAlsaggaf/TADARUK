@@ -141,12 +141,8 @@ export function ReporterHomePage({ lang, user }: ReporterPageProps) {
     />
     <section className="rw-home-intro rw-home-intro--enhanced" aria-label={text(lang, 'بدء بلاغ صيانة', 'Start a maintenance report')}>
       <div className="rw-home-copy">
-        <span className="rw-home-kicker"><Sparkles size={15}/>{text(lang, 'بلاغات صيانة أسرع وأوضح', 'Smarter maintenance reporting')}</span>
         <h2>{text(lang, 'كل مشكلة لها حل يبدأ ببلاغك', 'Every fix starts with your report')}</h2>
         <p>{text(lang, 'صف المشكلة مرة واحدة، وتابعها حتى تأكيد الإصلاح.', 'Describe the problem once and follow it through to confirmation.')}</p>
-        {waitingCount > 0 && <Link href="/workspace/tickets?status=awaiting_confirmation" className="rw-hero-awaiting" data-testid="link-hero-pending-confirmation">
-          <ShieldCheck size={17}/>{text(lang, `لديك ${waitingCount} بلاغ بانتظار تأكيد الإصلاح`, `${waitingCount} report(s) need your confirmation`)}
-        </Link>}
         <Link href="/workspace/tickets/new" className="rw-button" data-testid="link-start-report">
           {text(lang, 'أخبرنا بالمشكلة', 'Tell us about it')}
           {lang === 'ar' ? <ArrowLeft size={16}/> : <ArrowRight size={16}/>}
@@ -1055,10 +1051,6 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
               {/* Photo preview in review */}
               {photo ? (
                 <div className="rw-review-photo-block rw-review-photo-block--reference" data-testid="preview-review-photo">
-                  <span className="rw-preview-label rw-review-attachment-label">
-                    <ImagePlus size={17}/>
-                    {text(lang, 'المرفقات (1)', 'Attachments (1)')}
-                  </span>
                   <div className="rw-photo-preview-centered">
                     <div className="rw-photo-hover-card" style={{ maxWidth: '440px', marginTop: '8px' }}>
                       <img
