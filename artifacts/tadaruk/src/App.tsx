@@ -1868,7 +1868,7 @@ function BranchesPage({lang}:{lang:Lang}) {
   const {data:branches,isLoading,isError,refetch}=useListBranches();
   const {data:techs}=useListTechnicians();
   const safeBranches = Array.isArray(branches) && branches.length > 0 ? branches : (FALLBACK_BRANCHES as unknown as Branch[]);
-  const safeTechs = Array.isArray(techs) && techs.length > 0 ? techs : (FALLBACK_TECHNICIANS as unknown as Technician[]);
+  const safeTechs = Array.isArray(techs) ? techs : (FALLBACK_TECHNICIANS as unknown as Technician[]);
   const create=useCreateBranch();
   const update=useUpdateBranch();
   const query=useQueryClient();
