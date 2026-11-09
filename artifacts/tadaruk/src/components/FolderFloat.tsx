@@ -521,10 +521,6 @@ export default function FolderFloat({
             <span className="folder-paper-line folder-paper-line-short" />
           </span>
           <span className="folder-float__front" aria-hidden="true">
-            <span className="folder-float__badge">
-              <span className="folder-badge-dot" />
-              <span>أرشيف البلاغات</span>
-            </span>
             <span className="folder-float__label">{label}</span>
             {sub ? <span className="folder-float__sub">{sub}</span> : null}
           </span>
