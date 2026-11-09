@@ -65,30 +65,30 @@ export function TicketCancellationAction({
         <button
           type="button"
           className="ticket-cancel-trigger"
-          aria-label={tr(lang, `حذف البلاغ ${ticketNumber}`, `Delete report ${ticketNumber}`)}
+          aria-label={tr(lang, `إلغاء البلاغ ${ticketNumber}`, `Cancel report ${ticketNumber}`)}
           data-testid={`button-cancel-ticket-${ticketId}`}
         >
           <Trash2 size={16} aria-hidden="true" />
-          <span>{tr(lang, "حذف البلاغ", "Delete report")}</span>
+          <span>{tr(lang, "إلغاء البلاغ", "Cancel report")}</span>
         </button>
       </AlertDialogTrigger>
       <AlertDialogContent className="ticket-cancel-dialog" dir={lang === "ar" ? "rtl" : "ltr"}>
         <AlertDialogHeader>
-          <AlertDialogTitle>{tr(lang, "حذف البلاغ؟", "Delete report?")}</AlertDialogTitle>
+          <AlertDialogTitle>{tr(lang, "تأكيد إلغاء البلاغ؟", "Confirm report cancellation?")}</AlertDialogTitle>
           <AlertDialogDescription>
             {manager
-              ? tr(lang, "سيُلغى البلاغ من السجلات النشطة مع الاحتفاظ بسجل الإجراء.", "This removes the report from active records while keeping its audit history.")
-              : tr(lang, "سيُزال البلاغ من قائمتك. هل تريد المتابعة؟", "This will remove the report from your list. Do you want to continue?")}
+              ? tr(lang, "يمكن إلغاء البلاغ قبل بدء العمل فقط. سيبقى محفوظًا في سجل المتابعة.", "You can cancel only before work starts. The audit history is kept.")
+              : tr(lang, "يمكن إلغاء البلاغ الجديد قبل بدء الصيانة. لن يُحذف سجله.", "You can cancel a new ticket before maintenance starts. Its history remains.")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         {action.isError && (
           <p className="ticket-cancel-error" role="alert" data-testid="status-cancel-ticket-error">
-            {tr(lang, "تعذر حذف البلاغ. ربما تغيّرت حالته؛ حدّث الصفحة وحاول مجدداً.", "Could not delete the report. Its state may have changed; refresh and try again.")}
+            {tr(lang, "تعذر إلغاء البلاغ. ربما بدأ العمل عليه؛ حدّث الصفحة.", "Cannot cancel this ticket. Work may have started; refresh the page.")}
           </p>
         )}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={action.isPending} className="ticket-cancel-keep">
-            {tr(lang, "إلغاء", "Keep report")}
+            {tr(lang, "تراجع", "Keep report")}
           </AlertDialogCancel>
           <AlertDialogAction
             disabled={action.isPending}
@@ -98,7 +98,7 @@ export function TicketCancellationAction({
           >
             <Trash2 size={15} aria-hidden="true" />
             {action.isPending
-              ? tr(lang, "جارٍ الحذف…", "Deleting…")
+              ? tr(lang, "جارٍ الإلغاء…", "Cancelling…")
               : tr(lang, "حذف البلاغ", "Delete report")}
           </AlertDialogAction>
         </AlertDialogFooter>
