@@ -895,7 +895,10 @@ export function TechnicianTicketDetail({
                 transform:`perspective(1000px) rotateY(${depthPosition.x*7}deg) rotateX(${-depthPosition.y*6}deg)`,
               } : undefined}>
               <img src={expandedPhoto} alt={tr(lang,'صورة العطل الأصلية دون تعديل','Unmodified original issue photo')}
-                className="tech-depth-image" draggable={false}/>
+                className="tech-depth-image" draggable={false}
+                style={depthView && !reducedDepthMotion ? {
+                  transform:`translate3d(${-depthPosition.x*7}px,${-depthPosition.y*5}px,0) scale(1.025)`,
+                } : undefined}/>
             </div>
             <p className="tech-depth-caption">
               {depthView
