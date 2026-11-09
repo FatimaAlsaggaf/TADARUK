@@ -25,9 +25,9 @@ export default function AuthMorph({lang,setLang,dark,setDark}:{lang:Lang;setLang
    {name:tr(lang,'المبلّغ','Reporter'),note:tr(lang,'تقديم بلاغ','Report an issue'),icon:ClipboardList,role:'reporter'},
  ];
  return <main className="auth-morph-page" dir={lang==='ar'?'rtl':'ltr'}>
-  <DarkVeil className="auth-morph-dark-veil" color={dark?'#4ba7c7':'#2c85ae'} speed={0.64} scale={1.05} flow={1.3} warp={0.16} variation={0.28} brightness={dark?1.24:1.72} sheen={0.55} glow={0.84} grain={0.02} quality={0.55} mouseInteraction mouseStrength={0.52} intro fade={0.13} opacity={dark?0.92:0.86} lightMode={!dark} dpr={1.4}/>
+  <DarkVeil className="auth-morph-dark-veil" color={dark?'#4ba7c7':'#2c85ae'} speed={0.64} scale={1.05} flow={1.3} warp={0.16} variation={0.28} brightness={dark?1.24:1.72} sheen={0.55} glow={0.84} grain={0.02} quality={0.55} mouseInteraction mouseStrength={0.52} intro fade={0.13} opacity={dark?0.64:0.28} lightMode={!dark} dpr={1.4}/>
   <header className="auth-morph-header">
-    <Link href="/" className="auth-morph-brand" aria-label={tr(lang,'تدارك - الرئيسية','Tadaruk - Home')}><img src={`${import.meta.env.BASE_URL}brand-logo.png`} alt="تدارك TADARUK" /></Link>
+    <Link href="/" className="auth-morph-brand" aria-label={tr(lang,'تدارك - الرئيسية','Tadaruk - Home')}><img src={`${import.meta.env.BASE_URL}${dark?'brand-logo-dark.png':'brand-logo.png'}`} alt="تدارك TADARUK" /></Link>
     <div className="nav-actions auth-morph-header-actions">
       <button className="nav-lang" type="button" onClick={()=>setLang(lang==='ar'?'en':'ar')} aria-label={tr(lang,'التبديل إلى الإنجليزية','Switch to Arabic')}><Languages size={16}/><span>{lang==='ar'?'English':'العربية'}</span></button>
       <SunMoonThemeToggle className="landing-theme-toggle" theme={dark?'dark':'light'} onThemeChange={theme=>setDark(theme==='dark')} aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')} data-testid="theme-toggle-auth" size={40} duration={860}/>
@@ -59,7 +59,9 @@ export default function AuthMorph({lang,setLang,dark,setDark}:{lang:Lang;setLang
     <div className="auth-morph-panels" aria-hidden="false">
       <div className="auth-morph-panel auth-morph-left">
         <div className="auth-morph-panel-content">
-         <img className="auth-morph-panel-mark" src={`${import.meta.env.BASE_URL}brand-mark-dark.png`} alt="" aria-hidden="true"/>
+         <img className="auth-morph-panel-mark" src={`${import.meta.env.BASE_URL}${dark?'brand-mark-dark.png':'brand-mark.png'}`} alt="" aria-hidden="true"/>
+          <h2>{tr(lang,'جديد في تدارك؟','New to Tadaruk?')}</h2>
+          <p>{tr(lang,'أنشئ حساب المنشأة وابدأ بتنظيم الفروع وفريق الصيانة.','Create your organization and manage branches and maintenance staff.')}</p>
          <button type="button" onClick={()=>toggle(true)} tabIndex={signup?-1:0}>{tr(lang,'إنشاء حساب منشأة','Create account')}</button>
         </div>
       </div>

@@ -171,3 +171,49 @@
   .tadaruk-media-mode-tabs button{padding:9px 10px;font-size:11.5px;}
   .tadaruk-approx-scene{height:60dvh;min-height:290px;}
 }
+
+
+/* Fullscreen must override the smaller tabbed viewer's fixed 820px/525px caps. */
+.tadaruk-media-dialog--tabs:fullscreen,
+.tadaruk-media-dialog--tabs.tadaruk-media-dialog--expanded{
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  max-width:none !important;
+  height:100dvh !important;
+  max-height:100dvh !important;
+  margin:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  overflow:hidden;
+  z-index:2100;
+}
+.tadaruk-media-dialog--tabs:fullscreen .tadaruk-approx-scene,
+.tadaruk-media-dialog--tabs.tadaruk-media-dialog--expanded .tadaruk-approx-scene,
+.tadaruk-media-dialog--tabs:fullscreen .tadaruk-photo-stage-wrap,
+.tadaruk-media-dialog--tabs.tadaruk-media-dialog--expanded .tadaruk-photo-stage-wrap,
+.tadaruk-media-dialog--tabs:fullscreen .tadaruk-media-stage--model,
+.tadaruk-media-dialog--tabs.tadaruk-media-dialog--expanded .tadaruk-media-stage--model{
+  flex:1 1 auto !important;
+  width:100% !important;
+  height:auto !important;
+  max-height:none !important;
+  min-height:0 !important;
+}
+.tadaruk-media-dialog--tabs:fullscreen .tadaruk-media-stage,
+.tadaruk-media-dialog--tabs.tadaruk-media-dialog--expanded .tadaruk-media-stage{
+  width:100% !important;
+  height:100% !important;
+  min-height:0 !important;
+  max-height:none !important;
+}
+.tadaruk-media-dialog--tabs:fullscreen .tadaruk-media-stage>img,
+.tadaruk-media-dialog--tabs.tadaruk-media-dialog--expanded .tadaruk-media-stage>img{
+  max-width:100% !important;
+  max-height:100% !important;
+  object-fit:contain;
+}
+.tadaruk-media-dialog--tabs:fullscreen .tadaruk-approx-frame,
+.tadaruk-media-dialog--tabs.tadaruk-media-dialog--expanded .tadaruk-approx-frame{
+  width:100%;height:100%;
+}
