@@ -389,3 +389,9 @@
     grid-template-columns:minmax(0,1fr) 230px;
   }
 }
+
+
+/* QRCode.js renders an img plus a hidden canvas on some browsers;
+   never show two stacked codes. */
+.tadaruk-invite-qr-image:has(img) canvas{display:none !important}
+.tadaruk-invite-qr-image img{display:block !important}
