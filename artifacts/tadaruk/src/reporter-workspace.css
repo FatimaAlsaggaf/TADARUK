@@ -2807,9 +2807,6 @@
   border-radius:22px !important;
   box-shadow:0 14px 34px rgba(31,51,99,.045);
 }
-.reporter-view .rw-new-report-stepper .stepper__pane {
-  padding:0 !important;
-}
 .reporter-view .rw-new-report-stepper .rw-review-ready-head--reference {
   display:flex !important;
   justify-content:space-between;
