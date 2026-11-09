@@ -1547,12 +1547,12 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
           </div>
           <h1>{ticket.title}</h1>
           <p className="detail-description">{ticket.description}</p>
-          <div className="detail-properties" aria-label={tr(lang,'بيانات البلاغ','Report details')}>
-            <span><Building2 size={16}/>{ticket.branchName}</span>
-            <span><MapPin size={16}/>{ticket.location}</span>
-            <span><Wrench size={16}/>{classificationText(ticket.specialization,lang)}</span>
-            <span><ClipboardList size={16}/>{classificationText(ticket.category,lang)}</span>
-            <span><Clock3 size={16}/>{dateText(ticket.createdAt,lang)}</span>
+          <div className="detail-properties detail-properties--labeled" aria-label={tr(lang,'بيانات البلاغ','Report details')}>
+            <span><Building2 size={16}/><span><small>{tr(lang,'الفرع','Branch')}</small><b>{ticket.branchName}</b></span></span>
+            <span><MapPin size={16}/><span><small>{tr(lang,'الموقع','Location')}</small><b>{ticket.location}</b></span></span>
+            <span><Wrench size={16}/><span><small>{tr(lang,'الفني المطلوب','Required technician')}</small><b>{classificationText(ticket.specialization,lang)}</b></span></span>
+            {ticket.category !== ticket.specialization && <span><ClipboardList size={16}/><span><small>{tr(lang,'نوع العطل','Issue category')}</small><b>{classificationText(ticket.category,lang)}</b></span></span>}
+            <span><Clock3 size={16}/><span><small>{tr(lang,'تاريخ البلاغ','Reported')}</small><b>{dateText(ticket.createdAt,lang)}</b></span></span>
           </div>
           {(ticket.imageUrl||localPhoto)&&<PhotoAttachmentCard imageUrl={ticket.imageUrl||localPhoto} lang={lang} variant="detail" localOnly={!ticket.imageUrl&&Boolean(localPhoto)}/>}
           {localExtraPhoto && <div className="mt-3"><span className="mb-2 block text-xs font-semibold text-slate-500">{tr(lang,'الصورة الإضافية (محفوظة على هذا الجهاز)','Additional photo (saved on this device)')}</span><PhotoAttachmentCard imageUrl={localExtraPhoto} lang={lang} variant="detail" localOnly/></div>}
@@ -1573,19 +1573,25 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
             {(!ticket.history || ticket.history.length === 0) ? (
               <p className="compact-timeline-empty">{tr(lang, 'لا توجد أحداث مسجلة بعد.', 'No events recorded yet.')}</p>
             ) : (
-              (ticket.history || []).map(ev => (
-                <div className="compact-timeline-item" key={ev.id}>
-                  <span className="compact-timeline-bullet" />
+              [...(ticket.history || [])].sort((a,b)=>new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime()).map((ev,index) => {
+                const isAssignment = /إسناد|إسناد|فني آخر|assigned|reassign/i.test(ev.label);
+                const isDone = /أكمل|أكد|إغلاق|إصلاح|closed|completed|confirmed/i.test(ev.label);
+                const isStart = /بدأ|تنفيذ|work started|started/i.test(ev.label);
+                const TimelineIcon = isDone ? CheckCircle2 : isAssignment ? Users : isStart ? Wrench : Clock3;
+                return <div className={`compact-timeline-item compact-timeline-item--refined ${index===0?'is-latest':''}`} key={ev.id}>
+                  <span className={`compact-timeline-event-icon ${isDone?'is-complete':isAssignment?'is-assignment':isStart?'is-work':'is-general'}`}>
+                    <TimelineIcon size={17}/>
+                  </span>
                   <div className="compact-timeline-content">
                     <div className="compact-timeline-row">
                       <b>{ev.label}</b>
-                      <time>{dateText(ev.createdAt, lang)}</time>
+                      <time dateTime={ev.createdAt}>{new Intl.DateTimeFormat(lang==='ar'?'ar-SA':'en-US',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'}).format(new Date(ev.createdAt))}</time>
                     </div>
                     <small>{ev.actorName}</small>
                     {ev.note && <p className="compact-timeline-note">{ev.note}</p>}
                   </div>
-                </div>
-              ))
+                </div>;
+              })
             )}
           </div>
         </section>
