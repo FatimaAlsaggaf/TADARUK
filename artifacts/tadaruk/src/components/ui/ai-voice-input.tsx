@@ -540,13 +540,20 @@ export function AiVoiceInput({
 
           {/* Central Recording Visualizer Stage */}
           <div className="tadaruk-voice-stage relative my-3 flex flex-col items-center justify-center rounded-2xl border border-slate-200/80 bg-slate-50/80 p-5 dark:border-slate-700 dark:bg-slate-900/50">
-            {/* Pulsing Central Mic Orb */}
-            <div className="relative mb-3 flex items-center justify-center">
+            {/* Three staggered echoes surround the compact rotating recording square. */}
+            <div className="tadaruk-voice-square-wrap relative mb-3 flex items-center justify-center">
+              {isRecording && (
+                <div className="tadaruk-voice-echoes" aria-hidden="true">
+                  <span className="tadaruk-voice-echo tadaruk-voice-echo--one" />
+                  <span className="tadaruk-voice-echo tadaruk-voice-echo--two" />
+                  <span className="tadaruk-voice-echo tadaruk-voice-echo--three" />
+                </div>
+              )}
               <button
                 type="button"
                 onClick={isRecording ? stop : () => void start()}
                 className={cn(
-                  "relative flex h-16 w-16 items-center justify-center rounded-2xl shadow-xl transition-all duration-300",
+                  "relative z-10 flex h-16 w-16 items-center justify-center rounded-2xl shadow-xl transition-all duration-300",
                   isRecording
                     ? "tadaruk-voice-active-square text-[#56F4EF]"
                     : stage === "processing"
@@ -567,7 +574,7 @@ export function AiVoiceInput({
 
             {/* Waveform Visualizer Bars */}
             <div
-              className="tadaruk-voice-waveform flex h-10 w-full max-w-xs items-center justify-center gap-[3px] px-2"
+              className={cn("tadaruk-voice-waveform flex h-10 w-full max-w-xs items-center justify-center gap-[3px] px-2", isRecording && "tadaruk-voice-waveform--recording")}
               role="img"
               aria-label={text(lang, "موجة مستوى الصوت", "Audio waveform")}
             >
