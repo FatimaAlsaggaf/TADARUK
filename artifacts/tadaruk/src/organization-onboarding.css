@@ -335,7 +335,7 @@
 .tadaruk-invite-qr-light{
   position:absolute;
   inset:-3px;
-  z-index:-1;
+  z-index:0;
   border-radius:22px;
   padding:3px;
   pointer-events:none;
@@ -349,6 +349,7 @@
 }
 @keyframes tadaruk-invite-orbit{to{transform:rotate(360deg)}}
 .tadaruk-invite-qr-link{
+  z-index:1;
   display:block;position:relative;
   width:148px;height:148px;
   text-decoration:none;
