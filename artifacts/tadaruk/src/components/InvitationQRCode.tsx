@@ -1,4 +1,5 @@
 import {useEffect,useRef,useState} from 'react';
+import {toCompactQrInviteUrl} from '../invitationQrUrl';
 
 type Generator={clear:()=>void;makeCode:(text:string)=>void};
 type QRCtor={
@@ -6,7 +7,7 @@ type QRCtor={
     text:string;width:number;height:number;colorDark:string;colorLight:string;
     correctLevel:number
   }):Generator;
-  CorrectLevel:{M:number;H:number};
+  CorrectLevel:{M:number;Q:number;H:number};
 };
 declare global {interface Window {QRCode?:QRCtor}}
 let pending:Promise<boolean>|null=null;
@@ -26,10 +27,11 @@ function loadGenerator():Promise<boolean>{
 export default function InvitationQRCode({url,label}:{url:string;label:string}){
   const holder=useRef<HTMLDivElement>(null);
   const [available,setAvailable]=useState(true);
+  const qrUrl=toCompactQrInviteUrl(url);
   useEffect(()=>{
     let active=true;
     const element=holder.current;
-    if(!element||!url)return;
+    if(!element||!qrUrl)return;
     element.replaceChildren();
     void loadGenerator().then(ok=>{
       if(!active||!element.isConnected)return;
@@ -37,17 +39,25 @@ export default function InvitationQRCode({url,label}:{url:string;label:string}){
       if(!ok||!window.QRCode)return;
       element.replaceChildren();
       new window.QRCode(element,{
-        text:url,width:192,height:192,
+        text:qrUrl,width:192,height:192,
         colorDark:'#183c5e',colorLight:'#ffffff',
-        correctLevel:window.QRCode.CorrectLevel.M
+        correctLevel:window.QRCode.CorrectLevel.Q
       });
     });
     return()=>{active=false;element.replaceChildren()};
-  },[url]);
+  },[qrUrl]);
   return <div className="tadaruk-invite-qr" aria-label={label}>
-    <div className="tadaruk-invite-qr-light" aria-hidden="true"/>
-    <a href={url} className="tadaruk-invite-qr-link" aria-label={label}
-      title={label}>
+    {/* Trace the exact rounded-card perimeter — never rotate an oversized gradient box. */}
+    <svg className="tadaruk-invite-qr-outline" viewBox="0 0 224 224"
+      preserveAspectRatio="none" aria-hidden="true" focusable="false">
+      <rect className="tadaruk-invite-qr-track" x="2" y="2" width="220" height="220"
+        rx="19" pathLength="100"/>
+      <rect className="tadaruk-invite-qr-trace-glow" x="2" y="2" width="220" height="220"
+        rx="19" pathLength="100"/>
+      <rect className="tadaruk-invite-qr-trace-core" x="2" y="2" width="220" height="220"
+        rx="19" pathLength="100"/>
+    </svg>
+    <a href={qrUrl} className="tadaruk-invite-qr-link" aria-label={label} title={label}>
       <div ref={holder} className="tadaruk-invite-qr-image" role="img" aria-label={label}/>
       <span className="tadaruk-invite-qr-logo" aria-hidden="true">
         <img src={`${import.meta.env.BASE_URL}brand-mark.png`} alt=""/>

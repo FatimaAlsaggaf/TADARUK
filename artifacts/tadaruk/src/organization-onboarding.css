@@ -318,80 +318,143 @@
 }
 
 
-/* Animated branded invitation QR, modeled after the supplied rotating-light reference.
-   The glow stays outside the actual QR quiet zone for reliable scanning. */
+/* Refined invitation QR — same moving SVG-edge-light technique as Join us.
+   Both reporter and technician invitations use this single shared component. */
 .tadaruk-invite-qr{
   position:relative !important;
   isolation:isolate;
+  display:grid !important;
+  place-items:center;
+  flex:0 0 220px;
   width:220px !important;
+  height:220px !important;
   min-height:220px !important;
-  overflow:visible;
+  padding:14px !important;
+  margin:4px !important;
+  overflow:visible !important;
   border:0 !important;
   border-radius:19px !important;
-  padding:14px !important;
   background:#fff !important;
-  box-shadow:0 15px 30px #183f6b25,0 1px 8px #21405d1c;
+  box-shadow:0 12px 32px rgba(28,68,111,.14),0 2px 8px rgba(20,55,94,.08) !important;
+  box-sizing:border-box;
 }
-.tadaruk-invite-qr-light{
+.tadaruk-invite-qr-outline{
   position:absolute;
-  inset:-3px;
-  z-index:0;
-  border-radius:22px;
-  padding:3px;
+  inset:-2px;
+  z-index:2;
+  width:calc(100% + 4px);
+  height:calc(100% + 4px);
   pointer-events:none;
-  background:conic-gradient(from 0deg,transparent 0deg,transparent 225deg,
-    #5f83d0 267deg,#eafcff 280deg,#ffffff 293deg,#6d8bff 310deg,transparent 342deg);
-  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
-  -webkit-mask-composite:xor;
-  mask-composite:exclude;
-  animation:tadaruk-invite-orbit 3.6s linear infinite;
-  filter:drop-shadow(0 0 7px #9cbeffb8);
+  overflow:visible;
 }
-@keyframes tadaruk-invite-orbit{to{transform:rotate(360deg)}}
+.tadaruk-invite-qr-outline rect{
+  fill:none;
+  vector-effect:non-scaling-stroke;
+}
+.tadaruk-invite-qr-track{
+  stroke:#d6e5f2;
+  stroke-width:1.5;
+}
+.tadaruk-invite-qr-trace-glow,
+.tadaruk-invite-qr-trace-core{
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-dasharray:10 90;
+  stroke-dashoffset:0;
+  animation:tadaruk-qr-border-trace 3s linear infinite;
+}
+.tadaruk-invite-qr-trace-glow{
+  stroke:#709dff;
+  stroke-width:4;
+  filter:drop-shadow(0 0 3px #718dff) drop-shadow(0 0 7px rgba(91,135,255,.75));
+}
+.tadaruk-invite-qr-trace-core{
+  stroke:#f8fdff;
+  stroke-width:1.6;
+  filter:drop-shadow(0 0 2px #d4f6ff);
+}
+@keyframes tadaruk-qr-border-trace{
+  to{stroke-dashoffset:-100}
+}
 .tadaruk-invite-qr-link{
+  position:relative;
   z-index:1;
-  display:block;position:relative;
-  width:192px;height:192px;
-  text-decoration:none;
-  border-radius:4px;
+  display:block;
+  width:192px;
+  height:192px;
   background:#fff;
-  outline-offset:5px;
+  border-radius:4px;
+  outline-offset:7px;
+  text-decoration:none;
 }
-.tadaruk-invite-qr-link:focus-visible{outline:3px solid #326ca2}
-.tadaruk-invite-qr-image{height:192px;width:192px;display:block}
+.tadaruk-invite-qr-link:focus-visible{
+  outline:3px solid #327bb1;
+}
+.tadaruk-invite-qr-image{
+  display:block;
+  width:192px;
+  height:192px;
+  max-width:none;
+}
 .tadaruk-invite-qr-image img,
 .tadaruk-invite-qr-image canvas{
-  display:block !important;
+  display:block;
   width:192px !important;
   height:192px !important;
+  max-width:none !important;
   image-rendering:pixelated;
 }
+.tadaruk-invite-qr-image:has(img) canvas{
+  display:none !important;
+}
 .tadaruk-invite-qr-logo{
-  position:absolute;left:50%;top:50%;
-  transform:translate(-50%,-50%);
-  width:26px;height:26px;
+  position:absolute;
+  top:50%;left:50%;
   z-index:2;
-  display:grid;place-items:center;
+  display:grid;
+  place-items:center;
+  transform:translate(-50%,-50%);
+  width:32px;
+  height:32px;
   padding:4px;
-  border-radius:7px;
+  border-radius:8px;
   background:#fff;
-  box-shadow:0 0 0 2px #fff;
+  box-shadow:0 0 0 2px #fff,0 1px 3px rgba(20,54,90,.15);
   pointer-events:none;
 }
-.tadaruk-invite-qr-logo img{width:100%;height:100%;object-fit:contain}
-.dark .tadaruk-invite-qr{background:#fff !important}
-@media(prefers-reduced-motion:reduce){
-  .tadaruk-invite-qr-light{animation:none;transform:rotate(290deg)}
+.tadaruk-invite-qr-logo img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
 }
-
+.tadaruk-invite-qr>small{
+  position:absolute;
+  top:calc(100% + 10px);
+  left:0;
+  right:0;
+  color:#42667c;
+  font-size:11px;
+  text-align:center;
+}
+.dark .tadaruk-invite-qr{
+  background:#fff !important;
+  box-shadow:0 14px 40px rgba(0,0,0,.3) !important;
+}
 @media(min-width:651px){
   .org-simple-invitations .org-invite-share-layout{
     grid-template-columns:minmax(0,1fr) 230px;
   }
 }
-
-
-/* QRCode.js renders an img plus a hidden canvas on some browsers;
-   never show two stacked codes. */
-.tadaruk-invite-qr-image:has(img) canvas{display:none !important}
-.tadaruk-invite-qr-image img{display:block !important}
+@media(max-width:650px){
+  .tadaruk-invite-qr{margin:4px auto !important}
+}
+@media(prefers-reduced-motion:reduce){
+  .tadaruk-invite-qr-trace-glow,
+  .tadaruk-invite-qr-trace-core{
+    animation:none !important;
+    stroke-dasharray:100 0;
+    stroke-width:2;
+    filter:none;
+  }
+}
