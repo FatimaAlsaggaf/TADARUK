@@ -1502,39 +1502,12 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
     );
   }
 
-  const techStage = ticket.status === 'closed' ? 4
-    : ticket.status === 'awaiting_confirmation' ? 3
-    : ticket.status === 'in_progress' ? 2
-    : 1;
-
   return <div className="page-enter">
     <div className="detail-back">
       <Link href="/workspace/tickets">
         <ArrowRight size={16}/>
         {tr(lang,'العودة إلى البلاغات','Back to tickets')}
       </Link>
-      <span className="font-semibold text-slate-500">{ticket.number}</span>
-    </div>
-
-    {/* Stage Progress Pipeline */}
-    <div className="ticket-stages-bar" aria-label={tr(lang, 'مراحل البلاغ', 'Ticket stages')}>
-      {[
-        { step: 1, ar: 'استلام الطلب', en: 'Request received' },
-        { step: 2, ar: 'قيد التنفيذ', en: 'In progress' },
-        { step: 3, ar: 'تقييم الإصلاح', en: 'Repair assessment' },
-        { step: 4, ar: 'تم الإغلاق', en: 'Closed' },
-      ].map(st => {
-        const isPast = techStage > st.step;
-        const isCurrent = techStage === st.step;
-        return (
-          <div key={st.step} className={`ticket-stage-step ${isPast ? 'is-past' : ''} ${isCurrent ? 'is-current' : ''}`}>
-            <span className="ticket-stage-dot">
-              {isPast ? <Check size={13} strokeWidth={3} /> : st.step}
-            </span>
-            <span className="ticket-stage-label">{tr(lang, st.ar, st.en)}</span>
-          </div>
-        );
-      })}
     </div>
 
     <div className="detail-layout">
@@ -1548,7 +1521,7 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
           </div>
           <h1>{ticket.title}</h1>
           <p className="detail-description">{ticket.description}</p>
-          <div className="detail-properties">
+          <div className="detail-properties" aria-label={tr(lang,'بيانات البلاغ','Report details')}>
             <span><Building2 size={16}/>{ticket.branchName}</span>
             <span><MapPin size={16}/>{ticket.location}</span>
             <span><Wrench size={16}/>{classificationText(ticket.specialization,lang)}</span>
@@ -1795,9 +1768,7 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
           {/* MANAGER WORKFLOW */}
           {manager && ticket.status !== 'closed' && ticket.status !== 'cancelled' && (
             <>
-              <p className="text-xs text-slate-500 mb-2">
-                {ticket.technicianName ? tr(lang, `مسند إلى ${ticket.technicianName}`, `Assigned to ${ticket.technicianName}`) : tr(lang, 'البلاغ بانتظار الإسناد.', 'This ticket is awaiting assignment.')}
-              </p>
+
               <div className="field-label">
                 <span className="field-label-caption">{tr(lang, 'إعادة الإسناد إلى', 'Reassign to')}</span>
                 <TadarukSelect
