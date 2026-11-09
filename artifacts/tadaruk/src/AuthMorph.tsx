@@ -74,7 +74,7 @@ export default function AuthMorph({lang,setLang,dark,setDark}:{lang:Lang;setLang
        <button type="submit" className="auth-morph-primary" tabIndex={signup?-1:0}>{tr(lang,'دخول','Sign in')}</button>
        <button type="button" className="auth-morph-forgot" onClick={()=>setShowRecovery(v=>!v)} tabIndex={signup?-1:0} aria-expanded={showRecovery}>{tr(lang,'نسيت كلمة المرور؟','Forgot your password?')}</button>
        {showRecovery&&<p className="auth-morph-login-notice" role="status">{tr(lang,'في النسخة التجريبية، اطلب إعادة تعيين كلمة المرور من مدير المنشأة؛ استعادة البريد لم تُفعّل بعد.','In this demo, contact your organization manager to reset access. Email recovery is not yet enabled.')}</p>}
-       {loginNotice&&<p className="auth-morph-login-notice" role="status">{loginNotice}</p>
+       {loginNotice&&<p className="auth-morph-login-notice" role="status">{loginNotice}</p>}
        <div className="auth-morph-demo">
          <small>{tr(lang,'الدخول بحساب تجريبي','Try a demo account')}</small>
          <div className="auth-morph-roles">{roles.map(({name,role,note,icon:Icon})=><button type="button" key={role} tabIndex={signup?-1:0} className="auth-morph-role" onClick={()=>enterDemo(role)} disabled={selectDemo.isPending} title={note}><span><Icon size={23}/></span><b>{name}</b><small>{note}</small></button>)}</div>
