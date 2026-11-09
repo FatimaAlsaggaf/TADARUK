@@ -138,7 +138,9 @@ export default function TechnicianIssueMedia({ticketId,imageUrl,lang}:{ticketId:
             title={tr(lang,'نموذج تجريبي ثلاثي الأبعاد للمغسلة والتسريب','Interactive 3D sink leak demonstration')}
             src="/demo-sink-3d.html"
             className="tadaruk-media-demo-frame"
-            sandbox="allow-scripts allow-same-origin"
+            sandbox="allow-scripts"
+            allow="fullscreen"
+            allowFullScreen
           />
         :mode==='photo'?
           <div className="tadaruk-media-stage" onPointerDown={moveStart} onPointerMove={move}
