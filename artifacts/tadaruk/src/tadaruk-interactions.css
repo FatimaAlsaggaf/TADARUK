@@ -9598,3 +9598,43 @@ body:has(.dark .reporter-shell) #root {
  .app-shell .compact-timeline-item--refined{gap:9px !important;}
  .app-shell .compact-timeline-item--refined .compact-timeline-row time{font-size:10.5px !important;}
 }
+
+/* Reporter ticket polish: coherent navy-to-teal accents and reduced visual bulk. */
+.app-shell .detail-layout {gap:17px !important;}
+.app-shell .detail-main {gap:13px !important;}
+.app-shell .detail-hero {
+  background:#fff !important;
+  border:1px solid #e0eaf4 !important;
+  box-shadow:0 8px 28px rgba(28,64,103,.042) !important;
+}
+.app-shell .detail-properties--labeled {
+  gap:9px !important;justify-content:flex-start !important;
+}
+.app-shell .detail-properties--labeled > span {
+  flex:1 1 175px !important;max-width:none !important;
+  min-width:0 !important;padding:10px 12px !important;
+  border-color:#dceaf4 !important;border-radius:11px !important;
+  background:#f6faff !important;
+}
+.app-shell .detail-properties--labeled > span b {
+  overflow-wrap:anywhere;
+}
+.app-shell .ticket-stage-step.is-past:not(:last-child)::after {
+  background:linear-gradient(90deg,#307190,#1f3363) !important;
+}
+.app-shell .ticket-stage-step.is-past .ticket-stage-dot {
+  background:#307190 !important;box-shadow:none !important;color:#fff !important;
+}
+.app-shell .ticket-stage-step.is-current .ticket-stage-dot {
+  background:#1f3363 !important;color:#fff !important;
+}
+.app-shell .ticket-stage-step.is-past .ticket-stage-label {color:#306b91 !important;}
+.app-shell .compact-timeline-event-icon.is-complete {
+  background:#e3f4fa !important;border-color:#307190 !important;
+}
+.dark .app-shell .detail-hero {background:#17293d !important;border-color:#3e5771 !important;}
+.dark .app-shell .detail-properties--labeled > span {background:#21394f !important;border-color:#385876 !important;}
+@media(max-width:650px){
+ .app-shell .detail-layout{grid-template-columns:minmax(0,1fr) !important;}
+ .app-shell .detail-properties--labeled > span {flex:1 1 42% !important;padding:9px !important;}
+}
