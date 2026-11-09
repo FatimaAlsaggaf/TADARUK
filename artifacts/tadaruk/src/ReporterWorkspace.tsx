@@ -279,6 +279,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
   const [specialization, setSpecialization] = useState('');
   const [reviewLocation, setReviewLocation] = useState('');
   const [reviewEditing, setReviewEditing] = useState(false);
+  const [previewPreparedAt, setPreviewPreparedAt] = useState<Date | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiStage, setAiStage] = useState<number>(0);
   const reduced = useReducedMotion() === true;
@@ -328,6 +329,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
     setSpecialization(suggestion.specialization || 'general');
     setReviewLocation(finalLocation);
     setReviewEditing(false);
+    setPreviewPreparedAt(new Date());
     setNeedsLocation(false);
   };
 
@@ -883,65 +885,62 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
               data-testid="form-report-review"
             >
               <div className="rw-ticket-preview-card" data-testid="card-review-ticket">
-              <header className="rw-ticket-preview-head">
+              <header className="rw-ticket-preview-head rw-ticket-preview-head--compact">
                 <div className="rw-ticket-head-meta">
-                  <span className="rw-ticket-branch-tag" data-testid="badge-preview-branch">
-                    <Building2 size={13} className="text-[#307190] dark:text-[#93c5fd]" />
-                    <b>{selectedBranch?.name || text(lang, 'فرع العليا', 'Olaya Branch')}</b>
-                  </span>
-                  <span className="rw-preview-cat-badge">
-                    <ClipboardList size={13} />
-                    {classificationLabel(category, lang)}
-                  </span>
+                  <span className="rw-ticket-type-label"><TicketIcon size={14}/>{text(lang, 'مسودة بلاغ للصيانة', 'Maintenance report draft')}</span>
+                  <span className="rw-demo-pill"><Sparkles size={13}/>{text(lang, 'تم تجهيزه بالتحليل الذكي', 'AI prepared')}</span>
                 </div>
                 <div className="rw-ticket-head-status">
-                  <span className={`rw-priority-badge rw-priority-${priority}`} data-testid="badge-preview-priority">
-                    {priorityLabel(priority, lang)}
-                  </span>
-                  <span className="rw-demo-pill">
-                    <Sparkles size={12} className="text-[#307190] dark:text-[#93c5fd]" />
-                    {text(lang, 'تحليل ذكي', 'AI Prepared')}
-                  </span>
+                  <span className="rw-preview-draft-state"><Clock3 size={13}/>{text(lang, 'بانتظار التأكيد', 'Awaiting confirmation')}</span>
+                  <span className={`rw-priority-badge rw-priority-${priority}`} data-testid="badge-preview-priority">{priorityLabel(priority, lang)}</span>
                 </div>
               </header>
 
               {!reviewEditing ? (
                 <>
-                  <div className="rw-preview-title-block">
-                    <div className="rw-ticket-sheet-meta">
-                      <span className="rw-ticket-type-label">
-                        <TicketIcon size={13} />
-                        {text(lang, 'تذكرة بلاغ جديدة', 'New maintenance ticket')}
-                      </span>
-                      <span className="rw-ticket-branch-sub">
-                        <MapPin size={12} />
-                        {reviewLocation || text(lang, 'داخل الفرع', 'Inside branch')}
-                      </span>
-                    </div>
+                  <div className="rw-preview-title-block rw-preview-title-block--compact">
                     <h3 data-testid="text-generated-title">{title}</h3>
-                    <p data-testid="text-generated-description">{reviewDescription}</p>
+                    <div className="rw-preview-submeta">
+                      <span><Building2 size={14}/><b data-testid="text-preview-branch">{selectedBranch?.name || text(lang, 'فرع غير محدد', 'Branch not set')}</b></span>
+                      <span><MapPin size={14}/>{reviewLocation || text(lang, 'الموقع غير محدد', 'Location not set')}</span>
+                    </div>
+                    {previewPreparedAt && (
+                      <div className="rw-preview-timestamp" data-testid="preview-prepared-at">
+                        <Clock3 size={14}/>
+                        <span>{text(lang, 'وقت تجهيز المسودة', 'Draft prepared')}</span>
+                        <time dateTime={previewPreparedAt.toISOString()}>
+                          {new Intl.DateTimeFormat(lang === 'ar' ? 'ar-SA' : 'en-US', {
+                            day: 'numeric', month: 'short', year: 'numeric',
+                            hour: 'numeric', minute: '2-digit'
+                          }).format(previewPreparedAt)}
+                        </time>
+                        <small>{text(lang, 'يُسجّل تاريخ إنشاء البلاغ عند الإرسال', 'Official creation time is recorded on submission')}</small>
+                      </div>
+                    )}
                   </div>
 
-                  <div className="rw-preview-facts">
-                    <div className="rw-fact-card">
-                      <span className="rw-fact-label"><Building2 size={15} />{text(lang, 'الفرع المصرح', 'Authorized branch')}</span>
-                      <b className="rw-fact-val" data-testid="text-preview-branch">{selectedBranch?.name || text(lang, 'فرع العليا', 'Olaya Branch')}</b>
+                  <div className="rw-preview-details" aria-label={text(lang, 'تفاصيل البلاغ', 'Ticket details')}>
+                    <div className="rw-preview-detail">
+                      <span><ClipboardList size={15}/>{text(lang, 'تصنيف العطل', 'Issue category')}</span>
+                      <strong>{classificationLabel(category, lang)}</strong>
                     </div>
-                    <div className="rw-fact-card">
-                      <span className="rw-fact-label"><MapPin size={15} />{text(lang, 'الموقع داخل الفرع', 'Location in branch')}</span>
-                      <b className="rw-fact-val">{reviewLocation || text(lang, 'داخل الفرع', 'Inside branch')}</b>
-                    </div>
-                    <div className="rw-fact-card">
-                      <span className="rw-fact-label"><Wrench size={15} />{text(lang, 'التخصص المطلوب', 'Required specialization')}</span>
-                      <b className="rw-fact-val">{classificationLabel(specialization, lang)}</b>
-                    </div>
-                    <div className="rw-fact-card">
-                      <span className="rw-fact-label"><CircleAlert size={15} />{text(lang, 'مستوى الأولوية', 'Priority level')}</span>
-                      <span className={`rw-priority-badge rw-priority-${priority}`}>
-                        {priorityLabel(priority, lang)}
-                      </span>
+                    <div className="rw-preview-detail">
+                      <span><Wrench size={15}/>{text(lang, 'التخصص المطلوب', 'Required specialty')}</span>
+                      <strong>{classificationLabel(specialization, lang)}</strong>
                     </div>
                   </div>
+
+                  <section className="rw-preview-description-section">
+                    <h4><Sparkles size={15}/>{text(lang, 'وصف البلاغ المنظّم', 'Structured report description')}</h4>
+                    <p data-testid="text-generated-description">{reviewDescription}</p>
+                  </section>
+
+                  {description.trim() && description.trim() !== reviewDescription.trim() && (
+                    <details className="rw-preview-original">
+                      <summary>{text(lang, 'عرض وصف المبلّغ الأصلي', 'Show original reporter description')}</summary>
+                      <p>{description}</p>
+                    </details>
+                  )}
                 </>
               ) : (
                 /* Inline Edit Mode */
