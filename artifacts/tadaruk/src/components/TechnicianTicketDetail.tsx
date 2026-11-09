@@ -786,7 +786,8 @@ export function TechnicianTicketDetail({
         <div className="tech-reported-photo-block">
           <span className="tech-sublabel">{tr(lang, 'صورة العطل المرفقة:', 'Attached issue photo:')}</span>
           {reportedPhotoUrl ? (
-            <TechnicianIssueMedia key={ticket.id} ticketId={ticket.id} imageUrl={reportedPhotoUrl} lang={lang}/>
+            <TechnicianIssueMedia key={ticket.id} ticketId={ticket.id} imageUrl={reportedPhotoUrl} lang={lang}
+              approximateSink={ticket.id==='ticket-demo-2401'||(ticket.specialization==='plumbing'&&/تسر[بي]|تسرب|حوض|leak|sink/i.test(ticket.title+' '+ticket.description))}/>
           ) : (
             <p className="tech-no-photo-note">
               {tr(lang, 'لا توجد صورة محفوظة لهذا البلاغ.', 'No saved issue photo is available.')}
