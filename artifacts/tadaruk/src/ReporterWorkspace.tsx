@@ -530,12 +530,8 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
             data-testid="form-report-description"
           >
             <div className="rw-report-intro">
-              <span className="rw-report-icon">
-                <Sparkles size={22} className="text-[#307190] dark:text-[#56f4ef]" />
-              </span>
               <div className="rw-report-intro-text">
                 <h2>{text(lang, 'صف ما لاحظته في الفرع', 'Describe what you noticed')}</h2>
-                
               </div>
             </div>
 
@@ -584,11 +580,12 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
             </label>
 
             {/* Voice Input Section */}
-            <div className="rw-input-options" aria-label={text(lang, 'طرق وصف المشكلة', 'Ways to describe the issue')}>
+            <div className="rw-input-options rw-voice-inline" aria-label={text(lang, 'تسجيل صوتي للمشكلة', 'Record an issue voice note')}>
               <AiVoiceInput
                 lang={lang}
                 onTranscript={appendTranscript}
               />
+              <span className="rw-voice-helper">{text(lang, 'سجّل صوتك وسنضيف الكلام إلى وصف المشكلة تلقائيًا', 'Record your voice to add the words to the description automatically')}</span>
             </div>
 
             {/* Photo Attachment Section */}
@@ -614,7 +611,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                     </div>
                     <div className="rw-photo-uploader-text">
                       <b>{text(lang, 'أرفق صورة للمشكلة', 'Attach an issue photo')}</b>
-                      <p>{text(lang, 'صوّر العطل أو اختر صورة من جهازك.', 'Take a photo or choose one from your device.')}</p>
+                      <p>{text(lang, 'PNG، JPG، JPEG — حتى 12 ميغابايت', 'PNG, JPG, JPEG — up to 12 MB')}</p>
                     </div>
                   </div>
                   <div className="rw-photo-uploader-buttons">
@@ -706,7 +703,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
             )}
 
             {/* Action to proceed to AI analysis */}
-            <div className="rw-form-actions">
+            <div className="rw-form-actions rw-compose-actions">
               <button
                 type="submit"
                 className="rw-button rw-button-primary"
