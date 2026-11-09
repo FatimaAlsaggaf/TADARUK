@@ -403,46 +403,47 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
     { label: 'Storage back door lock jammed', value: 'door-lock', time: '02:05 PM', branch: 'Sahafa' },
     { label: 'Display cooler fridge stopped cooling', value: 'fridge-cooling', time: '03:20 PM', branch: 'Malqa' },
   ];
+  // Only features already represented by the application experience.
   const impactPillars = lang === 'ar' ? [
     {
-      title: 'توثيق فوري وشامل',
-      copy: 'سجل موحد لكل عطل برقم وتاريخ وموقع وتفاصيل واضحة تمنع فقدان أي بلاغ.',
+      title: 'بلاغ واضح من البداية',
+      copy: 'وصف وصورة أو تسجيل صوتي، ثم مراجعة البلاغ قبل إرساله.',
       icon: ClipboardList
     },
     {
-      title: 'مسؤولية وإسناد مباشر',
-      copy: 'إسناد لحظي للفني المختص مع تحديد وقت الاستجابة لضمان أعلى مستويات الالتزام.',
-      icon: Users
-    },
-    {
-      title: 'متابعة لحظية شفافة',
-      copy: 'لوحة تحكم تفاعلية توضح مسار البلاغ بدقة من لحظة التسجيل حتى إتمام الإصلاح.',
+      title: 'تنظيم ذكي للبلاغ',
+      copy: 'اقتراح عنوان وتصنيف وأولوية للبلاغ قبل تأكيده.',
       icon: Activity
     },
     {
-      title: 'معرفة تشغيلية تراكمية',
-      copy: 'أرشيف ذكي يربط كل عطل بحله وتكلفته لمنع تكرار الأعطال ورفع الكفاءة.',
+      title: 'إسناد ومتابعة الإصلاح',
+      copy: 'البلاغ يصل للفني المكلّف، ويظهر تحديث حالته للمبلّغ والمدير.',
+      icon: Users
+    },
+    {
+      title: 'حلول يمكن الرجوع لها',
+      copy: 'توثيق طريقة الإصلاح وإتاحتها في قاعدة المعرفة بعد تأكيد الحل.',
       icon: BookOpen
     }
   ] : [
     {
-      title: 'Instant Structured Logging',
-      copy: 'A unified record for every ticket with number, timestamp, location, and photos.',
+      title: 'Clear reports from the start',
+      copy: 'Describe an issue with text, a photo or voice, then review before submitting.',
       icon: ClipboardList
     },
     {
-      title: 'Direct Ownership & SLAs',
-      copy: 'Immediate assignment to the specialist technician with clear response tracking.',
-      icon: Users
-    },
-    {
-      title: 'Real-Time Visibility',
-      copy: 'An interactive dashboard showing live progress from submission to resolution.',
+      title: 'Assisted ticket preparation',
+      copy: 'Suggested title, category and priority before the report is confirmed.',
       icon: Activity
     },
     {
-      title: 'Cumulative Operational Knowledge',
-      copy: 'Smart archives linking issues to fixes and costs to prevent recurring faults.',
+      title: 'Assigned and tracked repairs',
+      copy: 'Technicians update ticket status, visible to the reporter and manager.',
+      icon: Users
+    },
+    {
+      title: 'Solutions worth reusing',
+      copy: 'Confirmed repair notes are available in the knowledge base.',
       icon: BookOpen
     }
   ];
@@ -603,13 +604,13 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
               key={item.title}
               initial={reduced?false:{opacity:0,x:lang==='ar'?-24:24,y:10}}
               animate={impactRevealed?{opacity:1,x:0,y:0}:(reduced?{opacity:1}:{opacity:0,x:lang==='ar'?-24:24,y:10})}
-              transition={reduced?{duration:0}:{duration:.48,delay:index*.45,ease:[.22,.72,.18,1]}}
+              transition={reduced?{duration:0}:{duration:.55,delay:index*.25,ease:[.22,.72,.18,1]}}
             >
               <div className="impact-pillar-head">
-                <span className="impact-pillar-index">0{index+1}</span>
-                <span className="impact-pillar-icon"><Icon size={20} strokeWidth={2}/></span>
-                <h3 className="impact-pillar-title">{item.title}</h3>
+                <span className="impact-pillar-icon"><Icon size={21} strokeWidth={1.85}/></span>
+                <span className="impact-pillar-index" aria-hidden="true">{String(index+1).padStart(2,'0')}</span>
               </div>
+              <h3 className="impact-pillar-title">{item.title}</h3>
               <p className="impact-pillar-copy">{item.copy}</p>
             </motion.article>;
           })}
