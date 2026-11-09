@@ -1595,8 +1595,7 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
       <aside className="detail-side">
         {/* People Involved */}
         <section className="panel owner-panel">
-          <span className="eyebrow">{tr(lang,'الإسناد','ASSIGNMENT')}</span>
-          <h3>{tr(lang,'أطراف البلاغ','People')}</h3>
+          <h3>{manager?tr(lang,'المبلّغ','Reporter'):tr(lang,'أطراف البلاغ','People')}</h3>
           <div className="person-line">
             <Avatar name={ticket.reporterName} size="sm"/>
             <span>
@@ -1604,13 +1603,13 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
               <b>{ticket.reporterName}</b>
             </span>
           </div>
-          <div className="person-line">
+          {!manager && <div className="person-line">
             <Avatar name={ticket.technicianName||tr(lang,'غير مسند','Unassigned')} size="sm"/>
             <span>
               <small>{tr(lang,'الفني المسؤول','Assigned technician')}</small>
               <b>{ticket.technicianName||tr(lang,'بانتظار الإسناد','Awaiting assignment')}</b>
             </span>
-          </div>
+          </div>}
           {technician&&ticket.technicianId===user.id&&(ticket.branchGoogleMapsUrl||ticket.branchAddress||ticket.branchLatitude!==null&&ticket.branchLatitude!==undefined||ticket.branchLongitude!==null&&ticket.branchLongitude!==undefined)&&<a className="branch-map-link" href={branchMapUrl(ticket.branchLatitude,ticket.branchLongitude,ticket.branchAddress,ticket.branchCity,ticket.branchGoogleMapsUrl)} target="_blank" rel="noreferrer" data-testid={`ticket-map-${ticket.id}`}><MapPinned size={15}/>{tr(lang,'افتح موقع الفرع في الخرائط','Open branch on Maps')}<ArrowUpRight size={13}/></a>}
         </section>
 
@@ -1635,8 +1634,8 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
         )}
 
         {/* Contextual Action Panel */}
-        <section className="action-panel" aria-busy={action.isPending}>
-          <span className="eyebrow">{tr(lang,'الخطوة التالية','NEXT STEP')}</span>
+        <section className={`action-panel ${manager?'action-panel--assignment':''}`} aria-busy={action.isPending}>
+          {!manager && <span className="eyebrow">{tr(lang,'الخطوة التالية','NEXT STEP')}</span>}
 
           {ticket.status==='cancelled'&&<div className="cancelled-ticket-note" role="status"><CircleAlert size={18}/><span><b>{tr(lang,'أُلغي هذا البلاغ','This report was cancelled')}</b><small>{tr(lang,'حُفظ سجل الإلغاء للمراجعة.','The cancellation remains in the audit history.')}</small></span></div>}
 
@@ -1795,9 +1794,11 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
           {manager && ticket.status !== 'closed' && ticket.status !== 'cancelled' && (
             <div className="manager-assignment-control">
               <div className="manager-assignment-current">
-                <span className="manager-assignment-label"><Users size={16}/>{tr(lang,'إدارة إسناد الفني','Manage assignment')}</span>
-                <b>{ticket.technicianName || tr(lang,'بانتظار إسناد تلقائي','Awaiting automatic assignment')}</b>
-                <small>{ticket.technicianId?tr(lang,'الفني المسؤول حاليًا','Currently assigned'):tr(lang,'لا يوجد فني مسند','No technician assigned')}</small>
+                <span className="manager-assignment-label"><Users size={17}/>{tr(lang,'إدارة إسناد الفني','Manage assignment')}</span>
+                <div className="manager-assignment-person">
+                  <span className="manager-assignment-avatar"><UserRound size={18}/></span>
+                  <strong>{ticket.technicianName || tr(lang,'لم يُسند بعد','Not assigned yet')}</strong>
+                </div>
               </div>
               {!showAssignmentEditor ? (
                 <Button kind="outline" onClick={()=>{setShowAssignmentEditor(true);setReassignError('');setTechnicianId('');}} data-testid="button-manager-edit-assignment">
@@ -1805,20 +1806,20 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
                 </Button>
               ):(
                 <div className="manager-assignment-form">
-                  {exceptionalReassign && <p className="manager-assignment-exception"><CircleAlert size={16}/>{tr(lang,'بدأ العمل على البلاغ. إعادة الإسناد استثنائية وتتطلب توضيح السبب، وسيبدأ الفني الجديد المتابعة من مرحلة المراجعة.','Work has started. An exceptional reassignment requires a reason; the new technician will restart from review.')}</p>}
-                  <label className="field-label">
+                  {exceptionalReassign && <p className="manager-assignment-exception"><CircleAlert size={16}/><span>{tr(lang,'بدأ العمل؛ يجب ذكر سبب التغيير عند التأكيد.','Work started; a reason is required when confirming.')}</span></p>}
+                  {availableReplacementTechnicians.length > 0 && <label className="field-label">
                     <span>{tr(lang,'الفني البديل المتاح','Available replacement technician')}</span>
                     <TadarukSelect value={technicianId} onValueChange={setTechnicianId}
                       ariaLabel={tr(lang,'اختر الفني البديل','Choose replacement technician')}
                       dir={lang==='ar'?'rtl':'ltr'} placeholder={tr(lang,'اختر فنيًا','Choose technician')}
                       options={availableReplacementTechnicians.map(t=>({value:t.id,label:`${t.name} · ${classificationText(t.specialization,lang)}`}))}/>
-                  </label>
-                  {!availableReplacementTechnicians.length&&<p className="manager-assignment-empty">{tr(lang,'لا يوجد فني بديل متاح في الفرع بنفس التخصص حاليًا.','No eligible available technician in this branch and specialty.')}</p>}
+                  </label>}
+                  {!availableReplacementTechnicians.length&&<p className="manager-assignment-empty" role="status">{tr(lang,'لا يوجد بديل متاح بنفس التخصص في هذا الفرع.','No replacement is available in this branch and specialty.')}</p>}
                   <div className="manager-assignment-buttons">
-                    <Button kind="outline" disabled={!technicianId||action.isPending}
+                    {availableReplacementTechnicians.length > 0 && <Button kind="outline" disabled={!technicianId||action.isPending}
                       onClick={()=>{setReassignError('');setReassignReason('');setPendingTechnicianId(technicianId);}}
-                      data-testid="button-manager-reassign"><Users size={16}/>{tr(lang,'متابعة التغيير','Continue')}</Button>
-                    <Button kind="outline" onClick={()=>{setShowAssignmentEditor(false);setTechnicianId('');}}>{tr(lang,'إلغاء','Cancel')}</Button>
+                      data-testid="button-manager-reassign"><Users size={16}/>{tr(lang,'متابعة التغيير','Continue')}</Button>}
+                    <Button kind="outline" onClick={()=>{setShowAssignmentEditor(false);setTechnicianId('');}}>{tr(lang,'رجوع','Back')}</Button>
                   </div>
                 </div>
               )}
