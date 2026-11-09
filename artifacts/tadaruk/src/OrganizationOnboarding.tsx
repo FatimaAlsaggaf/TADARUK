@@ -10,7 +10,7 @@ type Site={id:number;city:string;name:string};
 const tr=(lang:Lang,ar:string,en:string)=>lang==='ar'?ar:en;
 const specialties=[['plumbing','سباكة ومياه','Plumbing'],['electrical','كهرباء وإنارة','Electrical'],['cooling','تكييف وتبريد','Cooling'],['general','صيانة عامة','General maintenance'],['civil','أعمال مدنية','Civil']];
 const branches=(lang:Lang)=>[tr(lang,'المنشأة','Organization'),tr(lang,'المسؤول','Owner'),tr(lang,'الفرع','Branch'),tr(lang,'الصلاحيات','Access'),tr(lang,'الدعوات','Invites')];
-export default function OrganizationOnboarding({lang,mode}:{lang:Lang;mode:'signup'|'login'}){
+export default function OrganizationOnboarding({lang,mode,embedded=false}:{lang:Lang;mode:'signup'|'login';embedded?:boolean}){
  const [,go]=useLocation();
  const [step,setStep]=useState(0);
  const [done,setDone]=useState(false);
@@ -82,13 +82,13 @@ export default function OrganizationOnboarding({lang,mode}:{lang:Lang;mode:'sign
  </label>;
  const Back=lang==='ar'?ArrowRight:ArrowLeft;
  const title=mode==='login'?tr(lang,'أهلًا بعودتك','Welcome back'):tr(lang,'إعداد المنشأة','Organization setup');
- return <div className="org-screen" dir={lang==='ar'?'rtl':'ltr'}>
-  <header className="org-top">
+ return <div className={embedded?'org-embedded':'org-screen'} dir={lang==='ar'?'rtl':'ltr'}>
+  {!embedded&&<header className="org-top">
     <Link href="/" className="org-brand">تدارك <small>TADARUK</small></Link>
     <Link href="/" className="org-home"><Back size={16}/>{tr(lang,'الرئيسية','Home')}</Link>
-  </header>
-  <div className={`org-layout org-layout--${mode} ${switching?'org-switching':''}`}>
-    <aside className="org-aside">
+  </header>}
+  <div className={embedded?'org-embedded-layout':`org-layout org-layout--${mode} ${switching?'org-switching':''}`}>
+    {!embedded&&<aside className="org-aside">
       <div className="org-aside-visual" aria-hidden="true"><span className="org-visual-orbit"/><span className="org-visual-card"><Building2 size={37}/><i/><i/></span><span className="org-visual-spark"><Check size={17}/></span></div>
       <span className="org-pill"><ShieldCheck size={15}/>{tr(lang,'تدارك · إدارة الصيانة','TADARUK · Maintenance management')}</span>
       <h1>{title}</h1>
@@ -103,8 +103,8 @@ export default function OrganizationOnboarding({lang,mode}:{lang:Lang;mode:'sign
         <span>{mode==='login'?tr(lang,'جديدة على تدارك؟','New to Tadaruk?'):tr(lang,'لديك حساب؟','Already have an account?')}</span>
         <button type="button" onClick={()=>switchPage(mode==='login'?'/signup':'/login')}>{mode==='login'?tr(lang,'إنشاء حساب منشأة','Create an account'):tr(lang,'تسجيل الدخول','Sign in')} <ArrowLeft size={16}/></button>
       </div>
-    </aside>
-    <section className="org-panel">
+    </aside>}
+    <section className={embedded?'org-embedded-panel':'org-panel'}>
       <div className="org-auth-topline"><span>{tr(lang,'حساب المنشأة','Organization account')}</span><span>{mode==='login'?tr(lang,'تسجيل الدخول','Sign in'):tr(lang,'إنشاء حساب','Create account')}</span></div>
       {mode==='login'?<form className="org-form org-login-form" onSubmit={e=>{e.preventDefault();go('/demo')}}>
         <span className="org-eyebrow">{tr(lang,'مرحبًا مجددًا','WELCOME BACK')}</span>
@@ -117,12 +117,12 @@ export default function OrganizationOnboarding({lang,mode}:{lang:Lang;mode:'sign
         <p className="org-small">{tr(lang,'ليس لديك حساب؟','New to Tadaruk?')} <button type="button" className="org-inline-switch" onClick={()=>switchPage('/signup')}>{tr(lang,'إنشاء حساب منشأة','Create an account')}</button></p>
       </form>:done?<div className="org-success">
         <span className="org-success-mark"><CheckCircle2 size={36}/></span>
-        <h2>{tr(lang,'منشأتك جاهزة للانطلاق','Organization setup complete')}</h2>
+        <h2>{tr(lang,'اكتمل إعداد المنشأة','Organization setup complete')}</h2>
         <p>{tr(lang,'تم تجهيز بيانات المنشأة والصلاحيات في هذه المعاينة. الدعوات محفوظة كمخطط، ولم تُرسل رسائل فعلية إلى الأعضاء.','Your setup and access plan are ready in this preview. No real invitations have been sent.')}</p>
         <div className="org-review"><b>{data.organization}</b><span>{data.branch}</span><span>{members.length} {tr(lang,'أعضاء تمت إضافتهم','team members added')}</span></div>
         <button type="button" className="org-next org-next--full" onClick={()=>go('/demo')}>{tr(lang,'الدخول إلى لوحة التحكم','Open dashboard')}<ChevronLeft size={18}/></button>
       </div>:<form className="org-form" onSubmit={next}>
-        <span className="org-eyebrow">{tr(lang,'إعداد المنشأة','ORGANIZATION SETUP')}</span>
+        <span className="org-eyebrow">{tr(lang,`الخطوة ${step+1} من 5`,`Step ${step+1} of 5`)}</span>
         <h2>{[
           tr(lang,'بيانات المنشأة','Organization details'),
           tr(lang,'حساب المسؤول','Account owner'),

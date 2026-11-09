@@ -1,6 +1,6 @@
 import {useEffect,useState,type FormEvent} from 'react';
 import {Link,useLocation} from 'wouter';
-import {Building2,ClipboardList,Eye,EyeOff,LockKeyhole,Mail,Wrench,ArrowLeft,CheckCircle2} from 'lucide-react';
+import {Building2,ClipboardList,Eye,EyeOff,LockKeyhole,Mail,Wrench,ArrowLeft} from 'lucide-react';
 import OrganizationOnboarding from './OrganizationOnboarding';
 import './auth-morph.css';
 
@@ -25,7 +25,7 @@ export default function AuthMorph({lang}:{lang:Lang}){
  return <main className="auth-morph-page" dir={lang==='ar'?'rtl':'ltr'}>
   <header className="auth-morph-header"><Link href="/" className="auth-morph-brand" aria-label={tr(lang,'تدارك - الرئيسية','Tadaruk - Home')}><img src={`${import.meta.env.BASE_URL}brand-logo.png`} alt="تدارك TADARUK" /></Link><Link href="/" className="auth-morph-home">{tr(lang,'الرئيسية','Home')} <ArrowLeft size={16}/></Link></header>
   <section className={`auth-morph-card ${signup?'auth-morph-signup':''}`} aria-label={tr(lang,'الدخول وإنشاء الحساب','Sign in and registration')}>
-    <div className="auth-signup-back" aria-hidden={!signup}><span>{tr(lang,'لديك حساب بالفعل؟','Already have an account?')}</span><button type="button" onClick={()=>toggle(false)} tabIndex={signup?0:-1}>{tr(lang,'تسجيل الدخول','Sign in')} <ArrowLeft size={16}/></button></div>
+    <div className="auth-signup-back" aria-hidden={!signup}><button type="button" onClick={()=>toggle(false)} tabIndex={signup?0:-1}><span className="auth-signup-back-icon"><ArrowLeft size={19}/></span><span>{tr(lang,'تسجيل الدخول','Sign in')}</span></button></div>
     <div className="auth-morph-form-area">
      <div className="auth-morph-login" aria-hidden={signup}>
       <form className="auth-morph-login-form" onSubmit={onLogin}>
@@ -42,7 +42,7 @@ export default function AuthMorph({lang}:{lang:Lang}){
      </div>
      <div className="auth-morph-register" aria-hidden={!signup}>
        <div className="auth-morph-register-content">
-         <OrganizationOnboarding lang={lang} mode="signup"/>
+         <OrganizationOnboarding lang={lang} mode="signup" embedded/>
        </div>
      </div>
     </div>
