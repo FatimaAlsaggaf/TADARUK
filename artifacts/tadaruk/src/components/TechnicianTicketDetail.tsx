@@ -16,6 +16,7 @@ import {
   MapPin,
   MapPinned,
   Maximize2,
+  Layers3,
   Mic,
   RotateCcw,
   Square,
@@ -290,6 +291,43 @@ export function TechnicianTicketDetail({
     return localStorage.getItem(`tadaruk-repair-photo:${ticket.id}`) || '';
   });
   const [expandedPhoto, setExpandedPhoto] = useState<string | null>(null);
+  const [depthView, setDepthView] = useState(false);
+  const [depthPosition, setDepthPosition] = useState({ x: 0, y: 0 });
+  const [reducedDepthMotion, setReducedDepthMotion] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+    if (!media) return;
+    const sync = () => setReducedDepthMotion(media.matches);
+    sync();
+    media.addEventListener?.('change', sync);
+    return () => media.removeEventListener?.('change', sync);
+  }, []);
+
+  useEffect(() => {
+    if (!expandedPhoto) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setExpandedPhoto(null);
+        setDepthView(false);
+        setDepthPosition({ x: 0, y: 0 });
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [expandedPhoto]);
+
+  const openPhoto = (src: string, depth = false) => {
+    setDepthPosition({ x: 0, y: 0 });
+    setDepthView(depth && !reducedDepthMotion);
+    setExpandedPhoto(src);
+  };
+  const closePhoto = () => {
+    setExpandedPhoto(null);
+    setDepthView(false);
+    setDepthPosition({ x: 0, y: 0 });
+  };
+
 
   // Sync solution text if ticket changes from backend
   useEffect(() => {
@@ -785,11 +823,11 @@ export function TechnicianTicketDetail({
         <div className="tech-reported-photo-block">
           <span className="tech-sublabel">{tr(lang, 'صورة العطل المرفقة:', 'Attached issue photo:')}</span>
           {reportedPhotoUrl ? (
-            <div className="tech-reported-photo-wrap">
+            <div className="tech-reported-photo-wrap tech-reported-photo-wrap--depth">
               <button
                 type="button"
                 className="tech-photo-thumb-trigger"
-                onClick={() => setExpandedPhoto(reportedPhotoUrl)}
+                onClick={() => openPhoto(reportedPhotoUrl)}
                 aria-label={tr(lang, 'تكبير صورة المشكلة', 'Expand issue photo')}
               >
                 <img
@@ -799,8 +837,18 @@ export function TechnicianTicketDetail({
                 />
                 <span className="tech-photo-zoom-overlay">
                   <Maximize2 size={16} />
-                  <span>{tr(lang, 'اضغط للتكبير', 'Click to expand')}</span>
+                  <span>{tr(lang, 'تكبير الصورة', 'Expand image')}</span>
                 </span>
+              </button>
+              <button
+                type="button"
+                className="tech-photo-depth-trigger"
+                onClick={() => openPhoto(reportedPhotoUrl, true)}
+                aria-label={tr(lang, 'عرض الصورة بتأثير العمق التفاعلي', 'View photo with interactive depth effect')}
+                data-testid="button-tech-depth-view"
+              >
+                <Layers3 size={16} />
+                <span>{tr(lang, 'عرض العمق', 'Depth view')}</span>
               </button>
             </div>
           ) : (
@@ -811,28 +859,51 @@ export function TechnicianTicketDetail({
         </div>
       </section>
 
-      {/* Lightbox / Modal for High-Resolution Photo Expansion */}
+      {/* Actual photograph only: a gentle perspective tilt, never AI-generated geometry. */}
       {expandedPhoto && (
-        <div
-          className="tech-lightbox-scrim"
-          onClick={() => setExpandedPhoto(null)}
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="tech-lightbox-content" onClick={e => e.stopPropagation()}>
-            <button
-              type="button"
-              className="tech-lightbox-close"
-              onClick={() => setExpandedPhoto(null)}
-              aria-label={tr(lang, 'إغلاق', 'Close')}
-            >
-              <X size={20} />
-            </button>
-            <img
-              src={expandedPhoto}
-              alt={tr(lang, 'عرض الصورة بالحجم الكامل', 'Full size view')}
-              className="tech-lightbox-img"
-            />
+        <div className="tech-lightbox-scrim" onClick={closePhoto} role="presentation">
+          <div className="tech-lightbox-content tech-depth-dialog" role="dialog"
+            aria-modal="true" aria-label={tr(lang, 'استعراض صورة العطل', 'Issue photo viewer')}
+            onClick={e => e.stopPropagation()}>
+            <div className="tech-depth-toolbar">
+              <span className="tech-depth-heading"><Layers3 size={17}/>{depthView ? tr(lang,'معاينة العمق','Depth preview') : tr(lang,'الصورة الأصلية','Original photo')}</span>
+              <div className="tech-depth-actions">
+                <button type="button" className={!depthView ? 'is-selected' : ''}
+                  onClick={() => {setDepthView(false);setDepthPosition({x:0,y:0});}}>
+                  {tr(lang,'الأصلية','Original')}
+                </button>
+                {!reducedDepthMotion && (
+                  <button type="button" className={depthView ? 'is-selected' : ''}
+                    onClick={() => {setDepthView(true);setDepthPosition({x:0,y:0});}}>
+                    <Layers3 size={15}/>{tr(lang,'العمق','Depth')}
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className={`tech-depth-stage ${depthView ? 'tech-depth-stage--active' : ''}`}
+              onPointerMove={e=>{
+                if(!depthView || reducedDepthMotion) return;
+                if(e.pointerType==='touch' && e.buttons===0) return;
+                const rect=e.currentTarget.getBoundingClientRect();
+                const x=((e.clientX-rect.left)/rect.width-.5)*2;
+                const y=((e.clientY-rect.top)/rect.height-.5)*2;
+                setDepthPosition({x:Math.max(-1,Math.min(1,x)),y:Math.max(-1,Math.min(1,y))});
+              }}
+              onPointerLeave={()=>setDepthPosition({x:0,y:0})}
+              onPointerCancel={()=>setDepthPosition({x:0,y:0})}
+              style={depthView && !reducedDepthMotion ? {
+                transform:`perspective(1000px) rotateY(${depthPosition.x*7}deg) rotateX(${-depthPosition.y*6}deg)`,
+              } : undefined}>
+              <img src={expandedPhoto} alt={tr(lang,'صورة العطل الأصلية دون تعديل','Unmodified original issue photo')}
+                className="tech-depth-image" draggable={false}/>
+            </div>
+            <p className="tech-depth-caption">
+              {depthView
+                ? tr(lang,'تأثير منظور على الصورة الأصلية فقط، لا يكشف أجزاء مخفية أو تفاصيل جديدة. حرّك المؤشر لاستعراض التأثير.','Perspective effect on the original image only. It does not reveal hidden details. Move the pointer to explore.')
+                : tr(lang,'الصورة الأصلية كما أرفقها المبلّغ.','Original image uploaded by the reporter.')}
+            </p>
+            <button type="button" className="tech-lightbox-close" onClick={closePhoto}
+              aria-label={tr(lang,'إغلاق','Close')}><X size={20}/></button>
           </div>
         </div>
       )}
