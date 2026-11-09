@@ -8740,3 +8740,87 @@ body:has(.dark .reporter-shell) #root {
     transform: none !important;
   }
 }
+
+/* Compact impact cards and borderless folder scene — approved direction. */
+/* Give the folder visual its own breathing space directly on the landing canvas.
+   No enclosing card, stroke or decorative rectangular surface. */
+.landing .impact-folder-showcase,
+.dark .landing .impact-folder-showcase {
+  min-height: 390px !important;
+  padding: 12px 6px !important;
+  border: 0 !important;
+  outline: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.landing .impact-folder-showcase::before,
+.landing .impact-folder-showcase::after {
+  content: none !important;
+  display: none !important;
+}
+.landing .impact-showcase-stage {
+  gap: clamp(20px, 3vw, 40px) !important;
+  align-items: center !important;
+}
+.landing .impact-pillars-list {
+  gap: 10px !important;
+}
+.landing .impact-pillar-card {
+  padding: 12px 17px 13px !important;
+  border-radius: 14px !important;
+  box-shadow: 0 3px 12px rgba(31,51,99,.035) !important;
+}
+.landing .impact-pillar-card:hover {
+  box-shadow: 0 7px 18px rgba(31,51,99,.07) !important;
+}
+.landing .impact-pillar-head {
+  margin-bottom: 5px !important;
+  gap: 9px !important;
+}
+.landing .impact-pillar-icon {
+  width: 33px !important;
+  height: 33px !important;
+  flex: 0 0 33px !important;
+  border-radius: 10px !important;
+}
+.landing .impact-pillar-icon svg {
+  width: 18px !important;
+  height: 18px !important;
+}
+.landing .impact-pillar-index {
+  min-width: 36px !important;
+  font-size: 20px !important;
+  line-height: 1 !important;
+}
+.landing .impact-pillar-title {
+  margin-bottom: 3px !important;
+  font-size: 17px !important;
+  line-height: 1.45 !important;
+}
+.landing .impact-pillar-copy {
+  font-size: 14px !important;
+  line-height: 1.65 !important;
+}
+.dark .landing .impact-pillar-card {
+  box-shadow: 0 3px 12px rgba(0,0,0,.11) !important;
+}
+@media (max-width: 960px) {
+  .landing .impact-folder-showcase,
+  .dark .landing .impact-folder-showcase {
+    min-height: 370px !important;
+    padding: 10px 0 !important;
+  }
+  .landing .impact-showcase-stage { gap: 12px !important; }
+}
+@media (max-width: 640px) {
+  .landing .impact-folder-showcase,
+  .dark .landing .impact-folder-showcase {
+    min-height: 335px !important;
+    padding-inline: 0 !important;
+  }
+  .landing .impact-pillar-card { padding: 12px 14px 13px !important; }
+  .landing .impact-pillar-title { font-size: 16.5px !important; }
+  .landing .impact-pillar-copy { font-size: 13.5px !important; line-height: 1.65 !important; }
+  .landing .impact-pillar-index { font-size: 19px !important; }
+}
