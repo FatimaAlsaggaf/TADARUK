@@ -42,6 +42,7 @@ import './tadaruk.css';
 import './tadaruk-interactions.css';
 import './technician-contact.css';
 import './technician-ticket.css';
+import './unified-workspace-header.css';
 
 const qc = new QueryClient();
 type Lang = 'ar' | 'en';
@@ -1073,7 +1074,7 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
       })}</nav>
     </aside>
     <AnimatePresence>{mobile&&<motion.button type="button" className="mobile-scrim" onClick={()=>setMobile(false)} aria-label={tr(lang,'إغلاق القائمة','Close navigation')} initial={reduced?false:{opacity:0}} animate={{opacity:1}} exit={reduced?{opacity:1}:{opacity:0}} transition={{duration:reduced?0:.16}}/>}</AnimatePresence>
-    <div className={`main-frame ${user.role==='technician'?'technician-frame':''}`}><header className="topbar workspace-compact-topbar">
+    <div className={`main-frame unified-account-frame ${user.role==='technician'?'technician-frame':''}`}><header className="topbar workspace-compact-topbar">
       <button className="mobile-menu" type="button" onClick={()=>setMobile(true)} aria-label={tr(lang,'فتح القائمة','Open menu')}><Menu size={20}/></button>
       {headerAccountControls}
       <div className="top-controls workspace-unified-controls technician-notifications-cluster">
