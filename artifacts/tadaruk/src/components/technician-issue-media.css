@@ -28,3 +28,8 @@
 .dark .tadaruk-media-footer{background:#203950;color:#d1e1f2}
 @media(max-width:650px){.tadaruk-media-backdrop{padding:6px}.tadaruk-media-dialog{width:100%;max-height:96dvh;border-radius:16px}.tadaruk-media-toolbar{padding:11px;gap:9px}.tadaruk-media-toolbar strong{font-size:13px}.tadaruk-media-actions{gap:4px}.tadaruk-media-actions button{min-width:33px;min-height:34px;padding:6px}.tadaruk-media-stage{height:62dvh}.tadaruk-photo-mini-image{width:min(100%,340px)}.tadaruk-media-footer{font-size:11.5px}}
 @media(prefers-reduced-motion:reduce){.tadaruk-media-stage>img{transition:none}}
+
+/* Interactive demo is a genuine scene in an isolated iframe, never a fake photo turn. */
+.tadaruk-media-demo-frame{width:100%;height:min(69dvh,680px);min-height:380px;background:#0e1929;border:0;display:block}
+.tadaruk-media-dialog:has(.tadaruk-media-demo-frame){width:min(96vw,950px)}
+@media(max-width:650px){.tadaruk-media-demo-frame{height:63dvh;min-height:350px}}
