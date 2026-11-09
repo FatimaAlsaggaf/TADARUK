@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useLocation } from 'wouter';
 import { motion, useReducedMotion } from 'motion/react';
 import {
-  ArrowLeft, ArrowRight, ArrowUpLeft, ArrowUpRight, Building2, Camera, Check, CheckCircle2,
+  ArrowLeft, ArrowRight, ArrowUpLeft, ArrowUpRight, Building2, CalendarDays, Camera, Check, CheckCircle2,
   ChevronLeft, ChevronRight, CircleAlert, ClipboardList, Clock3, FileText, ImagePlus,
   LoaderCircle, MapPin, Plus, RefreshCw, RotateCcw, Search, Send, ShieldCheck, Sparkles,
   Ticket as TicketIcon, Trash2, UserRound, Wrench, X
@@ -267,7 +267,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
   const [otherLocation, setOtherLocation] = useState('');
   const [needsLocation, setNeedsLocation] = useState(false);
   const [photo, setPhoto] = useState('');
-  const [additionalPhoto, setAdditionalPhoto] = useState('');
+
   const [photoError, setPhotoError] = useState('');
   const descriptionInputRef = useRef<HTMLTextAreaElement | null>(null);
   const [photoSaveFailed, setPhotoSaveFailed] = useState(false);
@@ -410,13 +410,6 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
     catch (error) { setPhotoError(error instanceof Error ? error.message : text(lang, 'تعذر تجهيز الصورة.', 'Could not prepare the image.')); }
   };
 
-  const setAdditionalPhotoFromFile = async (file?: File) => {
-    if (!file) return;
-    setPhotoError('');
-    try { setAdditionalPhoto(await fileToPreview(file, lang)); }
-    catch (error) { setPhotoError(error instanceof Error ? error.message : text(lang, 'تعذر تجهيز الصورة الثانية.', 'Could not prepare the second photo.')); }
-  };
-
   const appendTranscript = (transcript: string) => {
     setDescription(current => current ? `${current.trimEnd()} ${transcript}` : transcript);
   };
@@ -452,10 +445,6 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
         if (photo) {
           try {
             localStorage.setItem(`tadaruk-photo:${ticket.id}`, photo);
-            if (additionalPhoto) {
-              try { localStorage.setItem(`tadaruk-photo-extra:${ticket.id}`, additionalPhoto); }
-              catch { setPhotoError(text(lang, 'تم إرسال البلاغ، لكن لم تُحفظ الصورة الثانية على هذا الجهاز.', 'Report sent, but the optional second photo could not be saved on this device.')); }
-            }
           }
           catch {
             setPhotoError(text(lang, 'أُرسل البلاغ، لكن تعذر حفظ الصورة على هذا الجهاز.', 'The report was sent, but this device could not keep the photo.'));
@@ -899,44 +888,49 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
               data-testid="form-report-review"
             >
               <div className="rw-ticket-preview-card" data-testid="card-review-ticket">
-              <div className="rw-review-ready-head">
+              <div className="rw-review-ready-head rw-review-ready-head--reference">
                 <div>
                   <h2>{text(lang, 'مراجعة وتأكيد البلاغ', 'Review and confirm report')}</h2>
-                  <p>{text(lang, 'تحقق من التفاصيل قبل إرسال البلاغ', 'Check the details before submitting')}</p>
+                  <p>{text(lang, 'تحقق من تفاصيل البلاغ قبل إرساله', 'Review the report details before submitting')}</p>
                 </div>
-                <span className="rw-review-ready-badge"><Check size={15}/>{text(lang, 'جاهز للمراجعة', 'Ready for review')}</span>
               </div>
 
               {!reviewEditing ? (
                 <>
-                  <section className="rw-review-hero" aria-label={text(lang, 'ملخص البلاغ الذكي', 'AI report summary')}>
-                    <div className="rw-review-hero-heading">
-                      <span><Sparkles size={15}/>{text(lang, 'ملخص البلاغ بالذكاء الاصطناعي', 'AI-prepared report summary')}</span>
-                      <span className={`rw-priority-badge rw-priority-${priority}`} data-testid="badge-preview-priority">{priorityLabel(priority, lang)}</span>
+                  <section className="rw-review-hero rw-review-hero--reference" aria-label={text(lang, 'ملخص البلاغ', 'Report summary')}>
+                    <div className="rw-review-hero-top">
+                      <span className="rw-review-ai-label"><Sparkles size={17}/>{text(lang, 'ملخص البلاغ بالذكاء الاصطناعي', 'AI prepared report')}</span>
+                      <span className="rw-review-ready-badge"><Check size={15}/>{text(lang, 'جاهز للإرسال', 'Ready to send')}</span>
                     </div>
                     <h3 data-testid="text-generated-title">{title}</h3>
-                    <p data-testid="text-generated-description">{reviewDescription}</p>
+                    {previewPreparedAt && (
+                      <div className="rw-review-created-row" data-testid="preview-prepared-at">
+                        <span><CalendarDays size={15}/>{text(lang, 'تاريخ إعداد البلاغ', 'Draft date')}:
+                          <time dateTime={previewPreparedAt.toISOString()}>
+                            {new Intl.DateTimeFormat(lang === 'ar' ? 'ar-SA' : 'en-US',{day:'numeric',month:'long',year:'numeric'}).format(previewPreparedAt)}
+                          </time>
+                        </span>
+                        <span><Clock3 size={15}/>{text(lang, 'الوقت', 'Time')}:
+                          <time dateTime={previewPreparedAt.toISOString()}>
+                            {new Intl.DateTimeFormat(lang === 'ar' ? 'ar-SA' : 'en-US',{hour:'numeric',minute:'2-digit'}).format(previewPreparedAt)}
+                          </time>
+                        </span>
+                      </div>
+                    )}
                   </section>
 
-                  <div className="rw-review-facts" aria-label={text(lang, 'بيانات البلاغ', 'Report information')}>
-                    <div className="rw-review-fact"><span><Building2 size={15}/>{text(lang, 'الفرع', 'Branch')}</span><strong data-testid="text-preview-branch">{selectedBranch?.name || text(lang, 'غير محدد', 'Not specified')}</strong></div>
-                    <div className="rw-review-fact"><span><MapPin size={15}/>{text(lang, 'الموقع داخل الفرع', 'Location')}</span><strong>{reviewLocation || text(lang, 'غير محدد', 'Not specified')}</strong></div>
-                    <div className="rw-review-fact"><span><ClipboardList size={15}/>{text(lang, 'تصنيف العطل', 'Category')}</span><strong>{classificationLabel(category, lang)}</strong></div>
-                    <div className="rw-review-fact"><span><Wrench size={15}/>{text(lang, 'التخصص المطلوب', 'Specialty')}</span><strong>{classificationLabel(specialization, lang)}</strong></div>
+                  <div className="rw-review-facts rw-review-facts--reference" aria-label={text(lang, 'بيانات البلاغ', 'Report information')}>
+                    <div className="rw-review-fact"><span><Building2 size={16}/>{text(lang, 'الفرع', 'Branch')}</span><strong data-testid="text-preview-branch">{selectedBranch?.name || text(lang, 'غير محدد', 'Not specified')}</strong></div>
+                    <div className="rw-review-fact"><span><MapPin size={16}/>{text(lang, 'الموقع داخل الفرع', 'Location')}</span><strong>{reviewLocation || text(lang, 'غير محدد', 'Not specified')}</strong></div>
+                    <div className="rw-review-fact"><span><ClipboardList size={16}/>{text(lang, 'تصنيف العطل', 'Category')}</span><strong>{classificationLabel(category, lang)}</strong></div>
+                    <div className="rw-review-fact"><span><Wrench size={16}/>{text(lang, 'التخصص المطلوب', 'Specialty')}</span><strong>{classificationLabel(specialization, lang)}</strong></div>
+                    <div className="rw-review-fact rw-review-priority"><span><CircleAlert size={16}/>{text(lang, 'الأولوية', 'Priority')}</span><span className={`rw-priority-badge rw-priority-${priority}`} data-testid="badge-preview-priority">{priorityLabel(priority, lang)}</span></div>
                   </div>
 
-                  <div className="rw-review-meta-strip">
-                    <span><Clock3 size={14}/>{text(lang, 'وقت إعداد المسودة:', 'Draft prepared:')}</span>
-                    {previewPreparedAt && <time dateTime={previewPreparedAt.toISOString()}>{new Intl.DateTimeFormat(lang === 'ar' ? 'ar-SA' : 'en-US', {day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'}).format(previewPreparedAt)}</time>}
-                    <small>{text(lang, 'رقم البلاغ ووقت إنشائه الرسمي يظهران بعد الإرسال', 'Ticket number and official creation time appear after submission')}</small>
-                  </div>
-
-                  {description.trim() && description.trim() !== reviewDescription.trim() && (
-                    <details className="rw-preview-original">
-                      <summary>{text(lang, 'عرض وصف المبلّغ الأصلي', 'Show original reporter description')}</summary>
-                      <p>{description}</p>
-                    </details>
-                  )}
+                  <section className="rw-review-description-card" aria-label={text(lang, 'وصف البلاغ', 'Report description')}>
+                    <h4><FileText size={17}/>{text(lang, 'وصف البلاغ', 'Report description')}</h4>
+                    <p data-testid="text-generated-description">{reviewDescription}</p>
+                  </section>
                 </>
               ) : (
                 /* Inline Edit Mode */
@@ -1031,10 +1025,10 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
 
               {/* Photo preview in review */}
               {photo ? (
-                <div className="rw-review-photo-block" data-testid="preview-review-photo">
-                  <span className="rw-preview-label flex items-center gap-1.5">
-                    {text(lang, 'الصورة المرفقة', 'ATTACHED PHOTO')}
-                    <span className="rw-field-required-badge">{text(lang, 'إلزامي', 'Required')}</span>
+                <div className="rw-review-photo-block rw-review-photo-block--reference" data-testid="preview-review-photo">
+                  <span className="rw-preview-label rw-review-attachment-label">
+                    <ImagePlus size={17}/>
+                    {text(lang, 'المرفقات (1)', 'Attachments (1)')}
                   </span>
                   <div className="rw-photo-preview-centered">
                     <div className="rw-photo-hover-card" style={{ maxWidth: '440px', marginTop: '8px' }}>
@@ -1112,24 +1106,6 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                   </div>
                 </div>
               )}
-              <div className="rw-review-extra-photo" data-testid="additional-photo-panel">
-                {additionalPhoto ? (
-                  <div className="rw-review-extra-preview">
-                    <img src={additionalPhoto} alt={text(lang, 'الصورة الإضافية', 'Additional photo')} />
-                    <div>
-                      <b>{text(lang, 'الصورة الثانية', 'Second photo')}</b>
-                      <button type="button" onClick={() => setAdditionalPhoto('')}><Trash2 size={14}/>{text(lang, 'حذف', 'Remove')}</button>
-                    </div>
-                  </div>
-                ) : (
-                  <label className="rw-review-add-photo">
-                    <ImagePlus size={19}/>
-                    <span>{text(lang, 'إضافة صورة ثانية', 'Add a second photo')}</span>
-                    <small>{text(lang, 'اختياري', 'Optional')}</small>
-                    <input type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" aria-label={text(lang, 'إضافة صورة ثانية اختيارية', 'Add optional second photo')} data-testid="input-additional-photo" onChange={event => {const file=event.currentTarget.files?.[0];event.currentTarget.value='';void setAdditionalPhotoFromFile(file);}}/>
-                  </label>
-                )}
-              </div>
               {photoError && <p className="rw-inline-error" role="alert" data-testid="status-photo-storage-error">{photoError}</p>}
             </div>
 
@@ -1142,7 +1118,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
             <div className="rw-form-actions">
               <button
                 type="submit"
-                className="rw-button rw-button-primary"
+                className="rw-button rw-button-primary rw-review-send-btn"
                 disabled={!canUseBranch || create.isPending || !title.trim() || !reviewLocation.trim()}
                 data-testid="button-submit-report"
               >
@@ -1153,7 +1129,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                   </span>
                 ) : (
                   <>
-                    {text(lang, 'تأكيد وإرسال', 'Confirm & send')}
+                    {text(lang, 'إرسال البلاغ', 'Send report')}
                     <Send size={16}/>
                   </>
                 )}
@@ -1161,7 +1137,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
               {!reviewEditing ? (
                 <button
                   type="button"
-                  className="rw-button rw-button-secondary"
+                  className="rw-button rw-button-secondary rw-review-edit-btn"
                   onClick={() => setReviewEditing(true)}
                   disabled={create.isPending}
                   data-testid="button-edit-report"
