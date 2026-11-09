@@ -3035,3 +3035,67 @@
     flex:1 1 130px !important;min-width:0;
   }
 }
+
+/* Review polish: evenly distributed four facts instead of right-packed chips. */
+.reporter-view .rw-new-report-stepper [data-testid="form-report-review"] .rw-review-facts--reference {
+  display:grid !important;
+  width:100% !important;
+  max-width:none !important;
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  gap:12px !important;
+  justify-items:stretch !important;
+  align-items:stretch !important;
+  direction:rtl;
+  margin-block:20px 16px !important;
+}
+.reporter-view .rw-new-report-stepper [data-testid="form-report-review"] .rw-review-fact {
+  width:100% !important;
+  max-width:none !important;
+  min-width:0 !important;
+  min-height:92px !important;
+  align-items:flex-start !important;
+  justify-content:center !important;
+  text-align:start !important;
+  padding:14px 16px !important;
+  gap:9px !important;
+}
+.reporter-view .rw-new-report-stepper [data-testid="form-report-review"] .rw-review-fact > span:first-child {
+  display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+  font-size:13px !important;
+}
+.reporter-view .rw-new-report-stepper [data-testid="form-report-review"] .rw-review-fact > strong {
+  font-size:15px !important;line-height:1.55 !important;
+  overflow-wrap:anywhere;
+}
+.reporter-view .rw-new-report-stepper [data-testid="form-report-review"] .rw-form-actions {
+  direction:rtl;
+  justify-content:flex-end !important;
+  width:100%;
+  gap:10px !important;
+}
+.reporter-view .rw-new-report-stepper [data-testid="form-report-review"] .rw-form-actions > .rw-button {
+  flex:0 0 auto !important;
+  width:auto !important;
+}
+.reporter-view .rw-new-report-stepper [data-testid="form-report-review"] .rw-form-actions > small {
+  text-align:left !important;
+}
+@media(max-width:760px) {
+  .reporter-view .rw-new-report-stepper [data-testid="form-report-review"] .rw-review-facts--reference {
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  }
+}
+@media(max-width:480px) {
+  .reporter-view .rw-new-report-stepper [data-testid="form-report-review"] .rw-form-actions {
+    justify-content:stretch !important;
+  }
+  .reporter-view .rw-new-report-stepper [data-testid="form-report-review"] .rw-form-actions > .rw-button {
+    flex:1 1 30% !important;
+    min-width:0 !important;
+    padding-inline:9px !important;
+    font-size:12.5px !important;
+  }
+  .reporter-view .rw-new-report-stepper [data-testid="form-report-review"] .rw-form-actions > small {
+    text-align:start !important;
+  }
+}
