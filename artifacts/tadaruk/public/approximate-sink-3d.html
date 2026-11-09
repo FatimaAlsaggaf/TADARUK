@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>تدارك — معاينة ثلاثية الأبعاد تقريبية</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;font-family:system-ui,"IBM Plex Sans Arabic",sans-serif;background:#101b2a;color:#e9f3ff}
+#canvas{width:100%;height:100%;display:block;touch-action:none;cursor:grab}#canvas:active{cursor:grabbing}
+#label{position:absolute;top:30%;left:19%;padding:7px 11px;background:#b62f40;color:white;border:1px solid #f98e94;border-radius:9px;font-weight:750;font-size:13px;box-shadow:0 7px 25px #120e1622;pointer-events:none}
+#label:after{content:"";position:absolute;left:100%;top:55%;width:70px;height:1.5px;transform:rotate(30deg);transform-origin:left;background:#f87179}
+#hint{position:absolute;bottom:17px;left:50%;transform:translateX(-50%);min-width:190px;text-align:center;border:1px solid #aec2dd37;padding:8px 15px;border-radius:99px;background:#25364ac9;font-size:12px;white-space:nowrap;color:#e7f2fa;pointer-events:none}
+#degree{color:#8ce4ff;font-weight:800}
+#error{display:none;position:absolute;inset:0;align-items:center;justify-content:center;padding:30px;color:#fff;text-align:center;background:#16283e}
+@media(max-width:500px){#label{left:5%;top:32%;font-size:11px}#label:after{width:38px}#hint{bottom:12px;font-size:11px}}
+</style>
+</head>
+<body>
+<canvas id="canvas" aria-label="مجسم تقريبي للمغسلة والتسريب. اسحب بإصبعك أو الماوس لتدوير المجسم"></canvas>
+<div id="label">مكان التسريب</div><div id="hint">اسحب لتدوير المجسم <span id="degree">360°</span></div>
+<div id="error">تعذّر تحميل العرض التقريبي. يمكنك الرجوع للصورة الأصلية.</div>
+<script type="module">
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js";
+const canvas=document.getElementById('canvas');
+try{
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.4;
+const scene=new THREE.Scene();scene.background=new THREE.Color('#101b2a');
+const camera=new THREE.PerspectiveCamera(37,1,.1,60);camera.position.set(5.4,3.8,7.4);camera.lookAt(0,1.12,0);
+scene.add(new THREE.HemisphereLight(0xd9f0ff,0x344760,2.0));
+const key=new THREE.DirectionalLight(0xffffff,3);key.position.set(-3,8,6);key.castShadow=true;key.shadow.mapSize.set(1024,1024);key.shadow.camera.left=-7;key.shadow.camera.right=7;key.shadow.camera.top=7;key.shadow.camera.bottom=-7;scene.add(key);
+const rim=new THREE.PointLight(0x61a7ff,70,15);rim.position.set(2,4,-5);scene.add(rim);
+const stainless=new THREE.MeshStandardMaterial({color:0x939eae,metalness:.92,roughness:.24});
+const steelLight=new THREE.MeshStandardMaterial({color:0xd8e2ed,metalness:.88,roughness:.2});
+const steelDark=new THREE.MeshStandardMaterial({color:0x687783,metalness:.85,roughness:.3});
+const hose=new THREE.MeshStandardMaterial({color:0x545c65,metalness:.62,roughness:.42});
+const tile=new THREE.MeshStandardMaterial({color:0xaab6c4,roughness:.78});
+const wet=new THREE.MeshPhysicalMaterial({color:0x5f9eb3,metalness:.22,roughness:.18,transparent:true,opacity:.63,clearcoat:1,clearcoatRoughness:.08});
+const drop=new THREE.MeshPhysicalMaterial({color:0xb8ecff,metalness:.15,roughness:.12,transparent:true,opacity:.8,clearcoat:1});
+const group=new THREE.Group();scene.add(group);
+function cube(w,h,d,mat,x,y,z,shadow=true){
+ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=shadow;m.receiveShadow=true;group.add(m);return m;
+}
+function cylinder(rt,rb,h,mat,x,y,z,radial=48){
+ const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,radial),mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;group.add(m);return m;
+}
+// Tile floor: deliberately approximate, not a measured reconstruction.
+cube(4.7,.15,3.5,tile,0,-.06,0);
+for(let x=-2.3;x<=2.31;x+=.58) cube(.012,.008,3.47,steelDark,x,.023,0,false);
+for(let z=-1.7;z<=1.71;z+=.58) cube(4.65,.008,.012,steelDark,0,.023,z,false);
+// Stainless steel commercial prep sink, top rim and basin.
+cube(4.2,.16,2.18,stainless,0,3.11,0);
+const bowl=new THREE.Mesh(new THREE.CylinderGeometry(.82,.68,.26,64,1,true),steelDark);
+bowl.position.set(-.67,3.1,-.03);bowl.scale.set(1,1,.73);group.add(bowl);
+const ring=new THREE.Mesh(new THREE.TorusGeometry(.83,.09,12,80),steelLight);
+ring.rotation.x=Math.PI/2;ring.scale.y=.76;ring.position.set(-.65,3.17,-.03);group.add(ring);
+// Right-hand table leg and rear supporting rail.
+cylinder(.105,.115,3.03,stainless,1.68,1.54,-.54);
+cylinder(.095,.11,3.03,stainless,-1.78,1.54,-.7);
+cube(3.75,.09,.14,steelDark,0,2.65,-.74);
+cylinder(.23,.23,.18,steelLight,-.65,2.92,-.03);
+cylinder(.15,.15,.16,steelDark,-.65,2.74,-.03);
+// Flexible pipe bends from sink outlet to cut end.
+const points=[[-.65,2.67,-.03],[-.62,2.51,.04],[-.56,2.21,.10],[-.44,1.91,.18],[-.38,1.63,.23],[-.47,1.35,.29],[-.60,1.10,.33]];
+const curve=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p)));
+const pipe=new THREE.Mesh(new THREE.TubeGeometry(curve,80,.104,16,false),hose);pipe.castShadow=true;group.add(pipe);
+for(let i=0;i<17;i++){
+ const t=i/17;const pt=curve.getPointAt(t);const m=new THREE.Mesh(new THREE.TorusGeometry(.108,.012,6,15),steelLight);
+ const tangent=curve.getTangentAt(t);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),tangent);m.position.copy(pt);group.add(m);
+}
+const end=curve.getPointAt(1);
+cylinder(.12,.12,.09,steelLight,end.x,end.y,end.z);
+// Falling water and puddle at the indicated leak.
+const pool=new THREE.Mesh(new THREE.CircleGeometry(.68,52),wet);
+pool.rotation.x=-Math.PI/2;pool.scale.set(1.4,.68,1);pool.position.set(-.66,.036,.35);group.add(pool);
+let drops=[];
+for(let i=0;i<11;i++){
+ const d=new THREE.Mesh(new THREE.SphereGeometry(.028+(i%3)*.006,12,9),drop);
+ d.scale.set(.6,1.4,.6);group.add(d);drops.push(d);
+}
+const leakGlow=new THREE.Mesh(new THREE.TorusGeometry(.15,.018,10,48),new THREE.MeshBasicMaterial({color:0xff5266}));
+leakGlow.position.set(end.x,end.y,end.z+.06);group.add(leakGlow);
+let pointer=null;let velocity=0;let last=performance.now();
+canvas.addEventListener('pointerdown',e=>{pointer={id:e.pointerId,x:e.clientX};canvas.setPointerCapture(e.pointerId)});
+canvas.addEventListener('pointermove',e=>{if(!pointer||pointer.id!==e.pointerId)return;const dx=e.clientX-pointer.x;pointer.x=e.clientX;velocity=dx*.008;group.rotation.y+=velocity});
+const release=()=>{pointer=null;velocity=0};
+canvas.addEventListener('pointerup',release);canvas.addEventListener('pointercancel',release);
+const resize=()=>{const w=Math.max(1,canvas.clientWidth),h=Math.max(1,canvas.clientHeight);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()};
+window.addEventListener('resize',resize);resize();
+function animate(t){
+ const dt=Math.min(.055,(t-last)/1000);last=t;
+ if(!pointer&&Math.abs(velocity)>.00001){group.rotation.y+=velocity;velocity*=Math.pow(.9,dt*60)}
+ const tick=t*.001;
+ drops.forEach((d,i)=>{const progression=(tick*.55+i/11)%1;d.position.set(end.x+Math.sin(i*3)*.015,end.y-progression*(end.y-.13),end.z+.03);});
+ renderer.render(scene,camera);requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+}catch(e){document.getElementById('error').style.display='flex';console.error(e)}
+</script>
+</body>
+</html>
