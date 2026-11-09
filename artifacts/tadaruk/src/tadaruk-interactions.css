@@ -9770,3 +9770,30 @@ body:has(.dark .reporter-shell) #root {
 .app-shell .compact-timeline-item--refined.is-assignment .compact-timeline-note{border-inline-start:0 !important;border-inline-end:0 !important;box-shadow:none !important}
 .app-shell .compact-timeline-item--refined.is-assignment .compact-timeline-content::before,
 .app-shell .compact-timeline-item--refined.is-assignment .compact-timeline-content::after{display:none !important;content:none !important}
+
+
+/* Lower the existing animated folder and emerging message bubbles as one unit.
+   Keep FolderFloat animation, stagger and scale unchanged. */
+@media (min-width:961px){
+  .landing .impact-folder-showcase .folder-float{
+    transform:translateY(30px) scale(1.16) !important;
+    transform-origin:center 57% !important;
+  }
+}
+@media (min-width:641px) and (max-width:960px){
+  .landing .impact-folder-showcase .folder-float{
+    transform:translateY(22px) scale(1.1) !important;
+    transform-origin:center 57% !important;
+  }
+}
+@media (min-width:391px) and (max-width:640px){
+  .landing .impact-folder-showcase .folder-float{
+    transform:translateY(14px) scale(1.045) !important;
+    transform-origin:center 55% !important;
+  }
+}
+@media (max-width:390px){
+  .landing .impact-folder-showcase .folder-float{
+    transform:translateY(12px) scale(.94) !important;
+  }
+}
