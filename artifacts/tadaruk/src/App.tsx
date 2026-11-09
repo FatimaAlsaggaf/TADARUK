@@ -1474,7 +1474,11 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
   const action=usePerformTicketAction();const query=useQueryClient();const [note,setNote]=useState('');const [cause,setCause]=useState('');const [resolution,setResolution]=useState('');const [actionFeedback,setActionFeedback]=useState('');
   const reduced=useReducedMotion()===true || (typeof window!=='undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true);
   const [localPhoto,setLocalPhoto]=useState(()=>localStorage.getItem(`tadaruk-photo:${id}`)||'');
-  useEffect(()=>{setLocalPhoto(localStorage.getItem(`tadaruk-photo:${id}`)||'');},[id]);
+  const [localExtraPhoto,setLocalExtraPhoto]=useState(()=>localStorage.getItem(`tadaruk-photo-extra:${id}`)||'');
+  useEffect(()=>{
+    setLocalPhoto(localStorage.getItem(`tadaruk-photo:${id}`)||'');
+    setLocalExtraPhoto(localStorage.getItem(`tadaruk-photo-extra:${id}`)||'');
+  },[id]);
   const [technicianId,setTechnicianId]=useState('');
   const [pendingTechnicianId,setPendingTechnicianId]=useState<string | null>(null);
   const act=(a:'start'|'complete'|'confirm'|'reject'|'reassign',extra:Record<string,string>={})=>{setActionFeedback('');action.mutate({ticketId:id,data:{action:a,note,...extra}},{onSuccess:()=>{void query.invalidateQueries({queryKey:getGetTicketQueryKey(id)});void query.invalidateQueries({queryKey:getListTicketsQueryKey()});void query.invalidateQueries({queryKey:getGetOverviewQueryKey()});void query.invalidateQueries({queryKey:getListKnowledgeQueryKey()});setNote('');setActionFeedback(a==='start'?tr(lang,'بدأ العمل على البلاغ.','Work has started on this report.'):a==='complete'?tr(lang,'أُرسل تقييم الإصلاح للمراجعة.','The repair was submitted for confirmation.'):a==='confirm'?tr(lang,'تم تأكيد الإصلاح وإغلاق البلاغ.','The repair was confirmed and the report closed.'):a==='reject'?tr(lang,'تمت إعادة البلاغ للفني للمتابعة.','The report was returned to the technician.'):tr(lang,'تم تحديث إسناد الفني.','The technician assignment was updated.'));}});};
@@ -1552,6 +1556,7 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
             <span><Clock3 size={16}/>{dateText(ticket.createdAt,lang)}</span>
           </div>
           {(ticket.imageUrl||localPhoto)&&<PhotoAttachmentCard imageUrl={ticket.imageUrl||localPhoto} lang={lang} variant="detail" localOnly={!ticket.imageUrl&&Boolean(localPhoto)}/>}
+          {localExtraPhoto && <div className="mt-3"><span className="mb-2 block text-xs font-semibold text-slate-500">{tr(lang,'الصورة الإضافية (محفوظة على هذا الجهاز)','Additional photo (saved on this device)')}</span><PhotoAttachmentCard imageUrl={localExtraPhoto} lang={lang} variant="detail" localOnly/></div>}
         </div>
 
         {/* Streamlined Compact Activity History (سجل المتابعة) */}
