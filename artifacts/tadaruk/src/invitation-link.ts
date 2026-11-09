@@ -21,7 +21,7 @@ export function readInvitationLink(search:string):{
     try{
       const normalized=encoded.replace(/-/g,'+').replace(/_/g,'/');
       const binary=atob(normalized.padEnd(Math.ceil(normalized.length/4)*4,'='));
-      const bytes=Uint8Array.from(binary,ch=>ch.charCodeAt(0));
+      const bytes=new Uint8Array(Array.from(binary,char=>char.charCodeAt(0)));
       const parsed:unknown=JSON.parse(new TextDecoder().decode(bytes));
       if(Array.isArray(parsed)&&parsed.length===4&&
         parsed.every(value=>typeof value==='string')){
