@@ -9461,3 +9461,73 @@ body:has(.dark .reporter-shell) #root {
   .app-shell .compact-timeline-item--refined:not(:last-child)::before {inset-inline-start:15px !important;top:33px !important;}
   .app-shell .compact-timeline-content {padding:11px !important;}
 }
+
+/* Activity log v5: visible visual hierarchy and event-specific semantic colors. */
+.app-shell .compact-timeline-panel {
+  background: var(--rw-surface, #fff) !important;
+  padding: clamp(17px, 2.7vw, 28px) !important;
+}
+.app-shell .compact-timeline-title h3 {font-size:21px !important;font-weight:800 !important;}
+.app-shell .compact-timeline-badge {font-size:13px !important;padding:7px 12px !important;}
+.app-shell .compact-timeline-item--refined {gap:17px !important;padding-bottom:20px !important;}
+.app-shell .compact-timeline-event-icon {
+  width:45px !important;height:45px !important;flex-basis:45px !important;
+  border-radius:15px !important;box-shadow:0 4px 12px rgba(40,77,120,.08);
+}
+.app-shell .compact-timeline-item--refined:not(:last-child)::before {
+  inset-inline-start:22px !important;top:48px !important;
+  background:linear-gradient(#93beda,#dae8f2) !important;
+}
+.app-shell .compact-timeline-item--refined .compact-timeline-content {
+  padding:17px 20px !important;gap:7px !important;
+  background:#f9fbfe !important;box-shadow:0 4px 15px rgba(42,83,130,.025);
+}
+.app-shell .compact-timeline-item--refined.is-latest .compact-timeline-content {
+  background:#ecf6ff !important;border-color:#a9d4f0 !important;
+}
+.app-shell .compact-timeline-item--refined.is-assignment .compact-timeline-content {
+  border-inline-start:4px solid #21a3a2 !important;
+}
+.app-shell .compact-timeline-item--refined.is-work .compact-timeline-content {
+  border-inline-start:4px solid #627bd6 !important;
+}
+.app-shell .compact-timeline-item--refined.is-complete .compact-timeline-content {
+  border-inline-start:4px solid #26a577 !important;
+}
+.app-shell .compact-timeline-item--refined.is-cancelled .compact-timeline-content {
+  border-inline-start:4px solid #dd7861 !important;
+}
+.app-shell .compact-timeline-event-icon.is-general {background:#e9f2ff;color:#256ac0;border-color:#bfd9f9;}
+.app-shell .compact-timeline-event-icon.is-assignment {background:#dff8f3;color:#098b83;border-color:#a6e5dc;}
+.app-shell .compact-timeline-event-icon.is-work {background:#ecedff;color:#5b62c5;border-color:#d0d1ff;}
+.app-shell .compact-timeline-event-icon.is-complete {background:#e0f7e9;color:#148354;border-color:#ade1c3;}
+.app-shell .compact-timeline-event-icon.is-cancelled {background:#fff0ec;color:#bf5944;border-color:#f2c8bf;}
+.app-shell .compact-timeline-item--refined .compact-timeline-row b {
+  font-size:16px !important;line-height:1.6 !important;
+}
+.app-shell .compact-timeline-item--refined .compact-timeline-row time {
+  font-size:13px !important;line-height:1.6 !important;
+}
+.app-shell .compact-timeline-item--refined .compact-timeline-content small {
+  font-size:13px !important;font-weight:600;
+}
+.app-shell .compact-timeline-item--refined .compact-timeline-note {
+  font-size:14px !important;padding:11px 14px !important;line-height:1.8 !important;
+  background:rgba(232,240,249,.63) !important;border-inline-start:0 !important;
+}
+.dark .app-shell .compact-timeline-item--refined .compact-timeline-content {background:#24364d !important;}
+.dark .app-shell .compact-timeline-item--refined.is-latest .compact-timeline-content {background:#1a4055 !important;}
+.dark .app-shell .compact-timeline-item--refined .compact-timeline-note {background:#31485e !important;}
+.dark .app-shell .compact-timeline-event-icon.is-general {background:#244565;color:#a7cfff;}
+.dark .app-shell .compact-timeline-event-icon.is-assignment {background:#184b49;color:#91e5d9;}
+.dark .app-shell .compact-timeline-event-icon.is-work {background:#303d70;color:#b8bcff;}
+.dark .app-shell .compact-timeline-event-icon.is-complete {background:#1b4d3e;color:#a3ebbd;}
+.dark .app-shell .compact-timeline-event-icon.is-cancelled {background:#55322f;color:#ffb5a4;}
+@media(max-width:620px){
+ .app-shell .compact-timeline-item--refined {gap:10px !important;}
+ .app-shell .compact-timeline-event-icon {width:36px !important;height:36px !important;flex-basis:36px !important;border-radius:12px !important;}
+ .app-shell .compact-timeline-item--refined:not(:last-child)::before {inset-inline-start:17px !important;top:38px !important;}
+ .app-shell .compact-timeline-item--refined .compact-timeline-content {padding:13px !important;}
+ .app-shell .compact-timeline-item--refined .compact-timeline-row b {font-size:15px !important;}
+ .app-shell .compact-timeline-item--refined .compact-timeline-note {font-size:13.5px !important;}
+}
