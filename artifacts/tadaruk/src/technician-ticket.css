@@ -1187,3 +1187,147 @@
   .tech-detail-page .tech-hero-badges > .priority-badge,
   .tech-detail-page .tech-hero-badges > .tech-spec-tag {font-size:12px !important;}
 }
+
+/* Technician photo: opt-in depth effect from the unmodified image, no generated geometry. */
+.tech-reported-photo-wrap--depth {
+  display:flex;
+  align-items:flex-end;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.tech-photo-depth-trigger {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  min-height:39px;
+  padding:9px 13px;
+  border-radius:11px;
+  border:1px solid #a9d7e3;
+  background:linear-gradient(130deg,#f1fbfd,#edf5ff);
+  color:#1f5479;
+  font-size:13px;
+  font-weight:750;
+  cursor:pointer;
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+.tech-photo-depth-trigger svg {color:#168d9c;}
+.tech-photo-depth-trigger:hover,
+.tech-photo-depth-trigger:focus-visible {
+  border-color:#307190;
+  box-shadow:0 5px 15px rgba(48,113,144,.12);
+  transform:translateY(-1px);
+}
+.tech-depth-dialog {
+  width:min(92vw,780px);
+  max-width:780px;
+  max-height:min(90dvh,900px);
+  flex-direction:column;
+  gap:12px;
+  padding:15px;
+  border:1px solid rgba(153,209,225,.32);
+  border-radius:20px;
+  background:#fff;
+  box-shadow:0 24px 80px rgba(0,0,0,.32);
+  overflow:visible;
+}
+.tech-depth-toolbar {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+  width:100%;
+  padding-inline-end:36px;
+}
+.tech-depth-heading {
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  color:#1f3363;
+  font-size:15px;
+  font-weight:800;
+}
+.tech-depth-heading svg {color:#278c9c;}
+.tech-depth-actions {display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.tech-depth-actions button {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  min-height:34px;
+  padding:7px 12px;
+  border-radius:999px;
+  border:1px solid #d7e5f1;
+  background:#f7faff;
+  color:#42617f;
+  font-size:12.5px;
+  font-weight:700;
+  cursor:pointer;
+}
+.tech-depth-actions button.is-selected {
+  background:linear-gradient(120deg,#1f3363,#307190);
+  color:#fff;
+  border-color:transparent;
+}
+.tech-depth-stage {
+  display:grid;
+  place-items:center;
+  width:100%;
+  min-height:190px;
+  max-height:min(64dvh,600px);
+  overflow:hidden;
+  border-radius:16px;
+  background:radial-gradient(ellipse at 48% 37%,#edf5fb 0%,#dce8f4 100%);
+  border:1px solid #d5e5f2;
+  transform-origin:center;
+  transition:transform .18s ease-out;
+  will-change:transform;
+}
+.tech-depth-stage--active {
+  touch-action:none;
+  box-shadow:0 14px 28px rgba(31,51,99,.14),0 0 0 3px rgba(48,113,144,.09);
+}
+.tech-depth-image {
+  display:block;
+  width:100%;
+  height:auto;
+  max-height:min(61dvh,570px);
+  object-fit:contain;
+  user-select:none;
+  -webkit-user-drag:none;
+  pointer-events:none;
+}
+.tech-depth-caption {
+  margin:0;
+  color:#61748b;
+  font-size:12.5px;
+  line-height:1.7;
+  text-align:center;
+  max-width:65ch;
+}
+.tech-depth-dialog .tech-lightbox-close {
+  top:9px;
+  inset-inline-end:9px;
+  width:32px;height:32px;
+  background:#eaf2f9;
+  box-shadow:none;
+}
+.dark .tech-photo-depth-trigger {background:#213d52;color:#bce6ee;border-color:#486f82;}
+.dark .tech-depth-dialog {background:#1c2c42;border-color:#405870;}
+.dark .tech-depth-heading {color:#e4f2ff;}
+.dark .tech-depth-actions button {background:#243b55;color:#d5e6f5;border-color:#425a75;}
+.dark .tech-depth-actions button.is-selected {background:linear-gradient(120deg,#1f5480,#307f9b);color:#fff;}
+.dark .tech-depth-stage {background:#243b54;border-color:#47647e;}
+.dark .tech-depth-caption {color:#bfd2e5;}
+@media(max-width:600px) {
+  .tech-depth-dialog {width:min(96vw,780px);padding:12px;gap:10px;}
+  .tech-depth-toolbar {padding-inline-end:30px;}
+  .tech-depth-heading {font-size:13px;}
+  .tech-depth-actions button {font-size:12px;padding:6px 9px;}
+  .tech-depth-stage {max-height:60dvh;}
+  .tech-depth-image {max-height:57dvh;}
+}
+@media(prefers-reduced-motion:reduce) {
+  .tech-photo-depth-trigger,.tech-depth-stage {transition:none !important;transform:none !important;will-change:auto;}
+}
