@@ -23,7 +23,7 @@ export default function AuthMorph({lang}:{lang:Lang}){
    {name:tr(lang,'المبلّغ','Reporter'),icon:ClipboardList,role:'reporter'},
  ];
  return <main className="auth-morph-page" dir={lang==='ar'?'rtl':'ltr'}>
-  <header className="auth-morph-header"><Link href="/" className="auth-morph-brand">تدارك <small>TADARUK</small></Link><Link href="/" className="auth-morph-home">{tr(lang,'الرئيسية','Home')} <ArrowLeft size={16}/></Link></header>
+  <header className="auth-morph-header"><Link href="/" className="auth-morph-brand" aria-label={tr(lang,'تدارك - الرئيسية','Tadaruk - Home')}><img src={`${import.meta.env.BASE_URL}brand-logo.png`} alt="تدارك TADARUK" /></Link><Link href="/" className="auth-morph-home">{tr(lang,'الرئيسية','Home')} <ArrowLeft size={16}/></Link></header>
   <section className={`auth-morph-card ${signup?'auth-morph-signup':''}`} aria-label={tr(lang,'الدخول وإنشاء الحساب','Sign in and registration')}>
     <div className="auth-morph-form-area">
      <div className="auth-morph-login" aria-hidden={signup}>
