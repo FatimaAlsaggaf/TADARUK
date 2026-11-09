@@ -8824,3 +8824,85 @@ body:has(.dark .reporter-shell) #root {
   .landing .impact-pillar-copy { font-size: 13.5px !important; line-height: 1.65 !important; }
   .landing .impact-pillar-index { font-size: 19px !important; }
 }
+
+/* Landing balance: compact final CTA, hero-sized folder motion. */
+/* Final call to action: reduce unused vertical area without shrinking readability. */
+.landing .landing-end.wrap {
+  min-height: 0 !important;
+  width: min(calc(100% - 48px), 1120px) !important;
+  padding: 24px 34px !important;
+  gap: 24px !important;
+  margin-bottom: 18px !important;
+  border-radius: 19px !important;
+  box-shadow: 0 12px 30px rgba(31,51,99,.105) !important;
+}
+.landing .landing-end > div { max-width: 590px !important; }
+.landing .landing-end h2 {
+  font-size: clamp(27px, 2.65vw, 35px) !important;
+  line-height: 1.35 !important;
+  margin: 6px 0 3px !important;
+}
+.landing .landing-end > div > p {
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+}
+.landing .landing-end .eyebrow {
+  font-size: 13.5px !important;
+  line-height: 1.5 !important;
+}
+.landing .landing-end .landing-neon-cta {
+  flex: 0 0 auto !important;
+  min-height: 50px !important;
+  padding: 11px 23px !important;
+}
+
+/* Enlarge the existing folder and WhatsApp bubbles as a single scene.
+   Scaling the complete visual preserves all stagger timing and positions. */
+@media (min-width: 961px) {
+  .landing .impact-folder-showcase,
+  .dark .landing .impact-folder-showcase {
+    min-height: 475px !important;
+    overflow: visible !important;
+  }
+  .landing .impact-folder-showcase .folder-float {
+    transform: scale(1.16) !important;
+    transform-origin: center 57% !important;
+  }
+}
+@media (min-width: 641px) and (max-width: 960px) {
+  .landing .impact-folder-showcase,
+  .dark .landing .impact-folder-showcase {
+    min-height: 455px !important;
+    overflow: visible !important;
+  }
+  .landing .impact-folder-showcase .folder-float {
+    transform: scale(1.1) !important;
+    transform-origin: center 57% !important;
+  }
+}
+@media (max-width: 640px) {
+  .landing .landing-end.wrap {
+    width: calc(100% - 32px) !important;
+    padding: 21px 20px !important;
+    gap: 15px !important;
+    border-radius: 17px !important;
+  }
+  .landing .landing-end h2 { font-size: 29px !important; }
+  .landing .landing-end .eyebrow { font-size: 13px !important; }
+  .landing .landing-end .landing-neon-cta { min-height: 49px !important; }
+  .landing .impact-folder-showcase,
+  .dark .landing .impact-folder-showcase {
+    min-height: 365px !important;
+    overflow: visible !important;
+  }
+  .landing .impact-folder-showcase .folder-float {
+    transform: scale(1.045) !important;
+    transform-origin: center 55% !important;
+  }
+}
+@media (max-width: 390px) {
+  /* Avoid cropping the staggered message bubbles on narrow phones. */
+  .landing .impact-folder-showcase .folder-float {
+    transform: scale(.94) !important;
+  }
+}
