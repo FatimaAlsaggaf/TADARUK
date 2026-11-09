@@ -1938,11 +1938,61 @@
   .reporter-view .rw-new-report-stepper .rw-input-options { flex-wrap: wrap !important; }
 }
 
-/* Voice recorder: animate the existing outer action square (no nested square).
-   The real analyser-driven waveform and microphone controls remain untouched. */
+/* Compact voice recorder with three outward echo ripples.
+   Keep the actual microphone analyser and stop/start handlers unchanged. */
 .tadaruk-voice-stage {
   min-height: 210px;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.5);
+}
+.tadaruk-voice-stage .tadaruk-voice-square-wrap {
+  width: 112px;
+  height: 112px;
+  flex: none;
+  isolation: isolate;
+}
+.tadaruk-voice-stage .tadaruk-voice-active-square {
+  position: relative;
+  z-index: 2;
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 12px !important;
+  background: linear-gradient(135deg, #1f3363 0%, #24547a 50%, #307190 100%) !important;
+  color: #56f4ef !important;
+  box-shadow: 0 7px 18px rgba(31,51,99,.2) !important;
+  transform-origin: center;
+  animation: tadaruk-voice-square-spin 3s ease-in-out infinite;
+}
+/* Independent echoes do not rotate with the square. */
+.tadaruk-voice-echoes {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.tadaruk-voice-echo {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border: 2px solid #48bdbd;
+  border-radius: 13px;
+  opacity: 0;
+  box-shadow: 0 0 8px rgba(86,244,239,.12);
+  animation: tadaruk-voice-three-echoes 2.7s ease-out infinite;
+}
+.tadaruk-voice-echo--one { border-color: #56f4ef; animation-delay: 0s; }
+.tadaruk-voice-echo--two { border-color: #48bdbd; animation-delay: .9s; }
+.tadaruk-voice-echo--three { border-color: #307190; animation-delay: 1.8s; }
+@keyframes tadaruk-voice-square-spin {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(180deg); }
+}
+@keyframes tadaruk-voice-three-echoes {
+  0% { transform: scale(1); opacity: .85; }
+  65% { opacity: .3; }
+  100% { transform: scale(2.35); opacity: 0; }
 }
 .tadaruk-voice-stage .tadaruk-voice-waveform {
   min-height: 40px;
@@ -1954,42 +2004,22 @@
   max-height: 40px;
   border-radius: 999px;
 }
-.tadaruk-voice-stage .tadaruk-voice-active-square {
-  position: relative;
-  isolation: isolate;
-  background: linear-gradient(135deg, #1f3363 0%, #244f79 55%, #307190 100%);
-  box-shadow: 0 10px 25px rgba(31, 51, 99, .2);
-  transform-origin: center;
-  animation: tadaruk-voice-square-spin 3.2s ease-in-out infinite;
-}
-.tadaruk-voice-stage .tadaruk-voice-active-square::before,
-.tadaruk-voice-stage .tadaruk-voice-active-square::after {
-  content: "";
-  position: absolute;
-  inset: -9px;
-  border: 2px solid rgba(48, 173, 190, .48);
-  border-radius: 22px;
-  pointer-events: none;
-  animation: tadaruk-voice-square-wave 2s ease-out infinite;
-}
-.tadaruk-voice-stage .tadaruk-voice-active-square::after {
-  animation-delay: 1s;
-}
-@keyframes tadaruk-voice-square-spin {
-  0%, 100% { transform: rotate(0deg); }
-  50% { transform: rotate(180deg); }
-}
-@keyframes tadaruk-voice-square-wave {
-  0% { transform: scale(.9); opacity: .85; }
-  75%, 100% { transform: scale(1.28); opacity: 0; }
+.tadaruk-voice-stage .tadaruk-voice-waveform--recording > div {
+  background: linear-gradient(180deg, #56f4ef 0%, #48bdbd 28%, #307190 65%, #1f3363 100%) !important;
+  box-shadow: 0 0 3px rgba(48,113,144,.14);
 }
 .dark .tadaruk-voice-stage .tadaruk-voice-active-square {
-  background: linear-gradient(135deg, #1f3363, #307190 65%, #48a5b2);
+  background: linear-gradient(135deg, #1f3363, #307190 65%, #48a5b2) !important;
+}
+.dark .tadaruk-voice-stage .tadaruk-voice-waveform--recording > div {
+  background: linear-gradient(180deg, #56f4ef 0%, #48bdbd 35%, #307190 100%) !important;
 }
 @media (prefers-reduced-motion: reduce) {
   .tadaruk-voice-active-square,
-  .tadaruk-voice-active-square::before,
-  .tadaruk-voice-active-square::after { animation: none !important; }
+  .tadaruk-voice-echo { animation: none !important; }
+  .tadaruk-voice-echo--one { opacity: .35; transform: scale(1.35); }
+  .tadaruk-voice-echo--two { opacity: .2; transform: scale(1.7); }
+  .tadaruk-voice-echo--three { opacity: .12; transform: scale(2); }
 }
 /* No wide outlined bar around the voice button: one centered action and hint. */
 .reporter-view .rw-new-report-stepper .rw-voice-inline {
