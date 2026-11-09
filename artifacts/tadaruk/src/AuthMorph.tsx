@@ -25,6 +25,7 @@ export default function AuthMorph({lang}:{lang:Lang}){
  return <main className="auth-morph-page" dir={lang==='ar'?'rtl':'ltr'}>
   <header className="auth-morph-header"><Link href="/" className="auth-morph-brand" aria-label={tr(lang,'تدارك - الرئيسية','Tadaruk - Home')}><img src={`${import.meta.env.BASE_URL}brand-logo.png`} alt="تدارك TADARUK" /></Link><Link href="/" className="auth-morph-home">{tr(lang,'الرئيسية','Home')} <ArrowLeft size={16}/></Link></header>
   <section className={`auth-morph-card ${signup?'auth-morph-signup':''}`} aria-label={tr(lang,'الدخول وإنشاء الحساب','Sign in and registration')}>
+    <div className="auth-signup-back" aria-hidden={!signup}><span>{tr(lang,'لديك حساب بالفعل؟','Already have an account?')}</span><button type="button" onClick={()=>toggle(false)} tabIndex={signup?0:-1}>{tr(lang,'تسجيل الدخول','Sign in')} <ArrowLeft size={16}/></button></div>
     <div className="auth-morph-form-area">
      <div className="auth-morph-login" aria-hidden={signup}>
       <form className="auth-morph-login-form" onSubmit={onLogin}>

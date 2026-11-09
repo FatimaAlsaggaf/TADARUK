@@ -177,3 +177,75 @@
  .auth-morph-register .org-fields{gap:10px}
  .auth-morph-register .org-steps small{font-size:10.5px !important}
 }
+
+/* Single-card registration: circle exits completely; wizard owns whole surface */
+.auth-morph-card.auth-morph-signup{height:auto !important;min-height:760px !important;overflow:visible !important;isolation:isolate;}
+.auth-morph-card.auth-morph-signup::before{transform:translate(150%,-50%) !important;right:0 !important;opacity:0 !important;transition:transform 1.25s cubic-bezier(.63,.05,.34,1),right 1.25s,opacity .35s .83s !important;pointer-events:none}
+.auth-morph-card.auth-morph-signup .auth-morph-panels{visibility:hidden;opacity:0;pointer-events:none;transition:visibility 0s 1.15s,opacity .2s .25s}
+.auth-morph-card.auth-morph-signup .auth-morph-panel{visibility:hidden;pointer-events:none;opacity:0 !important}
+.auth-morph-signup .auth-morph-login{visibility:hidden;pointer-events:none;opacity:0 !important}
+.auth-morph-card.auth-morph-signup .auth-morph-form-area{position:relative !important;inset:auto !important;z-index:5 !important;min-height:760px}
+.auth-morph-card.auth-morph-signup .auth-morph-register{position:relative !important;left:auto !important;right:auto !important;top:auto !important;bottom:auto !important;width:100% !important;min-height:760px;height:auto !important;transform:none !important;opacity:1 !important;pointer-events:auto;align-items:stretch !important;justify-content:stretch !important;transition:opacity .55s .5s !important}
+.auth-morph-card.auth-morph-signup .auth-morph-register-content{overflow:visible !important;height:auto !important;width:100%;max-width:1050px;margin:0 auto;padding:105px clamp(28px,6vw,90px) 62px !important;}
+.auth-morph-signup .auth-morph-register .org-screen{width:100% !important;min-height:0 !important;overflow:visible !important}
+.auth-morph-signup .auth-morph-register .org-layout{width:100% !important;max-width:none !important;min-height:0 !important;overflow:visible !important}
+.auth-morph-signup .auth-morph-register .org-panel{background:transparent !important;overflow:visible !important;padding:0 !important}
+.auth-morph-signup .auth-morph-register .org-form{width:100%;max-width:960px !important;margin:0 auto;gap:23px !important}
+.auth-morph-signup .auth-morph-register .org-form h2{text-align:center;font-size:clamp(27px,3vw,37px) !important;line-height:1.5 !important}
+.auth-morph-signup .auth-morph-register .org-eyebrow{text-align:center;font-size:14px !important;margin-bottom:-15px}
+.auth-morph-signup .auth-morph-register .org-steps{margin:6px 0 22px !important;padding:9px 0 30px !important;gap:8px !important}
+.auth-morph-signup .auth-morph-register .org-steps::before{top:29px}
+.auth-morph-signup .auth-morph-register .org-steps>div span{width:37px !important;height:37px !important}
+.auth-morph-signup .auth-morph-register .org-steps small{font-size:14px !important}
+.auth-morph-signup .auth-morph-register .org-fields{gap:20px 24px !important;max-width:820px;width:100%;margin:0 auto}
+.auth-morph-signup .auth-morph-register .org-field{gap:9px;font-size:16px !important}
+.auth-morph-signup .auth-morph-register .org-field input,.auth-morph-signup .auth-morph-register .org-field select{border-radius:14px !important;background:#f9fbfd !important;border:1px solid #dce6ee !important;min-height:55px !important;font-size:16px !important;color:#244764 !important;box-shadow:none !important;transition:border-color .2s,box-shadow .2s !important}
+.auth-morph-signup .auth-morph-register .org-field input:focus,.auth-morph-signup .auth-morph-register .org-field select:focus{background:white !important;border-color:#3b90ac !important;box-shadow:0 0 0 3px #3295af1a !important}
+.auth-morph-signup .auth-morph-register .org-field select{appearance:none !important;-webkit-appearance:none !important;padding-inline-end:15px !important;padding-inline-start:42px !important;cursor:pointer}
+.auth-morph-signup .auth-morph-register .org-select-wrap{position:relative;width:100%;display:block}
+.auth-morph-signup .auth-morph-register .org-select-wrap>svg{position:absolute;inset-inline-start:16px;top:50%;transform:translateY(-50%);pointer-events:none;color:#668baa}
+.auth-morph-signup .auth-morph-register .org-field-wide{grid-column:1/-1}
+.auth-morph-signup .auth-morph-register .org-step-content{display:flex;flex-direction:column;gap:23px}
+.auth-morph-signup .auth-morph-register .org-step-hint{text-align:center;color:#8194a7;font-size:16px;line-height:1.9;margin:0}
+.auth-morph-signup .auth-morph-register .org-site-step{max-width:820px;width:100%;margin:0 auto;gap:18px !important}
+.auth-morph-signup .auth-morph-register .org-site-step .org-fields{margin:0 auto}
+.auth-morph-signup .auth-morph-register .org-add-branch{width:fit-content;margin-inline-start:0;margin-inline-end:auto}
+.auth-morph-signup .auth-morph-register .org-city-group{background:#f8fbfd;border-radius:16px !important;padding:18px 20px !important}
+.auth-morph-signup .auth-morph-register .org-city-heading{font-size:18px !important}
+.auth-morph-signup .auth-morph-register .org-site-chips{gap:10px !important}
+.auth-morph-signup .auth-morph-register .org-site-chips>span{padding:9px 14px !important;font-size:15px !important}
+.auth-morph-signup .auth-morph-register .org-bottom{max-width:820px;width:100%;margin:10px auto 0 !important;border-top:1px solid #edf1f5;padding-top:23px;justify-content:flex-start !important}
+.auth-morph-signup .auth-morph-register .org-next{min-width:125px !important;padding:11px 22px !important;border-radius:12px !important}
+.auth-morph-signup .auth-morph-register .org-prev{border-radius:12px !important}
+.auth-morph-signup .auth-morph-register .org-error{max-width:820px;margin:0 auto;width:100%}
+.auth-morph-signup .auth-morph-register .org-access-page,.auth-morph-signup .auth-morph-register .org-final-review{width:100%;max-width:850px;margin:0 auto;gap:18px !important}
+.auth-morph-signup .auth-morph-register .org-access-explain{gap:13px}
+.auth-morph-signup .auth-morph-register .org-access-explain>div{padding:17px !important;border-radius:14px}
+.auth-morph-signup .auth-morph-register .org-access-explain b{font-size:18px !important}
+.auth-morph-signup .auth-morph-register .org-access-explain small{font-size:14px !important}
+.auth-morph-signup .auth-morph-register .org-invite-list{max-height:280px !important}
+.auth-morph-signup .auth-morph-register .org-invite-summary{padding:14px 0 !important}
+.auth-morph-signup .auth-morph-register .org-reporter-access{padding:19px !important}
+.auth-morph-signup .auth-morph-register .org-final-disclosure{font-size:13px !important}
+.auth-morph-signup .auth-morph-register .org-success{min-height:520px !important}
+.auth-signup-back{position:absolute;top:29px;inset-inline-end:clamp(26px,5vw,67px);z-index:8;display:flex;align-items:center;gap:13px;color:#687f96;font-size:16px;opacity:0;pointer-events:none;transform:translateY(-9px);transition:opacity .3s,transform .3s}
+.auth-morph-signup .auth-signup-back{opacity:1;pointer-events:auto;transform:translateY(0)}
+.auth-signup-back button{border:0;background:#edf6fa;color:#246e92;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:50px;font-family:inherit;font-size:15px;font-weight:750}
+.auth-signup-back button:hover{background:#dceff7}
+@media(max-width:850px){
+ .auth-morph-card.auth-morph-signup{height:auto !important;min-height:735px !important}
+ .auth-morph-card.auth-morph-signup .auth-morph-form-area{min-height:735px}
+ .auth-morph-card.auth-morph-signup .auth-morph-register{min-height:735px;height:auto !important;top:auto !important}
+ .auth-morph-card.auth-morph-signup .auth-morph-register-content{padding:112px 30px 45px !important}
+ .auth-morph-signup .auth-morph-register .org-steps small{font-size:11px !important}
+}
+@media(max-width:560px){
+ .auth-morph-card.auth-morph-signup .auth-morph-register-content{padding:102px 18px 38px !important}
+ .auth-morph-signup .auth-morph-register .org-fields{grid-template-columns:1fr !important;gap:13px !important}
+ .auth-morph-signup .auth-morph-register .org-steps small{font-size:10px !important}
+ .auth-morph-signup .auth-morph-register .org-steps::before{top:24px}
+ .auth-morph-signup .auth-morph-register .org-steps>div span{width:30px !important;height:30px !important}
+ .auth-morph-signup .auth-morph-register .org-access-explain{grid-template-columns:1fr}
+ .auth-signup-back{inset-inline-end:17px;top:22px;gap:6px;font-size:12px}
+ .auth-signup-back button{font-size:12px;padding:8px 10px}
+}

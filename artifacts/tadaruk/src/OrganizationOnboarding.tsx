@@ -1,6 +1,6 @@
 import {useState,type FormEvent} from 'react';
 import {Link,useLocation} from 'wouter';
-import {ArrowLeft,ArrowRight,Building2,Check,CheckCircle2,ChevronLeft,ClipboardList,Copy,Eye,EyeOff,Mail,MapPin,Plus,ShieldCheck,UserRound,Users,Wrench,X,MessageCircle,Send,Smartphone,LogIn} from 'lucide-react';
+import {ArrowLeft,ArrowRight,Building2,Check,CheckCircle2,ChevronLeft,ChevronDown,ClipboardList,Copy,Eye,EyeOff,Mail,MapPin,Plus,ShieldCheck,UserRound,Users,Wrench,X,MessageCircle,Send,Smartphone,LogIn} from 'lucide-react';
 import './organization-onboarding.css';
 
 type Lang='ar'|'en';
@@ -22,6 +22,8 @@ export default function OrganizationOnboarding({lang,mode}:{lang:Lang;mode:'sign
  const [member,setMember]=useState({name:'',email:'',phone:'',role:'technician' as Role,specialty:'plumbing',branch:''});
  const [sites,setSites]=useState<Site[]>([]);
  const [newCity,setNewCity]=useState('');
+ const [otherSector,setOtherSector]=useState('');
+ const [otherCity,setOtherCity]=useState('');
  const [newBranch,setNewBranch]=useState('');
  const [switching,setSwitching]=useState(false);
  const [reportersByInvite,setReportersByInvite]=useState(true);
@@ -29,7 +31,12 @@ export default function OrganizationOnboarding({lang,mode}:{lang:Lang;mode:'sign
  const [loginPassword,setLoginPassword]=useState('');
  const set=(key:keyof typeof data,value:string)=>{setData(old=>({...old,[key]:value}));setError('')};
  const switchPage=(path:'/login'|'/signup')=>{setSwitching(true);window.setTimeout(()=>go(path),570)};
- const addSite=()=>{if(!newCity||!newBranch.trim()){setError(tr(lang,'اختاري المدينة واكتبي اسم الفرع.','Select a city and enter a branch name.'));return;}if(sites.some(x=>x.city===newCity&&x.name===newBranch.trim())){setError(tr(lang,'هذا الفرع مضاف بالفعل.','This branch already exists.'));return;}setSites(old=>[...old,{id:Date.now()+old.length,city:newCity,name:newBranch.trim()}]);setNewBranch('');setError('')};
+ const addSite=()=>{
+   const city=newCity==='other'?otherCity.trim():newCity;
+   if(!city||!newBranch.trim()){setError(tr(lang,'اختر المدينة واكتب اسم الفرع.','Select a city and enter a branch name.'));return;}
+   if(sites.some(x=>x.city===city&&x.name===newBranch.trim())){setError(tr(lang,'هذا الفرع مضاف بالفعل.','This branch already exists.'));return;}
+   setSites(old=>[...old,{id:Date.now()+old.length,city,name:newBranch.trim()}]);setNewBranch('');setError('');
+ };
  const siteNames=sites.map(s=>s.name);
  const normalizedPhone=(phone:string)=>phone.replace(/[^\d]/g,'').replace(/^0(?=5\d{8}$)/,'966');
  const inviteUrl=(role:Role,record?:Member)=>{
@@ -47,7 +54,7 @@ export default function OrganizationOnboarding({lang,mode}:{lang:Lang;mode:'sign
  const copy=()=>{if(navigator.clipboard){void navigator.clipboard.writeText(inviteText).then(()=>setCopied(true)).catch(()=>setCopied(false))}};
  const addMember=()=>{
    if(!member.name.trim()||(!member.phone.trim()&&!member.email.trim())||(member.email.trim()&&!/^\S+@\S+\.\S+$/.test(member.email))){
-    setError(tr(lang,'أدخلي الاسم ورقم الجوال أو البريد الإلكتروني.','Enter a name and phone or email.'));return;
+    setError(tr(lang,'أدخل الاسم ورقم الجوال أو البريد الإلكتروني.','Enter a name and phone or email.'));return;
    }
    if(member.email.trim()&&members.some(x=>x.email.toLowerCase()===member.email.trim().toLowerCase())){
      setError(tr(lang,'هذا البريد مضاف مسبقًا.','This email is already added.'));return;
@@ -57,10 +64,11 @@ export default function OrganizationOnboarding({lang,mode}:{lang:Lang;mode:'sign
  };
  const next=(event:FormEvent<HTMLFormElement>)=>{
    event.preventDefault();setError('');
+   if(step===0&&data.sector==='other'&&!otherSector.trim()){setError(tr(lang,'اكتب نوع المنشأة.','Enter the organization type.'));return;}
    if(step===1&&data.password.length<8){setError(tr(lang,'كلمة المرور لا تقل عن 8 أحرف.','Use at least 8 characters.'));return;}
-   if(step===2&&sites.length===0){setError(tr(lang,'أضيفي فرعًا واحدًا على الأقل للمتابعة.','Add at least one branch to continue.'));return;}
+   if(step===2&&sites.length===0){setError(tr(lang,'أضف فرعًا واحدًا على الأقل للمتابعة.','Add at least one branch to continue.'));return;}
    if(step===4){
-     const snapshot={organization:data.organization,sector:data.sector,city:data.city,owner:data.owner,email:data.email,
+     const snapshot={organization:data.organization,sector:data.sector==='other'?otherSector:data.sector,city:data.city,owner:data.owner,email:data.email,
        branch:data.branch,branchCity:data.branchCity,departments:data.departments,
        sites,members,reportersByInvite};
      try{localStorage.setItem('tadaruk-organization-preview',JSON.stringify(snapshot))}catch{}
@@ -73,7 +81,7 @@ export default function OrganizationOnboarding({lang,mode}:{lang:Lang;mode:'sign
     required={required} minLength={type==='password'?8:undefined} onChange={e=>set(key,e.target.value)}/>
  </label>;
  const Back=lang==='ar'?ArrowRight:ArrowLeft;
- const title=mode==='login'?tr(lang,'أهلًا بعودتك','Welcome back'):tr(lang,'كل شيء يبدأ من منشأتك','It starts with your organization');
+ const title=mode==='login'?tr(lang,'أهلًا بعودتك','Welcome back'):tr(lang,'إعداد المنشأة','Organization setup');
  return <div className="org-screen" dir={lang==='ar'?'rtl':'ltr'}>
   <header className="org-top">
     <Link href="/" className="org-brand">تدارك <small>TADARUK</small></Link>
@@ -114,24 +122,27 @@ export default function OrganizationOnboarding({lang,mode}:{lang:Lang;mode:'sign
         <div className="org-review"><b>{data.organization}</b><span>{data.branch}</span><span>{members.length} {tr(lang,'أعضاء تمت إضافتهم','team members added')}</span></div>
         <button type="button" className="org-next org-next--full" onClick={()=>go('/demo')}>{tr(lang,'الدخول إلى لوحة التحكم','Open dashboard')}<ChevronLeft size={18}/></button>
       </div>:<form className="org-form" onSubmit={next}>
-        <span className="org-eyebrow">{tr(lang,'ابدئي بخطوات بسيطة','GET STARTED')}</span>
+        <span className="org-eyebrow">{tr(lang,'إعداد المنشأة','ORGANIZATION SETUP')}</span>
         <h2>{[
           tr(lang,'بيانات المنشأة','Organization details'),
           tr(lang,'حساب المسؤول','Account owner'),
-          tr(lang,'إعداد الفرع الأول','First branch'),
+          tr(lang,'الفروع والمدن','Branches and cities'),
           tr(lang,'صلاحيات أعضاء المنشأة','Team access'),
           tr(lang,'مراجعة الدعوات','Review invitations')
         ][step]}</h2>
         <div className="org-steps" aria-label={tr(lang,'خطوات إعداد المنشأة','Organization setup progress')}>
          {branches(lang).map((name,i)=><div key={name} className={i<step?'done':i===step?'current':''}><span>{i<step?<Check size={14}/>:i+1}</span><small>{name}</small></div>)}
         </div>
-        {step===0&&<div className="org-fields">
-          {field('organization','اسم المنشأة','Organization name',tr(lang,'مثال: مجموعة الأفق','Example: Horizon Group'))}
-          <label className="org-field"><span>{tr(lang,'نوع المنشأة','Organization type')}</span><select required value={data.sector} onChange={e=>set('sector',e.target.value)}>
-            <option value="">{tr(lang,'اختاري نوع المنشأة','Choose organization type')}</option>
-            {[['restaurant','مطاعم ومقاهي','Restaurants'],['health','منشأة صحية','Healthcare'],['education','تعليمية','Education'],['retail','تجزئة ومتاجر','Retail'],['office','مكاتب ومنشآت','Offices'],['other','أخرى','Other']].map(([v,ar,en])=><option key={v} value={v}>{tr(lang,ar,en)}</option>)}
-          </select></label>
-          {field('city','المدينة','City',tr(lang,'الرياض','Riyadh'))}
+        {step===0&&<div className="org-step-content">
+          <p className="org-step-hint">{tr(lang,'ابدأ بإضافة بيانات المنشأة الأساسية، ثم أضف الفروع في الخطوة التالية.','Start with your organization details. Branches come later.')}</p>
+          <div className="org-fields">
+            {field('organization','اسم المنشأة','Organization name',tr(lang,'مثال: مجموعة الأفق','Example: Horizon Group'))}
+            <label className="org-field"><span>{tr(lang,'نوع المنشأة','Organization type')}</span><span className="org-select-wrap"><select required value={data.sector} onChange={e=>set('sector',e.target.value)}>
+              <option value="">{tr(lang,'اختر نوع المنشأة','Choose organization type')}</option>
+              {[['restaurant','مطاعم ومقاهي','Restaurants'],['health','منشأة صحية','Healthcare'],['education','تعليمية','Education'],['retail','تجزئة ومتاجر','Retail'],['office','مكاتب ومنشآت','Offices'],['other','أخرى','Other']].map(([v,ar,en])=><option key={v} value={v}>{tr(lang,ar,en)}</option>)}
+            </select><ChevronDown size={17}/></span></label>
+            {data.sector==='other'&&<label className="org-field org-field-wide"><span>{tr(lang,'حدد نوع المنشأة','Specify organization type')}</span><input value={otherSector} required onChange={e=>{setOtherSector(e.target.value);setError('')}} placeholder={tr(lang,'اكتب نوع المنشأة','Enter organization type')}/></label>}
+          </div>
         </div>}
         {step===1&&<div className="org-fields">
           {field('owner','اسم مسؤول الحساب','Account owner name',tr(lang,'الاسم الكامل','Full name'))}
@@ -143,12 +154,13 @@ export default function OrganizationOnboarding({lang,mode}:{lang:Lang;mode:'sign
           </div>
         </div>}
         {step===2&&<div className="org-site-step">
-          <p className="org-muted">{tr(lang,'أضيفي فروع المنشأة حسب مدنها؛ يمكن إضافة أكثر من فرع في كل مدينة.','Add branches by city; you can add multiple branches in each city.')}</p>
+          <p className="org-muted">{tr(lang,'يمكن إضافة عدة مدن وفروع. تظهر الفروع المحددة للمبلّغ في حسابه.','Add multiple cities and branches. Reporters can select the available branches from their workspace.')}</p>
           <div className="org-fields">
-            <label className="org-field"><span>{tr(lang,'المدينة','City')}</span><select value={newCity} onChange={e=>setNewCity(e.target.value)}><option value="">{tr(lang,'اختاري المدينة','Select a city')}</option>{[['الرياض','Riyadh'],['جدة','Jeddah'],['مكة','Makkah'],['المدينة المنورة','Madinah'],['الدمام','Dammam'],['الخبر','Khobar'],['جازان','Jazan'],['أبو عريش','Abu Arish'],['أبها','Abha'],['تبوك','Tabuk'],['حائل','Hail'],['بريدة','Buraydah'],['الطائف','Taif'],['نجران','Najran'],['ينبع','Yanbu'],['الأحساء','Al Ahsa']].map(([ar,en])=><option key={ar} value={ar}>{tr(lang,ar,en)}</option>)}</select></label>
+            <label className="org-field"><span>{tr(lang,'المدينة','City')}</span><span className="org-select-wrap"><select value={newCity} onChange={e=>{setNewCity(e.target.value);setError('')}}><option value="">{tr(lang,'اختر المدينة','Select a city')}</option>{[['الرياض','Riyadh'],['جدة','Jeddah'],['مكة','Makkah'],['المدينة المنورة','Madinah'],['الدمام','Dammam'],['الخبر','Khobar'],['جازان','Jazan'],['أبو عريش','Abu Arish'],['أبها','Abha'],['تبوك','Tabuk'],['حائل','Hail'],['بريدة','Buraydah'],['الطائف','Taif'],['نجران','Najran'],['ينبع','Yanbu'],['الأحساء','Al Ahsa'],['other','أخرى','Other']].map(([v,ar,en])=><option key={v} value={v}>{tr(lang,ar,en)}</option>)}</select><ChevronDown size={17}/></span></label>
             <label className="org-field"><span>{tr(lang,'اسم الفرع','Branch name')}</span><input value={newBranch} onChange={e=>setNewBranch(e.target.value)} placeholder={tr(lang,'مثال: فرع العليا','Example: Olaya branch')}/></label>
           </div>
-          <button type="button" className="org-add" onClick={addSite}><Plus size={17}/>{tr(lang,'إضافة الفرع','Add branch')}</button>
+          {newCity==='other'&&<label className="org-field"><span>{tr(lang,'اسم المدينة','City name')}</span><input value={otherCity} onChange={e=>setOtherCity(e.target.value)} placeholder={tr(lang,'اكتب اسم المدينة','Enter city name')}/></label>}
+          <button type="button" className="org-add org-add-branch" onClick={addSite}><Plus size={17}/>{tr(lang,'إضافة الفرع','Add branch')}</button>
           {sites.length>0&&<div className="org-site-groups">{Array.from(new Set(sites.map(s=>s.city))).map(city=><div className="org-city-group" key={city}><div className="org-city-heading"><MapPin size={15}/><b>{city}</b><small>{sites.filter(s=>s.city===city).length} {tr(lang,'فروع','branches')}</small></div><div className="org-site-chips">{sites.filter(s=>s.city===city).map(s=><span key={s.id}>{s.name}<button type="button" aria-label={tr(lang,'حذف الفرع','Remove branch')} onClick={()=>setSites(old=>old.filter(x=>x.id!==s.id))}><X size={13}/></button></span>)}</div></div>)}</div>}
           <div className="org-info-inline"><MapPin size={16}/>{tr(lang,'سيشاهد المبلّغ الفروع التي أضافتها منشأته في قائمة الفروع الموجودة أصلًا في واجهته.','Reporters will choose from their organization’s branches in the existing branch selector.')}</div>
         </div>}
@@ -177,7 +189,7 @@ export default function OrganizationOnboarding({lang,mode}:{lang:Lang;mode:'sign
           {members.length>0?members.map(m=><div className="org-invite-summary" key={m.id}>
             <span><b>{m.name}</b><small>{m.phone||m.email} · {m.branch}</small></span>
             <div className="org-share-actions"><button type="button" onClick={()=>shareWhatsapp(m.role,m)} className="org-share-wa"><MessageCircle size={15}/>{tr(lang,'واتساب','WhatsApp')}</button>{m.email&&<button type="button" onClick={()=>shareEmail(m.role,m)}><Mail size={15}/></button>}<button type="button" onClick={()=>copyInvite(m.role,m)}><Copy size={15}/></button></div>
-          </div>):<p className="org-muted">{tr(lang,'لم تضيفي أعضاء بعد. يمكنك إضافتهم من لوحة الإدارة لاحقًا.','No members yet. You can invite them later from the dashboard.')}</p>}
+          </div>):<p className="org-muted">{tr(lang,'لم تتم إضافة أعضاء بعد. يمكن دعوتهم لاحقًا من لوحة الإدارة.','No members yet. You can invite them later from the dashboard.')}</p>}
           <div className="org-flow-explainer">
             <h3>{tr(lang,'كيف تصل الصلاحيات؟','How does access work?')}</h3>
             <div><span>1</span>{tr(lang,'المسؤول يحدد الفرع والدور والتخصص للفني.','The owner defines each member’s branch, role and specialty.')}</div>
