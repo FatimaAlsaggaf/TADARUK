@@ -3160,3 +3160,16 @@
 .reporter-view .rw-home-intro--enhanced::after{content:none !important;display:none !important;}
 @keyframes rw-beacon-breathe{from{transform:translateY(-50%) scale(.85);opacity:.65}to{transform:translateY(-50%) scale(1.13);opacity:1}}
 @media(prefers-reduced-motion:reduce){.reporter-view .rw-home-intro--enhanced::before{animation:none !important;transform:translateY(-50%) !important;}}
+
+/* Reporter hero: one meaningful floating report illustration. */
+.reporter-view .rw-home-intro--enhanced{display:grid !important;grid-template-columns:minmax(0,1fr) 175px !important;min-height:224px !important;gap:24px !important;align-items:center !important;}
+.reporter-view .rw-reporter-hero-art{position:relative;z-index:2;width:152px;height:168px;display:grid;place-items:center;justify-self:center;}
+.reporter-view .rw-hero-art-halo{position:absolute;width:148px;height:148px;border-radius:50%;border:1px solid #c9eef546;box-shadow:0 0 0 18px #c9eef50d,0 0 0 36px #c9eef509;}
+.reporter-view .rw-hero-art-paper{position:relative;width:91px;height:112px;color:#cceef7;filter:drop-shadow(0 15px 15px #092b4f4d);transform:rotate(-5deg);animation:rw-reporter-illustration 5s ease-in-out infinite;}
+.reporter-view .rw-hero-art-paper svg{width:100%;height:100%;}
+.reporter-view .rw-hero-art-signal{position:absolute;right:10px;top:13px;display:flex;gap:4px;align-items:center;}
+.reporter-view .rw-hero-art-signal span{width:5px;height:5px;background:#a0e1f1;border-radius:100%;animation:rw-hero-dot 2.3s ease-in-out infinite;}
+.reporter-view .rw-hero-art-signal span:nth-child(2){animation-delay:.22s}.reporter-view .rw-hero-art-signal span:nth-child(3){animation-delay:.44s}
+@keyframes rw-reporter-illustration{50%{transform:translateY(-7px) rotate(-3deg)}}@keyframes rw-hero-dot{50%{opacity:.35;transform:translateY(-3px)}}
+@media(max-width:650px){.reporter-view .rw-home-intro--enhanced{grid-template-columns:minmax(0,1fr) !important;}.reporter-view .rw-reporter-hero-art{display:none;}}
+@media(prefers-reduced-motion:reduce){.reporter-view .rw-hero-art-paper,.reporter-view .rw-hero-art-signal span{animation:none !important;}}

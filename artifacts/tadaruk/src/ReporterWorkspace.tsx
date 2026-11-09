@@ -148,7 +148,11 @@ export function ReporterHomePage({ lang, user }: ReporterPageProps) {
           {lang === 'ar' ? <ArrowLeft size={16}/> : <ArrowRight size={16}/>}
         </Link>
       </div>
-
+      <div className="rw-reporter-hero-art" aria-hidden="true">
+        <span className="rw-hero-art-halo"/>
+        <span className="rw-hero-art-paper"><svg viewBox="0 0 90 102" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="12" y="7" width="66" height="87" rx="15" stroke="currentColor" strokeWidth="2" fill="rgba(255,255,255,.09)"/><path d="M28 32h34M28 44h23M28 57h29" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity=".72"/><circle cx="58" cy="72" r="13" fill="#d3f6ff" stroke="#79c5dc" strokeWidth="2"/><path d="m52 72 4 4 8-9" stroke="#1c5475" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg></span>
+        <span className="rw-hero-art-signal"><span/><span/><span/></span>
+      </div>
     </section>
     {loading ? <TicketLoadingState/> : failed ? <div className="rw-error" role="alert" data-testid="state-home-error">
       <CircleAlert size={19}/>

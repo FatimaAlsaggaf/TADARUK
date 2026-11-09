@@ -1519,7 +1519,13 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
     });
   };
   const exceptionalReassign = rawTicket?.status==='in_progress'||rawTicket?.status==='awaiting_confirmation';
-  const availableReplacementTechnicians = (technicians||[]).filter(t=>t.active&&t.available&&t.branchId===rawTicket?.branchId&&t.specialization===rawTicket?.specialization&&t.id!==rawTicket?.technicianId);
+  // Prefer the exact skill match, but let the manager explicitly assign another available
+  // technician from the SAME branch if there are no matching specialists.
+  const branchAvailableTechnicians = (technicians||[]).filter(t=>t.active&&t.available&&t.branchId===rawTicket?.branchId&&t.id!==rawTicket?.technicianId);
+  const exactSpecialists = branchAvailableTechnicians.filter(t=>t.specialization===rawTicket?.specialization);
+  const otherSpecialists = branchAvailableTechnicians.filter(t=>t.specialization!==rawTicket?.specialization);
+  const availableReplacementTechnicians = [...exactSpecialists,...otherSpecialists];
+  const selectedDifferentSpecialty = Boolean(technicianId && branchAvailableTechnicians.some(t=>t.id===technicianId&&t.specialization!==rawTicket?.specialization));
 
   const ticket = rawTicket || (FALLBACK_INITIAL_TICKETS as unknown as Ticket[]).find(t => t.id === id) || (FALLBACK_INITIAL_TICKETS[0] as unknown as Ticket);
   const manager=user.role==='manager',technician=user.role==='technician',reporter=user.role==='reporter';
@@ -1827,24 +1833,30 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
                 </div>
               </div>
               {availableReplacementTechnicians.length === 0 ? (
-                <p className="manager-assignment-empty" role="status">
-                  {ticket.technicianId
-                    ? tr(lang,'لا يوجد فني بديل متاح حاليًا.','No replacement technician is available right now.')
-                    : tr(lang,'لا يوجد فني متاح لهذا البلاغ حاليًا.','No technician is available for this ticket right now.')}
-                </p>
+                <div className="manager-assignment-empty manager-assignment-empty--action">
+                  <p>{tr(lang,'لا يوجد فني متاح بهذا الفرع حاليًا.','No available technician in this branch.')}</p>
+                  <Link href="/workspace/technicians" className="manager-add-tech-link"><Plus size={16}/>{tr(lang,'إضافة فني جديد','Add a technician')}</Link>
+                </div>
               ) : ticket.technicianId && !showAssignmentEditor ? (
                 <Button kind="outline" onClick={()=>{setShowAssignmentEditor(true);setReassignError('');setTechnicianId('');}} data-testid="button-manager-edit-assignment">
                   <Users size={16}/>{ticket.technicianId?tr(lang,'تغيير الفني','Change technician'):tr(lang,'إسناد فني','Assign technician')}
                 </Button>
               ) : (
                 <div className="manager-assignment-form">
+                  {!exactSpecialists.length && <div className="manager-cross-specialty-message" role="status">
+                    <CircleAlert size={17}/>
+                    <span>{tr(lang,'لا يوجد فني متاح بالتخصص المطلوب. يمكنك اختيار فني آخر من نفس الفرع بعد مراجعة تخصصه.','No available technician matches the required specialty. You may select another available technician from the same branch after reviewing their skill.')}</span>
+                  </div>}
+                  {exactSpecialists.length>0 && <p className="manager-skill-hint">{tr(lang,'الفنيون المطابقون للتخصص يظهرون أولًا.','Matching specialists appear first.')}</p>}
                   {exceptionalReassign && <p className="manager-assignment-exception"><CircleAlert size={16}/><span>{tr(lang,'بدأ العمل؛ يلزم توضيح سبب التغيير عند التأكيد.','Work has started; a reason will be required to confirm the change.')}</span></p>}
                   <label className="field-label">
                     <span>{ticket.technicianId?tr(lang,'الفني البديل','Replacement technician'):tr(lang,'اختر الفني المتاح','Choose available technician')}</span>
                     <TadarukSelect value={technicianId} onValueChange={setTechnicianId}
                       ariaLabel={tr(lang,'اختر الفني البديل','Choose replacement technician')}
                       dir={lang==='ar'?'rtl':'ltr'} placeholder={tr(lang,'اختر فنيًا','Choose technician')}
-                      options={availableReplacementTechnicians.map(t=>({value:t.id,label:`${t.name} · ${classificationText(t.specialization,lang)}`}))}/>
+                      options={availableReplacementTechnicians.map(t=>({value:t.id,label:`${t.name} · ${classificationText(t.specialization,lang)}${t.specialization===ticket.specialization?' · '+tr(lang,'مطابق','Match'):''}`}))}/>
+                    {selectedDifferentSpecialty&&<p className="manager-skill-warning"><CircleAlert size={15}/>{tr(lang,'تنبيه: تخصص هذا الفني مختلف عن تخصص البلاغ. تأكدي من ملاءمته قبل الإسناد.','This technician has a different specialization. Confirm suitability before assigning.')}</p>}
+                    <Link href="/workspace/technicians" className="manager-add-tech-link manager-add-tech-link--small"><Plus size={14}/>{tr(lang,'إضافة فني بدلًا من ذلك','Add another technician')}</Link>
                   </label>
                   <div className="manager-assignment-buttons">
                     <Button kind="outline" disabled={!technicianId||action.isPending}
@@ -1902,7 +1914,7 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
       <AlertDialogContent className="confirm-dialog" dir={lang==='ar'?'rtl':'ltr'}>
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
-            <Users size={19} className="text-[#307190]"/>{tr(lang,'تأكيد تغيير الفني','Confirm technician change')}
+            <Users size={19} className="text-[#307190]"/>{ticket.technicianId?tr(lang,'تأكيد تغيير الفني','Confirm technician change'):tr(lang,'تأكيد إسناد الفني','Confirm assignment')}
           </AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="reassign-confirm-body text-sm space-y-3">
@@ -1910,6 +1922,7 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
                 <div className="flex items-center justify-between gap-3"><span>{tr(lang,'الفني الحالي','Current')}</span><b>{ticket.technicianName||tr(lang,'غير مسند','Unassigned')}</b></div>
                 <div className="flex items-center justify-between gap-3 border-t pt-2"><span>{tr(lang,'الفني الجديد','New')}</span><b>{(technicians||[]).find(t=>t.id===pendingTechnicianId)?.name||''}</b></div>
               </div>
+              {selectedDifferentSpecialty&&<p className="manager-skill-warning"><CircleAlert size={15}/>{tr(lang,'هذا الفني من تخصص مختلف. المدير مسؤول عن التأكد من ملاءمة الإسناد.','Different specialty. The manager must confirm suitability.')}</p>}
               {exceptionalReassign&&(
                 <label className="field-label">
                   <span>{tr(lang,'سبب إعادة الإسناد الاستثنائية (إلزامي)','Reason for exceptional reassignment (required)')}</span>
