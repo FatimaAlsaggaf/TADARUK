@@ -480,8 +480,8 @@ export function TechnicianTicketDetail({
                 <p>
                   {tr(
                     lang,
-                    'اضغط لتحديث حالة البلاغ مباشرة إلى "قيد التنفيذ" وإشعار المبلّغ ببدء الإصلاح.',
-                    'Click to update ticket status to "In Progress" and notify the reporter immediately.'
+                    'ابدأ العمل لتحديث حالة البلاغ وإشعار المبلّغ.',
+                    'Start work to update the ticket and notify the reporter.'
                   )}
                 </p>
               </div>
@@ -514,8 +514,8 @@ export function TechnicianTicketDetail({
                 <p>
                   {tr(
                     lang,
-                    'اختر طريقة واحدة لشرح الحل (كتابة أو تسجيلاً صوتياً) لإرساله للمبلّغ وتوثيقه في قاعدة المعرفة.',
-                    'Choose one method to explain your fix (written or voice) to submit for reporter confirmation.'
+                    'وثّق الإصلاح كتابة أو صوتيًا قبل إرساله للتأكيد.',
+                    'Document the repair by text or voice before confirmation.'
                   )}
                 </p>
               </div>
@@ -714,8 +714,8 @@ export function TechnicianTicketDetail({
                 <p>
                   {tr(
                     lang,
-                    `تم إشعار المبلّغ (${ticket.reporterName}) لفحص الإصلاح الميداني وتأكيده لإغلاق البلاغ نهائياً.`,
-                    `The reporter (${ticket.reporterName}) was notified to inspect the repair and confirm ticket closure.`
+                    `بانتظار تأكيد المبلّغ لإغلاق البلاغ.`,
+                    `Waiting for reporter confirmation to close the ticket.`
                   )}
                 </p>
               </div>
@@ -751,8 +751,8 @@ export function TechnicianTicketDetail({
                 <p>
                   {tr(
                     lang,
-                    'أكد المبلّغ حل المشكلة بنجاح، وتمت إضافة الحل إلى قاعدة المعرفة كمرجع للأعطال المماثلة.',
-                    'The reporter confirmed the fix, and this solution was added to the knowledge base.'
+                    'أكّد المبلّغ الإصلاح وأُغلق البلاغ.',
+                    'The reporter confirmed the repair and the ticket is closed.'
                   )}
                 </p>
               </div>
