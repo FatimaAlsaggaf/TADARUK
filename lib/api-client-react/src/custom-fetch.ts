@@ -627,7 +627,7 @@ export const FALLBACK_INITIAL_TICKETS = [
     repairNotes: "تم استبدال الوصلة المطاطية وإحكام ربط الصمام واختبار تدفق الماء لمدة 5 دقائق.",
     cause: "تآكل الوصلة المطاطية بسبب الاستخدام اليومي وضغط الماء المرتفع.",
     resolution: "تغيير الوصلة واختبار التدفق والتأكد من عدم وجود تسرب.",
-    imageUrl: null,
+    imageUrl: "/demo-photos/ticket-demo-2401.jpg",
     createdAt: "2026-11-04T02:30:00.000Z",
     updatedAt: "2026-11-04T05:00:00.000Z",
     history: [
@@ -663,7 +663,7 @@ export const FALLBACK_INITIAL_TICKETS = [
     repairNotes: null,
     cause: null,
     resolution: null,
-    imageUrl: null,
+    imageUrl: "/demo-photos/ticket-demo-2402.jpg",
     createdAt: "2026-11-04T03:15:00.000Z",
     updatedAt: "2026-11-04T04:20:00.000Z",
     history: [
@@ -698,7 +698,7 @@ export const FALLBACK_INITIAL_TICKETS = [
     repairNotes: null,
     cause: null,
     resolution: null,
-    imageUrl: null,
+    imageUrl: "/demo-photos/ticket-demo-2403.jpg",
     createdAt: "2026-11-03T18:00:00.000Z",
     updatedAt: "2026-11-03T18:30:00.000Z",
     history: [
@@ -731,7 +731,7 @@ export const FALLBACK_INITIAL_TICKETS = [
     repairNotes: "تم تنظيف فلتر الهواء وشد سير المروحة واختبار الصوت.",
     cause: "ارتخاء سير المروحة الداخلية وتراكم الأتربة على الفلتر.",
     resolution: "استبدال السير وتنظيف الفلتر وضبط التثبيت.",
-    imageUrl: null,
+    imageUrl: "/demo-photos/ticket-demo-2404.jpg",
     createdAt: "2026-11-02T11:00:00.000Z",
     updatedAt: "2026-11-02T16:30:00.000Z",
     history: [
@@ -745,7 +745,33 @@ function getStoredTickets(): Array<Record<string, unknown>> {
   if (typeof window === "undefined") return FALLBACK_INITIAL_TICKETS as unknown as Array<Record<string, unknown>>;
   try {
     const raw = window.localStorage.getItem("tadaruk_mock_tickets");
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const stored = JSON.parse(raw) as Array<Record<string, unknown>>;
+      // Repair missing URLs only on original seeded demo fixtures; never invent
+      // an attachment for a user-submitted maintenance ticket.
+      let changed = false;
+      for (const ticket of stored) {
+        const seeded = FALLBACK_INITIAL_TICKETS.find(seed => seed.id === ticket.id);
+        if (seeded?.imageUrl && !ticket.imageUrl) {
+          ticket.imageUrl = seeded.imageUrl;
+          changed = true;
+        }
+        // Older browser-only demo falsely recorded every cancellation as a reporter action.
+        // The initiating actor cannot be reconstructed, so do not claim it was the reporter.
+        if (ticket.cancelledBy === "المبلّغ" && Array.isArray(ticket.history)) {
+          for (const event of ticket.history as Array<Record<string,unknown>>) {
+            if (event.label === "ألغى المبلّغ البلاغ" && event.actorName === "المبلّغ") {
+              event.label = "أُلغي البلاغ في نسخة تجريبية سابقة";
+              event.actorName = "المنفذ غير معروف";
+              event.note = "لا يمكن تحديد من نفّذ الإلغاء من السجل القديم.";
+              changed = true;
+            }
+          }
+        }
+      }
+      if (changed) saveStoredTickets(stored);
+      return stored;
+    }
     window.localStorage.setItem("tadaruk_mock_tickets", JSON.stringify(FALLBACK_INITIAL_TICKETS));
     return FALLBACK_INITIAL_TICKETS as unknown as Array<Record<string, unknown>>;
   } catch {
@@ -1128,8 +1154,13 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
         const branches = getStoredBranches();
         const techs = getStoredTechnicians();
         const randNum = Math.floor(2500 + Math.random() * 500);
-        const assignedTech = techs.find(tech => tech.specialization === payload.specialization) || techs[0];
         const targetBranch = branches.find(b => b.id === payload.branchId) || branches[0];
+        const eligible = techs.filter(tech => tech.specialization === payload.specialization &&
+          tech.branchId === targetBranch.id && tech.active && tech.available);
+        const assignedTech = eligible.sort((a,b)=>{
+          const load = (id: unknown) => tickets.filter(t=>t.technicianId===id && !["closed","cancelled"].includes(String(t.status))).length;
+          return load(a.id) - load(b.id);
+        })[0];
         const newTicket = {
           id: `ticket-demo-${Date.now()}`,
           number: `TDR-${randNum}`,
@@ -1139,7 +1170,7 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
           priority: payload.priority || "medium",
           specialization: payload.specialization || "general",
           location: payload.location || "داخل الفرع",
-          status: "new",
+          status: assignedTech ? "new" : "review",
           cancelledAt: null,
           cancelledBy: null,
           reporterId: user?.id || "demo-reporter",
@@ -1161,7 +1192,7 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
           updatedAt: new Date().toISOString(),
           history: [
             { id: `ev-${Date.now()}`, label: "تم تسجيل البلاغ", actorName: user?.name || "سارة القحطاني", note: "بلاغ صيانة ذكي", createdAt: new Date().toISOString() },
-            { id: `ev-${Date.now() + 1}`, label: "إسناد للفني", actorName: "النظام التلقائي", note: `مسند إلى ${assignedTech?.name}`, createdAt: new Date().toISOString() }
+            { id: `ev-${Date.now() + 1}`, label: assignedTech ? "إسناد للفني" : "بانتظار إسناد فني", actorName: "النظام التلقائي", note: assignedTech ? `مسند إلى ${assignedTech.name}` : "لا يوجد فني متاح في الفرع بالتخصص المطلوب", createdAt: new Date().toISOString() }
           ],
         };
         const updated = [newTicket, ...tickets];
@@ -1185,79 +1216,61 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
         const action = parsedBody?.action;
         const current = { ...tickets[ticketIndex] };
         const existingHistory = Array.isArray(current.history) ? [...current.history] : [];
-        if (action === "confirm" || action === "close") {
+        const activeUser = getActiveUser();
+        const role = activeUser?.role;
+        const userId = activeUser?.id;
+        const now = new Date().toISOString();
+        const priorWork = existingHistory.some(e=>/بدأ الفني العمل|بدء العمل|جاري الفحص|إكمال الإصلاح/.test(String(e.label)));
+        const requireRole = (allowed: boolean, message: string) => {
+          if (!allowed) throw new Error(message);
+        };
+        if (action === "confirm") {
+          requireRole(role==="reporter" && userId===current.reporterId && current.status==="awaiting_confirmation","Only the reporting employee may confirm a completed repair.");
           current.status = "closed";
-          existingHistory.push({
-            id: `ev-${Date.now()}`,
-            label: "أكد المبلّغ نجاح الإصلاح",
-            actorName: (current.reporterName as string) || "المبلّغ",
-            note: "تم التحقق من حل المشكلة وإغلاق البلاغ",
-            createdAt: new Date().toISOString()
-          });
-        } else if (action === "cancel") {
-          current.status = "cancelled";
-          current.cancelledAt = new Date().toISOString();
-          current.cancelledBy = "المبلّغ";
-          existingHistory.push({
-            id: `ev-${Date.now()}`,
-            label: "ألغى المبلّغ البلاغ",
-            actorName: "المبلّغ",
-            note: parsedBody?.note || "إلغاء البلاغ قبل بدء العمل",
-            createdAt: new Date().toISOString()
-          });
-        } else if (action === "start") {
-          current.status = "in_progress";
-          existingHistory.push({
-            id: `ev-${Date.now()}`,
-            label: "بدأ الفني العمل",
-            actorName: (current.technicianName as string) || "الفني",
-            note: "باشر الفني أعمال الفحص والصيانة بالموقع",
-            createdAt: new Date().toISOString()
-          });
-        } else if (action === "complete" || action === "resolve") {
-          current.status = "awaiting_confirmation";
-          const explanation = parsedBody?.resolution || parsedBody?.note || "تم استكمال أعمال الصيانة بنجاح.";
-          current.repairNotes = explanation;
-          current.resolution = explanation;
-          current.cause = parsedBody?.cause || null;
-          existingHistory.push({
-            id: `ev-${Date.now()}`,
-            label: "أكمل الفني الإصلاح",
-            actorName: (current.technicianName as string) || "الفني",
-            note: explanation,
-            createdAt: new Date().toISOString()
-          });
+          existingHistory.push({ id:`ev-${Date.now()}`, label:"أكد المبلّغ نجاح الإصلاح", actorName:String(activeUser?.name||current.reporterName), note:"تم تأكيد الإصلاح وإغلاق البلاغ", createdAt:now });
         } else if (action === "reject") {
-          current.status = "in_progress";
-          existingHistory.push({
-            id: `ev-${Date.now()}`,
-            label: "أعاد المبلّغ فتح البلاغ",
-            actorName: (current.reporterName as string) || "المبلّغ",
-            note: parsedBody?.note || "المشكلة ما زالت قائمة وبحاجة لمتابعة إضافية",
-            createdAt: new Date().toISOString()
-          });
+          requireRole(role==="reporter" && userId===current.reporterId && current.status==="awaiting_confirmation","Only the reporter can return a repair for rework.");
+          current.status="in_progress";
+          existingHistory.push({id:`ev-${Date.now()}`,label:"أعاد المبلّغ البلاغ للمتابعة",actorName:String(activeUser?.name||current.reporterName),note:parsedBody?.note||"المشكلة ما زالت قائمة",createdAt:now});
+        } else if (action === "start") {
+          requireRole(role==="technician" && userId===current.technicianId && ["new","review"].includes(String(current.status)),"Only the assigned technician may start a pending ticket.");
+          current.status="in_progress";
+          existingHistory.push({id:`ev-${Date.now()}`,label:"بدأ الفني العمل",actorName:String(activeUser?.name||current.technicianName),note:parsedBody?.note||null,createdAt:now});
+        } else if (action === "complete") {
+          requireRole(role==="technician" && userId===current.technicianId && current.status==="in_progress","Only the assigned technician may complete an in-progress repair.");
+          const explanation = String(parsedBody?.resolution||parsedBody?.note||"").trim();
+          requireRole(Boolean(explanation),"Add a repair note before submitting completion.");
+          current.status="awaiting_confirmation";
+          current.repairNotes=explanation;current.resolution=explanation;current.cause=parsedBody?.cause||null;
+          existingHistory.push({id:`ev-${Date.now()}`,label:"أكمل الفني الإصلاح",actorName:String(activeUser?.name||current.technicianName),note:explanation,createdAt:now});
+        } else if (action === "cancel") {
+          requireRole(role==="manager" || (role==="reporter" && userId===current.reporterId),"Only the reporter or manager may cancel a pending ticket.");
+          requireRole(["new","review"].includes(String(current.status)) && !priorWork,"Tickets under repair or already repaired cannot be cancelled.");
+          if (role==="reporter") requireRole(current.status==="new","Reporter may cancel only a new ticket.");
+          current.status="cancelled";current.cancelledAt=now;current.cancelledBy=userId;
+          existingHistory.push({id:`ev-${Date.now()}`,label:role==="manager"?"ألغى مدير العمليات البلاغ قبل بدء العمل":"ألغى المبلّغ البلاغ قبل بدء العمل",actorName:String(activeUser?.name||"غير معروف"),note:parsedBody?.note||"أُلغي قبل بدء الصيانة",createdAt:now});
         } else if (action === "reassign") {
+          requireRole(role==="manager" && !["closed","cancelled"].includes(String(current.status)),"Only a manager can reassign an active ticket.");
           const techs = getStoredTechnicians();
-          const t = techs.find(x => x.id === parsedBody?.technicianId);
-          if (t) {
-            current.technicianId = t.id;
-            current.technicianName = t.name;
-            existingHistory.push({
-              id: `ev-${Date.now()}`,
-              label: "إعادة إسناد البلاغ",
-              actorName: "مدير العمليات",
-              note: `تم إسناد البلاغ إلى ${t.name}`,
-              createdAt: new Date().toISOString()
-            });
-          }
+          const chosen = techs.find(t=>t.id===parsedBody?.technicianId && t.branchId===current.branchId && t.specialization===current.specialization && t.available && t.active && t.id!==current.technicianId);
+          requireRole(Boolean(chosen),"Select an eligible technician in the same branch and specialty.");
+          const exceptional = ["in_progress","awaiting_confirmation"].includes(String(current.status)) || priorWork;
+          requireRole(!exceptional || String(parsedBody?.note||"").trim().length>=5,"Exceptional reassignment requires a reason.");
+          const previous = current.technicianName||"غير مسند";
+          current.technicianId=chosen!.id;current.technicianName=chosen!.name;
+          if (exceptional){current.status="review";current.repairNotes=null;current.cause=null;current.resolution=null;}
+          existingHistory.push({id:`ev-${Date.now()}`,label:exceptional?"إعادة إسناد استثنائية":"تغيير الفني المسؤول",actorName:String(activeUser?.name||"مدير العمليات"),note:`${previous} ← ${chosen!.name}${parsedBody?.note?` · السبب: ${parsedBody.note}`:""}`,createdAt:now});
+        } else {
+          throw new Error("Unsupported ticket action.");
         }
         current.history = existingHistory;
         current.updatedAt = new Date().toISOString();
         tickets[ticketIndex] = current;
         saveStoredTickets(tickets);
         return current as unknown as T;
-      } catch {
-        return tickets[ticketIndex] as unknown as T;
+      } catch (error) {
+        // Invalid role/state must never be reported as a successful mutation.
+        throw error;
       }
     }
   }
