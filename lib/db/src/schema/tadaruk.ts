@@ -69,8 +69,23 @@ export const ticketEventsTable = pgTable("tadaruk_ticket_events", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/** Durable per-recipient notifications (assignment, removal, etc.). */
+export const ticketNotificationsTable = pgTable("tadaruk_ticket_notifications", {
+  id: text("id").primaryKey(),
+  organizationId: text("organization_id").notNull().default("restaurant-demo"),
+  recipientId: text("recipient_id").notNull(),
+  ticketId: text("ticket_id").notNull(),
+  kind: text("kind").notNull(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  readAt: timestamp("read_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export type BranchRecord = typeof branchesTable.$inferSelect;
 export type TeamMemberRecord = typeof teamMembersTable.$inferSelect;
 export type TicketRecord = typeof ticketsTable.$inferSelect;
 export type TicketEventRecord = typeof ticketEventsTable.$inferSelect;
 
+
+export type TicketNotificationRecord = typeof ticketNotificationsTable.$inferSelect;
