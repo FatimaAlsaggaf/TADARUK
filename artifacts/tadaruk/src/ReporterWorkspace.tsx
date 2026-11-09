@@ -241,7 +241,9 @@ async function fileToPreview(file: File, lang: ReporterLang): Promise<string> {
   } catch {
     throw new Error(text(lang, 'تعذر قراءة هذا النوع من الصور. يرجى اختيار صورة صالحة بصيغة PNG أو JPG أو JPEG.', 'This image format could not be read. Please choose a valid PNG, JPG, or JPEG image.'));
   }
-  const scale = Math.min(1, 1280 / Math.max(bitmap.width, bitmap.height));
+  // A bounded preview is stored with the ticket so all authorized roles
+  // see exactly the uploaded photograph, rather than browser-only localStorage.
+  const scale = Math.min(1, 900 / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement('canvas');
   canvas.width = Math.max(1, Math.round(bitmap.width * scale));
   canvas.height = Math.max(1, Math.round(bitmap.height * scale));
@@ -252,7 +254,20 @@ async function fileToPreview(file: File, lang: ReporterLang): Promise<string> {
   }
   context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   bitmap.close();
-  return canvas.toDataURL('image/jpeg', .72);
+  let result = canvas.toDataURL('image/jpeg', .65);
+  // Keep the demo JSON payload reasonably small; never synthesize visual content.
+  if (result.length > 580_000) {
+    const scaleDown = Math.min(1, Math.sqrt(580_000 / result.length));
+    const reduced = document.createElement('canvas');
+    reduced.width = Math.max(1, Math.round(canvas.width * scaleDown));
+    reduced.height = Math.max(1, Math.round(canvas.height * scaleDown));
+    reduced.getContext('2d')?.drawImage(canvas, 0, 0, reduced.width, reduced.height);
+    result = reduced.toDataURL('image/jpeg', .6);
+  }
+  if (result.length > 750_000) {
+    throw new Error(text(lang, 'تعذر ضغط الصورة لحجم مناسب. اختاري صورة أصغر.', 'Could not compress the image enough. Choose a smaller photo.'));
+  }
+  return result;
 }
 
 export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicketPageProps) {
@@ -270,7 +285,6 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
 
   const [photoError, setPhotoError] = useState('');
   const descriptionInputRef = useRef<HTMLTextAreaElement | null>(null);
-  const [photoSaveFailed, setPhotoSaveFailed] = useState(false);
   const [submittedTicket, setSubmittedTicket] = useState<{ id: string; number: string } | null>(null);
   const [analysis, setAnalysis] = useState<TicketAnalysis | null>(null);
   const [title, setTitle] = useState('');
@@ -438,19 +452,12 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
       specialization: specialization.trim(),
       location: reviewLocation.trim(),
       branchId: effectiveBranchId,
-      imageUrl: null
+      imageUrl: photo
     };
     create.mutate({ data: payload }, {
       onSuccess: ticket => {
-        if (photo) {
-          try {
-            localStorage.setItem(`tadaruk-photo:${ticket.id}`, photo);
-          }
-          catch {
-            setPhotoError(text(lang, 'أُرسل البلاغ، لكن تعذر حفظ الصورة على هذا الجهاز.', 'The report was sent, but this device could not keep the photo.'));
-            setPhotoSaveFailed(true);
-          }
-        }
+        // The primary image is included in the ticket API payload.
+        // It is no longer dependent on the reporter's browser storage.
         void queryClient.invalidateQueries({ queryKey: getListTicketsQueryKey() });
         void queryClient.invalidateQueries({ queryKey: getGetOverviewQueryKey() });
         setSubmittedTicket({ id: ticket.id, number: ticket.number });
@@ -459,10 +466,10 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
   };
 
   useEffect(() => {
-    if (!submittedTicket || photoSaveFailed) return;
+    if (!submittedTicket) return;
     const timer = window.setTimeout(() => navigate(`/workspace/tickets/${submittedTicket.id}`), 2200);
     return () => window.clearTimeout(timer);
-  }, [submittedTicket, photoSaveFailed, navigate]);
+  }, [submittedTicket, navigate]);
 
   // Three-step workflow mapping:
   // Step 1: وصف المشكلة
@@ -505,13 +512,11 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                 {text(lang, 'رقم البلاغ:', 'Ticket number:')} <strong>{submittedTicket.number}</strong>
               </div>
               <p className="rw-success-sub">
-                {photoSaveFailed
-                  ? photoError
-                  : text(
-                      lang,
-                      'تم إسناد البلاغ وتوجيهه إلى فريق الصيانة المختص. جارٍ فتح تفاصيل البلاغ تلقائياً.',
-                      'The report has been created and directed to the maintenance team. Opening details now.',
-                    )}
+                {text(
+                  lang,
+                  'تم إرسال البلاغ مع صورته إلى فريق الصيانة. جارٍ فتح التفاصيل.',
+                  'The report and photo were sent to maintenance. Opening details.',
+                )}
               </p>
               <button
                 type="button"
