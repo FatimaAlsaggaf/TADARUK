@@ -148,12 +148,7 @@ export function ReporterHomePage({ lang, user }: ReporterPageProps) {
           {lang === 'ar' ? <ArrowLeft size={16}/> : <ArrowRight size={16}/>}
         </Link>
       </div>
-      <div className="rw-home-symbol rw-home-symbol--animated" aria-hidden="true">
-        <span className="rw-home-orbit-ring rw-home-orbit-ring--one"/>
-        <span className="rw-home-orbit-ring rw-home-orbit-ring--two"/>
-        <span className="rw-document-orbit"><FileText size={44} strokeWidth={1.45}/><i/><i/><i/></span>
-        <span className="rw-home-float-star"><Sparkles size={23}/></span>
-      </div>
+
     </section>
     {loading ? <TicketLoadingState/> : failed ? <div className="rw-error" role="alert" data-testid="state-home-error">
       <CircleAlert size={19}/>
@@ -1135,7 +1130,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
               </p>
             )}
 
-            <div className="rw-form-actions">
+            <div className="rw-form-actions rw-review-footer-actions">
               <button
                 type="submit"
                 className="rw-button rw-button-primary rw-review-send-btn"
