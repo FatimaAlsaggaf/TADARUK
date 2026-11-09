@@ -839,6 +839,10 @@ router.post("/tickets/:ticketId/actions", async (req, res): Promise<void> => {
         return;
       }
       await addTicketEvent(ticket.id, member.id, cancellationLabel, cancellationNote);
+      if (ticket.reporterId && member.id !== ticket.reporterId) {
+        await notifyTicket(ticket.reporterId, ticket.id, "cancelled",
+          "تم إلغاء بلاغك", `${ticket.number} · ${ticket.title}`);
+      }
       res.json(PerformTicketActionResponse.parse(await toTicketView(cancelled)));
       return;
     } else {
@@ -858,6 +862,16 @@ router.post("/tickets/:ticketId/actions", async (req, res): Promise<void> => {
       return;
     }
     await addTicketEvent(ticket.id, member.id, eventLabel, parsed.data.note ?? null);
+    if (action === "complete") {
+      await notifyTicket(ticket.reporterId, ticket.id, "confirmation_required",
+        "الإصلاح جاهز لتأكيدك", `${ticket.number} · راجع الإصلاح وأكّد الحل أو أعد البلاغ للمتابعة.`);
+    } else if (action === "confirm") {
+      await notifyTicket(ticket.reporterId, ticket.id, "closed",
+        "تم إغلاق البلاغ", `${ticket.number} · أُغلق البلاغ بعد تأكيد الإصلاح.`);
+    } else if (action === "reject") {
+      await notifyTicket(ticket.reporterId, ticket.id, "reopened",
+        "عاد البلاغ للمتابعة", `${ticket.number} · أُعيد البلاغ لاستكمال الإصلاح.`);
+    }
     res.json(PerformTicketActionResponse.parse(await toTicketView(updated)));
   } catch (error) {
     res.status(500).json({ error: errorMessage(error) });
