@@ -462,3 +462,117 @@
 @media(prefers-reduced-motion:reduce){
   .auth-striped-waves>div{opacity:.5}
 }
+
+
+/* Auth polish: one solid circle hue per theme, brighter separated canvas. */
+.auth-morph-page{background:#eef7fb !important;}
+.auth-striped-waves{opacity:.72;filter:blur(1px) saturate(.75);}
+.auth-striped-waves>div{opacity:.42 !important;}
+.auth-striped-waves::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(135deg,#f4fbffb3 0%,#f6fbff99 48%,#e9f4fad9 100%);
+}
+.auth-morph-card{
+  background:#fff !important;
+  box-shadow:0 28px 76px #1e466344,0 3px 15px #0b344919 !important;
+  border:1px solid #ffffffd4;
+}
+.auth-morph-card::before,
+.auth-morph-card:not(.auth-morph-signup)::before{
+  background:#78a9c5 !important;
+}
+.auth-morph-card:not(.auth-morph-signup) .auth-morph-left,
+.auth-morph-card:not(.auth-morph-signup) .auth-morph-left h2{color:#173d5b !important;}
+.auth-morph-card:not(.auth-morph-signup) .auth-morph-left p{color:#244e69 !important;}
+.auth-morph-card:not(.auth-morph-signup) .auth-morph-left button{
+  background:#f4fbffb9 !important;border-color:#2b6483 !important;color:#164465 !important;
+}
+.auth-morph-card.auth-morph-signup::before{
+  background:#78a9c5 !important;
+  top:25px !important;right:25px !important;
+  left:auto !important;bottom:auto !important;
+  width:54px !important;height:54px !important;
+  opacity:.16;
+  transform:none !important;
+}
+/* A single, always-left back control independent of Arabic/English direction. */
+.auth-morph-header{
+  display:grid !important;
+  direction:rtl !important;
+  grid-template-columns:minmax(100px,1fr) auto minmax(70px,1fr);
+  align-items:center;
+  gap:16px !important;
+}
+.auth-morph-header-actions.nav-actions{
+  justify-self:center;
+  display:flex !important;
+  align-items:center;
+  gap:12px !important;
+}
+.auth-morph-brand{justify-self:start}
+.auth-morph-home{
+  justify-self:end;
+  display:inline-flex !important;
+  direction:ltr !important;
+  align-items:center;gap:6px !important;
+  padding:9px 10px !important;
+  border-radius:12px;
+  color:#174968 !important;
+  white-space:nowrap;
+}
+.auth-morph-home:hover{background:#d6eaf4b8}
+.auth-signup-back{
+  right:auto !important;
+  left:24px !important;
+  top:24px !important;
+  z-index:8;
+}
+.auth-signup-back button{
+  direction:ltr !important;
+  font-family:var(--app-font-sans),sans-serif !important;
+  gap:7px !important;
+  padding:7px 9px !important;
+  border-radius:11px;
+  color:#174968 !important;
+}
+.auth-signup-back button:hover{background:#e8f3f8}
+.auth-signup-back-icon{
+  width:26px !important;height:26px !important;flex-basis:26px !important;
+  color:inherit !important;
+}
+.auth-morph-panel-content{gap:17px !important}
+.auth-morph-register .org-steps{grid-template-columns:repeat(4,minmax(0,1fr)) !important;}
+.dark .auth-morph-page{background:#0e2237 !important;}
+.dark .auth-striped-waves>div{opacity:.7 !important;}
+.dark .auth-striped-waves::after{
+  background:linear-gradient(145deg,#061c2b2b,#0d213b33);
+}
+.dark .auth-morph-card::before,
+.dark .auth-morph-card:not(.auth-morph-signup)::before,
+.dark .auth-morph-card.auth-morph-signup::before{
+  background:#214e72 !important;
+}
+.dark .auth-morph-home{color:#e1f3ff !important;}
+.dark .auth-morph-home:hover{background:#23415a}
+.dark .auth-signup-back button{color:#cbe9f8 !important;}
+.dark .auth-signup-back button:hover{background:#25425b}
+@media(max-width:850px){
+  .auth-morph-header{gap:9px !important;}
+  .auth-morph-brand img{width:112px !important;}
+}
+@media(max-width:560px){
+  .auth-morph-header{
+    grid-template-columns:auto minmax(96px,1fr) auto;
+    gap:4px !important;
+    min-height:66px !important;
+  }
+  .auth-morph-brand img{width:91px !important;}
+  .auth-morph-header-actions.nav-actions{gap:4px !important;}
+  .auth-morph-header-actions .nav-lang{padding:6px !important;font-size:11px !important;}
+  .auth-morph-home{font-size:12px !important;padding:5px !important;gap:3px !important;}
+  .auth-signup-back{left:13px !important;top:17px !important;}
+  .auth-signup-back button{font-size:13px !important;}
+  .auth-morph-card.auth-morph-signup::before{top:20px !important;right:20px !important;}
+  .auth-morph-register .org-steps>div small{font-size:10px !important;}
+}
+@media(prefers-reduced-motion:reduce){.auth-striped-waves{filter:none !important;}}
