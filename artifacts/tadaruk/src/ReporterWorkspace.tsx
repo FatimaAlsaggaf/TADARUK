@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import {
   getGetOverviewQueryKey, getListTicketsQueryKey, useCreateTicket, useListReporterBranches,
-  useGetOverview, useListTickets,
+  useListTickets,
   type DemoUser, type ReporterBranch, type Ticket, type TicketAnalysis, type TicketInput, type TicketPriority,
   FALLBACK_REPORTER_BRANCHES
 } from '@workspace/api-client-react';
