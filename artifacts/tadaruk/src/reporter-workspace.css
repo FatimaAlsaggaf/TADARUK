@@ -2191,3 +2191,21 @@
   }
   .reporter-view .rw-new-report-stepper .stepper__title { font-size: 11.5px !important; }
 }
+
+/* Keep progress markers fully opaque even when navigation is intentionally disabled.
+   Global button:disabled opacity:.55 was washing out the brand gradient. */
+.reporter-view .rw-new-report-stepper .stepper__track > button.stepper__segment,
+.reporter-view .rw-new-report-stepper .stepper__track > button.stepper__segment:disabled {
+  opacity: 1 !important;
+  cursor: default !important;
+}
+.reporter-view .rw-new-report-stepper .stepper__segment[data-status="active"] .stepper__badge,
+.reporter-view .rw-new-report-stepper .stepper__segment[data-status="complete"] .stepper__badge {
+  opacity: 1 !important;
+  background: linear-gradient(135deg, #1F3363 0%, #24547A 42%, #307190 100%) !important;
+  color: #fff !important;
+}
+.dark .reporter-view .rw-new-report-stepper .stepper__segment:is([data-status="active"],[data-status="complete"]) .stepper__badge {
+  background: linear-gradient(135deg, #1F3363 0%, #307190 58%, #48A5B2 100%) !important;
+  color: #fff !important;
+}
