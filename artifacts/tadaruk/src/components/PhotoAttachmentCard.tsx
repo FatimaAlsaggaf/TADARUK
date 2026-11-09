@@ -35,15 +35,12 @@ export default function PhotoAttachmentCard({
           {isArabic ? 'مرفق صورة' : 'Photo attachment'}
         </span>
         <strong>{isArabic ? 'صورة المشكلة' : 'Issue photo'}</strong>
-        <span className="photo-attachment-meta">
-          {onRemove
-            ? isArabic
-              ? 'جاهزة للإرسال مع البلاغ'
-              : 'Ready to send with the report'
-            : isArabic
-              ? localOnly ? 'محفوظة في هذا المتصفح فقط' : 'مرفقة مع هذا البلاغ'
-              : localOnly ? 'Stored in this browser only' : 'Attached to this report'}
-        </span>
+        {localOnly && !onRemove && <span className="photo-attachment-meta">
+          {isArabic ? 'متاحة على هذا الجهاز فقط' : 'Available on this device only'}
+        </span>}
+        {onRemove && <span className="photo-attachment-meta">
+          {isArabic ? 'جاهزة للإرسال' : 'Ready to send'}
+        </span>}
       </div>
       {onRemove ? (
         <button
@@ -54,14 +51,12 @@ export default function PhotoAttachmentCard({
         >
           <X size={16} aria-hidden="true" />
         </button>
-      ) : (
+      ) : !localOnly ? (
         <span className="photo-attachment-state">
           <CheckCircle2 size={15} aria-hidden="true" />
-          {localOnly
-            ? isArabic ? 'محلية' : 'Local'
-            : isArabic ? 'مرفقة' : 'Attached'}
+          {isArabic ? 'مرفقة' : 'Attached'}
         </span>
-      )}
+      ) : null}
     </article>
   );
 }
