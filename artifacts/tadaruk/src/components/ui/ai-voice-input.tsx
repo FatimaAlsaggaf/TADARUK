@@ -542,18 +542,6 @@ export function AiVoiceInput({
           <div className="tadaruk-voice-stage relative my-3 flex flex-col items-center justify-center rounded-2xl border border-slate-200/80 bg-slate-50/80 p-5 dark:border-slate-700 dark:bg-slate-900/50">
             {/* Pulsing Central Mic Orb */}
             <div className="relative mb-3 flex items-center justify-center">
-              {isRecording && (
-                <>
-                  <div
-                    className="absolute h-20 w-20 rounded-full bg-[#456e91]/10 animate-ping"
-                    style={{ animationDuration: "2s" }}
-                  />
-                  <div
-                    className="absolute h-[72px] w-[72px] rounded-full border border-[#688eaa]/25 animate-pulse"
-                    style={{ animationDuration: "1.4s" }}
-                  />
-                </>
-              )}
               <button
                 type="button"
                 onClick={isRecording ? stop : () => void start()}
