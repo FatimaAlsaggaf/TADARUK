@@ -152,7 +152,7 @@ export default function TechnicianIssueMedia({ticketId,imageUrl,lang}:{ticketId:
           </div>:
           <div className="tadaruk-media-stage tadaruk-media-stage--model">
             {!viewerLoaded&&!viewerFailed&&<span className="tadaruk-media-loading" role="status">{tr(lang,'جارٍ تحميل النموذج الحقيقي...','Loading verified 3D model...')}</span>}
-            {hasModel&&createElement('model-viewer',{
+            {hasModel && model && createElement('model-viewer',{
               ref:modelRef,src:model.modelUrl,
               alt:tr(lang,'نموذج ثلاثي الأبعاد مولد من صورة البلاغ','AI-generated model from the issue photo'),
               'camera-controls':'','interaction-prompt':'auto','shadow-intensity':'1',
