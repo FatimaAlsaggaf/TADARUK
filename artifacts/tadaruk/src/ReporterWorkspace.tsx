@@ -935,12 +935,8 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
               ) : (
                 /* Inline Edit Mode */
                 <div className="rw-edit-container">
-                  <div className="rw-editing-note">
-                    <RotateCcw size={15} />
-                    {text(lang, 'عدّل الاقتراحات بحرية، ثم ارجع للمعاينة قبل الإرسال.', 'Adjust suggestions freely, then return to preview.')}
-                  </div>
                   <label className="rw-field">
-                    <span>{text(lang, 'عنوان البلاغ', 'Report title')}</span>
+                    <span className="rw-edit-field-heading"><TicketIcon size={16} className="rw-edit-icon rw-edit-icon--title"/>{text(lang, 'عنوان البلاغ', 'Report title')}</span>
                     <input
                       required
                       minLength={3}
@@ -951,7 +947,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                     />
                   </label>
                   <label className="rw-field rw-preview-description">
-                    <span>{text(lang, 'وصف المشكلة المنظم', 'Structured issue description')}</span>
+                    <span className="rw-edit-field-heading"><FileText size={16} className="rw-edit-icon rw-edit-icon--description"/>{text(lang, 'وصف المشكلة المنظم', 'Structured issue description')}</span>
                     <textarea
                       required
                       minLength={4}
@@ -962,7 +958,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                   </label>
                   <div className="rw-review-grid">
                     <div className="rw-field">
-                      <span>{text(lang, 'الفئة', 'Category')}</span>
+                      <span className="rw-edit-field-heading"><ClipboardList size={16} className="rw-edit-icon rw-edit-icon--category"/>{text(lang, 'الفئة', 'Category')}</span>
                       <TadarukSelect
                         required
                         value={category}
@@ -978,7 +974,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                       />
                     </div>
                     <div className="rw-field">
-                      <span>{text(lang, 'الأولوية', 'Priority')}</span>
+                      <span className="rw-edit-field-heading"><CircleAlert size={16} className="rw-edit-icon rw-edit-icon--priority"/>{text(lang, 'الأولوية', 'Priority')}</span>
                       <TadarukSelect
                         value={priority}
                         onValueChange={value => setPriority(value as TicketPriority)}
@@ -994,7 +990,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                       />
                     </div>
                     <div className="rw-field">
-                      <span>{text(lang, 'التخصص المطلوب', 'Specialization')}</span>
+                      <span className="rw-edit-field-heading"><Wrench size={16} className="rw-edit-icon rw-edit-icon--specialty"/>{text(lang, 'التخصص المطلوب', 'Specialization')}</span>
                       <TadarukSelect
                         required
                         value={specialization}
@@ -1010,7 +1006,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                       />
                     </div>
                     <label className="rw-field">
-                      <span>{text(lang, 'الموقع داخل الفرع', 'Location in branch')}</span>
+                      <span className="rw-edit-field-heading"><MapPin size={16} className="rw-edit-icon rw-edit-icon--location"/>{text(lang, 'الموقع داخل الفرع', 'Location in branch')}</span>
                       <input
                         required
                         value={reviewLocation}
