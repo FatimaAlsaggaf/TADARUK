@@ -40,6 +40,8 @@ import {
 import {
   branchesTable,
   db,
+  pool,
+  ticketNotificationsTable,
   teamMembersTable,
   ticketEventsTable,
   ticketsTable,
@@ -62,6 +64,33 @@ import {
 } from "../lib/tadaruk";
 
 const router: IRouter = Router();
+
+/* Idempotent schema setup for existing demo deployments. No reset or data loss. */
+let notificationsReady: Promise<unknown> | undefined;
+function ensureNotificationsStorage() {
+  notificationsReady ??= pool.query(`
+    CREATE TABLE IF NOT EXISTS tadaruk_ticket_notifications (
+      id text PRIMARY KEY,
+      organization_id text NOT NULL DEFAULT 'restaurant-demo',
+      recipient_id text NOT NULL,
+      ticket_id text NOT NULL,
+      kind text NOT NULL,
+      title text NOT NULL,
+      description text NOT NULL,
+      read_at timestamptz,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )
+  `).catch(error => { notificationsReady = undefined; throw error; });
+  return notificationsReady;
+}
+async function notifyTicket(recipientId: string, ticketId: string, kind: string, title: string, description: string) {
+  await ensureNotificationsStorage();
+  await db.insert(ticketNotificationsTable).values({
+    id: randomUUID(), organizationId: DEMO_ORGANIZATION,
+    recipientId, ticketId, kind, title, description,
+  });
+}
+
 const demoCookieOptions = {
   httpOnly: true,
   sameSite: "lax" as const,
@@ -409,6 +438,41 @@ router.post("/tickets/analyze", async (req, res): Promise<void> => {
   res.json(AnalyzeTicketResponse.parse(response));
 });
 
+/* Personal notifications. The recipient is always the authenticated user. */
+router.get("/notifications", async (req, res): Promise<void> => {
+  try {
+    const member = await requireMember(req, res);
+    if (!member) return;
+    await ensureNotificationsStorage();
+    const rows = await db.select().from(ticketNotificationsTable).where(and(
+      eq(ticketNotificationsTable.organizationId, DEMO_ORGANIZATION),
+      eq(ticketNotificationsTable.recipientId, member.id),
+    )).orderBy(desc(ticketNotificationsTable.createdAt)).limit(40);
+    res.json(rows.map(n => ({
+      id: n.id, ticketId: n.ticketId, kind: n.kind, title: n.title,
+      description: n.description, createdAt: n.createdAt.toISOString(),
+      readAt: n.readAt?.toISOString() ?? null,
+    })));
+  } catch (error) { res.status(500).json({ error: errorMessage(error) }); }
+});
+router.post("/notifications/read", async (req, res): Promise<void> => {
+  try {
+    const member = await requireMember(req, res);
+    if (!member) return;
+    await ensureNotificationsStorage();
+    const ids = Array.isArray(req.body?.ids) ? req.body.ids.filter((id: unknown) => typeof id === "string").slice(0,100) : [];
+    if (ids.length) {
+      await db.update(ticketNotificationsTable).set({readAt: new Date()}).where(and(
+        eq(ticketNotificationsTable.organizationId, DEMO_ORGANIZATION),
+        eq(ticketNotificationsTable.recipientId, member.id),
+        inArray(ticketNotificationsTable.id, ids),
+        isNull(ticketNotificationsTable.readAt),
+      ));
+    }
+    res.json({success:true});
+  } catch (error) { res.status(500).json({error:errorMessage(error)}); }
+});
+
 router.get("/tickets", async (req, res): Promise<void> => {
   const parsed = ListTicketsQueryParams.safeParse(req.query);
   if (!parsed.success) {
@@ -506,7 +570,8 @@ router.post("/tickets", async (req, res): Promise<void> => {
     }).returning();
     await addTicketEvent(id, member.id, "تم إنشاء البلاغ", null);
     if (technician) {
-      await addTicketEvent(id, technician.id, "أُسند البلاغ تلقائياً", `تم اختياره حسب التخصص وتوفره.`);
+      await addTicketEvent(id, member.id, "أُسند البلاغ تلقائياً", `تم إسناده إلى ${technician.name} حسب التخصص والتوفر.`);
+      await notifyTicket(technician.id, id, "assigned", "بلاغ صيانة جديد مسند إليك", `${ticket.number} · ${ticket.title}`);
     } else {
       await addTicketEvent(id, member.id, "بانتظار إسناد الإدارة", "لا يوجد فني متاح بالتخصص المطلوب في هذا الفرع.");
     }
@@ -557,6 +622,81 @@ router.post("/tickets/:ticketId/actions", async (req, res): Promise<void> => {
       return;
     }
     const now = new Date();
+
+    if (action === "reassign") {
+      if (member.role !== "manager") {
+        res.status(403).json({ error: "Only managers may change ticket assignments." });
+        return;
+      }
+      if (ticket.status === "closed" || ticket.status === "cancelled") {
+        res.status(409).json({ error: "Closed tickets cannot be reassigned." });
+        return;
+      }
+      const chosen = parsed.data.technicianId ? await getMember(parsed.data.technicianId) : undefined;
+      if (!chosen || chosen.role !== "technician" || !chosen.active || !chosen.available ||
+          chosen.branchId !== ticket.branchId || chosen.specialization !== ticket.specialization) {
+        res.status(400).json({ error: "Choose an active, available technician in this branch with the required specialization." });
+        return;
+      }
+      if (ticket.technicianId === chosen.id) {
+        res.status(409).json({ error: "This technician is already responsible for the ticket." });
+        return;
+      }
+      const exceptional = ticket.status === "in_progress" || ticket.status === "awaiting_confirmation";
+      const reason = parsed.data.note?.trim() || "";
+      if (exceptional && reason.length < 5) {
+        res.status(400).json({ error: "A reason of at least 5 characters is required after work has started." });
+        return;
+      }
+      await ensureNotificationsStorage();
+      const oldTechnician = ticket.technicianId ? await getMember(ticket.technicianId) : undefined;
+      const newStatus = exceptional ? "review" : ticket.status === "review" ? "review" : "new";
+      const updated = await db.transaction(async tx => {
+        // Compare status AND assigned technician so a stale manager page cannot overwrite a newer change.
+        const [row] = await tx.update(ticketsTable).set({
+          technicianId: chosen.id, status: newStatus, updatedAt: now,
+          ...(exceptional ? { repairNotes: null, cause: null, resolution: null } : {}),
+        }).where(and(
+          eq(ticketsTable.id, ticket.id),
+          eq(ticketsTable.organizationId, DEMO_ORGANIZATION),
+          eq(ticketsTable.status, ticket.status),
+          ticket.technicianId ? eq(ticketsTable.technicianId, ticket.technicianId) : isNull(ticketsTable.technicianId),
+          isNull(ticketsTable.cancelledAt),
+        )).returning();
+        if (!row) return undefined;
+        const eventNote = `${oldTechnician?.name ?? "غير مسند"} ← ${chosen.name}${reason ? ` | السبب: ${reason}` : ""}`;
+        await tx.insert(ticketEventsTable).values({
+          id: randomUUID(), organizationId: DEMO_ORGANIZATION,
+          ticketId: ticket.id, actorId: member.id,
+          label: exceptional ? "إعادة إسناد استثنائية" : "تغيير الفني المسؤول",
+          note: eventNote, createdAt: now,
+        });
+        await tx.insert(ticketNotificationsTable).values({
+          id: randomUUID(), organizationId: DEMO_ORGANIZATION,
+          recipientId: chosen.id, ticketId: ticket.id, kind: "assigned",
+          title: exceptional ? "أُسند إليك بلاغ يحتاج متابعة" : "تم إسناد بلاغ إليك",
+          description: `${ticket.number} · ${ticket.title}${reason ? ` · السبب: ${reason}` : ""}`,
+          createdAt: now,
+        });
+        if (oldTechnician) {
+          await tx.insert(ticketNotificationsTable).values({
+            id: randomUUID(), organizationId: DEMO_ORGANIZATION,
+            recipientId: oldTechnician.id, ticketId: ticket.id, kind: "removed",
+            title: "تم نقل البلاغ إلى فني آخر",
+            description: `${ticket.number} · لم تعد مسؤولًا عن هذا البلاغ.`,
+            createdAt: now,
+          });
+        }
+        return row;
+      });
+      if (!updated) {
+        res.status(409).json({ error: "The ticket changed. Refresh the page before reassigning." });
+        return;
+      }
+      res.json(PerformTicketActionResponse.parse(await toTicketView(updated)));
+      return;
+    }
+
     let update: Partial<typeof ticketsTable.$inferInsert> = { updatedAt: now };
     let eventLabel = "";
 
@@ -657,24 +797,15 @@ router.post("/tickets/:ticketId/actions", async (req, res): Promise<void> => {
       res.json(PerformTicketActionResponse.parse(await toTicketView(cancelled)));
       return;
     } else {
-      const manager = await requireManager(req, res);
-      if (!manager) return;
-      const chosen = parsed.data.technicianId
-        ? await getMember(parsed.data.technicianId)
-        : undefined;
-      if (!chosen || chosen.role !== "technician" || !chosen.active || chosen.branchId !== ticket.branchId) {
-        res.status(400).json({ error: "Choose an active technician assigned to this branch." });
-        return;
-      }
-      update.technicianId = chosen.id;
-      update.status = "review";
-      eventLabel = "أُعيد إسناد البلاغ";
+      res.status(400).json({ error: "Unsupported ticket action." });
+      return;
     }
 
     const [updated] = await db.update(ticketsTable).set(update).where(and(
       eq(ticketsTable.id, ticket.id),
       eq(ticketsTable.organizationId, DEMO_ORGANIZATION),
       eq(ticketsTable.status, ticket.status),
+      ...((action === "start" || action === "complete") ? [eq(ticketsTable.technicianId, member.id)] : []),
       isNull(ticketsTable.cancelledAt),
     )).returning();
     if (!updated) {
