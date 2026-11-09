@@ -1,5 +1,6 @@
 import {useState,type FormEvent} from 'react';
 import InvitationQRCode from './components/InvitationQRCode';
+import {createInvitationLink} from './invitation-link';
 import {Link,useLocation} from 'wouter';
 import {ArrowLeft,ArrowRight,Building2,Check,CheckCircle2,ChevronLeft,ChevronDown,ClipboardList,Copy,Eye,EyeOff,Mail,MapPin,Plus,ShieldCheck,UserRound,Users,Wrench,X,MessageCircle,Send,Smartphone,LogIn} from 'lucide-react';
 import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from '@/components/ui/select';
@@ -35,10 +36,7 @@ export default function OrganizationOnboarding({lang,mode,embedded=false,onExit}
    setSites(old=>[...old,{id:Date.now()+old.length,city,name:newBranch.trim()}]);setNewBranch('');setError('');
  };
  const branchLabel=(s:Site)=>`${s.name} · ${s.city}`;
- const inviteUrl=(role:Role)=>{
-   const params=new URLSearchParams({role,organization:data.organization.trim()});
-   return (typeof window==='undefined'?'':window.location.origin)+'/join?'+params.toString();
- };
+ const inviteUrl=(role:Role)=>createInvitationLink(role,data.organization.trim());
  const inviteMessage=(role:Role)=>tr(lang,
    'دعوة للانضمام إلى '+(data.organization||'المنشأة')+' على تدارك. أكمل بياناتك: '+inviteUrl(role),
    'Join '+(data.organization||'the organization')+' on Tadaruk. Complete your details: '+inviteUrl(role));
