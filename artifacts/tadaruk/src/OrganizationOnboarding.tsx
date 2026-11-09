@@ -162,7 +162,7 @@ export default function OrganizationOnboarding({lang,mode,embedded=false}:{lang:
           <p className="org-final-disclosure">{tr(lang,'هذه دعوات تجريبية لتوضيح المسار. إنشاء الحسابات والتحقق من الدعوات يتطلبان ربطًا بالخادم.','These invitations preview the flow. Verified invites and real accounts require backend integration.')}</p>
         </div>}
         {error&&<p className="org-error" role="alert">{error}</p>}
-        <div className="org-bottom">{step>0&&<button type="button" className="org-prev" onClick={()=>{setError('');setStep(s=>s-1)}}>{tr(lang,'السابق','Back')}</button>}
+        <div className="org-bottom">{step>0&&<button type="button" className="org-prev" onClick={()=>{setError('');setStep(s=>s-1)}}><ArrowLeft size={16}/>{tr(lang,'رجوع','Back')}</button>}
           <button type="submit" className="org-next">{step===3?tr(lang,'إنهاء الإعداد','Complete setup'):tr(lang,'التالي','Continue')}<ChevronLeft size={18}/></button>
         </div>
         <p className="org-small">{tr(lang,'لديك حساب بالفعل؟','Already have an account?')} <button type="button" className="org-inline-switch" onClick={()=>switchPage('/login')}>{tr(lang,'تسجيل الدخول','Sign in')}</button></p>
