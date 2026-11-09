@@ -288,3 +288,69 @@
  .auth-morph-register .org-steps>div small{font-size:10px !important}
 }
 @media(prefers-reduced-motion:reduce){.auth-morph-card{animation:none !important}}
+
+
+/* Nov 2026 — airy auth screen, edge-aligned controls and readable theme-aware hero. */
+.auth-morph-page{
+  background:radial-gradient(ellipse 75% 72% at 12% 12%,#e7f7fc 0%,transparent 74%),
+             radial-gradient(ellipse 70% 68% at 92% 87%,#dceff7 0%,transparent 78%),
+             #f7fbfd !important;
+}
+.auth-morph-dark-veil{
+  filter:blur(54px) saturate(.78);
+  transform:scale(1.12);
+  transform-origin:center;
+  opacity:.65;
+}
+.auth-morph-header{
+  width:100% !important;max-width:none !important;
+  margin:0 auto !important;padding-inline:clamp(2px,1.4vw,22px);
+  justify-content:space-between;gap:clamp(12px,3vw,35px);
+}
+.auth-morph-brand img{width:128px}
+.auth-morph-header-actions.nav-actions{gap:clamp(10px,1.6vw,24px) !important}
+.auth-morph-header-actions .nav-lang{border-radius:14px}
+.auth-morph-card:not(.auth-morph-signup)::before{
+  background:linear-gradient(145deg,#f1fbff 0%,#dff4fc 45%,#b9e3f2 100%);
+}
+.auth-morph-card:not(.auth-morph-signup) .auth-morph-left,
+.auth-morph-card:not(.auth-morph-signup) .auth-morph-left h2{color:#214968 !important}
+.auth-morph-card:not(.auth-morph-signup) .auth-morph-left p{color:#4c708b !important}
+.auth-morph-card:not(.auth-morph-signup) .auth-morph-left button{
+  color:#205375;border-color:#5c9bb9;background:#ffffff52;
+}
+.auth-morph-card:not(.auth-morph-signup) .auth-morph-left button:hover{background:#fff9}
+.auth-morph-panel-content{gap:14px !important}
+.auth-morph-panel-mark{width:94px;height:94px;filter:drop-shadow(0 8px 17px #164d7420)}
+.auth-morph-left h2{font-size:clamp(24px,2.3vw,30px) !important;line-height:1.4}
+.auth-morph-left p{max-width:27ch;font-size:17px !important;line-height:1.8}
+.dark .auth-morph-page{
+  background:radial-gradient(ellipse at 18% 10%,#173a52,transparent 62%),#0c2033 !important;
+}
+.dark .auth-morph-dark-veil{filter:blur(47px) saturate(.8);opacity:.7}
+.dark .auth-morph-card:not(.auth-morph-signup)::before{
+  background:linear-gradient(145deg,#102840 0%,#173c5d 63%,#276982 100%);
+}
+.dark .auth-morph-card:not(.auth-morph-signup) .auth-morph-left,
+.dark .auth-morph-card:not(.auth-morph-signup) .auth-morph-left h2{color:#f0f8ff !important}
+.dark .auth-morph-card:not(.auth-morph-signup) .auth-morph-left p{color:#c9dfef !important}
+.dark .auth-morph-card:not(.auth-morph-signup) .auth-morph-left button{
+  color:#f3faff;border-color:#d3eaf9;background:#ffffff0d;
+}
+@media(max-width:850px){
+  .auth-morph-header{padding-inline:4px;gap:10px}
+  .auth-morph-brand img{width:112px}
+  .auth-morph-left p{font-size:14px !important}
+  .auth-morph-panel-mark{width:75px;height:75px}
+  .auth-morph-panel-content{gap:8px !important}
+}
+@media(max-width:560px){
+  .auth-morph-header{align-items:center;justify-content:space-between}
+  .auth-morph-brand img{width:96px}
+  .auth-morph-header-actions.nav-actions{gap:6px !important}
+  .auth-morph-left h2{font-size:21px !important}
+  .auth-morph-left p{font-size:12px !important;line-height:1.45}
+  .auth-morph-panel-mark{width:60px;height:60px}
+  .auth-morph-panel-content{gap:4px !important}
+}
+@media(prefers-reduced-motion:reduce){.auth-morph-dark-veil{filter:blur(54px) saturate(.78)}}
