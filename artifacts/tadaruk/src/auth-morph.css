@@ -224,3 +224,67 @@
  .auth-morph-register .org-field{font-size:18px !important}
  .auth-morph-register .org-field input,.auth-morph-register .org-select-trigger{font-size:18px !important}
 }
+
+/* Auth refresh: reuse project-native nav controls and reveal the actual DarkVeil */
+.auth-morph-page{background:#ecf6fa !important;padding:14px clamp(14px,3vw,40px) 48px !important;overflow:hidden !important}
+.auth-morph-page::after{display:none !important}
+.auth-morph-dark-veil{position:absolute !important;inset:0 !important;width:100% !important;height:100% !important;min-height:100dvh !important;z-index:0 !important;pointer-events:none !important}
+.auth-morph-header{position:relative !important;z-index:2 !important;max-width:870px !important;height:70px !important}
+.auth-morph-header-actions.nav-actions{display:flex !important;align-items:center !important;gap:11px !important}
+.auth-morph-header-actions .nav-lang{font-family:var(--app-font-sans),sans-serif !important;font-size:14px !important;color:#214b6e !important;min-height:40px;padding:8px 11px !important;border-radius:12px;transition:background .2s}
+.auth-morph-header-actions .nav-lang:hover{background:#d7ebf4}
+.auth-morph-header-actions .landing-theme-toggle{flex-shrink:0}
+.auth-morph-home{color:#28526f !important;font-family:var(--app-font-sans),sans-serif !important;font-size:13px !important;display:inline-flex;align-items:center;gap:6px}
+.auth-morph-card{max-width:850px !important;min-height:550px !important;width:min(850px,100%) !important;margin:12px auto 52px !important;box-shadow:0 28px 65px #18406520 !important;animation:auth-morph-reveal .95s cubic-bezier(.22,.8,.24,1) .75s both}
+.auth-morph-card.auth-morph-signup{max-width:850px !important;min-height:590px !important}
+@keyframes auth-morph-reveal{from{opacity:0;transform:translateY(30px) scale(.97);filter:blur(5px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+.auth-morph-signup .auth-morph-form-area{min-height:590px !important}
+.auth-morph-signup .auth-morph-register{min-height:590px !important}
+.auth-morph-signup .auth-morph-register-content{padding:88px clamp(20px,4vw,48px) 32px !important}
+.auth-morph-register .org-form{gap:16px !important}
+.auth-morph-register .org-steps{margin:0 0 1px !important;padding:6px 0 13px !important}
+.auth-morph-register .org-steps>div small{font-size:14px !important}
+.auth-morph-register .org-steps::before{top:25px !important}
+.auth-morph-register .org-steps>div span{width:32px !important;height:32px !important;flex-basis:32px !important}
+.auth-morph-register .org-eyebrow{font-size:17px !important}
+.auth-morph-register .org-form h2{font-size:clamp(31px,3.1vw,40px) !important}
+.auth-morph-register .org-fields{gap:15px 18px !important}
+.auth-morph-register .org-field{font-size:18px !important;gap:7px !important}
+.auth-morph-register .org-field input,.auth-morph-register .org-select-trigger{min-height:49px !important;font-size:18px !important}
+.auth-morph-register .org-step-hint,.auth-morph-register .org-site-step .org-muted{font-size:17px !important}
+.auth-morph-panel-mark{display:block;width:114px;height:114px;object-fit:contain;filter:drop-shadow(0 5px 18px #0d244a26);transition:transform .55s cubic-bezier(.2,.8,.2,1)}
+.auth-morph-panel-mark:hover{transform:scale(1.04)}
+.auth-morph-panel-content{gap:26px !important}
+.auth-morph-panel-content>button{font-size:17px !important}
+.auth-morph-demo{margin-top:8px !important;gap:9px !important}
+.auth-morph-roles{gap:20px !important;align-items:flex-start}
+.auth-morph-role{width:90px;flex:0 1 90px;gap:5px !important}
+.auth-morph-role>span{width:53px !important;height:53px !important}
+.auth-morph-role b{font-size:16px !important;line-height:1.35}
+.auth-morph-role small{font-size:12px !important;line-height:1.5;color:#7892aa;font-weight:500;max-width:90px;text-align:center;white-space:normal}
+.dark .auth-morph-page{background:#071e33 !important}
+.dark .auth-morph-header-actions .nav-lang,.dark .auth-morph-home{color:#d5ebf8 !important}
+.dark .auth-morph-header-actions .nav-lang:hover{background:#1a3f55}
+.dark .auth-morph-role small{color:#a9c0d3}
+.dark .auth-morph-card{box-shadow:0 30px 70px #00000065 !important}
+@media(max-width:850px){
+ .auth-morph-header{max-width:100% !important}
+ .auth-morph-card{min-height:740px !important}
+ .auth-morph-card.auth-morph-signup{min-height:590px !important}
+ .auth-morph-register .org-steps>div small{font-size:12px !important}
+}
+@media(max-width:560px){
+ .auth-morph-page{padding:8px 11px 35px !important}
+ .auth-morph-header{height:auto !important;min-height:61px !important;gap:7px;flex-wrap:wrap}
+ .auth-morph-header-actions.nav-actions{gap:4px !important}
+ .auth-morph-header-actions .nav-lang{font-size:12px !important;padding:7px !important}
+ .auth-morph-home{font-size:12px !important;padding:6px !important}
+ .auth-morph-card{margin:9px auto 35px !important;min-height:740px !important}
+ .auth-morph-card.auth-morph-signup{min-height:590px !important}
+ .auth-morph-signup .auth-morph-register-content{padding:88px 14px 30px !important}
+ .auth-morph-roles{gap:8px !important}
+ .auth-morph-role{width:82px;flex-basis:82px}
+ .auth-morph-role small{font-size:11px !important}
+ .auth-morph-register .org-steps>div small{font-size:10px !important}
+}
+@media(prefers-reduced-motion:reduce){.auth-morph-card{animation:none !important}}
