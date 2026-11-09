@@ -120,19 +120,22 @@ export default function TechnicianIssueMedia({ticketId,imageUrl,lang}:{ticketId:
   const close=()=>{setOpen(false);setMode('photo');reset();};
   return <>
     <div className="tadaruk-photo-mini tadaruk-photo-mini--clean">
-      <button className="tadaruk-photo-mini-image" onClick={()=>{reset();setMode('photo');setOpen(true);}}
-        type="button" aria-label={tr(lang,'استعراض صورة العطل','View issue photo')}>
-        <img src={imageUrl} alt={tr(lang,'صورة العطل الأصلية','Original issue photo')}/>
-        <span><Maximize2 size={15}/>{tr(lang,'استعراض الصورة','View photo')}</span>
-      </button>
-      <button type="button" className="tadaruk-photo-focus-trigger" data-testid="button-photo-perspective"
-        onClick={()=>{reset();setMode(reduceMotion?'photo':'perspective');setOpen(true);}}>
-        <Move size={15}/>{tr(lang,'استعراض تفاعلي','Interactive view')}
-      </button>
-      {hasModel&&<button className="tadaruk-photo-model-button" type="button"
-        onClick={()=>{reset();setMode('model');setOpen(true);}}>
-        <Box size={16}/>{tr(lang,'عرض ثلاثي الأبعاد','View 3D')}
-      </button>}
+      <div className="tadaruk-photo-surface">
+        <button className="tadaruk-photo-mini-image" onClick={()=>{reset();setMode('photo');setOpen(true);}}
+          type="button" aria-label={tr(lang,'استعراض صورة العطل الأصلية','View original issue photo')}>
+          <img src={imageUrl} alt={tr(lang,'صورة العطل الأصلية','Original issue photo')}/>
+        </button>
+        <div className="tadaruk-photo-overlay-actions">
+          <button type="button" className="tadaruk-photo-focus-trigger" data-testid="button-photo-perspective"
+            onClick={()=>{reset();setMode(reduceMotion?'photo':'perspective');setOpen(true);}}>
+            <Move size={15}/>{tr(lang,'عرض تقريبي بعمق','Approximate depth view')}
+          </button>
+          {hasModel&&<button className="tadaruk-photo-model-button" type="button"
+            onClick={()=>{reset();setMode('model');setOpen(true);}}>
+            <Box size={16}/>{tr(lang,'عرض 3D','View 3D')}
+          </button>}
+        </div>
+      </div>
     </div>
     {open&&<div className="tadaruk-media-backdrop" onClick={close} role="presentation">
       <div ref={fullscreenRef} className="tadaruk-media-dialog tadaruk-media-dialog--minimal"
@@ -144,10 +147,9 @@ export default function TechnicianIssueMedia({ticketId,imageUrl,lang}:{ticketId:
             {hasModel && mode==='model'&&<button type="button" onClick={()=>{setMode('photo');reset();}}>
               <Camera size={16}/>{tr(lang,'الصورة الأصلية','Original photo')}
             </button>}
-            {mode!=='model'&&!reduceMotion&&<button type="button"
-              className={mode==='perspective'?'is-active':''}
-              onClick={()=>{setMode(mode==='perspective'?'photo':'perspective');reset();}}>
-              <Move size={16}/>{mode==='perspective'?tr(lang,'العرض العادي','Normal view'):tr(lang,'تأثير منظور','Perspective')}
+            {mode==='perspective'&&<button type="button"
+              onClick={()=>{setMode('photo');reset();}}>
+              <Camera size={16}/>{tr(lang,'الأصلية','Original')}
             </button>}
             <button type="button" onClick={toggleFullscreen} aria-label={tr(lang,'ملء الشاشة','Fullscreen')}>
               <Maximize2 size={17}/>
@@ -182,8 +184,8 @@ export default function TechnicianIssueMedia({ticketId,imageUrl,lang}:{ticketId:
           {mode==='model'
             ?tr(lang,'قد يحتوي النموذج على تفاصيل تقديرية؛ تأكد من صورة البلاغ قبل الصيانة.','The model may be approximate; verify against the report photo.')
             :mode==='perspective'
-              ?tr(lang,'تأثير منظور للصورة نفسها، وليس مجسمًا ثلاثي الأبعاد أو كشفًا لأجزاء مخفية. استخدم التمرير للتكبير والسحب للتحريك.','Perspective effect on the same image, not real 3D or hidden details. Scroll to zoom and drag to pan.')
-              :tr(lang,'الصورة الأصلية كما رفعها المبلّغ. استخدم التمرير للتكبير والسحب للتحريك.','Original uploaded photo. Scroll to zoom and drag to pan.')}
+              ?tr(lang,'تأثير عمق تقريبي على الصورة الأصلية، لا يكشف تفاصيل مخفية.','Approximate depth effect on the original photo; no hidden details are revealed.')
+              :tr(lang,'الصورة الأصلية كما رفعها المبلّغ.','Original photo from the reporter.')}
         </div>
       </div>
     </div>}
