@@ -256,7 +256,7 @@ export default function Stepper({
       const folded = vertical && root.clientWidth < 520;
       setCompact(folded);
       const track = trackRef.current;
-      if (!track || !labelled || (vertical && !folded)) {
+      if (!track || !labelled || root.classList.contains('rw-new-report-stepper') || (vertical && !folded)) {
         setTight(false);
         return;
       }
