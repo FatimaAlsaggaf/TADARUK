@@ -10,7 +10,7 @@ type Role='technician'|'reporter';
 type Site={id:number;city:string;name:string};
 const tr=(lang:Lang,ar:string,en:string)=>lang==='ar'?ar:en;
 const branches=(lang:Lang)=>[tr(lang,'المنشأة','Organization'),tr(lang,'المدير','Manager'),tr(lang,'الفروع','Branches'),tr(lang,'الدعوات','Invitations')];
-export default function OrganizationOnboarding({lang,mode,embedded=false}:{lang:Lang;mode:'signup'|'login';embedded?:boolean}){
+export default function OrganizationOnboarding({lang,mode,embedded=false,onExit}:{lang:Lang;mode:'signup'|'login';embedded?:boolean;onExit?:()=>void}){
  const [,go]=useLocation();
  const [step,setStep]=useState(0);
  const [done,setDone]=useState(false);
@@ -66,8 +66,19 @@ export default function OrganizationOnboarding({lang,mode,embedded=false}:{lang:
     required={required} minLength={type==='password'?8:undefined} onChange={e=>set(key,e.target.value)}/>
  </label>;
  const Back=ArrowLeft;
+ const goBack=()=>{
+   if(done){if(onExit)onExit();else go('/login');return;}
+   if(step>0){setError('');setStep(current=>Math.max(0,current-1));return;}
+   if(onExit)onExit();
+   else go('/login');
+ };
  const title=mode==='login'?tr(lang,'أهلًا بعودتك','Welcome back'):tr(lang,'إعداد المنشأة','Organization setup');
  return <div className={embedded?'org-embedded':'org-screen'} dir={lang==='ar'?'rtl':'ltr'}>
+  {embedded&&mode==='signup'&&<button type="button" className="org-wizard-back-circle" onClick={goBack}
+    title={step>0&&!done?tr(lang,'الخطوة السابقة','Previous step'):tr(lang,'العودة لتسجيل الدخول','Back to sign in')}
+    aria-label={step>0&&!done?tr(lang,'العودة للخطوة السابقة','Back to previous step'):tr(lang,'العودة لتسجيل الدخول','Back to sign in')}>
+    <ArrowLeft size={22} strokeWidth={2.3} aria-hidden="true"/>
+  </button>}
   {!embedded&&<header className="org-top">
     <Link href="/" className="org-brand">تدارك <small>TADARUK</small></Link>
     <Link href="/" className="org-home"><Back size={16}/>{tr(lang,'رجوع','Back')}</Link>
@@ -162,7 +173,7 @@ export default function OrganizationOnboarding({lang,mode,embedded=false}:{lang:
           <p className="org-final-disclosure">{tr(lang,'هذه دعوات تجريبية لتوضيح المسار. إنشاء الحسابات والتحقق من الدعوات يتطلبان ربطًا بالخادم.','These invitations preview the flow. Verified invites and real accounts require backend integration.')}</p>
         </div>}
         {error&&<p className="org-error" role="alert">{error}</p>}
-        <div className="org-bottom">{step>0&&<button type="button" className="org-prev" onClick={()=>{setError('');setStep(s=>s-1)}}><ArrowLeft size={16}/>{tr(lang,'رجوع','Back')}</button>}
+        <div className="org-bottom org-wizard-continue">
           <button type="submit" className="org-next">{step===3?tr(lang,'إنهاء الإعداد','Complete setup'):tr(lang,'التالي','Continue')}<ChevronLeft size={18}/></button>
         </div>
         <p className="org-small">{tr(lang,'لديك حساب بالفعل؟','Already have an account?')} <button type="button" className="org-inline-switch" onClick={()=>switchPage('/login')}>{tr(lang,'تسجيل الدخول','Sign in')}</button></p>
