@@ -2028,79 +2028,113 @@
   .tadaruk-voice-recording-mark { animation: none !important; }
 }
 
-/* Reporter new ticket: circular step timeline and clean centered voice entry. */
-/* Three clear stages: number circles and connecting line, without grey tabs. */
+/* Reporter report wizard: balanced three-stage timeline.
+   The connectors belong to each equal-width segment, never the form body. */
 .reporter-view .rw-new-report-stepper .stepper__track,
 .dark .reporter-view .rw-new-report-stepper .stepper__track {
   display: flex !important;
+  direction: inherit !important;
   align-items: flex-start !important;
-  padding: 9px 12px 12px !important;
-  background: transparent !important;
+  justify-content: space-between !important;
+  gap: 0 !important;
+  width: 100% !important;
+  padding: 12px 8px 10px !important;
+  margin: 0 !important;
   border: 0 !important;
   border-radius: 0 !important;
+  background: transparent !important;
   box-shadow: none !important;
-  gap: 0 !important;
+  box-sizing: border-box !important;
 }
-.reporter-view .rw-new-report-stepper .stepper__glider { display: none !important; }
-.reporter-view .rw-new-report-stepper .stepper__segment {
+.reporter-view .rw-new-report-stepper .stepper__glider {
+  display: none !important;
+}
+.reporter-view .rw-new-report-stepper .stepper__segment,
+.reporter-view .rw-new-report-stepper .stepper__segment[aria-current="step"] {
   position: relative !important;
   display: flex !important;
+  flex: 1 1 0 !important;
   flex-direction: column !important;
-  gap: 8px !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
   min-width: 0 !important;
+  width: 0 !important;
   height: auto !important;
-  min-height: 66px !important;
-  padding: 1px 5px !important;
+  min-height: 84px !important;
+  gap: 10px !important;
+  padding: 0 6px !important;
   border: 0 !important;
   border-radius: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
   color: #718198 !important;
-  cursor: default;
+  box-sizing: border-box !important;
 }
 .reporter-view .rw-new-report-stepper .stepper__segment:not(:last-child)::after {
   content: "";
   position: absolute;
-  top: 17px;
-  inset-inline-end: calc(50% + 28px);
-  width: calc(100% - 56px);
-  height: 2px;
-  border-radius: 9px;
-  background: #d7e2ed;
+  z-index: 0;
+  /* Inline-start points toward the next step for both RTL and LTR. */
+  inset-inline-start: calc(50% + 27px);
+  inset-inline-end: auto;
+  top: 25px;
+  width: calc(100% - 54px);
+  max-width: none;
+  height: 3px;
+  border-radius: 99px;
+  background: #dfe5ee;
   pointer-events: none;
 }
 .reporter-view .rw-new-report-stepper .stepper__segment[data-status="complete"]::after {
-  background: #607f9e;
+  background: #8297b2;
 }
 .reporter-view .rw-new-report-stepper .stepper__badge {
-  position: relative;
-  z-index: 2;
-  width: 34px !important;
-  height: 34px !important;
-  font: 700 14px/1 'IBM Plex Sans Arabic',sans-serif !important;
+  position: relative !important;
+  z-index: 1 !important;
+  display: grid !important;
+  flex: 0 0 50px !important;
+  place-items: center !important;
+  width: 50px !important;
+  height: 50px !important;
+  min-width: 50px !important;
+  min-height: 50px !important;
+  padding: 0 !important;
   border-radius: 50% !important;
-  color: #7f91a7 !important;
-  background: #f4f7fa !important;
-  box-shadow: inset 0 0 0 1.5px #ccd9e6 !important;
-  transition: background-color .22s ease, box-shadow .22s ease, color .22s ease, transform .22s ease !important;
+  background: #fff !important;
+  color: #63738a !important;
+  font: 700 18px/1 'IBM Plex Sans Arabic', sans-serif !important;
+  box-shadow: inset 0 0 0 2px #dce3ed !important;
+  transform: none !important;
 }
 .reporter-view .rw-new-report-stepper .stepper__segment[data-status="active"] .stepper__badge {
-  color: #fff !important;
   background: #1f3363 !important;
-  box-shadow: 0 0 0 4px #e1eaf4, 0 4px 12px rgba(31,51,99,.15) !important;
-  transform: scale(1.04);
+  color: #fff !important;
+  box-shadow: 0 0 0 5px #e9edf7, 0 3px 10px rgba(31,51,99,.14) !important;
 }
 .reporter-view .rw-new-report-stepper .stepper__segment[data-status="complete"] .stepper__badge {
+  background: #557990 !important;
   color: #fff !important;
-  background: #3d7187 !important;
   box-shadow: none !important;
+}
+.reporter-view .rw-new-report-stepper .stepper__text {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  text-align: center !important;
 }
 .reporter-view .rw-new-report-stepper .stepper__title,
 .reporter-view .rw-new-report-stepper .stepper__segment:has(.stepper__badge[data-status="active"]) .stepper__title {
-  font: 600 13px/1.55 'IBM Plex Sans Arabic',sans-serif !important;
+  display: block !important;
+  width: 100% !important;
+  overflow: visible !important;
   color: #75859b !important;
+  font: 600 14px/1.5 'IBM Plex Sans Arabic', sans-serif !important;
+  text-align: center !important;
   white-space: normal !important;
-  text-align: center;
+  text-overflow: clip !important;
+  overflow-wrap: anywhere;
 }
 .reporter-view .rw-new-report-stepper .stepper__segment[data-status="active"] .stepper__title {
   color: #1f3363 !important;
@@ -2159,25 +2193,42 @@
 .dark .reporter-view .rw-new-report-stepper .stepper__segment:not(:last-child)::after { background: #425770; }
 .dark .reporter-view .rw-new-report-stepper .stepper__segment[data-status="complete"]::after { background: #81a9be; }
 .dark .reporter-view .rw-new-report-stepper .stepper__badge {
-  background: #25394e !important; color: #bdcede !important;
-  box-shadow: inset 0 0 0 1.5px #4a617c !important;
+  background: #203348 !important;
+  color: #c0d0e0 !important;
+  box-shadow: inset 0 0 0 2px #4a617c !important;
 }
 .dark .reporter-view .rw-new-report-stepper .stepper__segment[data-status="active"] .stepper__badge {
-  background: #84a8c2 !important; color: #102841 !important;
-  box-shadow: 0 0 0 4px #29405b !important;
+  background: #84a8c2 !important;
+  color: #102841 !important;
+  box-shadow: 0 0 0 5px #29405b !important;
 }
 .dark .reporter-view .rw-new-report-stepper .stepper__segment[data-status="active"] .stepper__title { color: #e7f3fc !important; }
 .dark .reporter-view .rw-new-report-stepper .stepper__segment[data-status="complete"] .stepper__title { color: #c1d7e6 !important; }
 .dark .reporter-view .rw-new-report-stepper .rw-voice-helper { color: #bbcada; }
 .dark .reporter-view .rw-new-report-stepper .rw-photo-uploader-text p { color: #bed0e0 !important; }
-@media(max-width:640px) {
-  .reporter-view .rw-new-report-stepper .stepper__track { padding-inline: 2px !important; }
-  .reporter-view .rw-new-report-stepper .stepper__segment { min-height: 69px !important; gap: 7px !important; }
-  .reporter-view .rw-new-report-stepper .stepper__badge { width: 32px !important; height: 32px !important; }
-  .reporter-view .rw-new-report-stepper .stepper__segment:not(:last-child)::after {
-    top: 16px; inset-inline-end: calc(50% + 23px); width: calc(100% - 46px);
+@media (max-width: 640px) {
+  .reporter-view .rw-new-report-stepper .stepper__track { padding-inline: 0 !important; }
+  .reporter-view .rw-new-report-stepper .stepper__segment {
+    min-height: 78px !important;
+    padding-inline: 3px !important;
+    gap: 8px !important;
   }
-  .reporter-view .rw-new-report-stepper .stepper__title { font-size: 11px !important; }
+  .reporter-view .rw-new-report-stepper .stepper__badge {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    min-height: 38px !important;
+    flex-basis: 38px !important;
+    font-size: 15px !important;
+  }
+  .reporter-view .rw-new-report-stepper .stepper__segment:not(:last-child)::after {
+    top: 19px;
+    inset-inline-start: calc(50% + 23px);
+    inset-inline-end: auto;
+    width: calc(100% - 46px);
+    height: 2px;
+  }
+  .reporter-view .rw-new-report-stepper .stepper__title { font-size: 11.5px !important; }
   .reporter-view .rw-new-report-stepper .rw-report-intro h2 { font-size: 21px !important; }
 }
 @media(prefers-reduced-motion:reduce) {
