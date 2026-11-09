@@ -1,5 +1,5 @@
 import { type ReactNode, type FormEvent, createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Route, Switch, Link, useLocation, useParams } from 'wouter';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import BlurText from '@/components/BlurText';
@@ -716,49 +716,42 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
   const [showNotifications,setShowNotifications]=useState(false);
   const headerAccountRef=useRef<HTMLDivElement>(null);
   const notificationsRef=useRef<HTMLDivElement>(null);
-  const [readNotificationIds,setReadNotificationIds]=useState<string[]>([]);
-
-  const rawNotifications = useMemo(() => [
-    {
-      id: 'notif-1',
-      icon: 'check' as const,
-      title: tr(lang, 'تم توثيق إصلاح العطل', 'Repair documented'),
-      desc: tr(lang, 'فرع العليا — بانتظار تأكيدك لإغلاق البلاغ', 'Olaya Branch — awaiting your confirmation to close'),
-      time: tr(lang, 'منذ ساعتين', '2 hours ago'),
-      link: '/workspace/tickets',
+  type UserNotification = { id:string; ticketId:string; kind:string; title:string; description:string; createdAt:string; readAt:string|null };
+  const queryClient=useQueryClient();
+  const {data:storedNotifications=[],isError:notificationsError}=useQuery<UserNotification[]>({
+    queryKey:['tadaruk-notifications',user.id],
+    queryFn:async ()=>{
+      const response=await fetch('/api/notifications',{credentials:'same-origin'});
+      if(!response.ok)throw new Error('Notifications could not be loaded');
+      return response.json() as Promise<UserNotification[]>;
     },
-    {
-      id: 'notif-2',
-      icon: 'wrench' as const,
-      title: tr(lang, 'إسناد بلاغ لفني', 'Technician assigned'),
-      desc: tr(lang, 'أُسند بلاغ مكيف الفرع للفني: أحمد الغامدي', 'AC ticket assigned to tech: Ahmed Al-Ghamdi'),
-      time: tr(lang, 'منذ ٤ ساعات', '4 hours ago'),
-      link: '/workspace/tickets',
-    },
-    {
-      id: 'notif-3',
-      icon: 'clock' as const,
-      title: tr(lang, 'تم تسجيل البلاغ بنجاح', 'Ticket created'),
-      desc: tr(lang, 'بلاغ تسريب ماء المغاسل رقم #1042 قيد المراجعة', 'Sink leak ticket #1042 is under review'),
-      time: tr(lang, 'أمس', 'Yesterday'),
-      link: '/workspace/tickets',
-    },
-  ], [lang]);
-
-  const notificationsList = useMemo(() => {
-    return rawNotifications.map(n => ({
-      ...n,
-      unread: !readNotificationIds.includes(n.id) && n.id !== 'notif-3',
-    }));
-  }, [rawNotifications, readNotificationIds]);
-
-  const unreadCount = notificationsList.filter(n => n.unread).length;
-  const markAllNotificationsRead = () => {
-    setReadNotificationIds(rawNotifications.map(n => n.id));
+    refetchInterval:15000,
+    refetchOnWindowFocus:true,
+    retry:1,
+  });
+  const notificationsList=storedNotifications.map(n=>({
+    id:n.id,
+    icon:(n.kind==='removed'?'clock':'wrench') as 'clock'|'wrench',
+    title:n.title,
+    desc:n.description,
+    time:new Intl.DateTimeFormat(lang==='ar'?'ar-SA':'en-US',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}).format(new Date(n.createdAt)),
+    link:n.kind==='removed'?'/workspace/tickets':`/workspace/tickets/${n.ticketId}`,
+    unread:!n.readAt,
+  }));
+  const unreadCount=notificationsList.filter(n=>n.unread).length;
+  const markNotificationIdsRead=async(ids:string[])=>{
+    if(!ids.length)return;
+    try{
+      const response=await fetch('/api/notifications/read',{
+        method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ids}),
+      });
+      if(!response.ok)throw new Error('Could not update notification');
+      void queryClient.invalidateQueries({queryKey:['tadaruk-notifications',user.id]});
+    }catch { void queryClient.invalidateQueries({queryKey:['tadaruk-notifications',user.id]}); }
   };
-  const markNotificationRead = (id: string) => {
-    setReadNotificationIds(prev => prev.includes(id) ? prev : [...prev, id]);
-  };
+  const markAllNotificationsRead=()=>{void markNotificationIdsRead(notificationsList.filter(n=>n.unread).map(n=>n.id));};
+  const markNotificationRead=(id:string)=>{void markNotificationIdsRead([id]);};
 
   useEffect(()=>{
     if(!menu && !headerMenu && !showNotifications)return;
@@ -1041,6 +1034,7 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
                         )}
                       </div>
                       <div className="notifications-list">
+                        {!notificationsList.length && <p className="workspace-notifications-empty">{tr(lang, notificationsError?'تعذر تحميل الإشعارات':'لا توجد إشعارات جديدة',notificationsError?'Could not load notifications':'No notifications yet')}</p>}
                         {notificationsList.map(item => (
                           <div
                             key={item.id}
@@ -1326,11 +1320,23 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
           <button type="button" className="icon-control workspace-header-bell" onClick={()=>setShowNotifications(value=>!value)}
             aria-label={tr(lang,'الإشعارات','Notifications')} aria-expanded={showNotifications}>
             <Bell size={19}/>
+            {unreadCount>0&&<span className="notification-badge-dot" aria-hidden="true"/>}
           </button>
           {showNotifications&&(
             <div className="workspace-header-notifications-popover" role="region" aria-label={tr(lang,'الإشعارات','Notifications')}>
-              <div className="notifications-head"><div className="notifications-title-wrap"><Bell size={15}/><b>{tr(lang,'الإشعارات','Notifications')}</b></div></div>
-              <p className="workspace-notifications-empty">{tr(lang,'لا توجد إشعارات جديدة حاليًا','No new notifications at the moment')}</p>
+              <div className="notifications-head">
+                <div className="notifications-title-wrap"><Bell size={15}/><b>{tr(lang,'الإشعارات','Notifications')}</b>{unreadCount>0&&<span className="notifications-count-badge">{unreadCount}</span>}</div>
+                {unreadCount>0&&<button type="button" className="notifications-mark-read" onClick={markAllNotificationsRead}>{tr(lang,'تحديد الكل كمقروء','Mark all read')}</button>}
+              </div>
+              <div className="notifications-list">
+                {!notificationsList.length&&<p className="workspace-notifications-empty">{tr(lang,notificationsError?'تعذر تحميل الإشعارات':'لا توجد إشعارات جديدة',notificationsError?'Could not load notifications':'No notifications yet')}</p>}
+                {notificationsList.map(item=><button key={item.id} type="button" className={`notification-item ${item.unread?'is-unread':''}`}
+                  onClick={()=>{markNotificationRead(item.id);setShowNotifications(false);go(item.link);}}>
+                  <span className="notification-item-icon">{item.icon==='wrench'?<Wrench size={16}/>:<Clock3 size={16}/>}</span>
+                  <span className="notification-item-content"><b className="notification-item-title">{item.title}</b><small className="notification-item-desc">{item.desc}</small><small className="notification-item-time">{item.time}</small></span>
+                  {item.unread&&<span className="notification-unread-dot" aria-hidden="true"/>}
+                </button>)}
+              </div>
             </div>
           )}
         </div>
