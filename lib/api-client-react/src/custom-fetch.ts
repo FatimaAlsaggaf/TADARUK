@@ -856,6 +856,22 @@ function getActiveUser(): Record<string, unknown> | null {
   }
 }
 
+type MockNotification = {id:string;recipientId:string;ticketId:string;kind:string;title:string;description:string;createdAt:string;readAt:string|null};
+function getMockNotifications(): MockNotification[] {
+  try { return JSON.parse(window.localStorage.getItem("tadaruk-mock-notifications")||"[]") as MockNotification[]; }
+  catch { return []; }
+}
+function saveMockNotifications(items: MockNotification[]): void {
+  window.localStorage.setItem("tadaruk-mock-notifications",JSON.stringify(items.slice(-120)));
+}
+function notifyMock(recipientId: unknown,ticketId: unknown,kind:string,title:string,description:string):void {
+  if(typeof recipientId!=="string"||!recipientId)return;
+  const rows=getMockNotifications();
+  rows.push({id:`mock-notify-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,recipientId,
+    ticketId:String(ticketId),kind,title,description,createdAt:new Date().toISOString(),readAt:null});
+  saveMockNotifications(rows);
+}
+
 function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unknown): T | undefined {
   if (typeof window === "undefined") return undefined;
 
@@ -873,6 +889,21 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
 
   if (!pathname.includes("/api/")) return undefined;
   const apiPath = pathname.substring(pathname.indexOf("/api/")).replace(/\/+$/, "");
+
+  // Static Vercel demo notifications are recipient-scoped, just like backend notifications.
+  if(apiPath==="/api/notifications" && method==="GET"){
+    const member=getActiveUser();
+    return getMockNotifications().filter(n=>n.recipientId===member?.id).sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).slice(0,40) as unknown as T;
+  }
+  if(apiPath==="/api/notifications/read" && method==="POST"){
+    const member=getActiveUser();
+    const data=typeof body==="string"?JSON.parse(body):body;
+    const ids=Array.isArray(data?.ids)?data.ids:[];
+    const rows=getMockNotifications();
+    for(const n of rows) if(n.recipientId===member?.id && ids.includes(n.id))n.readAt=new Date().toISOString();
+    saveMockNotifications(rows);
+    return {success:true} as unknown as T;
+  }
 
   // 1. Health check (/api/healthz or /api/health)
   if (apiPath === "/api/health" || apiPath === "/api/healthz") {
@@ -1197,6 +1228,11 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
         };
         const updated = [newTicket, ...tickets];
         saveStoredTickets(updated);
+        const stored = window.localStorage.getItem("tadaruk_mock_tickets");
+        if (!stored || !stored.includes(String(newTicket.id))) {
+          throw new Error("Could not save ticket in demo storage.");
+        }
+        if (assignedTech) notifyMock(assignedTech.id,newTicket.id,"assigned","بلاغ جديد مسند إليك",`${newTicket.number} · ${newTicket.title}`);
         return newTicket as unknown as T;
       } catch {
         return undefined;
@@ -1257,8 +1293,11 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
           const exceptional = ["in_progress","awaiting_confirmation"].includes(String(current.status)) || priorWork;
           requireRole(!exceptional || String(parsedBody?.note||"").trim().length>=5,"Exceptional reassignment requires a reason.");
           const previous = current.technicianName||"غير مسند";
+          const formerTechnicianId=current.technicianId;
           current.technicianId=chosen!.id;current.technicianName=chosen!.name;
           if (exceptional){current.status="review";current.repairNotes=null;current.cause=null;current.resolution=null;}
+          notifyMock(chosen!.id,current.id,"assigned","تم إسناد بلاغ إليك",`${current.number} · ${current.title}`);
+          if(formerTechnicianId)notifyMock(formerTechnicianId,current.id,"removed","تم نقل البلاغ لفني آخر",`${current.number} · لم تعد مسؤولًا عن هذا البلاغ`);
           existingHistory.push({id:`ev-${Date.now()}`,label:exceptional?"إعادة إسناد استثنائية":"تغيير الفني المسؤول",actorName:String(activeUser?.name||"مدير العمليات"),note:`${previous} ← ${chosen!.name}${parsedBody?.note?` · السبب: ${parsedBody.note}`:""}`,createdAt:now});
         } else {
           throw new Error("Unsupported ticket action.");
@@ -1280,7 +1319,11 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
     const parts = apiPath.split("/");
     const ticketId = parts[3];
     const tickets = getStoredTickets();
-    const found = tickets.find(t => t.id === ticketId) || tickets[0];
+    const found = tickets.find(t => t.id === ticketId);
+    const member = getActiveUser();
+    if (!found || !member) throw new Error("Ticket not found.");
+    if(member.role==="reporter" && found.reporterId!==member.id)throw new Error("This ticket is not owned by the current reporter.");
+    if(member.role==="technician" && (found.technicianId!==member.id || found.status==="cancelled"))throw new Error("This ticket is not assigned to the current technician.");
     return found as unknown as T;
   }
 
