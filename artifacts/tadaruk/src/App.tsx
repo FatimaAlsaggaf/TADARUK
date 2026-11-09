@@ -725,9 +725,17 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
     refetchOnWindowFocus:true,
     retry:1,
   });
-  const notificationsList=storedNotifications.map(n=>({
+  // Reporter sees only updates that require a decision or confirm a final outcome.
+  // Technician keeps assignment notifications; never mix role-specific actions.
+  const visibleNotifications=storedNotifications.filter(n=>user.role==='reporter'
+    ? ['confirmation_required','closed','cancelled','reopened'].includes(n.kind)
+    : user.role==='technician'
+      ? ['assigned','removed'].includes(n.kind)
+      : true);
+  const notificationsList=visibleNotifications.map(n=>({
     id:n.id,
-    icon:(n.kind==='removed'?'clock':'wrench') as 'clock'|'wrench',
+    icon:(n.kind==='confirmation_required'?'check':n.kind==='closed'?'check':n.kind==='cancelled'?'alert':n.kind==='removed'?'clock':'wrench') as 'check'|'clock'|'wrench'|'alert',
+    kind:n.kind,
     title:n.title,
     desc:n.description,
     time:new Intl.DateTimeFormat(lang==='ar'?'ar-SA':'en-US',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}).format(new Date(n.createdAt)),
@@ -1327,7 +1335,7 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
                 {!notificationsList.length&&<p className="workspace-notifications-empty">{tr(lang,notificationsError?'تعذر تحميل الإشعارات':'لا توجد إشعارات جديدة',notificationsError?'Could not load notifications':'No notifications yet')}</p>}
                 {notificationsList.map(item=><button key={item.id} type="button" className={`notification-item ${item.unread?'is-unread':''}`}
                   onClick={()=>{markNotificationRead(item.id);setShowNotifications(false);go(item.link);}}>
-                  <span className="notification-item-icon">{item.icon==='wrench'?<Wrench size={16}/>:<Clock3 size={16}/>}</span>
+                  <span className="notification-item-icon">{item.icon==='check'?<CheckCircle2 size={16}/>:item.icon==='alert'?<CircleAlert size={16}/>:item.icon==='wrench'?<Wrench size={16}/>:<Clock3 size={16}/>}</span>
                   <span className="notification-item-content"><b className="notification-item-title">{item.title}</b><small className="notification-item-desc">{item.desc}</small><small className="notification-item-time">{item.time}</small></span>
                   {item.unread&&<span className="notification-unread-dot" aria-hidden="true"/>}
                 </button>)}
