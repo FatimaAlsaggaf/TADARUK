@@ -746,7 +746,7 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
     : user.role==='technician'
       ? ['assigned','removed'].includes(n.kind)
       : true;
-  const demoOnly=user.id.startsWith('demo-')&&!storedNotifications.some(notificationAllowed);
+  const demoOnly=(Boolean(session?.user)||user.id.startsWith('demo-'))&&!storedNotifications.some(notificationAllowed);
   const minutesAgo=(minutes:number)=>new Date(Date.now()-minutes*60_000).toISOString();
   const demoBase=(id:string,ticketId:string,kind:string,title:string,description:string,minutes:number):UserNotification=>({
     id:`demo-notif-${id}`,ticketId,kind,title,description,createdAt:minutesAgo(minutes),readAt:null
@@ -1079,7 +1079,7 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
                         <div className="notifications-title-wrap">
                           <Bell size={15}/>
                           <b>{tr(lang, 'الإشعارات', 'Notifications')}</b>
-                          {unreadCount > 0 && <span className="notifications-count-badge">{unreadCount}</span>}
+                          {unreadCount > 0 && <span className="notifications-count-badge">{unreadCount}</span>}{demoOnly&&<span style={{fontSize:11,opacity:.72,fontWeight:700}}>{tr(lang,'تجريبي','Demo')}</span>}
                         </div>
                         {unreadCount > 0 && (
                           <button
@@ -1383,7 +1383,7 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
           {showNotifications&&(
             <div className="workspace-header-notifications-popover" role="region" aria-label={tr(lang,'الإشعارات','Notifications')}>
               <div className="notifications-head">
-                <div className="notifications-title-wrap"><Bell size={15}/><b>{tr(lang,'الإشعارات','Notifications')}</b>{unreadCount>0&&<span className="notifications-count-badge">{unreadCount}</span>}</div>
+                <div className="notifications-title-wrap"><Bell size={15}/><b>{tr(lang,'الإشعارات','Notifications')}</b>{unreadCount>0&&<span className="notifications-count-badge">{unreadCount}</span>}{demoOnly&&<span style={{fontSize:11,opacity:.72,fontWeight:700}}>{tr(lang,'تجريبي','Demo')}</span>}</div>
                 {unreadCount>0&&<button type="button" className="notifications-mark-read" onClick={markAllNotificationsRead}>{tr(lang,'تحديد الكل كمقروء','Mark all read')}</button>}
               </div>
               <div className="notifications-list">
