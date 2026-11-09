@@ -1,5 +1,5 @@
 import { createElement, useEffect, useRef, useState, type PointerEvent, type WheelEvent } from 'react';
-import { Box, Camera, Maximize2, Minus, Move, Plus, RotateCcw, X } from 'lucide-react';
+import { Box, Camera, Maximize2, Move, X } from 'lucide-react';
 import './technician-issue-media.css';
 
 type Lang = 'ar' | 'en';
@@ -29,17 +29,26 @@ function loadRealModelViewer():Promise<void>{
   return modelViewerScript;
 }
 
-export default function TechnicianIssueMedia({ticketId,imageUrl,lang,sinkLeakExample=false}:{ticketId:string;imageUrl:string;lang:Lang;sinkLeakExample?:boolean}){
+export default function TechnicianIssueMedia({ticketId,imageUrl,lang}:{ticketId:string;imageUrl:string;lang:Lang}){
   const [open,setOpen]=useState(false);
-  const [mode,setMode]=useState<'photo'|'model'|'demo'>('photo');
+  const [mode,setMode]=useState<'photo'|'perspective'|'model'>('photo');
   const [zoom,setZoom]=useState(1);
   const [offset,setOffset]=useState({x:0,y:0});
+  const [tilt,setTilt]=useState({x:0,y:0});
+  const [reduceMotion,setReduceMotion]=useState(false);
   const [model,setModel]=useState<ModelStatus|null>(null);
   const [viewerLoaded,setViewerLoaded]=useState(false);
   const [viewerFailed,setViewerFailed]=useState(false);
   const drag=useRef<{x:number;y:number;ox:number;oy:number}|null>(null);
   const fullscreenRef=useRef<HTMLDivElement|null>(null);
   const modelRef=useRef<HTMLElement|null>(null);
+  useEffect(()=>{
+    const media=window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update=()=>setReduceMotion(media.matches);
+    update();media.addEventListener?.('change',update);
+    return()=>media.removeEventListener?.('change',update);
+  },[]);
+
 
   useEffect(()=>{
     let active=true;
@@ -81,13 +90,10 @@ export default function TechnicianIssueMedia({ticketId,imageUrl,lang,sinkLeakExa
   },[open,mode,model]);
 
   const hasModel=isValidModel(model)&&!viewerFailed;
-  // An opt-in demo is available on this ONE seeded sink ticket only.
-  // It is a real procedural 3D scene, never claimed to be AI reconstruction.
-  const showSinkDemo=ticketId==='ticket-demo-2401' || sinkLeakExample;
-  const reset=()=>{setZoom(1);setOffset({x:0,y:0});};
+  const reset=()=>{setZoom(1);setOffset({x:0,y:0});setTilt({x:0,y:0});};
   const changeZoom=(n:number)=>setZoom(Math.min(5,Math.max(1,n)));
   const moveStart=(e:PointerEvent<HTMLDivElement>)=>{
-    if(mode!=='photo'||zoom===1)return;
+    if(mode==='model'||zoom===1)return;
     drag.current={x:e.clientX,y:e.clientY,ox:offset.x,oy:offset.y};
     e.currentTarget.setPointerCapture(e.pointerId);
   };
@@ -96,7 +102,15 @@ export default function TechnicianIssueMedia({ticketId,imageUrl,lang,sinkLeakExa
     setOffset({x:drag.current.ox+e.clientX-drag.current.x,y:drag.current.oy+e.clientY-drag.current.y});
   };
   const moveEnd=()=>{drag.current=null;};
-  const wheel=(e:WheelEvent<HTMLDivElement>)=>{if(mode==='photo')changeZoom(zoom+(e.deltaY<0?.2:-.2));};
+  const wheel=(e:WheelEvent<HTMLDivElement>)=>{if(mode!=='model')changeZoom(zoom+(e.deltaY<0?.2:-.2));};
+  const perspectiveMove=(e:PointerEvent<HTMLDivElement>)=>{
+    if(mode!=='perspective'||reduceMotion||drag.current||e.pointerType==='touch')return;
+    const rect=e.currentTarget.getBoundingClientRect();
+    setTilt({
+      x:Math.max(-1,Math.min(1,((e.clientX-rect.left)/rect.width-.5)*2)),
+      y:Math.max(-1,Math.min(1,((e.clientY-rect.top)/rect.height-.5)*2)),
+    });
+  };
   const toggleFullscreen=()=>{
     const el=fullscreenRef.current;
     if(!el)return;
@@ -105,67 +119,71 @@ export default function TechnicianIssueMedia({ticketId,imageUrl,lang,sinkLeakExa
   };
   const close=()=>{setOpen(false);setMode('photo');reset();};
   return <>
-    <div className="tadaruk-photo-mini">
-      <button className="tadaruk-photo-mini-image" onClick={()=>{reset();setMode('photo');setOpen(true);}} type="button" aria-label={tr(lang,'تكبير صورة العطل','Enlarge issue photo')}>
+    <div className="tadaruk-photo-mini tadaruk-photo-mini--clean">
+      <button className="tadaruk-photo-mini-image" onClick={()=>{reset();setMode('photo');setOpen(true);}}
+        type="button" aria-label={tr(lang,'استعراض صورة العطل','View issue photo')}>
         <img src={imageUrl} alt={tr(lang,'صورة العطل الأصلية','Original issue photo')}/>
-        <span><Maximize2 size={15}/>{tr(lang,'استعراض الصورة','View image')}</span>
+        <span><Maximize2 size={15}/>{tr(lang,'استعراض الصورة','View photo')}</span>
       </button>
-      {showSinkDemo && <button className="tadaruk-photo-model-button" type="button" data-testid="button-technician-sink-demo-3d"
-        onClick={()=>{setMode('demo');setOpen(true);}}><Box size={17}/>{tr(lang,'تجربة نموذج 3D توضيحي','Try illustrative 3D demo')}</button>}
-      {hasModel && <button className="tadaruk-photo-model-button" type="button"
-        onClick={()=>{setMode('model');setOpen(true);}}><Box size={17}/>{tr(lang,'عرض ثلاثي الأبعاد','Explore 3D')}</button>}
+      <button type="button" className="tadaruk-photo-focus-trigger" data-testid="button-photo-perspective"
+        onClick={()=>{reset();setMode(reduceMotion?'photo':'perspective');setOpen(true);}}>
+        <Move size={15}/>{tr(lang,'استعراض تفاعلي','Interactive view')}
+      </button>
+      {hasModel&&<button className="tadaruk-photo-model-button" type="button"
+        onClick={()=>{reset();setMode('model');setOpen(true);}}>
+        <Box size={16}/>{tr(lang,'عرض ثلاثي الأبعاد','View 3D')}
+      </button>}
     </div>
     {open&&<div className="tadaruk-media-backdrop" onClick={close} role="presentation">
-      <div ref={fullscreenRef} className="tadaruk-media-dialog" onClick={e=>e.stopPropagation()} role="dialog"
-        aria-modal="true" aria-label={tr(lang,'استعراض العطل','Inspect issue')}>
+      <div ref={fullscreenRef} className="tadaruk-media-dialog tadaruk-media-dialog--minimal"
+        onClick={e=>e.stopPropagation()} role="dialog" aria-modal="true"
+        aria-label={tr(lang,'استعراض صورة العطل','Issue image viewer')}>
         <div className="tadaruk-media-toolbar">
-          <strong><Camera size={17}/>{mode==='photo'?tr(lang,'الصورة الأصلية','Original photo'):mode==='demo'?tr(lang,'تجربة مجسم 3D توضيحي','Illustrative 3D demo'):tr(lang,'استكشاف العطل ثلاثي الأبعاد','3D issue inspection')}</strong>
+          <strong><Camera size={17}/>{mode==='model'?tr(lang,'نموذج ثلاثي الأبعاد','3D model'):tr(lang,'صورة العطل','Issue photo')}</strong>
           <div className="tadaruk-media-actions">
-            {(hasModel||showSinkDemo)&&<button onClick={()=>{setMode('photo');reset();}} type="button"><Camera size={16}/>{tr(lang,'الصورة الأصلية','Original photo')}</button>}
-            {showSinkDemo&&mode!=='demo'&&<button onClick={()=>setMode('demo')} type="button"><Box size={16}/>{tr(lang,'مجسم تجريبي','Demo 3D')}</button>}
-            {hasModel&&mode!=='model'&&<button onClick={()=>setMode('model')} type="button"><Box size={16}/>{tr(lang,'3D حقيقي','Verified 3D')}</button>}
-            {mode==='photo'&&<>
-              <button onClick={()=>changeZoom(zoom+.3)} type="button" aria-label={tr(lang,'تكبير','Zoom in')}><Plus size={17}/></button>
-              <button onClick={()=>{changeZoom(zoom-.3);if(zoom<=1.3)setOffset({x:0,y:0});}} type="button" aria-label={tr(lang,'تصغير','Zoom out')}><Minus size={17}/></button>
-              <button onClick={reset} type="button" aria-label={tr(lang,'إعادة الضبط','Reset')}><RotateCcw size={17}/></button>
-            </>}
-            <button onClick={toggleFullscreen} type="button" aria-label={tr(lang,'ملء الشاشة','Fullscreen')}><Maximize2 size={17}/></button>
-            <button onClick={close} type="button" aria-label={tr(lang,'إغلاق','Close')}><X size={19}/></button>
+            {hasModel && mode==='model'&&<button type="button" onClick={()=>{setMode('photo');reset();}}>
+              <Camera size={16}/>{tr(lang,'الصورة الأصلية','Original photo')}
+            </button>}
+            {mode!=='model'&&!reduceMotion&&<button type="button"
+              className={mode==='perspective'?'is-active':''}
+              onClick={()=>{setMode(mode==='perspective'?'photo':'perspective');reset();}}>
+              <Move size={16}/>{mode==='perspective'?tr(lang,'العرض العادي','Normal view'):tr(lang,'تأثير منظور','Perspective')}
+            </button>}
+            <button type="button" onClick={toggleFullscreen} aria-label={tr(lang,'ملء الشاشة','Fullscreen')}>
+              <Maximize2 size={17}/>
+            </button>
+            <button type="button" onClick={close} aria-label={tr(lang,'إغلاق','Close')}><X size={19}/></button>
           </div>
         </div>
-        {mode==='demo'?
-          <iframe
-            title={tr(lang,'نموذج تجريبي ثلاثي الأبعاد للمغسلة والتسريب','Interactive 3D sink leak demonstration')}
-            src="/demo-sink-3d.html"
-            className="tadaruk-media-demo-frame"
-            sandbox="allow-scripts"
-            allow="fullscreen"
-            allowFullScreen
-          />
-        :mode==='photo'?
-          <div className="tadaruk-media-stage" onPointerDown={moveStart} onPointerMove={move}
-            onPointerUp={moveEnd} onPointerCancel={moveEnd} onWheel={wheel}
-            style={{cursor:zoom>1?'grab':'zoom-in'}}>
-            <img draggable={false} src={imageUrl} alt={tr(lang,'الصورة الأصلية دون تعديل','Unmodified original photo')}
-              onDoubleClick={()=>{changeZoom(zoom===1?2:1);setOffset({x:0,y:0});}}
-              style={{transform:`translate(${offset.x}px,${offset.y}px) scale(${zoom})`}}/>
-          </div>:
+        {mode==='model' ?
           <div className="tadaruk-media-stage tadaruk-media-stage--model">
-            {!viewerLoaded&&!viewerFailed&&<span className="tadaruk-media-loading" role="status">{tr(lang,'جارٍ تحميل النموذج الحقيقي...','Loading verified 3D model...')}</span>}
-            {hasModel && model && createElement('model-viewer',{
+            {!viewerLoaded&&!viewerFailed&&<span className="tadaruk-media-loading" role="status">{tr(lang,'جارٍ تحميل النموذج...','Loading model...')}</span>}
+            {hasModel&&model&&createElement('model-viewer',{
               ref:modelRef,src:model.modelUrl,
-              alt:tr(lang,'نموذج ثلاثي الأبعاد مولد من صورة البلاغ','AI-generated model from the issue photo'),
-              'camera-controls':'','interaction-prompt':'auto','shadow-intensity':'1',
-              exposure:'1.1','touch-action':'pan-y',
-              style:{width:'100%',height:'100%',minHeight:'320px'}
+              alt:tr(lang,'نموذج ثلاثي الأبعاد معتمد للبلاغ','Verified 3D ticket model'),
+              'camera-controls':'','shadow-intensity':'1',exposure:'1.1',
+              'touch-action':'pan-y',style:{width:'100%',height:'100%',minHeight:'320px'}
             })}
             {viewerLoaded&&model?.hotspot?.label&&<span className="tadaruk-media-hotspot">{model.hotspot.label}</span>}
           </div>
-        }
+          : <div className={`tadaruk-media-stage ${mode==='perspective'?'tadaruk-media-stage--perspective':''}`}
+            onPointerDown={moveStart} onPointerMove={e=>{move(e);perspectiveMove(e);}}
+            onPointerUp={moveEnd} onPointerCancel={moveEnd}
+            onPointerLeave={()=>setTilt({x:0,y:0})} onWheel={wheel}
+            style={{cursor:zoom>1?'grab':'zoom-in'}}>
+            <img draggable={false} src={imageUrl}
+              alt={tr(lang,'صورة العطل الأصلية غير المعدلة','Unaltered original issue photo')}
+              onDoubleClick={()=>{changeZoom(zoom===1?2:1);setOffset({x:0,y:0});}}
+              style={{transform:mode==='perspective' && !reduceMotion
+                ?`perspective(1100px) rotateY(${tilt.x*5}deg) rotateX(${-tilt.y*5}deg) translate(${offset.x}px,${offset.y}px) scale(${zoom*1.025})`
+                :`translate(${offset.x}px,${offset.y}px) scale(${zoom})`}}/>
+          </div>}
         <div className="tadaruk-media-footer">
-          {mode==='photo'?<><Move size={15}/><span>{tr(lang,'قرّب الصورة ثم اسحب للتحريك. تبقى الصورة الأصلية دون تعديل.','Zoom, then drag to pan. The original photo is unchanged.')}</span></>:
-          mode==='demo'?<span>{tr(lang,'هذا مجسم توضيحي مُعد يدويًا للتجربة، وليس توليدًا من صورة البلاغ.','This is an illustrative hand-built 3D scene, not a reconstruction of the ticket photo.')}</span>:
-          <span>{tr(lang,'النموذج المولد تقديري؛ تحقق من الصورة الأصلية قبل أي إصلاح.','Generated geometry is approximate; always verify the original photo.')}</span>}
+          {mode==='model'
+            ?tr(lang,'قد يحتوي النموذج على تفاصيل تقديرية؛ تأكد من صورة البلاغ قبل الصيانة.','The model may be approximate; verify against the report photo.')
+            :mode==='perspective'
+              ?tr(lang,'تأثير منظور للصورة نفسها، وليس مجسمًا ثلاثي الأبعاد أو كشفًا لأجزاء مخفية. استخدم التمرير للتكبير والسحب للتحريك.','Perspective effect on the same image, not real 3D or hidden details. Scroll to zoom and drag to pan.')
+              :tr(lang,'الصورة الأصلية كما رفعها المبلّغ. استخدم التمرير للتكبير والسحب للتحريك.','Original uploaded photo. Scroll to zoom and drag to pan.')}
         </div>
       </div>
     </div>}
