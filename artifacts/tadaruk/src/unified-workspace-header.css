@@ -1,0 +1,170 @@
+/* One consistent header interaction for reporter, technician and manager. */
+.app-shell .unified-account-frame .workspace-compact-topbar{
+  position:relative !important;
+  z-index:80 !important;
+  justify-content:flex-end !important;
+  gap:12px !important;
+  overflow:visible !important;
+}
+.app-shell .unified-account-frame .technician-header-account,
+.reporter-shell .reporter-header-controls .technician-header-account{
+  position:relative;
+  z-index:86;
+  flex:0 0 auto;
+}
+.app-shell .unified-account-frame .technician-header-menu,
+.reporter-shell .reporter-header-controls .technician-header-menu{
+  position:absolute !important;
+  top:calc(100% + 9px) !important;
+  inset-inline-start:auto !important;
+  inset-inline-end:0 !important;
+  width:min(280px,calc(100vw - 26px)) !important;
+  max-width:calc(100vw - 26px) !important;
+  box-sizing:border-box;
+  text-align:start;
+  z-index:120 !important;
+}
+.app-shell .unified-account-frame .technician-menu-theme-row,
+.reporter-shell .reporter-header-controls .technician-menu-theme-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:7px 12px;
+}
+.app-shell .unified-account-frame .technician-menu-theme-label,
+.reporter-shell .reporter-header-controls .technician-menu-theme-label{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  color:inherit;
+  font-size:13px;
+  font-weight:600;
+}
+.app-shell .unified-account-frame .workspace-unified-controls{
+  flex:0 0 auto;
+  margin:0 !important;
+  min-width:0 !important;
+}
+.app-shell .unified-account-frame .workspace-header-notifications,
+.reporter-shell .reporter-header-controls .workspace-header-notifications{
+  position:relative;
+  z-index:87;
+  flex:0 0 auto;
+}
+.app-shell .unified-account-frame .workspace-header-notifications-popover,
+.reporter-shell .reporter-header-controls .workspace-header-notifications-popover{
+  z-index:130;
+  max-width:calc(100vw - 30px);
+  box-sizing:border-box;
+}
+.reporter-shell .reporter-header{
+  z-index:80 !important;
+  overflow:visible !important;
+}
+.reporter-shell .reporter-header-controls.unified-account-controls{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:10px !important;
+  margin-inline-start:auto !important;
+  min-width:0;
+  position:relative;
+}
+.reporter-shell .reporter-header-controls .technician-header-account-name{
+  display:inline-block;
+  max-width:170px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.reporter-shell .reporter-header-controls .workspace-header-notifications-popover{
+  width:min(350px,calc(100vw - 28px));
+}
+@media(max-width:900px){
+  .app-shell .unified-account-frame .workspace-compact-topbar{
+    padding-inline:14px !important;
+  }
+  .reporter-shell .reporter-header-controls.unified-account-controls{gap:7px !important}
+  .reporter-shell .reporter-header-controls .technician-header-account-name{
+    max-width:115px;
+  }
+}
+@media(max-width:560px){
+  .app-shell .unified-account-frame .technician-header-account-name,
+  .reporter-shell .reporter-header-controls .technician-header-account-name{
+    max-width:100px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .reporter-shell .reporter-header-controls .technician-header-account-button{
+    gap:5px;
+    min-height:40px;
+    padding:4px 7px;
+  }
+  .reporter-shell .reporter-header-controls.unified-account-controls{gap:5px !important}
+}
+
+
+/* Reporter previously used another notification popover; replicate the common one. */
+.reporter-shell .reporter-header-controls .workspace-header-notifications-popover{
+  position:absolute !important;
+  top:calc(100% + 10px) !important;
+  inset-inline-end:0 !important;
+  width:min(350px,calc(100vw - 28px)) !important;
+  background:#ffffff;
+  border:1px solid #dbe5ee;
+  border-radius:14px;
+  box-shadow:0 14px 32px rgba(31,51,99,.14);
+  overflow:hidden;
+}
+.reporter-shell .reporter-header-controls .workspace-header-bell{
+  display:inline-grid;
+  place-items:center;
+  position:relative;
+  min-width:42px;
+  min-height:42px;
+  padding:8px;
+  border-radius:12px;
+  border:1px solid #dce5ee;
+  color:#235779;
+  background:#fffdfa;
+  cursor:pointer;
+}
+.reporter-shell .reporter-header-controls .workspace-header-bell:hover{
+  background:#ecf6fa;
+  border-color:#b5d5e6;
+}
+.reporter-shell .reporter-header-controls .workspace-notifications-empty{
+  padding:19px 14px;
+  color:#71849a;
+  font-size:12px;
+  line-height:1.7;
+}
+.dark .reporter-shell .reporter-header-controls .workspace-header-notifications-popover{
+  background:#182d44;
+  border-color:#395069;
+}
+.dark .reporter-shell .reporter-header-controls .workspace-header-bell{
+  color:#d1eef7;
+  border-color:#34536a;
+  background:#1b354c;
+}
+.dark .reporter-shell .reporter-header-controls .workspace-notifications-empty{color:#c2d0df}
+.dark .app-shell .unified-account-frame .technician-menu-theme-label,
+.dark .reporter-shell .reporter-header-controls .technician-menu-theme-label{
+  color:#e1ecf6;
+}
+
+@media(max-width:480px){
+  .reporter-shell .reporter-header-controls .technician-header-account-name{display:none !important;}
+  .reporter-shell .reporter-header-controls .technician-header-account-button{
+    min-width:42px;
+    justify-content:center;
+  }
+  .reporter-shell .reporter-mobile-brand .brand-logo{width:93px !important;}
+  .reporter-shell .reporter-header{padding-inline:10px !important;}
+  .app-shell .unified-account-frame .technician-header-account-name{
+    max-width:85px;
+  }
+}

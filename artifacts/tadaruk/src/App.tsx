@@ -18,11 +18,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { TadarukSelect } from '@/components/TadarukSelect';
 import {
-  customFetch, useHealthCheck, useListDemoUsers, useGetDemoSession, useSelectDemoAccount, useClearDemoSession, useGetOverview,
+  customFetch, useHealthCheck, useGetDemoSession, useClearDemoSession, useGetOverview,
   useListTickets, useGetTicket, usePerformTicketAction,
   useListBranches, useCreateBranch, useUpdateBranch, useListTechnicians, useCreateTechnician,
   useUpdateTechnician, useListKnowledge, useListReporterBranches, getListReporterBranchesQueryKey,
-  getGetDemoSessionQueryKey, getGetOverviewQueryKey,
+  getGetOverviewQueryKey,
   getListTicketsQueryKey, getGetTicketQueryKey, getListBranchesQueryKey, getListTechniciansQueryKey,
   getListKnowledgeQueryKey,
   type DemoUser, type Ticket,
@@ -42,6 +42,7 @@ import './tadaruk.css';
 import './tadaruk-interactions.css';
 import './technician-contact.css';
 import './technician-ticket.css';
+import './unified-workspace-header.css';
 
 const qc = new QueryClient();
 type Lang = 'ar' | 'en';
@@ -56,14 +57,6 @@ const tr = (lang: Lang, ar: string, en: string) => lang === 'ar' ? ar : en;
 const roleText = (role?: string, lang: Lang = 'ar') => {
   const roles: Record<string, [string,string]> = { manager:['مدير العمليات','Operations manager'], reporter:['المبلّغ','Reporter'], technician:['الفني','Technician'] };
   return roles[role || '']?.[lang === 'ar' ? 0 : 1] || '';
-};
-const roleSummary = (role: string | undefined, lang: Lang) => {
-  const summaries: Record<string, [string, string]> = {
-    manager: ['إدارة الفروع ومتابعة سير العمل', 'Oversee branches and daily operations'],
-    reporter: ['تسجيل البلاغات ومتابعة حالتها', 'Create reports and track their status'],
-    technician: ['استلام المهام وتحديث تقدم الإصلاح', 'Handle tasks and update repair progress']
-  };
-  return summaries[role || '']?.[lang === 'ar' ? 0 : 1] || '';
 };
 const statusText = (status: string, lang: Lang) => {
   const m: Record<string,[string,string]> = {new:['جديد','New'],review:['قيد المراجعة','In review'],in_progress:['جاري العمل','In progress'],awaiting_confirmation:['بانتظار التأكيد','Awaiting confirmation'],closed:['مغلق','Closed'],cancelled:['ملغي','Cancelled']};
@@ -347,7 +340,7 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
   const roadmapRef=useRef<HTMLElement|null>(null);
   const impactRef=useRef<HTMLElement|null>(null);
   const sectionIds=['top','how','impact','final'];
-  const sectionLabels=lang==='ar'?['الرئيسية','رحلة البلاغ','الأثر','استكشف']:['Home','The journey','The impact','Explore'];
+  const sectionLabels=lang==='ar'?['الرئيسية','رحلة البلاغ','الأثر','انضم إلينا']:['Home','The journey','The impact','Join us'];
   useEffect(()=>{if(reduced)setHeadlineDone(true);},[reduced]);
   useEffect(()=>{
     const sections=sectionIds.map(id=>document.getElementById(id)).filter((node):node is HTMLElement=>Boolean(node));
@@ -462,7 +455,9 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
     <header className="landing-nav wrap">
       <Link href="/" className="landing-brand" aria-label="TADARUK home" onClick={closeMenu}><Brand darkMode={dark}/></Link>
       <nav className={`landing-links ${mobileOpen?'is-open':''}`} aria-label={tr(lang,'التنقل الرئيسي','Main navigation')}>
-        {sectionIds.map((id,index)=><button key={id} className={`landing-nav-link ${activeSection===id?'is-active':''}`} onClick={()=>goToSection(id)} aria-current={activeSection===id?'location':undefined}>{sectionLabels[index]}</button>)}
+        {sectionIds.map((id,index)=>id==='final'
+          ?<Link key={id} href="/login" className="landing-nav-link" onClick={closeMenu}>{sectionLabels[index]}</Link>
+          :<button key={id} className={`landing-nav-link ${activeSection===id?'is-active':''}`} onClick={()=>goToSection(id)} aria-current={activeSection===id?'location':undefined}>{sectionLabels[index]}</button>)}
       </nav>
       <div className="nav-actions">
         <Link href="/login" className="landing-account-login">{tr(lang,'تسجيل الدخول','Sign in')}</Link>
@@ -631,8 +626,8 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
     </section>
     <section className="landing-end wrap" id="final">
       <div><span className="eyebrow"><span className="live-dot"/>{health.isLoading?tr(lang,'جارٍ الاتصال','CONNECTING'):health.isError?tr(lang,'العرض متاح','DEMO AVAILABLE'):tr(lang,'من البلاغ إلى الإصلاح','REPORT TO REPAIR')}</span><h2 className={lang==='ar'?'display-ar':''}>{tr(lang,'جاهز تبدأ مع تدارك؟','Ready to start with Tadaruk?')}</h2><p>{tr(lang,'من أول بلاغ إلى آخر خطوة، كل شيء أوضح.','From the first report to the final step, everything is clearer.')}</p></div>
-      <Button href="/demo" className="landing-neon-cta">
-        <span className="landing-neon-cta-label">{tr(lang,'استكشف تدارك','Explore Tadaruk')}</span>
+      <Button href="/login" className="landing-neon-cta">
+        <span className="landing-neon-cta-label">{tr(lang,'انضم إلينا','Join us')}</span>
         <ArrowLeft size={17}/>
         <span className="landing-neon-trace" aria-hidden="true">
           <svg viewBox="0 0 240 68" preserveAspectRatio="none" focusable="false">
@@ -650,65 +645,6 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
     </footer>
   </main>;
 }
-const DEFAULT_DEMO_USERS: DemoUser[] = [
-  { id: 'demo-reporter', name: 'سارة القحطاني', role: 'reporter', initials: 'سق', branchId: 'branch-olaya', branchName: 'فرع العليا', specialization: null },
-  { id: 'demo-manager', name: 'فهد السليمان', role: 'manager', initials: 'فس', branchId: null, branchName: null, specialization: null },
-  { id: 'demo-tech', name: 'خالد الحربي', role: 'technician', initials: 'خح', branchId: 'branch-olaya', branchName: 'فرع العليا', specialization: 'plumbing' }
-];
-
-function DemoPage({lang,setLang,dark,setDark}:{lang:Lang;setLang:(lang:Lang)=>void;dark:boolean;setDark:(dark:boolean)=>void}) {
-  const qc=useQueryClient();
-  const {data:users,isLoading,isError,refetch}=useListDemoUsers();
-  const select=useSelectDemoAccount(); const [,go]=useLocation();
-  const rawList = Array.isArray(users) && users.length ? users : DEFAULT_DEMO_USERS;
-  const enter=(userId:string)=>{
-    const selected = rawList.find(u => u.id === userId) || rawList[0];
-    try {
-      localStorage.setItem('tadaruk-demo-session-user', JSON.stringify(selected));
-    } catch {}
-    select.mutate({data:{userId}},{
-      onSuccess:()=>{void qc.invalidateQueries({queryKey:getGetDemoSessionQueryKey()});go('/workspace');},
-      onError:()=>{go('/workspace');}
-    });
-  };
-  const BackIcon=lang==='ar'?ArrowRight:ArrowLeft;
-  const EnterIcon=lang==='ar'?ArrowLeft:ArrowRight;
-  return <main className="demo-page" dir={lang==='ar'?'rtl':'ltr'}>
-    <header className="demo-top">
-      <Link href="/" className="demo-brand" aria-label={tr(lang,'العودة إلى تدارك','Back to Tadaruk')} data-testid="link-demo-brand"><Brand darkMode={dark}/></Link>
-      <div className="demo-actions">
-        <Link href="/" className="demo-back-link" data-testid="link-demo-home"><BackIcon size={16}/><span>{tr(lang,'الرئيسية','Home')}</span></Link>
-        <button className="nav-lang" type="button" onClick={()=>setLang(lang==='ar'?'en':'ar')} aria-label={tr(lang,'التبديل إلى الإنجليزية','Switch to Arabic')} data-testid="button-demo-language"><Languages size={16}/><span>{lang==='ar'?'English':'العربية'}</span></button>
-        <SunMoonThemeToggle className="demo-theme-toggle" theme={dark?'dark':'light'} onThemeChange={theme=>setDark(theme==='dark')} aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')} data-testid="theme-toggle-demo" size={40} duration={860}/>
-      </div>
-    </header>
-    <section className="demo-content fade-up">
-      <h1 className={lang==='ar'?'display-ar':''}>{tr(lang,'اختر نقطة البداية','Choose your point of view')}</h1>
-      <p>{tr(lang,'ثلاثة أدوار، وسجل واحد يتابع البلاغ حتى إغلاقه.','Three roles, one record that follows a repair to closure.')}</p>
-      {isLoading
-        ? <div className="role-grid"><div className="skeleton-card"/><div className="skeleton-card"/><div className="skeleton-card"/></div>
-        : <div className="role-grid">{rawList.map(user=>{
-            const RoleIcon=user.role==='manager'?Building2:user.role==='technician'?Wrench:ClipboardList;
-            const branch=[user.branchName || tr(lang,'جميع الفروع','All branches'),user.specialization ? classificationText(user.specialization,lang) : null].filter(Boolean).join(' · ');
-            return <SpotlightCard className="role-card-spotlight" key={user.id} theme={dark?'dark':'light'} spotlightColor="rgba(86, 244, 239, .88)" intensity={.16} borderGlow={.24} softness={.9} spotlightSize={240} proximity={72} smoothing={.4} flare={false}>
-              <button type="button" className={`role-card role-${user.role}`} onClick={()=>enter(user.id)} disabled={select.isPending} aria-busy={select.isPending} data-testid={`select-role-${user.role}`}>
-                <span className="role-card-top">
-                  <span className={`role-title role-badge role-badge-${user.role}`}>{roleText(user.role,lang)}</span>
-                  <span className={`role-icon role-icon-${user.role}`} aria-hidden="true"><RoleIcon size={22} strokeWidth={1.8}/></span>
-                </span>
-                <span className="role-card-user">
-                  <b data-testid={`text-role-name-${user.id}`}>{user.name}</b>
-                  <span className="role-summary">{roleSummary(user.role,lang)}</span>
-                  <small>{branch}</small>
-                </span>
-                <span className="role-cta"><span>{select.isPending?tr(lang,'جارٍ الدخول…','Entering…'):tr(lang,'الدخول بهذا الحساب','Enter as this user')}</span><EnterIcon size={16}/></span>
-              </button>
-            </SpotlightCard>;
-          })}</div>}
-      {select.isError&&<p className="inline-error" role="alert">{tr(lang,'لم نتمكن من فتح الحساب. حاول مرة أخرى.','Could not open this account. Please try again.')}</p>}
-    </section>
-  </main>;
-}
 function usePrefs() {
   const [lang,setLangState]=useState<Lang>(()=>(localStorage.getItem('tadaruk-lang') as Lang)||'ar');
   const [dark,setDark]=useState(()=>localStorage.getItem('tadaruk-theme')==='dark');
@@ -724,10 +660,8 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
   const profileMenuRef=useRef<HTMLDivElement>(null);
   const branchContext=useContext(ReporterBranchContext);
   const isReporter=user.role==='reporter';
-  const [headerMenu,setHeaderMenu]=useState(false);
   const [showNotifications,setShowNotifications]=useState(false);
   const [demoReadIds,setDemoReadIds]=useState<string[]>([]);
-  const headerAccountRef=useRef<HTMLDivElement>(null);
   const notificationsRef=useRef<HTMLDivElement>(null);
   type UserNotification = { id:string; ticketId:string; kind:string; title:string; description:string; createdAt:string; readAt:string|null };
   const queryClient=useQueryClient();
@@ -812,14 +746,11 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
   const markNotificationRead=(id:string)=>{void markNotificationIdsRead([id]);};
 
   useEffect(()=>{
-    if(!menu && !headerMenu && !showNotifications)return;
+    if(!menu && !showNotifications)return;
     const handleClickOutside=(e:MouseEvent|TouchEvent)=>{
       const target=e.target as Node;
       if(profileMenuRef.current&&!profileMenuRef.current.contains(target)){
         setMenu(false);
-      }
-      if(headerAccountRef.current&&!headerAccountRef.current.contains(target)){
-        setHeaderMenu(false);
       }
       if(notificationsRef.current&&!notificationsRef.current.contains(target)){
         setShowNotifications(false);
@@ -828,7 +759,6 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
     const handleKeyDown=(e:KeyboardEvent)=>{
       if(e.key==='Escape'){
         setMenu(false);
-        setHeaderMenu(false);
         setShowNotifications(false);
       }
     };
@@ -840,17 +770,17 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
       document.removeEventListener('touchstart',handleClickOutside);
       document.removeEventListener('keydown',handleKeyDown);
     };
-  },[menu, headerMenu, showNotifications]);
+  },[menu, showNotifications]);
   const qc=useQueryClient();const logout=useClearDemoSession();
   const reduced=useReducedMotion()===true || (typeof window!=='undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true);
-  useEffect(()=>{if(session && !user && window.location.pathname.startsWith('/workspace'))go('/demo');},[session,user,go]);
+  useEffect(()=>{if(session && !user && window.location.pathname.startsWith('/workspace'))go('/login');},[session,user,go]);
   if(!user)return <div className="workspace-loading"><div className="skeleton-bar"/><div className="skeleton-card"/></div>;
   const links=user.role==='manager'
     ?[['/workspace','نظرة عامة','Overview',LayoutDashboard],['/workspace/tickets','البلاغات','Tickets',ClipboardList],['/workspace/technicians','الفنيون','Technicians',Users],['/workspace/branches','الفروع','Branches',Building2],['/workspace/knowledge','قاعدة المعرفة','Knowledge',BookOpen]]
     :user.role==='technician'
       ?[['/workspace','مهامي','My tasks',Wrench],['/workspace/tickets','كل المهام','Tasks',ClipboardList]]
       :[['/workspace','الرئيسية','Home',LayoutDashboard],['/workspace/tickets/new','بلاغ جديد','New report',Plus],['/workspace/tickets','بلاغاتي','My reports',ClipboardList]];
-  const signOut=()=>logout.mutate(undefined,{onSuccess:()=>{qc.clear();setMenu(false);setHeaderMenu(false);setMobile(false);go('/demo');}});
+  const signOut=()=>logout.mutate(undefined,{onSuccess:()=>{qc.clear();setMenu(false);setMobile(false);go('/login');}});
   const matchingLink=links.map(([path])=>path as string)
     .filter(path=>path==='/workspace'?location===path:location===path||location.startsWith(`${path}/`))
     .sort((left,right)=>right.length-left.length)[0];
@@ -924,6 +854,79 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
         </div>
       </DialogContent>
     </Dialog>
+  );
+
+  // Same account and notification controls for manager, technician and reporter.
+  const headerAccountControls=(
+        <div className="technician-header-account" ref={profileMenuRef}>
+          <button type="button" className="technician-header-account-button"
+            aria-label={tr(lang,'خيارات الحساب','Account options')}
+            aria-expanded={menu}
+            aria-controls="technician-header-account-menu"
+            onClick={()=>setMenu(value=>!value)}>
+            <Avatar name={user.name} size="sm"/>
+            <span className="technician-header-account-name">{user.name}</span>
+            <ChevronDown size={15} className={`side-user-chevron ${menu?'is-open':''}`}/>
+          </button>
+          {menu && (
+            <div className="technician-header-menu tadaruk-dropdown-surface"
+              id="technician-header-account-menu" role="group"
+              aria-label={tr(lang,'إعدادات الحساب','Account settings')}>
+              <button type="button" className="technician-menu-option" onClick={()=>{setMenu(false);setShowProfile(true);}}>
+                <UserRound size={16}/><span>{tr(lang,'الملف الشخصي','Profile')}</span>
+              </button>
+              <button type="button" className="technician-menu-option" onClick={()=>setLang(lang==='ar'?'en':'ar')}>
+                <Languages size={16}/><span>{tr(lang,'اللغة','Language')}</span>
+                <span className="technician-menu-option-value">{lang==='ar'?'English':'العربية'}</span>
+              </button>
+              <div className="technician-menu-theme-row">
+                <label htmlFor="technician-theme-toggle" className="technician-menu-theme-label"><SunMoon size={16}/>{tr(lang,'المظهر','Appearance')}</label>
+                <SunMoonThemeToggle
+                  id="technician-theme-toggle"
+                  className="workspace-theme-toggle technician-menu-animated-theme"
+                  theme={dark?'dark':'light'}
+                  onThemeChange={theme=>setDark(theme==='dark')}
+                  aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')}
+                  data-testid="theme-toggle-technician"
+                  size={40}
+                  duration={860}
+                />
+              </div>
+              <div className="side-account-divider" role="separator"/>
+              {logout.isError&&<p className="account-menu-error" role="alert">{tr(lang,'تعذر تسجيل الخروج، حاول مجدداً.','Could not sign out. Please try again.')}</p>}
+              <button type="button" className="technician-menu-option technician-menu-signout"
+                onClick={signOut} disabled={logout.isPending}>
+                <LogOut size={16}/><span>{logout.isPending?tr(lang,'جارٍ تسجيل الخروج…','Signing out…'):tr(lang,'تسجيل الخروج','Sign out')}</span>
+              </button>
+            </div>
+          )}
+        </div>
+  );
+  const notificationsHeaderControls=(
+        <div className="workspace-header-notifications" ref={notificationsRef}>
+          <button type="button" className="icon-control workspace-header-bell" onClick={()=>setShowNotifications(value=>!value)}
+            aria-label={tr(lang,'الإشعارات','Notifications')} aria-expanded={showNotifications}>
+            <Bell size={19}/>
+            {unreadCount>0&&<span className="notification-badge-dot" aria-hidden="true"/>}
+          </button>
+          {showNotifications&&(
+            <div className="workspace-header-notifications-popover" role="region" aria-label={tr(lang,'الإشعارات','Notifications')}>
+              <div className="notifications-head">
+                <div className="notifications-title-wrap"><Bell size={15}/><b>{tr(lang,'الإشعارات','Notifications')}</b>{unreadCount>0&&<span className="notifications-count-badge">{unreadCount}</span>}{demoOnly&&<span style={{fontSize:11,opacity:.72,fontWeight:700}}>{tr(lang,'تجريبي','Demo')}</span>}</div>
+                {unreadCount>0&&<button type="button" className="notifications-mark-read" onClick={markAllNotificationsRead}>{tr(lang,'تحديد الكل كمقروء','Mark all read')}</button>}
+              </div>
+              <div className="notifications-list">
+                {!notificationsList.length&&<p className="workspace-notifications-empty">{tr(lang,notificationsError?'تعذر تحميل الإشعارات':'لا توجد إشعارات جديدة',notificationsError?'Could not load notifications':'No notifications yet')}</p>}
+                {notificationsList.map(item=><button key={item.id} type="button" className={`notification-item ${item.unread?'is-unread':''}`}
+                  onClick={()=>{markNotificationRead(item.id);setShowNotifications(false);go(item.link);}}>
+                  <span className="notification-item-icon">{item.icon==='check'?<CheckCircle2 size={16}/>:item.icon==='alert'?<CircleAlert size={16}/>:item.icon==='wrench'?<Wrench size={16}/>:<Clock3 size={16}/>}</span>
+                  <span className="notification-item-content"><b className="notification-item-title">{item.title}</b><small className="notification-item-desc">{item.desc}</small><small className="notification-item-time">{item.time}</small></span>
+                  {item.unread&&<span className="notification-unread-dot" aria-hidden="true"/>}
+                </button>)}
+              </div>
+            </div>
+          )}
+        </div>
   );
 
   if (isReporter) {
@@ -1020,188 +1023,9 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
             </Link>
 
             {/* Controls Cluster: Aligned cleanly to the LEFT in RTL */}
-            <div className="reporter-header-controls">
-              {/* Theme Toggle Pill */}
-              <div className="reporter-theme-pill-wrap">
-                <SunMoonThemeToggle
-                  className="workspace-theme-toggle reporter-theme-toggle"
-                  theme={dark ? 'dark' : 'light'}
-                  onThemeChange={theme => setDark(theme === 'dark')}
-                  aria-label={dark ? tr(lang, 'تفعيل الوضع الفاتح', 'Switch to light mode') : tr(lang, 'تفعيل الوضع الداكن', 'Switch to dark mode')}
-                  data-testid="theme-toggle-workspace"
-                  size={36}
-                  duration={860}
-                />
-              </div>
-
-              <div className="reporter-header-divider" aria-hidden="true"/>
-
-              {/* Language Switcher */}
-              <button
-                type="button"
-                onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
-                className="reporter-control-btn reporter-lang-btn"
-                aria-label={tr(lang, 'تغيير اللغة', 'Switch language')}
-                data-testid="button-reporter-lang"
-              >
-                <span className="reporter-lang-label">{lang === 'ar' ? 'EN' : 'ع'}</span>
-                <Languages size={16}/>
-              </button>
-
-              <div className="reporter-header-divider" aria-hidden="true"/>
-
-              {/* Notifications Bell */}
-              <div className="reporter-notifications-section" ref={notificationsRef}>
-                <button
-                  type="button"
-                  className="reporter-control-btn reporter-bell-btn"
-                  onClick={() => setShowNotifications(!showNotifications)}
-                  aria-label={tr(lang, 'الإشعارات', 'Notifications')}
-                  aria-expanded={showNotifications}
-                  data-testid="button-reporter-notifications"
-                >
-                  <Bell size={18}/>
-                  {unreadCount > 0 && <span className="notification-badge-dot" aria-hidden="true"/>}
-                </button>
-
-                <AnimatePresence>
-                  {showNotifications && (
-                    <motion.div
-                      className="notifications-dropdown tadaruk-dropdown-surface"
-                      role="region"
-                      aria-label={tr(lang, 'قائمة الإشعارات', 'Notifications list')}
-                      initial={reduced ? false : { opacity: 0, y: -6, scale: 0.98 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={reduced ? { opacity: 1 } : { opacity: 0, y: -4, scale: 0.98 }}
-                      transition={{ duration: reduced ? 0 : 0.16, ease: [0.22, 0.72, 0.18, 1] }}
-                    >
-                      <div className="notifications-head">
-                        <div className="notifications-title-wrap">
-                          <Bell size={15}/>
-                          <b>{tr(lang, 'الإشعارات', 'Notifications')}</b>
-                          {unreadCount > 0 && <span className="notifications-count-badge">{unreadCount}</span>}{demoOnly&&<span style={{fontSize:11,opacity:.72,fontWeight:700}}>{tr(lang,'تجريبي','Demo')}</span>}
-                        </div>
-                        {unreadCount > 0 && (
-                          <button
-                            type="button"
-                            className="notifications-mark-read"
-                            onClick={markAllNotificationsRead}
-                          >
-                            {tr(lang, 'تحديد الكل كمقروء', 'Mark all read')}
-                          </button>
-                        )}
-                      </div>
-                      <div className="notifications-list">
-                        {!notificationsList.length && <p className="workspace-notifications-empty">{tr(lang, notificationsError?'تعذر تحميل الإشعارات':'لا توجد إشعارات جديدة',notificationsError?'Could not load notifications':'No notifications yet')}</p>}
-                        {notificationsList.map(item => (
-                          <div
-                            key={item.id}
-                            className={`notification-item ${item.unread ? 'is-unread' : ''}`}
-                            onClick={() => {
-                              markNotificationRead(item.id);
-                              setShowNotifications(false);
-                              if (item.link) go(item.link);
-                            }}
-                          >
-                            <span className="notification-item-icon">
-                              {item.icon === 'check' ? <CheckCircle2 size={16}/> : item.icon === 'wrench' ? <Wrench size={16}/> : <Clock3 size={16}/>}
-                            </span>
-                            <div className="notification-item-content">
-                              <p className="notification-item-title">{item.title}</p>
-                              <small className="notification-item-desc">{item.desc}</small>
-                              <span className="notification-item-time">{item.time}</span>
-                            </div>
-                            {item.unread && <span className="notification-unread-dot" aria-hidden="true"/>}
-                          </div>
-                        ))}
-                      </div>
-                      <div className="notifications-footer">
-                        <Link href="/workspace/tickets" onClick={() => setShowNotifications(false)}>
-                          {tr(lang, 'عرض جميع البلاغات', 'View all tickets')} {lang === 'ar' ? <ArrowLeft size={13}/> : <ArrowRight size={13}/>}
-                        </Link>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <div className="reporter-header-divider" aria-hidden="true"/>
-
-              {/* User Account */}
-              <div className="topbar-account-section" ref={headerAccountRef}>
-                <button
-                  type="button"
-                  className="reporter-account-card"
-                  onClick={() => setHeaderMenu(!headerMenu)}
-                  aria-label={tr(lang, 'خيارات الحساب والملف الشخصي', 'Account and profile options')}
-                  aria-expanded={headerMenu}
-                  aria-controls="topbar-account-menu"
-                  data-testid="header-profile-card"
-                >
-                  <div className="reporter-account-meta">
-                    <b className="reporter-account-name">{user.name}</b>
-
-                  </div>
-                  <div className="reporter-account-avatar-wrap">
-                    <Avatar name={user.name} size="sm"/>
-                    <span className="side-user-status-dot" aria-hidden="true"/>
-                  </div>
-                  <ChevronDown size={14} className={`reporter-account-chevron ${headerMenu ? 'is-open' : ''}`} aria-hidden="true"/>
-                </button>
-
-                <AnimatePresence>
-                  {headerMenu && (
-                    <motion.div
-                      id="topbar-account-menu"
-                      className="topbar-account-dropdown tadaruk-dropdown-surface"
-                      role="menu"
-                      aria-label={tr(lang, 'خيارات الحساب', 'Account options')}
-                      initial={reduced ? false : { opacity: 0, y: -6, scale: 0.98 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={reduced ? { opacity: 1 } : { opacity: 0, y: -4, scale: 0.98 }}
-                      transition={{ duration: reduced ? 0 : 0.16, ease: [0.22, 0.72, 0.18, 1] }}
-                    >
-                      <div className="side-account-menu-head">
-                        <b className="side-account-head-name">{user.name}</b>
-                        <span className="side-account-head-branch">
-                          <Building2 size={12} aria-hidden="true"/>
-                          <span>{user.branchName || branchLabel}</span>
-                        </span>
-                      </div>
-
-                      <div className="side-account-menu-list">
-                        <button
-                          type="button"
-                          className="side-account-item"
-                          role="menuitem"
-                          onClick={() => { setHeaderMenu(false); setShowProfile(true); }}
-                          data-testid="button-open-profile-dialog"
-                        >
-                          <UserRound size={16} className="side-account-item-icon"/>
-                          <span>{tr(lang, 'الملف الشخصي', 'Profile')}</span>
-                        </button>
-
-                        <div className="side-account-divider" role="separator"/>
-
-                        {logout.isError && <p className="account-menu-error" role="alert">{tr(lang, 'تعذر تسجيل الخروج، حاول مجدداً.', 'Could not sign out. Please try again.')}</p>}
-
-                        <button
-                          type="button"
-                          className="side-account-item side-account-signout"
-                          role="menuitem"
-                          onClick={signOut}
-                          disabled={logout.isPending}
-                          aria-busy={logout.isPending}
-                          data-testid="button-header-signout"
-                        >
-                          <LogOut size={16} className="side-account-item-icon"/>
-                          <span>{logout.isPending ? tr(lang, 'جارٍ تسجيل الخروج…', 'Signing out…') : tr(lang, 'تسجيل الخروج', 'Sign out')}</span>
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+            <div className="reporter-header-controls unified-account-controls">
+              {notificationsHeaderControls}
+              {headerAccountControls}
             </div>
 
             {/* Subtle Structural Rounded Inside Corner Junction (Fillet) */}
@@ -1233,82 +1057,6 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
   return <div className="app-shell" dir={lang==='ar'?'rtl':'ltr'}>
     <aside className={`sidebar ${mobile?'sidebar-open':''}`}><div className="side-brand"><Link href="/workspace"><Brand darkMode={dark}/></Link><button className="mobile-close" onClick={()=>setMobile(false)}><X size={18}/></button></div>
 
-      {user.role !== 'technician' && (
-      <div className="side-user-section" ref={profileMenuRef}>
-        <button
-          type="button"
-          className="side-user-card"
-          onClick={()=>setMenu(!menu)}
-          aria-label={tr(lang,'خيارات الحساب والملف الشخصي','Account and profile options')}
-          aria-expanded={menu}
-          aria-controls="side-account-menu"
-          data-testid="sidebar-profile-card"
-        >
-          <div className="side-user-avatar-wrap">
-            <Avatar name={user.name} size="md"/>
-            <span className="side-user-status-dot" aria-hidden="true"/>
-          </div>
-          <div className="side-user-meta">
-            <b className="side-user-name">{user.name}</b>
-            <span className={`side-user-role-badge role-badge-${user.role}`}>{roleText(user.role,lang)}</span>
-          </div>
-          <ChevronDown size={16} className={`side-user-chevron ${menu?'is-open':''}`} aria-hidden="true"/>
-        </button>
-
-        <AnimatePresence>
-          {menu&&<motion.div
-            id="side-account-menu"
-            className="side-account-dropdown tadaruk-dropdown-surface"
-            role="menu"
-            aria-label={tr(lang,'خيارات الحساب','Account options')}
-            initial={reduced?false:{opacity:0,y:-6,scale:0.98}}
-            animate={{opacity:1,y:0,scale:1}}
-            exit={reduced?{opacity:1}:{opacity:0,y:-4,scale:0.98}}
-            transition={{duration:reduced?0:0.16,ease:[0.22,0.72,0.18,1]}}
-          >
-            <div className="side-account-menu-head">
-              <b className="side-account-head-name">{user.name}</b>
-              <span className="side-account-head-branch">
-                <Building2 size={12} aria-hidden="true"/>
-                <span>{user.branchName||tr(lang,'جميع الفروع','All branches')}</span>
-              </span>
-            </div>
-
-            <div className="side-account-menu-list">
-              <button
-                type="button"
-                className="side-account-item"
-                role="menuitem"
-                onClick={()=>{setMenu(false);setShowProfile(true);}}
-                data-testid="button-open-profile-dialog"
-              >
-                <UserRound size={16} className="side-account-item-icon"/>
-                <span>{tr(lang,'الملف الشخصي','Profile')}</span>
-              </button>
-
-              <div className="side-account-divider" role="separator"/>
-
-              {logout.isError&&<p className="account-menu-error" role="alert">{tr(lang,'تعذر تسجيل الخروج، حاول مجدداً.','Could not sign out. Please try again.')}</p>}
-
-              <button
-                type="button"
-                className="side-account-item side-account-signout"
-                role="menuitem"
-                onClick={signOut}
-                disabled={logout.isPending}
-                aria-busy={logout.isPending}
-                data-testid="button-sidebar-signout"
-              >
-                <LogOut size={16} className="side-account-item-icon"/>
-                <span>{logout.isPending?tr(lang,'جارٍ تسجيل الخروج…','Signing out…'):tr(lang,'تسجيل الخروج','Sign out')}</span>
-              </button>
-            </div>
-          </motion.div>}
-        </AnimatePresence>
-      </div>
-
-      )}
-
       <div className="branch-switch" data-testid="branch-indicator"><span className="branch-icon"><Building2 size={16}/></span><span><small>{tr(lang,'الموقع الحالي','CURRENT LOCATION')}</small><b>{user.branchName||tr(lang,'جميع الفروع','All branches')}</b></span></div>
       <nav className="side-nav">{links.map(([path,ar,en,Icon])=>{
         const selected=matchingLink===path;
@@ -1326,82 +1074,11 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
       })}</nav>
     </aside>
     <AnimatePresence>{mobile&&<motion.button type="button" className="mobile-scrim" onClick={()=>setMobile(false)} aria-label={tr(lang,'إغلاق القائمة','Close navigation')} initial={reduced?false:{opacity:0}} animate={{opacity:1}} exit={reduced?{opacity:1}:{opacity:0}} transition={{duration:reduced?0:.16}}/>}</AnimatePresence>
-    <div className={`main-frame ${user.role==='technician'?'technician-frame':''}`}><header className="topbar workspace-compact-topbar">
+    <div className={`main-frame unified-account-frame ${user.role==='technician'?'technician-frame':''}`}><header className="topbar workspace-compact-topbar">
       <button className="mobile-menu" type="button" onClick={()=>setMobile(true)} aria-label={tr(lang,'فتح القائمة','Open menu')}><Menu size={20}/></button>
-      {user.role === 'technician' && (
-        <div className="technician-header-account" ref={profileMenuRef}>
-          <button type="button" className="technician-header-account-button"
-            aria-label={tr(lang,'خيارات الحساب','Account options')}
-            aria-expanded={menu}
-            aria-controls="technician-header-account-menu"
-            onClick={()=>setMenu(value=>!value)}>
-            <Avatar name={user.name} size="sm"/>
-            <span className="technician-header-account-name">{user.name}</span>
-            <ChevronDown size={15} className={`side-user-chevron ${menu?'is-open':''}`}/>
-          </button>
-          {menu && (
-            <div className="technician-header-menu tadaruk-dropdown-surface"
-              id="technician-header-account-menu" role="group"
-              aria-label={tr(lang,'إعدادات الحساب','Account settings')}>
-              <button type="button" className="technician-menu-option" onClick={()=>{setMenu(false);setShowProfile(true);}}>
-                <UserRound size={16}/><span>{tr(lang,'الملف الشخصي','Profile')}</span>
-              </button>
-              <button type="button" className="technician-menu-option" onClick={()=>setLang(lang==='ar'?'en':'ar')}>
-                <Languages size={16}/><span>{tr(lang,'اللغة','Language')}</span>
-                <span className="technician-menu-option-value">{lang==='ar'?'English':'العربية'}</span>
-              </button>
-              <div className="technician-menu-theme-row">
-                <label htmlFor="technician-theme-toggle" className="technician-menu-theme-label"><SunMoon size={16}/>{tr(lang,'المظهر','Appearance')}</label>
-                <SunMoonThemeToggle
-                  id="technician-theme-toggle"
-                  className="workspace-theme-toggle technician-menu-animated-theme"
-                  theme={dark?'dark':'light'}
-                  onThemeChange={theme=>setDark(theme==='dark')}
-                  aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')}
-                  data-testid="theme-toggle-technician"
-                  size={40}
-                  duration={860}
-                />
-              </div>
-              <div className="side-account-divider" role="separator"/>
-              {logout.isError&&<p className="account-menu-error" role="alert">{tr(lang,'تعذر تسجيل الخروج، حاول مجدداً.','Could not sign out. Please try again.')}</p>}
-              <button type="button" className="technician-menu-option technician-menu-signout"
-                onClick={signOut} disabled={logout.isPending}>
-                <LogOut size={16}/><span>{logout.isPending?tr(lang,'جارٍ تسجيل الخروج…','Signing out…'):tr(lang,'تسجيل الخروج','Sign out')}</span>
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-      <div className={`top-controls workspace-unified-controls ${user.role==='technician'?'technician-notifications-cluster':''}`}>
-        <div className="workspace-header-notifications" ref={notificationsRef}>
-          <button type="button" className="icon-control workspace-header-bell" onClick={()=>setShowNotifications(value=>!value)}
-            aria-label={tr(lang,'الإشعارات','Notifications')} aria-expanded={showNotifications}>
-            <Bell size={19}/>
-            {unreadCount>0&&<span className="notification-badge-dot" aria-hidden="true"/>}
-          </button>
-          {showNotifications&&(
-            <div className="workspace-header-notifications-popover" role="region" aria-label={tr(lang,'الإشعارات','Notifications')}>
-              <div className="notifications-head">
-                <div className="notifications-title-wrap"><Bell size={15}/><b>{tr(lang,'الإشعارات','Notifications')}</b>{unreadCount>0&&<span className="notifications-count-badge">{unreadCount}</span>}{demoOnly&&<span style={{fontSize:11,opacity:.72,fontWeight:700}}>{tr(lang,'تجريبي','Demo')}</span>}</div>
-                {unreadCount>0&&<button type="button" className="notifications-mark-read" onClick={markAllNotificationsRead}>{tr(lang,'تحديد الكل كمقروء','Mark all read')}</button>}
-              </div>
-              <div className="notifications-list">
-                {!notificationsList.length&&<p className="workspace-notifications-empty">{tr(lang,notificationsError?'تعذر تحميل الإشعارات':'لا توجد إشعارات جديدة',notificationsError?'Could not load notifications':'No notifications yet')}</p>}
-                {notificationsList.map(item=><button key={item.id} type="button" className={`notification-item ${item.unread?'is-unread':''}`}
-                  onClick={()=>{markNotificationRead(item.id);setShowNotifications(false);go(item.link);}}>
-                  <span className="notification-item-icon">{item.icon==='check'?<CheckCircle2 size={16}/>:item.icon==='alert'?<CircleAlert size={16}/>:item.icon==='wrench'?<Wrench size={16}/>:<Clock3 size={16}/>}</span>
-                  <span className="notification-item-content"><b className="notification-item-title">{item.title}</b><small className="notification-item-desc">{item.desc}</small><small className="notification-item-time">{item.time}</small></span>
-                  {item.unread&&<span className="notification-unread-dot" aria-hidden="true"/>}
-                </button>)}
-              </div>
-            </div>
-          )}
-        </div>
-        {user.role !== 'technician' && (<>
-          <button type="button" onClick={()=>setLang(lang==='ar'?'en':'ar')} className="icon-control workspace-header-language" aria-label={tr(lang,'تغيير اللغة','Switch language')}><Languages size={18}/><span>{lang==='ar'?'EN':'ع'}</span></button>
-          <SunMoonThemeToggle className="workspace-theme-toggle" theme={dark?'dark':'light'} onThemeChange={theme=>setDark(theme==='dark')} aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')} data-testid="theme-toggle-workspace" size={40} duration={860}/>
-        </>)}
+      {headerAccountControls}
+      <div className="top-controls workspace-unified-controls technician-notifications-cluster">
+        {notificationsHeaderControls}
       </div>
     </header><main className="workspace-content">{children}</main></div>
 
@@ -2316,7 +1993,7 @@ function WorkspaceRouter({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)
 }
 function AppRoutes() {
   const prefs=usePrefs();
-  const [location]=useLocation();
+  const [location,go]=useLocation();
   useEffect(()=>{
     const messageFor=(control:HTMLInputElement|HTMLTextAreaElement|HTMLSelectElement)=>{
       const validity=control.validity;
@@ -2371,11 +2048,12 @@ function AppRoutes() {
     };
   },[prefs.lang]);
   const path=location.replace(/\/+$/,'')||'/';
+  useEffect(()=>{if(path==='/demo')go('/login');},[path,go]);
   const workspaceRoutes=['/workspace','/workspace/tickets','/workspace/tickets/new','/workspace/technicians','/workspace/branches','/workspace/knowledge'];
   const isTicketDetail=/^\/workspace\/tickets\/[^/]+$/.test(path)&&path!=='/workspace/tickets/new';
   if(workspaceRoutes.includes(path)||isTicketDetail)return <WorkspaceRouter {...prefs}/>;
-  if(path==='/login'||path==='/signup')return <AuthMorph lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/>;
-  return <Switch><Route path="/"><Landing lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route path="/signup"><OrganizationOnboarding lang={prefs.lang} mode="signup"/></Route><Route path="/join"><OrganizationJoin lang={prefs.lang}/></Route><Route path="/login"><OrganizationOnboarding lang={prefs.lang} mode="login"/></Route><Route path="/demo"><DemoPage lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route component={NotFound}/></Switch>;
+  if(path==='/login'||path==='/signup'||path==='/demo')return <AuthMorph lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/>;
+  return <Switch><Route path="/"><Landing lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route path="/signup"><OrganizationOnboarding lang={prefs.lang} mode="signup"/></Route><Route path="/join"><OrganizationJoin lang={prefs.lang}/></Route><Route path="/login"><OrganizationOnboarding lang={prefs.lang} mode="login"/></Route><Route component={NotFound}/></Switch>;
 }
 function App() { return <QueryClientProvider client={qc}><AppRoutes/></QueryClientProvider>; }
 export default App;
