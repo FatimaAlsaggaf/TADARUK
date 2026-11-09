@@ -25,6 +25,7 @@ export default function TechnicianIssueMedia({ticketId,imageUrl,lang,approximate
   ticketId:string;imageUrl:string;lang:Lang;approximateSink?:boolean
 }){
   const [open,setOpen]=useState(false);
+   const [expanded,setExpanded]=useState(false);
   const [mode,setMode]=useState<'photo'|'approx'|'model'>('photo');
   const [zoom,setZoom]=useState(1);
   const [offset,setOffset]=useState({x:0,y:0});
@@ -43,7 +44,7 @@ export default function TechnicianIssueMedia({ticketId,imageUrl,lang,approximate
   const hasModel=isValidModel(model)&&!viewerFailed;
   const showApprox=approximateSink||ticketId==='ticket-demo-2401';
   const reset=()=>{setZoom(1);setOffset({x:0,y:0})};
-  const close=()=>{setOpen(false);setMode('photo');reset()};
+  const close=()=>{if(document.fullscreenElement===fullscreenRef.current)void document.exitFullscreen?.();setExpanded(false);setOpen(false);setMode('photo');reset()};
   const openMode=(next:'photo'|'approx'|'model')=>{reset();setMode(next);setOpen(true)};
   useEffect(()=>{
     if(!open)return;
@@ -67,9 +68,22 @@ export default function TechnicianIssueMedia({ticketId,imageUrl,lang,approximate
   };
   const zoomTo=(amount:number)=>setZoom(z=>Math.max(1,Math.min(5,z+amount)));
   const fullscreen=()=>{
-    if(document.fullscreenElement)void document.exitFullscreen?.();
-    else if(fullscreenRef.current)void fullscreenRef.current.requestFullscreen?.();
+    if(expanded){
+      if(document.fullscreenElement===fullscreenRef.current)void document.exitFullscreen?.();
+      setExpanded(false);
+      return;
+    }
+    // CSS viewport fallback works when the Fullscreen API is unavailable.
+    setExpanded(true);
+    if(fullscreenRef.current?.requestFullscreen){
+      void fullscreenRef.current.requestFullscreen().catch(()=>{});
+    }
   };
+  useEffect(()=>{
+    const onFullscreenChange=()=>{if(!document.fullscreenElement)setExpanded(false)};
+    document.addEventListener('fullscreenchange',onFullscreenChange);
+    return()=>document.removeEventListener('fullscreenchange',onFullscreenChange);
+  },[]);
   return <>
     <div className="tadaruk-photo-mini tadaruk-photo-mini--clean">
       <div className="tadaruk-photo-surface">
@@ -90,13 +104,13 @@ export default function TechnicianIssueMedia({ticketId,imageUrl,lang,approximate
       </div>
     </div>
     {open&&<div className="tadaruk-media-backdrop" role="presentation" onClick={close}>
-      <div className="tadaruk-media-dialog tadaruk-media-dialog--minimal tadaruk-media-dialog--tabs"
+      <div className={`tadaruk-media-dialog tadaruk-media-dialog--minimal tadaruk-media-dialog--tabs ${expanded?'tadaruk-media-dialog--expanded':''}`}
         ref={fullscreenRef} onClick={e=>e.stopPropagation()} role="dialog"
         aria-modal="true" aria-label={tr(lang,'عرض صورة البلاغ','Ticket media viewer')}>
         <header className="tadaruk-media-toolbar">
           <strong>{tr(lang,'تفاصيل العطل','Issue details')}</strong>
           <div className="tadaruk-media-actions">
-            <button type="button" onClick={fullscreen} aria-label={tr(lang,'ملء الشاشة','Fullscreen')} title={tr(lang,'ملء الشاشة','Fullscreen')}><Maximize2 size={17}/></button>
+            <button type="button" onClick={fullscreen} aria-label={expanded?tr(lang,'تصغير العرض','Exit fullscreen'):tr(lang,'ملء الشاشة','Fullscreen')} title={expanded?tr(lang,'تصغير العرض','Exit fullscreen'):tr(lang,'ملء الشاشة','Fullscreen')}><Maximize2 size={17}/></button>
             <button type="button" onClick={close} aria-label={tr(lang,'إغلاق','Close')}><X size={20}/></button>
           </div>
         </header>
