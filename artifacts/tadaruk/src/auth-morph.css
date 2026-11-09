@@ -354,3 +354,111 @@
   .auth-morph-panel-content{gap:4px !important}
 }
 @media(prefers-reduced-motion:reduce){.auth-morph-dark-veil{filter:blur(54px) saturate(.78)}}
+
+
+/* Striped Waves: the supplied animated WebGL hero behind both auth modes. */
+.auth-morph-page{
+  position:relative;
+  isolation:isolate;
+  background:#abcad9 !important;
+}
+.auth-striped-waves{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  width:100%;
+  min-width:0;
+  height:100%;
+  min-height:100dvh;
+  overflow:hidden;
+  pointer-events:none;
+}
+.auth-striped-waves>div,
+.auth-striped-waves canvas{
+  width:100% !important;
+  height:100% !important;
+  min-width:0 !important;
+  min-height:0 !important;
+}
+.auth-striped-waves>div{opacity:.66}
+.auth-morph-header{
+  z-index:5 !important;
+}
+.auth-morph-card{
+  z-index:2 !important;
+  background:#fafcff !important;
+  box-shadow:0 28px 74px #092b4960 !important;
+}
+.auth-morph-card:not(.auth-morph-signup)::before{
+  background:linear-gradient(150deg,#bdd7e6 0%,#94bfd6 52%,#70a4bf 100%) !important;
+}
+.auth-morph-card:not(.auth-morph-signup) .auth-morph-left h2{color:#183958 !important}
+.auth-morph-card:not(.auth-morph-signup) .auth-morph-left p{color:#254d69 !important}
+.auth-morph-card:not(.auth-morph-signup) .auth-morph-left button{
+  background:#eff7fc99 !important;
+  border-color:#366f93 !important;
+  color:#183f63 !important;
+}
+.auth-morph-login-form{gap:12px !important}
+.auth-morph-login-form .auth-morph-subtitle{margin-bottom:8px}
+.auth-morph-forgot{
+  appearance:none;
+  border:0;
+  background:transparent;
+  color:#26688c;
+  text-decoration:underline;
+  text-underline-offset:3px;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  margin-top:-5px;
+  padding:3px 7px;
+}
+.auth-morph-forgot:focus-visible,
+.auth-morph-role:focus-visible{outline:2px solid #207f9f;outline-offset:4px}
+.auth-morph-login-notice{
+  width:100%;
+  padding:9px 12px;
+  margin:0;
+  border-radius:11px;
+  background:#e8f3f9;
+  border:1px solid #b7d7e8;
+  font-family:var(--app-font-sans),sans-serif !important;
+  font-size:12px;
+  font-weight:500;
+  line-height:1.7;
+  color:#244d69;
+  text-align:start;
+}
+.auth-morph-demo>small{
+  color:#416b89 !important;
+  font-weight:700;
+}
+.dark .auth-morph-page{background:#0d2238 !important}
+.dark .auth-striped-waves>div{opacity:.8}
+.dark .auth-morph-card{
+  background:#12293d !important;
+  box-shadow:0 28px 75px #010b19b8 !important;
+}
+.dark .auth-morph-card:not(.auth-morph-signup)::before{
+  background:linear-gradient(145deg,#102840,#173c5d 62%,#276982) !important;
+}
+.dark .auth-morph-login-notice{
+  color:#e3f3fa;
+  background:#1b425a;
+  border-color:#356680;
+}
+.dark .auth-morph-forgot{color:#9cdae9}
+.dark .auth-morph-demo>small{color:#b5d2e0 !important}
+@media(max-width:850px){
+  .auth-morph-card{box-shadow:0 15px 45px #0a315046 !important}
+  .auth-morph-login-form{gap:10px !important}
+}
+@media(max-width:560px){
+  .auth-striped-waves>div{opacity:.52}
+  .auth-morph-login-notice{font-size:11px}
+  .auth-morph-forgot{font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){
+  .auth-striped-waves>div{opacity:.5}
+}
