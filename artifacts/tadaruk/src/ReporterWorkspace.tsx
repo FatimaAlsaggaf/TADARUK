@@ -294,6 +294,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
   const [specialization, setSpecialization] = useState('');
   const [reviewLocation, setReviewLocation] = useState('');
   const [reviewEditing, setReviewEditing] = useState(false);
+  const [showDiscardDialog, setShowDiscardDialog] = useState(false);
   const [previewPreparedAt, setPreviewPreparedAt] = useState<Date | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiStage, setAiStage] = useState<number>(0);
@@ -437,6 +438,21 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
   };
 
   const returnToPreview = () => setReviewEditing(false);
+  const discardDraft = () => {
+    if (create.isPending) return;
+    setShowDiscardDialog(false);
+    // A not-yet-submitted draft is never a cancelled ticket or audit event.
+    navigate('/workspace');
+  };
+
+  useEffect(() => {
+    if (!showDiscardDialog) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setShowDiscardDialog(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [showDiscardDialog]);
 
   const submitReview = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -898,6 +914,11 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                   <h2>{text(lang, 'مراجعة وتأكيد البلاغ', 'Review and confirm report')}</h2>
                   <p>{text(lang, 'تحقق من تفاصيل البلاغ قبل إرساله', 'Review the report details before submitting')}</p>
                 </div>
+                <button type="button" className="rw-discard-draft-btn"
+                  onClick={() => setShowDiscardDialog(true)}
+                  disabled={create.isPending} data-testid="button-discard-draft">
+                  <X size={16}/>{text(lang, 'إلغاء المسودة', 'Discard draft')}
+                </button>
               </div>
 
               {!reviewEditing ? (
@@ -927,7 +948,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                   <div className="rw-review-facts rw-review-facts--reference" aria-label={text(lang, 'بيانات البلاغ', 'Report information')}>
                     <div className="rw-review-fact"><span><Building2 size={16}/>{text(lang, 'الفرع', 'Branch')}</span><strong data-testid="text-preview-branch">{selectedBranch?.name || text(lang, 'غير محدد', 'Not specified')}</strong></div>
                     <div className="rw-review-fact"><span><MapPin size={16}/>{text(lang, 'الموقع داخل الفرع', 'Location')}</span><strong>{reviewLocation || text(lang, 'غير محدد', 'Not specified')}</strong></div>
-                    <div className="rw-review-fact"><span><ClipboardList size={16}/>{text(lang, 'تصنيف العطل', 'Category')}</span><strong>{classificationLabel(category, lang)}</strong></div>
+                    {category !== specialization && <div className="rw-review-fact"><span><ClipboardList size={16}/>{text(lang, 'تصنيف العطل', 'Category')}</span><strong>{classificationLabel(category, lang)}</strong></div>}
                     <div className="rw-review-fact"><span><Wrench size={16}/>{text(lang, 'التخصص المطلوب', 'Specialty')}</span><strong>{classificationLabel(specialization, lang)}</strong></div>
                     <div className="rw-review-fact rw-review-priority"><span><CircleAlert size={16}/>{text(lang, 'الأولوية', 'Priority')}</span><span className={`rw-priority-badge rw-priority-${priority}`} data-testid="badge-preview-priority">{priorityLabel(priority, lang)}</span></div>
                   </div>
@@ -1169,6 +1190,23 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
           )}
         </Step>
       </Stepper>
+      {showDiscardDialog && <div className="rw-discard-backdrop" role="presentation"
+        onClick={() => setShowDiscardDialog(false)}>
+        <div role="dialog" aria-modal="true" aria-labelledby="rw-discard-title"
+          className="rw-discard-dialog" onClick={event => event.stopPropagation()}>
+          <div className="rw-discard-dialog-icon"><CircleAlert size={24}/></div>
+          <h2 id="rw-discard-title">{text(lang, 'إلغاء هذه المسودة؟', 'Discard this draft?')}</h2>
+          <p>{text(lang, 'لن يُرسل البلاغ، وستُفقد البيانات التي أدخلتها. لا يُسجّل هذا الإجراء كإلغاء بلاغ.', 'The report will not be sent and your unsaved details will be lost. No ticket cancellation is recorded.')}</p>
+          <div className="rw-discard-dialog-actions">
+            <button type="button" className="rw-button rw-button-quiet" onClick={() => setShowDiscardDialog(false)} data-testid="button-keep-draft">
+              {text(lang, 'العودة للمراجعة', 'Keep reviewing')}
+            </button>
+            <button type="button" className="rw-button rw-discard-confirm" onClick={discardDraft} data-testid="button-confirm-discard">
+              <X size={16}/>{text(lang, 'إلغاء المسودة', 'Discard draft')}
+            </button>
+          </div>
+        </div>
+      </div>}
     </div>
   );
 }
