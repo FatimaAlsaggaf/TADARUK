@@ -1119,3 +1119,71 @@
   }
 }
 
+
+/* Technician ticket: matching readable scale and equal-height status tags.
+   Retain the technician stage bar: this view has no separate event timeline. */
+.tech-detail-page .tech-hero-card {padding:clamp(17px,2vw,23px);border-radius:18px;margin-bottom:14px;}
+.tech-detail-page .tech-hero-badges {gap:8px;margin-bottom:12px;}
+.tech-detail-page .tech-hero-badges > .status-pill,
+.tech-detail-page .tech-hero-badges > .priority-badge,
+.tech-detail-page .tech-hero-badges > .tech-spec-tag {
+  display:inline-flex !important;
+  justify-content:center;
+  align-items:center;
+  gap:7px;
+  min-height:34px !important;
+  height:34px !important;
+  width:auto !important;
+  padding:5px 12px !important;
+  border-radius:999px !important;
+  font-size:13px !important;
+  font-weight:700;
+  line-height:1.2;
+  white-space:nowrap;
+}
+.tech-detail-page .tech-spec-tag {
+  background:#eff8fa;
+  border-color:#d7e9ef;
+  color:#235b7c;
+}
+.tech-detail-page .tech-spec-tag svg {color:#15998f;width:15px;height:15px;}
+.tech-detail-page .tech-hero-title {
+  font:700 clamp(25px,3vw,30px)/1.45 'Amiri',serif !important;
+  margin:0 0 12px !important;
+}
+.tech-detail-page .tech-meta-strip {gap:8px;padding-top:13px;font-size:13.5px;}
+.tech-detail-page .tech-meta-item {
+  display:inline-flex;align-items:center;gap:7px;
+  min-height:35px;padding:6px 10px;
+  background:#f7faff;border:1px solid #e1ebf5;border-radius:10px;
+  line-height:1.5;
+}
+.tech-detail-page .tech-meta-item svg {flex:none;width:16px;height:16px;}
+.tech-detail-page .tech-meta-item:nth-child(1) svg {color:#2876bf;}
+.tech-detail-page .tech-meta-item:nth-child(2) svg {color:#218d9d;}
+.tech-detail-page .tech-meta-item:nth-child(3) svg {color:#526fb4;}
+.tech-detail-page .tech-meta-item:nth-child(4) svg {color:#5d88b0;}
+.tech-detail-page .tech-action-hub,
+.tech-detail-page .tech-info-card {border-radius:17px;}
+.tech-detail-page .tech-action-intro h3 {font-size:17px !important;line-height:1.55;}
+.tech-detail-page .tech-action-intro p,
+.tech-detail-page .tech-status-card-copy p,
+.tech-detail-page .tech-record-text,
+.tech-detail-page .tech-issue-description,
+.tech-detail-page .tech-notice-card p,
+.tech-detail-page .tech-voice-hint {font-size:14px !important;line-height:1.8 !important;}
+.tech-detail-page .tech-info-header h3 {font-size:16px !important;}
+.tech-detail-page .tech-sublabel,.tech-detail-page .tech-field-label {font-size:13.5px !important;}
+.tech-detail-page .tech-stage-label {font-size:13px !important;}
+.tech-detail-page .tech-status-card-copy h3 {font-size:17px !important;}
+.tech-detail-page .tech-primary-action-btn {font-size:14px !important;min-height:44px;}
+.dark .tech-detail-page .tech-meta-item {background:#20364d;border-color:#385772;color:#d9eafb;}
+.dark .tech-detail-page .tech-spec-tag {background:#213e4c;border-color:#3a6971;color:#a7edf0;}
+@media(max-width:640px){
+  .tech-detail-page .tech-meta-strip {gap:7px;}
+  .tech-detail-page .tech-meta-item {font-size:13px;padding:6px 9px;}
+  .tech-detail-page .tech-hero-title {font-size:25px !important;}
+  .tech-detail-page .tech-hero-badges > .status-pill,
+  .tech-detail-page .tech-hero-badges > .priority-badge,
+  .tech-detail-page .tech-hero-badges > .tech-spec-tag {font-size:12px !important;}
+}
