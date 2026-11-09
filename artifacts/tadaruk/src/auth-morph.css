@@ -1,0 +1,120 @@
+
+/* TADARUK AuthSwitch: ref implementation geometry with Tadaruk gradient and native font */
+.auth-morph-page,.auth-morph-page *{box-sizing:border-box}
+.auth-morph-page{font-family:var(--app-font-sans),'IBM Plex Sans Arabic',sans-serif;min-height:100dvh;position:relative;isolation:isolate;padding:12px clamp(15px,4vw,60px) 58px;background:radial-gradient(ellipse at 9% 8%,#e1f2ff 0%,transparent 44%),radial-gradient(ellipse at 96% 92%,#cae9f6 0%,transparent 48%),#f7fbff;overflow:hidden;color:#263e60}
+.auth-morph-page::after{content:"";position:absolute;z-index:-1;inset:-15%;background:radial-gradient(circle at 70% 15%,#7fbad82b,transparent 33%),radial-gradient(circle at 10% 85%,#6a9dcd23,transparent 35%);animation:auth-morph-aurora 15s ease-in-out infinite alternate;pointer-events:none}
+@keyframes auth-morph-aurora{to{transform:translate(3%,-3%) scale(1.07)}}
+.auth-morph-header{max-width:1180px;margin:auto;height:78px;display:flex;align-items:center;justify-content:space-between}
+.auth-morph-brand{font-size:27px;font-weight:850;color:#1b3c60;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.auth-morph-brand small{color:#2b85a5;font-size:10px;font-weight:700;letter-spacing:.15em}
+.auth-morph-home{display:inline-flex;align-items:center;gap:9px;color:#557896;text-decoration:none;font-size:12px;font-weight:750}
+.auth-morph-card{position:relative;direction:ltr;width:100%;max-width:1180px;min-height:640px;margin:18px auto;background:#fff;border-radius:28px;box-shadow:0 26px 70px #19426625;overflow:hidden;transition:min-height .45s ease;isolation:isolate}
+.auth-morph-card.auth-morph-signup{min-height:775px}
+.auth-morph-card::before{content:"";position:absolute;top:-10%;right:48%;width:2000px;height:2000px;transform:translateY(-50%);background:linear-gradient(-45deg,#133157 0%,#205886 54%,#3c9bb4 100%);transition:transform 1.8s ease-in-out,right 1.8s ease-in-out;border-radius:50%;z-index:3;pointer-events:none}
+.auth-morph-card.auth-morph-signup::before{transform:translate(100%,-50%);right:52%}
+.auth-morph-form-area{position:absolute;inset:0;z-index:2}
+.auth-morph-login,.auth-morph-register{position:absolute;top:0;height:100%;width:50%;display:flex;justify-content:center;align-items:center;transition:opacity .26s ease,transform 1s .7s ease-in-out;direction:rtl}
+.auth-morph-login{left:50%;opacity:1;pointer-events:auto;transform:translateX(0)}
+.auth-morph-register{left:0;opacity:0;pointer-events:none;transform:translateX(45px)}
+.auth-morph-signup .auth-morph-login{opacity:0;pointer-events:none;transform:translateX(-45px)}
+.auth-morph-signup .auth-morph-register{opacity:1;pointer-events:auto;transform:translateX(0)}
+.auth-morph-login-form{width:min(100%,390px);display:flex;align-items:center;flex-direction:column;text-align:center;padding:22px;gap:18px}
+.auth-morph-login-form h1{font-size:clamp(28px,3vw,38px);line-height:1.4;color:#1d3a5f;font-weight:850;margin:0}
+.auth-morph-subtitle{color:#748a9e;font-size:13px;margin:-7px 0 7px}
+.auth-morph-input{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;border:1px solid #e2eaf1;background:#f2f6f9;border-radius:50px;padding:0 17px;color:#5380a2;transition:border-color .2s,box-shadow .2s}
+.auth-morph-input:focus-within{border-color:#408eaa;box-shadow:0 0 0 3px #398fa91c}
+.auth-morph-input input{min-width:0;flex:1;color:#203d61;font-family:inherit;background:transparent;border:0;outline:0;height:54px;font-size:13px}
+.auth-morph-input button{background:transparent;border:0;color:#7795ad;cursor:pointer;display:grid;place-items:center;padding:5px}
+.auth-morph-primary{min-width:175px;padding:13px 25px;border-radius:40px;color:#fff;background:linear-gradient(115deg,#204571,#3286a7);border:0;cursor:pointer;font-family:inherit;font-weight:800;font-size:14px;transition:transform .25s,box-shadow .25s}
+.auth-morph-primary:hover{transform:translateY(-2px);box-shadow:0 9px 22px #316e9e33}
+.auth-morph-demo{display:flex;align-items:center;flex-direction:column;gap:13px;margin-top:13px}
+.auth-morph-demo>small{color:#6f849b;font-size:12px}
+.auth-morph-roles{display:flex;gap:19px;justify-content:center}
+.auth-morph-role{display:flex;flex-direction:column;gap:9px;align-items:center;border:0;background:transparent;cursor:pointer;color:#2d648b;padding:0;font-family:inherit;transition:transform .25s}
+.auth-morph-role:hover{transform:translateY(-4px)}
+.auth-morph-role>span{display:grid;place-items:center;width:57px;height:57px;border:1px solid #d8e4ee;border-radius:50%;background:#fff;box-shadow:0 6px 18px #2143660e}
+.auth-morph-role b{font-size:11px;font-weight:750}
+.auth-morph-panels{position:absolute;inset:0;z-index:4;display:grid;grid-template-columns:1fr 1fr;pointer-events:none}
+.auth-morph-panel{display:flex;justify-content:center;align-items:center;text-align:center;padding:38px;transition:transform .9s ease-in-out .5s,opacity .55s ease-in-out;direction:rtl;color:white}
+.auth-morph-panel-content{width:min(100%,300px);display:flex;align-items:center;flex-direction:column;gap:12px}
+.auth-morph-panel h2{color:#fff;font-size:27px;font-weight:850;margin:0;line-height:1.5}
+.auth-morph-panel p{font-size:13px;color:#e4f2fa;line-height:1.9;margin:0}
+.auth-morph-panel button{border:1.5px solid #fff;background:transparent;color:#fff;min-height:43px;padding:9px 25px;border-radius:50px;font-weight:800;font-size:12px;font-family:inherit;cursor:pointer;transition:background .2s,transform .2s;pointer-events:auto}
+.auth-morph-panel button:hover{background:#ffffff21;transform:translateY(-2px)}
+.auth-morph-left{transform:translateX(0);opacity:1;pointer-events:none}
+.auth-morph-right{transform:translateX(850px);opacity:0;pointer-events:none}
+.auth-morph-signup .auth-morph-left{transform:translateX(-850px);opacity:0}
+.auth-morph-signup .auth-morph-right{transform:translateX(0);opacity:1}
+/* Wizard is a child of the morphing auth form, not another full-screen auth layout */
+.auth-morph-register-content{width:100%;height:100%;overflow-y:auto;overscroll-behavior:contain;padding:14px 17px 24px}
+.auth-morph-register .org-screen{min-height:0 !important;height:auto !important;padding:0 !important;background:transparent !important;overflow:visible !important}
+.auth-morph-register .org-screen::before,.auth-morph-register .org-screen::after{display:none !important}
+.auth-morph-register .org-top,.auth-morph-register .org-aside{display:none !important}
+.auth-morph-register .org-layout,.auth-morph-register .org-layout.org-layout--signup{min-height:0 !important;width:100% !important;display:block !important;margin:0 !important;border-radius:0 !important;box-shadow:none !important;animation:none !important;overflow:visible !important;background:transparent !important}
+.auth-morph-register .org-panel{padding:12px 10px !important;border:0 !important;background:#fff !important}
+.auth-morph-register .org-auth-topline{display:none !important}
+.auth-morph-register .org-form{gap:12px !important}
+.auth-morph-register .org-form h2{font-size:23px !important}
+.auth-morph-register .org-fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.auth-morph-register .org-steps{margin:0 0 8px !important;padding:8px 0 19px !important}
+.auth-morph-register .org-steps::before{top:24px}
+.auth-morph-register .org-steps>div span{width:31px !important;height:31px !important}
+.auth-morph-register .org-steps small{font-size:9px !important}
+.auth-morph-register .org-field input,.auth-morph-register .org-field select{min-height:43px}
+.auth-morph-register .org-bottom{margin-top:6px}
+.auth-morph-register .org-small{display:none !important}
+.auth-morph-register .org-success{min-height:600px !important}
+.auth-morph-register .org-access-explain{gap:5px}
+.auth-morph-register .org-access-explain>div{padding:9px 7px}
+.auth-morph-register .org-invite-list{max-height:140px;overflow:auto}
+.auth-morph-register .org-final-review{gap:8px}
+.auth-morph-register .org-final-review .org-flow-explainer{padding:11px;gap:8px}
+.auth-morph-register .org-final-review .org-flow-explainer h3{font-size:12px}
+.auth-morph-register .org-final-review .org-flow-explainer>div{font-size:10px}
+.auth-morph-register .org-reporter-access{padding:11px}
+.auth-morph-register .org-access-explain small{font-size:10px}
+.dark .auth-morph-page{background:#13283c}
+.dark .auth-morph-card{background:#1c344c}
+.dark .auth-morph-login-form h1{color:#e8f2ff}
+.dark .auth-morph-input{background:#28435c;border-color:#395b78}
+.dark .auth-morph-input input{color:#e6f4ff}
+.dark .auth-morph-demo>small,.dark .auth-morph-subtitle{color:#aac2d6}
+.dark .auth-morph-register .org-panel{background:#1c344c !important}
+@media(max-width:850px){
+ .auth-morph-page{padding:10px 14px 35px}
+ .auth-morph-card{min-height:780px;border-radius:20px}
+ .auth-morph-card.auth-morph-signup{min-height:1090px}
+ .auth-morph-form-area{inset:0}
+ .auth-morph-login,.auth-morph-register{width:100%;left:0;right:0;top:250px;height:calc(100% - 250px)}
+ .auth-morph-register{transform:translateY(60px)}
+ .auth-morph-signup .auth-morph-register{transform:translateY(0)}
+ .auth-morph-login-form{padding:10px 22px}
+ .auth-morph-card::before{height:1550px;width:1550px;top:auto;bottom:70%;left:30%;right:auto;transform:translateX(-50%);transition:transform 1.8s ease-in-out,bottom 1.8s ease-in-out}
+ .auth-morph-card.auth-morph-signup::before{transform:translate(-50%,100%);bottom:32%;right:auto}
+ .auth-morph-panels{grid-template-columns:1fr;grid-template-rows:250px 1fr 250px}
+ .auth-morph-panel{padding:14px 25px}
+ .auth-morph-left{grid-row:1;grid-column:1;transform:translateY(0)}
+ .auth-morph-right{grid-row:3;grid-column:1;transform:translateY(600px)}
+ .auth-morph-signup .auth-morph-left{transform:translateY(-600px)}
+ .auth-morph-signup .auth-morph-right{transform:translateY(0)}
+ .auth-morph-signup .auth-morph-register{top:0;height:calc(100% - 250px)}
+ .auth-morph-register-content{padding:15px 20px}
+ .auth-morph-panel h2{font-size:21px}
+ .auth-morph-panel p{font-size:11px}
+ .auth-morph-panel-content{gap:7px}
+}
+@media(max-width:520px){
+ .auth-morph-header{height:61px}
+ .auth-morph-card{margin:8px auto;min-height:765px}
+ .auth-morph-card.auth-morph-signup{min-height:1150px}
+ .auth-morph-register .org-fields{grid-template-columns:1fr}
+ .auth-morph-register-content{padding:11px}
+ .auth-morph-register .org-panel{padding:10px !important}
+ .auth-morph-register .org-steps small{font-size:8px !important}
+ .auth-morph-register .org-access-explain{grid-template-columns:1fr}
+ .auth-morph-register .org-invite-summary{flex-wrap:wrap}
+ .auth-morph-roles{gap:13px}
+ .auth-morph-role>span{width:50px;height:50px}
+ .auth-morph-login-form h1{font-size:28px}
+}
+@media(prefers-reduced-motion:reduce){.auth-morph-card::before,.auth-morph-panel,.auth-morph-login,.auth-morph-register,.auth-morph-page::after{transition:none !important;animation:none !important}}
