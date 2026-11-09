@@ -61,8 +61,9 @@ export default function OrganizationOnboarding({lang,mode,embedded=false}:{lang:
    const specialty=member.specialty==='other'?otherSpecialty.trim():member.specialty;
    const branch=member.branch|| (sites[0]?branchLabel(sites[0]):'');
    if(!fullName||!phone||!specialty||!branch){setError(tr(lang,'أدخل اسم الفني ورقم جواله وتخصصه وفرعه.','Enter technician name, phone, specialty and branch.'));return;}
-   if(!/^[+\\d()\\s-]{8,20}$/.test(phone)){setError(tr(lang,'تحقق من رقم الجوال.','Check the phone number.'));return;}
-   if(members.some(x=>x.phone.replace(/\\D/g,'')===phone.replace(/\\D/g,''))){setError(tr(lang,'رقم الجوال مضاف لفني آخر.','A technician with this phone number already exists.'));return;}
+   const phoneDigits=phone.replace(/[^0-9]/g,'');
+   if(phoneDigits.length<8||phoneDigits.length>15||!/^[+0-9()\s-]+$/.test(phone)){setError(tr(lang,'تحقق من رقم الجوال.','Check the phone number.'));return;}
+   if(members.some(x=>x.phone.replace(/[^0-9]/g,'')===phoneDigits)){setError(tr(lang,'رقم الجوال مضاف لفني آخر.','A technician with this phone number already exists.'));return;}
    setMembers(old=>[...old,{id:Date.now()+old.length,name:fullName,email:'',phone,role:'technician',specialty,branch,status:'pending'}]);
    setMember({name:'',email:'',phone:'',role:'technician',specialty:'plumbing',branch:''});
    setOtherSpecialty('');setError('');
@@ -160,7 +161,7 @@ export default function OrganizationOnboarding({lang,mode,embedded=false}:{lang:
         {step===2&&<div className="org-site-step">
           <p className="org-muted">{tr(lang,'يمكن إضافة عدة مدن وفروع. تظهر الفروع المحددة للمبلّغ في حسابه.','Add multiple cities and branches. Reporters can select the available branches from their workspace.')}</p>
           <div className="org-fields">
-            <label className="org-field"><span>{tr(lang,'المدينة','City')}</span><Select value={newCity} onValueChange={v=>{setNewCity(v);setError('')}}><SelectTrigger className="org-select-trigger"><SelectValue placeholder={tr(lang,'اختر المدينة','Select a city')}/></SelectTrigger><SelectContent className="org-select-content" dir={lang==='ar'?'rtl':'ltr'}>{[['الرياض','Riyadh'],['جدة','Jeddah'],['مكة','Makkah'],['المدينة المنورة','Madinah'],['الدمام','Dammam'],['الخبر','Khobar'],['جازان','Jazan'],['أبو عريش','Abu Arish'],['أبها','Abha'],['تبوك','Tabuk'],['حائل','Hail'],['بريدة','Buraydah'],['الطائف','Taif'],['نجران','Najran'],['ينبع','Yanbu'],['الأحساء','Al Ahsa'],['other','أخرى','Other']].map(([v,ar,en])=><SelectItem key={v} value={v}>{tr(lang,ar,en)}</SelectItem>)}</SelectContent></Select></label>
+            <label className="org-field"><span>{tr(lang,'المدينة','City')}</span><Select value={newCity} onValueChange={v=>{setNewCity(v);setError('')}}><SelectTrigger className="org-select-trigger"><SelectValue placeholder={'اختر المدينة'}/></SelectTrigger><SelectContent className="org-select-content org-city-select" dir="rtl">{['الرياض','جدة','مكة','المدينة المنورة','الدمام','الخبر','جازان','أبو عريش','أبها','تبوك','حائل','بريدة','الطائف','نجران','ينبع','الأحساء','other'].map(value=><SelectItem key={value} value={value}>{value==='other'?'أخرى':value}</SelectItem>)}</SelectContent></Select></label>
             <label className="org-field"><span>{tr(lang,'اسم الفرع','Branch name')}</span><input value={newBranch} onChange={e=>setNewBranch(e.target.value)} placeholder={tr(lang,'مثال: فرع العليا','Example: Olaya branch')}/></label>
           </div>
           {newCity==='other'&&<label className="org-field"><span>{tr(lang,'اسم المدينة','City name')}</span><input value={otherCity} onChange={e=>setOtherCity(e.target.value)} placeholder={tr(lang,'اكتب اسم المدينة','Enter city name')}/></label>}

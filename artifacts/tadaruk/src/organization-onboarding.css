@@ -285,3 +285,10 @@
 .dark .org-tech-intro p,.dark .org-invite-section-head p{color:#b6cbda}
 .dark .org-select-trigger{background:#223d54 !important;border-color:#45627d !important;color:#eaf5ff !important}
 @media(max-width:600px){.org-tech-intro{padding:12px}.org-tech-add-row{align-items:stretch}.org-tech-add-row .org-add-tech{width:100%;justify-content:center}.org-reporter-share{margin-inline-start:0}.org-invite-summary{align-items:flex-start;flex-wrap:wrap}}
+
+/* Portal menu Typography and bilingual city labels */
+.org-select-content{font-size:19px !important}
+.org-select-content [role="option"]{font-size:19px !important;line-height:1.7 !important;min-height:44px !important}
+.org-city-select{direction:rtl !important;text-align:right !important}
+.dark .org-select-content{background:#19354d !important;color:#e2f2fb !important;border-color:#3d6680 !important}
+.dark .org-select-content [role="option"][data-highlighted]{background:#285574 !important;color:#fff !important}

@@ -2331,7 +2331,7 @@ function AppRoutes() {
   const workspaceRoutes=['/workspace','/workspace/tickets','/workspace/tickets/new','/workspace/technicians','/workspace/branches','/workspace/knowledge'];
   const isTicketDetail=/^\/workspace\/tickets\/[^/]+$/.test(path)&&path!=='/workspace/tickets/new';
   if(workspaceRoutes.includes(path)||isTicketDetail)return <WorkspaceRouter {...prefs}/>;
-  if(path==='/login'||path==='/signup')return <AuthMorph lang={prefs.lang}/>;
+  if(path==='/login'||path==='/signup')return <AuthMorph lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/>;
   return <Switch><Route path="/"><Landing lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route path="/signup"><OrganizationOnboarding lang={prefs.lang} mode="signup"/></Route><Route path="/join"><OrganizationJoin lang={prefs.lang}/></Route><Route path="/login"><OrganizationOnboarding lang={prefs.lang} mode="login"/></Route><Route path="/demo"><DemoPage lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route component={NotFound}/></Switch>;
 }
 function App() { return <QueryClientProvider client={qc}><AppRoutes/></QueryClientProvider>; }

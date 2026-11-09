@@ -1,13 +1,14 @@
 import {useEffect,useState,type FormEvent} from 'react';
 import {Link,useLocation} from 'wouter';
-import {Building2,ClipboardList,Eye,EyeOff,LockKeyhole,Mail,Wrench,ArrowLeft} from 'lucide-react';
+import {Building2,ClipboardList,Eye,EyeOff,LockKeyhole,Mail,Wrench,ArrowLeft,Languages,Sun,Moon} from 'lucide-react';
+import LightRays from './AuthLightRays';
 import OrganizationOnboarding from './OrganizationOnboarding';
 import './auth-morph.css';
 
 type Lang='ar'|'en';
 const tr=(lang:Lang,ar:string,en:string)=>lang==='ar'?ar:en;
 
-export default function AuthMorph({lang}:{lang:Lang}){
+export default function AuthMorph({lang,setLang,dark,setDark}:{lang:Lang;setLang:(v:Lang)=>void;dark:boolean;setDark:(v:boolean)=>void}){
  const [path,go]=useLocation();
  const signupRoute=path.startsWith('/signup');
  const [signup,setSignup]=useState(signupRoute);
@@ -23,7 +24,15 @@ export default function AuthMorph({lang}:{lang:Lang}){
    {name:tr(lang,'المبلّغ','Reporter'),icon:ClipboardList,role:'reporter'},
  ];
  return <main className="auth-morph-page" dir={lang==='ar'?'rtl':'ltr'}>
-  <header className="auth-morph-header"><Link href="/" className="auth-morph-brand" aria-label={tr(lang,'تدارك - الرئيسية','Tadaruk - Home')}><img src={`${import.meta.env.BASE_URL}brand-logo.png`} alt="تدارك TADARUK" /></Link><Link href="/" className="auth-morph-home">{tr(lang,'الرئيسية','Home')} <ArrowLeft size={16}/></Link></header>
+  <LightRays className="auth-morph-light-rays" raysOrigin="top-center" raysColor={dark?'#398fb4':'#236b9c'} raysSpeed={0.48} lightSpread={0.7} rayLength={3.1} glow={0.66} haze={0.3} atmosphere={0.55} saturation={0.9} intensity={1.1} opacity={dark?0.60:0.45} followMouse mouseInfluence={0.05} maxDevicePixelRatio={1.25} lightMode={!dark}/>
+  <header className="auth-morph-header">
+    <Link href="/" className="auth-morph-brand" aria-label={tr(lang,'تدارك - الرئيسية','Tadaruk - Home')}><img src={`${import.meta.env.BASE_URL}brand-logo.png`} alt="تدارك TADARUK" /></Link>
+    <div className="auth-morph-header-actions">
+      <button type="button" className="auth-header-control" onClick={()=>setLang(lang==='ar'?'en':'ar')} aria-label={tr(lang,'تبديل اللغة','Change language')}><Languages size={17}/><span>{lang==='ar'?'English':'العربية'}</span></button>
+      <button type="button" className="auth-header-control auth-theme-control" onClick={()=>setDark(!dark)} aria-label={dark?tr(lang,'الوضع الفاتح','Light mode'):tr(lang,'الوضع الداكن','Dark mode')}>{dark?<Sun size={18}/>:<Moon size={18}/>}<span>{dark?tr(lang,'فاتح','Light'):tr(lang,'داكن','Dark')}</span></button>
+      <Link href="/" className="auth-morph-home">{tr(lang,'الرئيسية','Home')} <ArrowLeft size={16}/></Link>
+    </div>
+  </header>
   <section className={`auth-morph-card ${signup?'auth-morph-signup':''}`} aria-label={tr(lang,'الدخول وإنشاء الحساب','Sign in and registration')}>
     <div className="auth-signup-back" aria-hidden={!signup}><button type="button" onClick={()=>toggle(false)} tabIndex={signup?0:-1}><span className="auth-signup-back-icon"><ArrowLeft size={19}/></span><span>{tr(lang,'تسجيل الدخول','Sign in')}</span></button></div>
     <div className="auth-morph-form-area">

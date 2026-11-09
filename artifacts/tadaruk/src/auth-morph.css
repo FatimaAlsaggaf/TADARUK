@@ -146,3 +146,81 @@
 .dark .auth-morph-demo>small,.dark .auth-morph-subtitle{color:#aac2d6}
 .dark .auth-morph-register .org-field input,.dark .auth-morph-register .org-field select{background:#223d54;color:#eaf5ff;border-color:#45627d}
 @media(prefers-reduced-motion:reduce){.auth-morph-card::before,.auth-morph-panel,.auth-morph-login,.auth-morph-register,.auth-morph-page::after{transition:none!important;animation:none!important}}
+
+/* Auth refinement — compact centered card and wider breathing room for the rays */
+.auth-morph-page{background:radial-gradient(circle at 14% 7%,#edf7ff 0%,transparent 40%),linear-gradient(150deg,#eaf5fc 0%,#f7fbff 47%,#dceefa 100%) !important;min-height:100dvh}
+.auth-morph-page::after{opacity:.28}
+.auth-morph-light-rays{position:absolute !important;inset:0 !important;width:100% !important;height:100% !important;min-height:100dvh !important;z-index:0 !important;pointer-events:none !important;overflow:hidden}
+.auth-morph-header{position:relative;z-index:2;max-width:1020px !important;height:72px !important;gap:20px}
+.auth-morph-header-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.auth-header-control{display:flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:7px 13px;background:#ffffffbd;border:1px solid #d5e5f1;border-radius:24px;color:#2c5776;font-family:'Amiri',serif !important;font-size:17px;font-weight:700;cursor:pointer;box-shadow:0 2px 7px #234a6810;transition:background .2s,border-color .2s,transform .2s}
+.auth-header-control:hover{background:#e9f5fb;border-color:#9fc9df;transform:translateY(-1px)}
+.auth-theme-control svg{color:#267e9e}
+.auth-morph-home{font-size:17px !important;padding-inline-start:8px;white-space:nowrap}
+.auth-morph-card{max-width:990px !important;margin:16px auto 44px !important;min-height:580px !important;box-shadow:0 23px 65px #19426622 !important;position:relative;z-index:1}
+.auth-morph-card.auth-morph-signup{max-width:990px !important;min-height:635px !important}
+.auth-morph-signup .auth-morph-register-content{padding:94px clamp(23px,5vw,61px) 43px !important}
+.auth-morph-signup .auth-morph-register{min-height:635px !important}
+.auth-morph-signup .auth-morph-form-area{min-height:635px !important}
+.auth-morph-register .org-form h2{font-size:clamp(34px,4vw,47px) !important}
+.auth-morph-register .org-eyebrow{font-size:19px !important;margin-bottom:-10px !important}
+.auth-morph-register .org-step-hint,.auth-morph-register .org-site-step .org-muted{font-size:19px !important;line-height:1.85 !important}
+.auth-morph-register .org-steps{margin:5px 0 3px !important;padding:10px 0 19px !important}
+.auth-morph-register .org-steps>div small{font-size:17px !important}
+.auth-morph-register .org-field{font-size:19px !important;gap:8px !important}
+.auth-morph-register .org-field input{min-height:53px !important;font-size:20px !important;border-radius:12px !important}
+.auth-morph-register .org-select-trigger{font-size:20px !important;min-height:53px !important;border-radius:12px !important}
+.auth-morph-register .org-city-heading{font-size:19px !important}
+.auth-morph-register .org-access-heading h3,.auth-morph-register .org-final-review h3{font-size:22px !important}
+.auth-morph-register .org-tech-intro b,.auth-morph-register .org-invite-section-head h3{font-size:20px !important}
+.auth-morph-register .org-tech-intro p,.auth-morph-register .org-invite-section-head p{font-size:17px !important}
+.auth-morph-register .org-add,.auth-morph-register .org-next,.auth-morph-register .org-prev{font-size:19px !important}
+.auth-morph-register .org-tech-add-row p{font-size:16px !important}
+.auth-morph-register .org-invite-summary small{font-size:16px !important}
+.auth-morph-register .org-final-disclosure{font-size:15px !important}
+.auth-morph-login-form h1{font-size:44px !important}
+.auth-morph-subtitle{font-size:20px !important}
+.auth-morph-input input{font-size:19px !important}
+.auth-morph-demo>small,.auth-morph-role b{font-size:17px !important}
+.auth-morph-panel h2{font-size:35px !important}
+.auth-morph-panel p{font-size:19px !important}
+.auth-morph-panel button{font-size:19px !important}
+.auth-morph-page.dark,.dark .auth-morph-page{background:linear-gradient(140deg,#091b30,#102e47 58%,#153c52) !important}
+.dark .auth-morph-card{background:#12293d !important;box-shadow:0 20px 70px #00000050 !important}
+.dark .auth-header-control{background:#163e56;border-color:#32647b;color:#e1eff7}
+.dark .auth-header-control:hover{background:#215470}
+.dark .auth-morph-home{color:#daebf8}
+.dark .auth-morph-register .org-form h2,.dark .auth-morph-register .org-steps>div.current small{color:#e9f4ff !important}
+.dark .auth-morph-register .org-steps>div span{background:#12293d;color:#d7ebfa;box-shadow:0 0 0 6px #12293d;border-color:#4c6e87}
+.dark .auth-morph-register .org-steps>div.current span{background:#24577f;box-shadow:0 0 0 5px #244660,0 0 0 9px #12293d}
+.dark .auth-morph-register .org-steps>div.done span{background:#247e9c}
+.dark .auth-morph-register .org-steps::before{background:#44637b}
+.dark .auth-morph-register .org-field,.dark .auth-morph-register .org-steps>div small,.dark .auth-morph-register .org-step-hint{color:#bfd1e2}
+.dark .auth-morph-register .org-tech-intro,.dark .auth-morph-register .org-city-group{background:#1b3d56}
+.dark .auth-morph-register .org-invite-section-head h3,.dark .auth-morph-register .org-access-heading h3{color:#e1f1fd}
+.dark .auth-morph-register .org-bottom{border-color:#2c536c}
+.dark .auth-morph-register .org-field input{background:#1c3a50 !important;color:#f0faff !important;border-color:#40637e !important}
+.dark .auth-morph-register .org-field input::placeholder{color:#a5bacb}
+.dark .auth-morph-register .org-final-organization{background:#1e4059}
+.dark .auth-signup-back button{color:#e8f7ff}
+@media(max-width:850px){
+ .auth-morph-header{max-width:760px}
+ .auth-morph-card{max-width:760px !important;min-height:770px !important}
+ .auth-morph-card.auth-morph-signup{min-height:660px !important}
+ .auth-morph-signup .auth-morph-register-content{padding:90px 25px 35px !important}
+ .auth-morph-register .org-form h2{font-size:37px !important}
+}
+@media(max-width:560px){
+ .auth-morph-page{padding:8px 12px 35px}
+ .auth-morph-header{height:auto !important;min-height:67px;flex-wrap:wrap;gap:5px;padding:7px 0}
+ .auth-morph-header-actions{gap:6px}
+ .auth-header-control{font-size:15px;padding:7px 9px}
+ .auth-morph-home{font-size:15px !important}
+ .auth-morph-card{min-height:760px !important}
+ .auth-morph-card.auth-morph-signup{min-height:680px !important}
+ .auth-morph-signup .auth-morph-register-content{padding:88px 17px 30px !important}
+ .auth-morph-register .org-steps>div small{font-size:11px !important}
+ .auth-morph-register .org-form h2{font-size:32px !important}
+ .auth-morph-register .org-field{font-size:18px !important}
+ .auth-morph-register .org-field input,.auth-morph-register .org-select-trigger{font-size:18px !important}
+}
