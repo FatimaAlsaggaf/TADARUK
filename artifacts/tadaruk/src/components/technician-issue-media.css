@@ -33,3 +33,51 @@
 .tadaruk-media-demo-frame{width:100%;height:min(69dvh,680px);min-height:380px;background:#0e1929;border:0;display:block}
 .tadaruk-media-dialog:has(.tadaruk-media-demo-frame){width:min(96vw,950px)}
 @media(max-width:650px){.tadaruk-media-demo-frame{height:63dvh;min-height:350px}}
+
+/* Simplified image-first viewer. The original photo stays the source of truth. */
+.tadaruk-photo-mini--clean {gap:10px;}
+.tadaruk-photo-focus-trigger {
+ display:inline-flex;align-items:center;gap:7px;
+ padding:10px 13px;min-height:40px;
+ border-radius:11px;border:1px solid #c7e1e9;
+ background:#eef9fb;color:#1f6078;
+ font-size:13px;font-weight:750;cursor:pointer;
+}
+.tadaruk-photo-focus-trigger:hover {background:#dff4f8;}
+.tadaruk-media-dialog--minimal {
+ width:min(94vw,820px);
+ max-height:90dvh;
+ border-radius:18px;
+}
+.tadaruk-media-dialog--minimal .tadaruk-media-toolbar {
+ padding:12px 16px;gap:8px;
+}
+.tadaruk-media-dialog--minimal .tadaruk-media-toolbar strong {font-size:15px;}
+.tadaruk-media-dialog--minimal .tadaruk-media-actions button {min-width:35px;min-height:36px;}
+.tadaruk-media-dialog--minimal .tadaruk-media-actions .is-active {
+ background:#e4f7f9;border-color:#5baeba;color:#12647a;
+}
+.tadaruk-media-dialog--minimal .tadaruk-media-stage {height:min(65dvh,550px);}
+.tadaruk-media-dialog--minimal .tadaruk-media-stage--perspective {
+ background:radial-gradient(circle at 52% 38%,#e6f2fb,#cbdbe9);
+}
+.tadaruk-media-dialog--minimal .tadaruk-media-stage > img {
+ transition:transform .11s ease-out;
+ transform-style:preserve-3d;
+ max-height:100%;
+}
+.tadaruk-media-dialog--minimal .tadaruk-media-footer {
+ padding:10px 16px;font-size:12px;line-height:1.7;
+}
+.dark .tadaruk-photo-focus-trigger {background:#214358;border-color:#416c7b;color:#c0edf0;}
+.dark .tadaruk-media-dialog--minimal .tadaruk-media-actions .is-active {background:#2d6570;color:#e4fcff;}
+@media(max-width:600px) {
+ .tadaruk-photo-mini--clean {justify-content:center;}
+ .tadaruk-photo-focus-trigger {width:min(100%,340px);justify-content:center;}
+ .tadaruk-media-dialog--minimal {width:100%;max-height:94dvh;}
+ .tadaruk-media-dialog--minimal .tadaruk-media-stage {height:60dvh;}
+ .tadaruk-media-dialog--minimal .tadaruk-media-toolbar {padding:10px;}
+}
+@media(prefers-reduced-motion:reduce) {
+ .tadaruk-media-dialog--minimal .tadaruk-media-stage > img {transition:none !important;}
+}
