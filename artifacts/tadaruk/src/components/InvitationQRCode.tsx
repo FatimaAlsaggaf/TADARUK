@@ -6,7 +6,7 @@ type QRCtor={
     text:string;width:number;height:number;colorDark:string;colorLight:string;
     correctLevel:number
   }):Generator;
-  CorrectLevel:{M:number};
+  CorrectLevel:{M:number;H:number};
 };
 declare global {interface Window {QRCode?:QRCtor}}
 let pending:Promise<boolean>|null=null;
@@ -39,13 +39,20 @@ export default function InvitationQRCode({url,label}:{url:string;label:string}){
       new window.QRCode(element,{
         text:url,width:148,height:148,
         colorDark:'#183c5e',colorLight:'#ffffff',
-        correctLevel:window.QRCode.CorrectLevel.M
+        correctLevel:window.QRCode.CorrectLevel.H
       });
     });
     return()=>{active=false;element.replaceChildren()};
   },[url]);
   return <div className="tadaruk-invite-qr" aria-label={label}>
-    <div ref={holder} className="tadaruk-invite-qr-image" role="img" aria-label={label}/>
+    <div className="tadaruk-invite-qr-light" aria-hidden="true"/>
+    <a href={url} className="tadaruk-invite-qr-link" aria-label={label}
+      title={label}>
+      <div ref={holder} className="tadaruk-invite-qr-image" role="img" aria-label={label}/>
+      <span className="tadaruk-invite-qr-logo" aria-hidden="true">
+        <img src={`${import.meta.env.BASE_URL}brand-mark.png`} alt=""/>
+      </span>
+    </a>
     {!available&&<small>{'تعذر إنشاء الرمز. انسخ رابط الدعوة بدلًا منه.'}</small>}
   </div>;
 }
