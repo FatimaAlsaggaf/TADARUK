@@ -9254,3 +9254,210 @@ body:has(.dark .reporter-shell) #root {
 @media(max-width:640px) {
   .app-shell .action-panel--assignment {padding:14px !important;}
 }
+
+/* Ticket details v4 — compact attachment and readable grouped metadata. */
+.app-shell .detail-properties--labeled {
+  display:flex !important;
+  flex-wrap:wrap;
+  align-items:stretch;
+  gap:9px !important;
+}
+.app-shell .detail-properties--labeled > span {
+  display:flex !important;
+  flex:1 1 155px;
+  max-width:260px;
+  min-width:135px;
+  align-items:flex-start !important;
+  gap:9px !important;
+  min-height:58px !important;
+  padding:10px 12px !important;
+  border-radius:12px !important;
+  white-space:normal !important;
+}
+.app-shell .detail-properties--labeled > span > svg {
+  width:17px !important;height:17px !important;
+  margin-top:4px;flex:none;
+}
+.app-shell .detail-properties--labeled > span > span {
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:3px;
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+.app-shell .detail-properties--labeled small {
+  font-size:12px !important;
+  line-height:1.5;
+  font-weight:550;
+  color:#647b98;
+}
+.app-shell .detail-properties--labeled b {
+  font-size:13.5px !important;
+  line-height:1.6;
+  font-weight:750;
+  color:#1f3363;
+}
+.app-shell .detail-hero > .photo-attachment-card--detail {
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  width:100%;
+  margin-top:17px !important;
+  padding:15px !important;
+  gap:11px !important;
+  border-radius:17px !important;
+  background:#fbfdff;
+}
+.app-shell .detail-hero > .photo-attachment-card--detail .photo-attachment-copy {
+  display:flex !important;
+  align-items:center !important;
+  width:100%;
+  text-align:center !important;
+  gap:3px;
+}
+.app-shell .detail-hero > .photo-attachment-card--detail .photo-attachment-thumbnail {
+  width:min(100%,500px) !important;
+  max-width:500px !important;
+  height:min(32vw,265px) !important;
+  min-height:175px;
+  max-height:265px !important;
+  margin-inline:auto !important;
+  aspect-ratio:auto !important;
+  border-radius:13px;
+  background:#f0f4f9;
+}
+.app-shell .detail-hero > .photo-attachment-card--detail .photo-attachment-thumbnail img {
+  display:block;
+  width:100% !important;
+  height:100% !important;
+  object-fit:contain !important;
+}
+.app-shell .detail-hero > .photo-attachment-card--detail .photo-attachment-state {
+  align-self:center;
+  padding:5px 10px;
+  font-size:11px;
+}
+.app-shell .detail-hero > .photo-attachment-card--detail .photo-attachment-copy strong {
+  font-size:16px !important;
+}
+.app-shell .detail-hero > .photo-attachment-card--detail .photo-attachment-meta {
+  font-size:12px !important;
+  color:#647991;
+}
+.app-shell .compact-timeline-panel {
+  padding:20px !important;
+  border:1px solid #dce7f2 !important;
+  border-radius:19px !important;
+  background:#fff !important;
+}
+.app-shell .compact-timeline-head {
+  margin:0 0 20px !important;
+  padding-bottom:15px !important;
+}
+.app-shell .compact-timeline-title h3 {
+  font-size:19px !important;
+  color:#1f3363;
+}
+.app-shell .compact-timeline-title svg {width:20px !important;height:20px !important;color:#2b83a5 !important;}
+.app-shell .compact-timeline-badge {
+  border-radius:999px !important;
+  background:#ecf4fa;
+  color:#426386;
+  font-size:12px !important;
+  padding:6px 11px !important;
+}
+.app-shell .compact-timeline-list {gap:0 !important;}
+.app-shell .compact-timeline-item--refined {
+  display:flex !important;
+  align-items:stretch !important;
+  position:relative;
+  gap:13px !important;
+  padding-bottom:16px !important;
+}
+.app-shell .compact-timeline-item--refined:last-child {padding-bottom:0 !important;}
+.app-shell .compact-timeline-item--refined:not(:last-child)::before {
+  top:38px !important;
+  bottom:1px !important;
+  inset-inline-start:17px !important;
+  width:2px !important;
+  background:linear-gradient(#a0ccdc,#e0eaf5) !important;
+}
+.app-shell .compact-timeline-event-icon {
+  width:36px;
+  height:36px;
+  flex:0 0 36px;
+  display:grid;
+  place-items:center;
+  position:relative;
+  z-index:1;
+  border-radius:12px;
+  border:1px solid #d2e4f1;
+  background:#f0f7fd;
+  color:#387db5;
+}
+.app-shell .compact-timeline-event-icon.is-assignment {background:#e9f7f7;border-color:#cce9e7;color:#138f9c;}
+.app-shell .compact-timeline-event-icon.is-complete {background:#e8f7ee;border-color:#cce9d7;color:#188158;}
+.app-shell .compact-timeline-event-icon.is-work {background:#eff3ff;border-color:#d8e0f8;color:#426dc2;}
+.app-shell .compact-timeline-content {
+  gap:5px !important;
+  padding:12px 15px !important;
+  margin:0 0 2px !important;
+  border-radius:13px;
+  border:1px solid #e4eaf3;
+  background:#fafcff;
+  min-width:0;
+}
+.app-shell .compact-timeline-item--refined.is-latest .compact-timeline-content {
+  background:linear-gradient(110deg,#f0f8fd,#f5fafc);
+  border-color:#b9dce9;
+}
+.app-shell .compact-timeline-item--refined .compact-timeline-row {
+  align-items:baseline;
+  gap:8px 18px;
+  flex-wrap:wrap;
+}
+.app-shell .compact-timeline-item--refined .compact-timeline-row b {
+  font-size:14.5px !important;
+  color:#1f3363;
+  line-height:1.6;
+}
+.app-shell .compact-timeline-item--refined .compact-timeline-row time {
+  font-size:12px !important;
+  color:#6a8199;
+}
+.app-shell .compact-timeline-item--refined .compact-timeline-content small {
+  font-size:12.5px !important;
+  color:#60788d;
+}
+.app-shell .compact-timeline-item--refined .compact-timeline-note {
+  margin-top:5px !important;
+  padding:9px 11px !important;
+  border-radius:9px !important;
+  border-inline-start:2px solid #68aabd;
+  background:#eef5fa !important;
+  font-size:13px !important;
+  color:#435e77 !important;
+  line-height:1.75;
+}
+.dark .app-shell .detail-properties--labeled b,
+.dark .app-shell .compact-timeline-title h3,
+.dark .app-shell .compact-timeline-item--refined .compact-timeline-row b {color:#e5f3ff;}
+.dark .app-shell .detail-properties--labeled small {color:#b1c6d9;}
+.dark .app-shell .detail-hero > .photo-attachment-card--detail,
+.dark .app-shell .compact-timeline-panel {background:#17293d !important;border-color:#3e5873 !important;}
+.dark .app-shell .compact-timeline-content {background:#20364d !important;border-color:#3c5974 !important;}
+.dark .app-shell .compact-timeline-item--refined.is-latest .compact-timeline-content {background:#233e56 !important;border-color:#5089a2 !important;}
+.dark .app-shell .compact-timeline-badge {background:#29455d;color:#bfd9ef;}
+.dark .app-shell .compact-timeline-item--refined .compact-timeline-note {background:#263f55 !important;color:#cfdeed !important;}
+@media(max-width:620px) {
+  .app-shell .detail-properties--labeled > span {flex:1 1 44%;max-width:none;min-width:0;}
+  .app-shell .detail-hero > .photo-attachment-card--detail .photo-attachment-thumbnail {
+    width:100% !important;height:205px !important;min-height:0 !important;
+  }
+  .app-shell .compact-timeline-panel {padding:14px !important;}
+  .app-shell .compact-timeline-item--refined {gap:9px !important;}
+  .app-shell .compact-timeline-event-icon {width:32px;height:32px;flex-basis:32px;}
+  .app-shell .compact-timeline-item--refined:not(:last-child)::before {inset-inline-start:15px !important;top:33px !important;}
+  .app-shell .compact-timeline-content {padding:11px !important;}
+}
