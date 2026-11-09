@@ -292,3 +292,27 @@
 .org-city-select{direction:rtl !important;text-align:right !important}
 .dark .org-select-content{background:#19354d !important;color:#e2f2fb !important;border-color:#3d6680 !important}
 .dark .org-select-content [role="option"][data-highlighted]{background:#285574 !important;color:#fff !important}
+
+
+/* Four-step organization setup: invitation links and QR without technician forms. */
+.org-invite-share-layout{display:grid;grid-template-columns:minmax(0,1fr) 172px;align-items:center;gap:18px;padding:8px 0}
+.org-simple-invitations .org-invite-section{max-width:100%}
+.org-simple-invitations .org-share-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0}
+.org-later-technicians{align-items:center;display:flex;gap:10px;line-height:1.65}
+.org-later-technicians svg{flex:none}
+.tadaruk-invite-qr{
+  width:166px;min-height:166px;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:5px;padding:9px;border:1px solid #dce9f0;
+  border-radius:15px;background:#fff;box-shadow:0 7px 22px #1b557613;
+  box-sizing:border-box;
+}
+.tadaruk-invite-qr-image{display:grid;place-items:center;width:148px;height:148px;max-width:100%}
+.tadaruk-invite-qr-image img,
+.tadaruk-invite-qr-image canvas{display:block;max-width:100%;height:auto}
+.tadaruk-invite-qr small{color:#42667c;font-size:11px;text-align:center}
+.dark .tadaruk-invite-qr{background:#fff;border-color:#49687d}
+@media(max-width:650px){
+  .org-invite-share-layout{grid-template-columns:1fr;justify-items:center;gap:12px}
+  .org-simple-invitations .org-share-actions{justify-content:center}
+  .org-later-technicians{font-size:12px}
+}
