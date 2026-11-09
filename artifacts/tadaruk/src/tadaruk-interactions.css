@@ -8906,3 +8906,136 @@ body:has(.dark .reporter-shell) #root {
     transform: scale(.94) !important;
   }
 }
+
+/* Ticket detail refresh: single compact overview + timeline (reporter/manager).
+   No duplicate workflow progress above the actual activity history. */
+.app-shell .detail-layout {
+  grid-template-columns: minmax(0,1fr) 250px;
+  gap: 16px;
+  align-items: start;
+}
+.app-shell .detail-main {gap:14px;}
+.app-shell .detail-back {margin-bottom:13px;font-size:13px;}
+.app-shell .detail-hero {
+  padding:clamp(17px,2.2vw,24px) !important;
+  border-radius:18px !important;
+  box-shadow:0 7px 24px rgba(31,51,99,.045);
+}
+.app-shell .detail-tags {
+  gap:9px;
+  flex-wrap:wrap;
+  margin-bottom:8px;
+}
+.app-shell .detail-tags > .status-pill,
+.app-shell .detail-tags > .priority-badge,
+.app-shell .detail-tags > .ticket-number {
+  display:inline-flex !important;
+  justify-content:center;
+  align-items:center;
+  min-height:34px !important;
+  height:34px !important;
+  padding:5px 12px !important;
+  border-radius:999px !important;
+  font-size:13px !important;
+  font-weight:700 !important;
+  line-height:1.2 !important;
+  width:auto !important;
+  max-width:100%;
+  margin:0 !important;
+}
+.app-shell .detail-tags > .status-pill .status-icon {
+  width:19px;height:19px;flex:none;
+}
+.app-shell .detail-tags > .ticket-number {
+  border:1px solid #d8e4f0;
+  background:#f5f8fc;
+  color:#355478;
+}
+.app-shell .detail-hero h1 {
+  margin:11px 0 7px !important;
+  font:700 clamp(25px,3vw,31px)/1.45 'Amiri',serif !important;
+  color:#1f3363;
+}
+.app-shell .detail-description {
+  font-size:15px !important;
+  line-height:1.9 !important;
+  color:#526784;
+  margin:0 !important;
+  max-width:80ch;
+}
+.app-shell .detail-properties {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+  padding-top:14px !important;
+  margin-top:14px !important;
+  border-top:1px solid #e3eaf3;
+}
+.app-shell .detail-properties > span {
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  min-height:35px;
+  padding:6px 10px;
+  border-radius:10px;
+  background:#f7faff;
+  border:1px solid #e5ecf4;
+  color:#425d7c;
+  font-size:13.5px !important;
+  font-weight:600;
+  line-height:1.5;
+}
+.app-shell .detail-properties > span svg {width:16px;height:16px;flex:none;}
+.app-shell .detail-properties > span:nth-child(1) svg {color:#2b70bf;}
+.app-shell .detail-properties > span:nth-child(2) svg {color:#218f9d;}
+.app-shell .detail-properties > span:nth-child(3) svg {color:#168f85;}
+.app-shell .detail-properties > span:nth-child(4) svg {color:#4e78bf;}
+.app-shell .detail-properties > span:nth-child(5) svg {color:#6084af;}
+.app-shell .compact-timeline-panel {
+  padding:17px 20px;
+  border-radius:17px;
+}
+.app-shell .compact-timeline-title h3 {font-size:17px !important;}
+.app-shell .compact-timeline-title svg {color:#278a9e !important;width:18px;height:18px;}
+.app-shell .compact-timeline-badge {font-size:12.5px;padding:5px 9px;}
+.app-shell .compact-timeline-row b {font-size:14px;line-height:1.65;}
+.app-shell .compact-timeline-row time {font-size:12.5px;color:#61748e;}
+.app-shell .compact-timeline-content small {font-size:12.5px;color:#647991;}
+.app-shell .compact-timeline-note {font-size:13.5px !important;line-height:1.75;}
+.app-shell .detail-side {gap:12px;}
+.app-shell .owner-panel,.app-shell .resolution-panel {padding:17px;border-radius:16px;}
+.app-shell .owner-panel h3,.app-shell .resolution-panel h3 {font-size:16px;margin:4px 0 12px;}
+.app-shell .owner-panel .eyebrow,.app-shell .resolution-panel .eyebrow,
+.app-shell .action-panel .eyebrow {font-size:12px !important;letter-spacing:0;}
+.app-shell .person-line {gap:10px;margin:10px 0;}
+.app-shell .person-line small,.app-shell .resolution-panel small {font-size:13px !important;line-height:1.5;}
+.app-shell .person-line b {font-size:14px !important;font-weight:700;}
+.app-shell .resolution-panel p,.app-shell .action-panel p {
+  font-size:13.5px !important;
+  line-height:1.75 !important;
+}
+.app-shell .action-panel {padding:16px;border-radius:16px;gap:10px;}
+.app-shell .action-panel .btn {font-size:13.5px !important;min-height:41px;}
+.app-shell .detail-side .reporter-pending-box p,
+.app-shell .detail-side .reporter-in-progress-box p {font-size:13px !important;line-height:1.75;}
+.dark .app-shell .detail-hero h1 {color:#e9f3ff;}
+.dark .app-shell .detail-description {color:#c0d2e5;}
+.dark .app-shell .detail-tags > .ticket-number,
+.dark .app-shell .detail-properties > span {
+  background:#20364e;color:#dceafa;border-color:#39536d;
+}
+.dark .app-shell .detail-properties {border-color:#39536d;}
+@media(max-width:900px) {
+  .app-shell .detail-layout {grid-template-columns:1fr;}
+  .app-shell .detail-side {grid-row:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}
+  .app-shell .detail-side > .action-panel {grid-column:1/-1;grid-row:1;}
+}
+@media(max-width:580px) {
+  .app-shell .detail-side {display:flex;flex-direction:column;}
+  .app-shell .detail-side > .action-panel {order:-1;}
+  .app-shell .detail-hero {padding:16px !important;}
+  .app-shell .detail-hero h1 {font-size:25px !important;}
+  .app-shell .detail-properties > span {font-size:13px !important;}
+  .app-shell .compact-timeline-row {flex-wrap:wrap;}
+}
