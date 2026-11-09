@@ -155,3 +155,16 @@
 .dark .reporter-shell .reporter-header-controls .technician-menu-theme-label{
   color:#e1ecf6;
 }
+
+@media(max-width:480px){
+  .reporter-shell .reporter-header-controls .technician-header-account-name{display:none !important;}
+  .reporter-shell .reporter-header-controls .technician-header-account-button{
+    min-width:42px;
+    justify-content:center;
+  }
+  .reporter-shell .reporter-mobile-brand .brand-logo{width:93px !important;}
+  .reporter-shell .reporter-header{padding-inline:10px !important;}
+  .app-shell .unified-account-frame .technician-header-account-name{
+    max-width:85px;
+  }
+}
