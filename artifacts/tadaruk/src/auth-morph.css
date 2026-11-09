@@ -857,3 +857,42 @@
     width:44px !important;height:44px !important;
   }
 }
+
+
+/* Keep React Bits DarkVeil visibly behind both auth modes.
+   Earlier overrides blurred and dimmed the WebGL canvas almost completely. */
+.auth-morph-page{background:#eaf4fa !important}
+.auth-veiled-background{
+  position:absolute !important;
+  inset:0 !important;
+  z-index:0 !important;
+  width:100% !important;
+  height:100% !important;
+  min-height:100dvh !important;
+  pointer-events:none !important;
+  overflow:hidden;
+}
+.auth-veiled-background .auth-morph-dark-veil{
+  position:absolute !important;
+  inset:0 !important;
+  width:100% !important;
+  height:100% !important;
+  min-height:100% !important;
+  z-index:0 !important;
+  opacity:1 !important;
+  filter:none !important;
+  transform:none !important;
+  pointer-events:none !important;
+}
+.auth-veiled-background .dark-veil-canvas{
+  display:block !important;
+  width:100% !important;
+  height:100% !important;
+  opacity:1 !important;
+}
+.auth-morph-header{z-index:5 !important;position:relative}
+.auth-morph-card{z-index:2 !important;position:relative}
+.dark .auth-morph-page{background:#0b2032 !important}
+@media(max-width:560px){
+  .auth-veiled-background .auth-morph-dark-veil{filter:none !important;opacity:1 !important}
+}

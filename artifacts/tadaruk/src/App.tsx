@@ -36,6 +36,7 @@ import OrganizationOnboarding from '@/OrganizationOnboarding';
 import OrganizationJoin from './OrganizationJoin';
 import AuthMorph from './AuthMorph';
 import InvitationQRCode from './components/InvitationQRCode';
+import {createInvitationLink} from './invitation-link';
 import { TicketCancellationAction } from '@/components/TicketCancellationAction';
 import { TechnicianTicketDetail } from '@/components/TechnicianTicketDetail';
 import SunMoonThemeToggle from '@/components/ui/sun-moon-theme-toggle';
@@ -657,6 +658,13 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
   const profileMenuRef=useRef<HTMLDivElement>(null);
   const branchContext=useContext(ReporterBranchContext);
   const isReporter=user.role==='reporter';
+  const {data:teamTechnicians,isSuccess:technicianListReady}=useListTechnicians({
+    query:{enabled:user.role==='manager',queryKey:getListTechniciansQueryKey()}
+  });
+  const needsTechnicians=user.role==='manager'&&(
+    (technicianListReady&&Array.isArray(teamTechnicians)&&teamTechnicians.length===0)||
+    (typeof window!=='undefined'&&localStorage.getItem('tadaruk-needs-technician-setup')==='1')
+  );
   const [showNotifications,setShowNotifications]=useState(false);
   const [demoReadIds,setDemoReadIds]=useState<string[]>([]);
   const notificationsRef=useRef<HTMLDivElement>(null);
@@ -1067,6 +1075,10 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
             transition={{duration:reduced?0:.32,ease:[.22,.72,.18,1]}}
           ><Icon size={19}/></motion.span>
           <span>{tr(lang,ar as string,en as string)}</span>
+          {needsTechnicians&&(path as string)==='/workspace/technicians'&&
+            <span className="technicians-setup-dot" role="status"
+              aria-label={tr(lang,'يرجى إضافة أول فني لإسناد المهام','Add your first technician to enable assignments')}
+              title={tr(lang,'أضف أول فني لتفعيل الإسناد','Add your first technician')}/>}
         </Link>;
       })}</nav>
     </aside>
@@ -1701,7 +1713,7 @@ const TECHNICIAN_SPECIALTIES = [
 function TechniciansPage({lang}:{lang:Lang}) {
   const {data:techs,isLoading,isError,refetch}=useListTechnicians();
   const {data:branches}=useListBranches();
-  const safeTechs = Array.isArray(techs) && techs.length > 0 ? techs : (FALLBACK_TECHNICIANS as unknown as Technician[]);
+  const safeTechs = Array.isArray(techs) ? techs : (FALLBACK_TECHNICIANS as unknown as Technician[]);
   const safeBranches = Array.isArray(branches) && branches.length > 0 ? branches : (FALLBACK_BRANCHES as unknown as Branch[]);
   const create=useCreateTechnician();
   const update=useUpdateTechnician();
@@ -1729,9 +1741,7 @@ function TechniciansPage({lang}:{lang:Lang}) {
   const inviteBranch=safeBranches.find(branch=>branch.id===inviteBranchId);
   const inviteSpecialtyValue=inviteSpecialty===TECHNICIAN_OTHER_SPECIALTY?inviteCustomSpecialty.trim():inviteSpecialty;
   const inviteReady=Boolean(inviteBranch&&inviteSpecialtyValue.length>=2);
-  const inviteLink=typeof window==='undefined'?'':window.location.origin+'/join?'+new URLSearchParams({
-    role:'technician',organization:orgName,branch:inviteBranch?.name||'',specialty:inviteSpecialtyValue
-  }).toString();
+  const inviteLink=createInvitationLink('technician',orgName,inviteBranch?.name||'',inviteSpecialtyValue);
   const inviteMessage=tr(lang,'دعوة للانضمام إلى فريق الصيانة في '+orgName+'. افتح الرابط وأكمل بياناتك: '+inviteLink,
     'Join the maintenance team at '+orgName+'. Complete your profile: '+inviteLink);
   const inviteViaWhatsapp=()=>{
@@ -1774,6 +1784,7 @@ function TechniciansPage({lang}:{lang:Lang}) {
     const done=()=>{
       setOpen(false);
       setEdit(null);
+      if(!edit){try{localStorage.removeItem('tadaruk-needs-technician-setup')}catch{}}
       void query.invalidateQueries({queryKey:getListTechniciansQueryKey()});
       void query.invalidateQueries({queryKey:getListBranchesQueryKey()});
       void query.invalidateQueries({queryKey:getGetOverviewQueryKey()});
@@ -1857,7 +1868,7 @@ function BranchesPage({lang}:{lang:Lang}) {
   const {data:branches,isLoading,isError,refetch}=useListBranches();
   const {data:techs}=useListTechnicians();
   const safeBranches = Array.isArray(branches) && branches.length > 0 ? branches : (FALLBACK_BRANCHES as unknown as Branch[]);
-  const safeTechs = Array.isArray(techs) && techs.length > 0 ? techs : (FALLBACK_TECHNICIANS as unknown as Technician[]);
+  const safeTechs = Array.isArray(techs) ? techs : (FALLBACK_TECHNICIANS as unknown as Technician[]);
   const create=useCreateBranch();
   const update=useUpdateBranch();
   const query=useQueryClient();

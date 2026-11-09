@@ -52,10 +52,10 @@ export default function AuthMorph({lang,setLang,dark,setDark}:{lang:Lang;setLang
  ];
  return <main className="auth-morph-page" dir={lang==='ar'?'rtl':'ltr'}>
   <div className="auth-veiled-background" aria-hidden="true">
-    <DarkVeil lightMode={!dark} color={dark?'#4ba7c7':'#367fa6'}
-      speed={0.5} scale={1} flow={1} warp={0} sheen={0.5} glow={0.4}
-      grain={0.02} quality={0.5} mouseInteraction mouseStrength={0.65}
-      fade={0.12} opacity={dark?0.85:0.58} className="auth-morph-dark-veil"/>
+    <DarkVeil lightMode={!dark} color={dark?'#4ba7c7':'#245c82'}
+      speed={0.5} scale={1} flow={1} warp={0} sheen={0.58} glow={0.52}
+      brightness={dark?1.2:1.5} grain={0.02} quality={0.5} mouseInteraction mouseStrength={0.65}
+      fade={0.12} opacity={dark?0.9:0.92} className="auth-morph-dark-veil"/>
   </div>
   <header className="auth-morph-header">
     <div className="nav-actions auth-morph-header-actions">
