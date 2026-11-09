@@ -145,7 +145,7 @@ export function ReporterHomePage({ lang, user }: ReporterPageProps) {
         <span className="rw-home-kicker"><Sparkles size={15}/>{text(lang, 'بلاغات صيانة أسرع وأوضح', 'Smarter maintenance reporting')}</span>
         <h2>{text(lang, 'كل مشكلة لها حل يبدأ ببلاغك', 'Every fix starts with your report')}</h2>
         <p>{text(lang, 'صف المشكلة مرة واحدة، وتابعها حتى تأكيد الإصلاح.', 'Describe the problem once and follow it through to confirmation.')}</p>
-        {waitingCount > 0 && <Link href="/workspace/tickets" className="rw-hero-awaiting" data-testid="link-hero-pending-confirmation">
+        {waitingCount > 0 && <Link href="/workspace/tickets?status=awaiting_confirmation" className="rw-hero-awaiting" data-testid="link-hero-pending-confirmation">
           <ShieldCheck size={17}/>{text(lang, `لديك ${waitingCount} بلاغ بانتظار تأكيد الإصلاح`, `${waitingCount} report(s) need your confirmation`)}
         </Link>}
         <Link href="/workspace/tickets/new" className="rw-button" data-testid="link-start-report">
@@ -167,7 +167,7 @@ export function ReporterHomePage({ lang, user }: ReporterPageProps) {
       </div>
     </div> : <>
       <section className="rw-overview-strip" aria-label={text(lang, 'ملخص بلاغاتي', 'My reports summary')} data-testid="overview-reporter">
-        <Link href="/workspace/tickets" className="rw-stat rw-stat--attention" data-testid="card-confirmation-needed">
+        <Link href="/workspace/tickets?status=awaiting_confirmation" className="rw-stat rw-stat--attention" data-testid="card-confirmation-needed">
           <span className="rw-stat-icon"><ShieldCheck size={21}/></span>
           <span><b data-testid="count-awaiting-confirmation">{waitingCount}</b><small>{text(lang, 'بلاغات تحتاج تأكيدك', 'Needs your confirmation')}</small></span>
           {waitingCount>0 && <span className="rw-stat-indicator" aria-hidden="true"/>}
@@ -190,7 +190,10 @@ export function ReporterHomePage({ lang, user }: ReporterPageProps) {
 
 export function ReporterTicketsPage({ lang, user }: ReporterPageProps) {
   const [search, setSearch] = useState('');
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState(() => {
+    const requested = typeof window === 'undefined' ? '' : new URLSearchParams(window.location.search).get('status') ?? '';
+    return ['new','review','in_progress','awaiting_confirmation','closed','cancelled'].includes(requested) ? requested : '';
+  });
   const params = useMemo(() => ({ search: search.trim() || undefined, status: status || undefined }), [search, status]);
   const { data: tickets, isLoading, isError, refetch } = useListTickets(params);
   const shown = Array.isArray(tickets) ? tickets.filter(ticket => !user || ticket.reporterId === user.id) : [];
