@@ -2062,7 +2062,7 @@
   content: "";
   position: absolute;
   top: 17px;
-  inset-inline-start: calc(50% + 28px);
+  inset-inline-end: calc(50% + 28px);
   width: calc(100% - 56px);
   height: 2px;
   border-radius: 9px;
@@ -2175,7 +2175,7 @@
   .reporter-view .rw-new-report-stepper .stepper__segment { min-height: 69px !important; gap: 7px !important; }
   .reporter-view .rw-new-report-stepper .stepper__badge { width: 32px !important; height: 32px !important; }
   .reporter-view .rw-new-report-stepper .stepper__segment:not(:last-child)::after {
-    top: 16px; inset-inline-start: calc(50% + 23px); width: calc(100% - 46px);
+    top: 16px; inset-inline-end: calc(50% + 23px); width: calc(100% - 46px);
   }
   .reporter-view .rw-new-report-stepper .stepper__title { font-size: 11px !important; }
   .reporter-view .rw-new-report-stepper .rw-report-intro h2 { font-size: 21px !important; }
