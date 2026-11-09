@@ -528,6 +528,14 @@ router.post("/tickets", async (req, res): Promise<void> => {
       res.status(403).json({ error: "This branch is not authorized for the reporter." });
       return;
     }
+    // Uploaded images must be our bounded JPEG data URL, or a known demo asset.
+    if (ticketData.imageUrl &&
+        !(ticketData.imageUrl.startsWith("/demo-photos/") ||
+          (/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(ticketData.imageUrl) &&
+            ticketData.imageUrl.length <= 750_000))) {
+      res.status(400).json({ error: "Invalid or oversized issue photo." });
+      return;
+    }
     const branch = await getBranch(branchId);
     if (!branch?.active) {
       res.status(400).json({ error: "The selected branch is inactive." });
@@ -771,13 +779,24 @@ router.post("/tickets/:ticketId/actions", async (req, res): Promise<void> => {
         cancellationLabel = "ألغى المبلّغ البلاغ قبل بدء العمل";
         cancellationNote ??= "إلغاء من المبلّغ";
       } else if (member.role === "manager") {
-        if (ticket.status === "closed" || ticket.status === "cancelled" || ticket.cancelledAt) {
-          res.status(409).json({ error: "Closed or already-cancelled tickets cannot be cancelled." });
+        // A manager may cancel a pending ticket, but never interrupt work
+        // or cancel an already repaired, confirmation-pending or closed ticket.
+        if (ticket.status !== "new" && ticket.status !== "review") {
+          res.status(409).json({ error: "The ticket is in progress or completed. It must be resolved through the repair workflow, not cancelled." });
           return;
         }
-        cancellationConditions.push(ne(ticketsTable.status, "closed"));
-        cancellationLabel = "ألغى مدير العمليات البلاغ";
-        cancellationNote ??= "إلغاء إداري";
+        const workStarted = await db.select({id:ticketEventsTable.id}).from(ticketEventsTable).where(and(
+          eq(ticketEventsTable.organizationId, DEMO_ORGANIZATION),
+          eq(ticketEventsTable.ticketId, ticket.id),
+          eq(ticketEventsTable.label, "بدأ الفني العمل"),
+        )).limit(1);
+        if (workStarted.length) {
+          res.status(409).json({ error: "This ticket has already had work started and cannot be cancelled." });
+          return;
+        }
+        cancellationConditions.push(inArray(ticketsTable.status, ["new", "review"]));
+        cancellationLabel = "ألغى مدير العمليات البلاغ قبل بدء العمل";
+        cancellationNote ??= "إلغاء إداري قبل بدء الإصلاح";
       } else {
         res.status(403).json({ error: "Technicians cannot cancel tickets." });
         return;
