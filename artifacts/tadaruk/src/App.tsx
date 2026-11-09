@@ -1589,7 +1589,9 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
                       <time dateTime={ev.createdAt}>{new Intl.DateTimeFormat(lang==='ar'?'ar-SA':'en-US',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'}).format(new Date(ev.createdAt))}</time>
                     </div>
                     <small>{ev.actorName}</small>
-                    {ev.note && <p className="compact-timeline-note">{ev.note}</p>}
+                    {ev.note && !['بلاغ صيانة ذكي','بلاغ جديد عبر النظام الذكي','تم اختيار الفني حسب التخصص والتوفر.'].includes(ev.note.trim()) && (
+                      <p className="compact-timeline-note">{ev.note}</p>
+                    )}
                   </div>
                 </div>;
               })
