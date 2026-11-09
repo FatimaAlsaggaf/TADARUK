@@ -1,0 +1,14 @@
+# Emergency preview hosting option, independent of Vercel deployment quotas.
+# Keep the monorepo root as the base directory so pnpm can resolve workspace packages.
+[build]
+  command = "corepack enable && pnpm --filter @workspace/tadaruk run typecheck && pnpm --filter @workspace/tadaruk run build"
+  publish = "artifacts/tadaruk/dist/public"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Client-side routing for /workspace/tickets/:id
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
