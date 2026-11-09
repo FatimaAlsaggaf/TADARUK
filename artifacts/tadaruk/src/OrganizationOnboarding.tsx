@@ -77,7 +77,7 @@ export default function OrganizationOnboarding({lang,mode,embedded=false,onExit}
   {embedded&&mode==='signup'&&<button type="button" className="org-wizard-back-circle" onClick={goBack}
     title={step>0&&!done?tr(lang,'الخطوة السابقة','Previous step'):tr(lang,'العودة لتسجيل الدخول','Back to sign in')}
     aria-label={step>0&&!done?tr(lang,'العودة للخطوة السابقة','Back to previous step'):tr(lang,'العودة لتسجيل الدخول','Back to sign in')}>
-    <ArrowLeft size={22} strokeWidth={2.3} aria-hidden="true"/>
+    {lang==='ar'?<ArrowRight size={22} strokeWidth={2.3} aria-hidden="true"/>:<ArrowLeft size={22} strokeWidth={2.3} aria-hidden="true"/>}
   </button>}
   {!embedded&&<header className="org-top">
     <Link href="/" className="org-brand">تدارك <small>TADARUK</small></Link>
