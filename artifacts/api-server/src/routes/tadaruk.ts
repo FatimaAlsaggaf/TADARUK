@@ -589,6 +589,32 @@ router.post("/tickets", async (req, res): Promise<void> => {
   }
 });
 
+/* Only authorized technicians may inspect 3D availability.
+   A real model-generation service, durable storage, asset checks and visual
+   approval must be connected before returning status: ready.
+   An uploaded photograph is NEVER itself a 3D model. */
+router.get("/tickets/:ticketId/3d", async (req, res): Promise<void> => {
+  try {
+    const member = await requireMember(req, res);
+    if (!member) return;
+    if (member.role !== "technician") {
+      res.status(403).json({ error: "3D exploration is available to assigned technicians only." });
+      return;
+    }
+    const ticket = await getVisibleTicket(member, req.params.ticketId);
+    if (!ticket || ticket.technicianId !== member.id) {
+      res.status(404).json({ error: "Ticket not found or not assigned to this technician." });
+      return;
+    }
+    res.setHeader("Cache-Control", "no-store");
+    // Integration intentionally disabled until actual model generation and
+    // independent GLB + correspondence validation are configured.
+    res.json({ status: "unavailable" });
+  } catch (error) {
+    res.status(500).json({ error: errorMessage(error) });
+  }
+});
+
 router.get("/tickets/:ticketId", async (req, res): Promise<void> => {
   const parsed = GetTicketParams.safeParse(req.params);
   if (!parsed.success) {
