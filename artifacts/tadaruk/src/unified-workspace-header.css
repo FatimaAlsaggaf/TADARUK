@@ -168,3 +168,40 @@
     max-width:85px;
   }
 }
+
+
+/* All roles: bell before account (same visual order as technician/reporter). */
+.app-shell .unified-account-frame .technician-notifications-cluster{
+  order:-1 !important;flex:0 0 auto !important;margin:0 !important;
+}
+.app-shell .unified-account-frame .technician-header-account{
+  order:0 !important;
+}
+
+/* Manager: invite technicians after the organization is registered. */
+.technician-invite-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.technician-invite-modal{display:flex;flex-direction:column;gap:18px;max-width:100%;padding:2px}
+.technician-invite-modal>p:first-child{margin:0;color:#58738a;line-height:1.75;font-size:14px}
+.technician-invite-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.technician-invite-fields>.field-label{min-width:0}
+.technician-invite-fields>.field-label:last-child:nth-child(3){grid-column:1/-1}
+.technician-invite-share{display:flex;align-items:center;gap:22px;justify-content:center;padding:12px;border:1px solid #e1eaf1;border-radius:16px;background:#f8fbfd}
+.technician-invite-share-tools{display:flex;flex-direction:column;gap:10px;min-width:150px}
+.technician-invite-share-button{
+  border:1px solid #b7d2e2;border-radius:11px;background:#fff;color:#235779;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  padding:10px 14px;min-height:43px;font:600 13px 'IBM Plex Sans Arabic',sans-serif;cursor:pointer;
+}
+.technician-invite-share-button:hover{background:#edf5fa}
+.technician-invite-disclaimer,.technician-invite-hint{margin:0;color:#5e7488;font-size:12px;line-height:1.8}
+.dark .technician-invite-modal>p:first-child,.dark .technician-invite-disclaimer,.dark .technician-invite-hint{color:#bdd0df}
+.dark .technician-invite-share{background:#1b3348;border-color:#38556e}
+.dark .technician-invite-share-button{background:#214059;color:#e7f5fb;border-color:#4d708b}
+.dark .technician-invite-share-button:hover{background:#2c5270}
+@media(max-width:650px){
+ .technician-invite-actions{justify-content:flex-start;gap:7px}
+ .technician-invite-fields{grid-template-columns:1fr}
+ .technician-invite-share{flex-direction:column;gap:12px}
+ .technician-invite-share-tools{width:100%;flex-direction:row;min-width:0}
+ .technician-invite-share-button{flex:1;padding:8px;font-size:12px}
+}
