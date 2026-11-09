@@ -12,7 +12,7 @@ import {
   CheckCircle2, ChevronDown, ClipboardList, Clock3, Filter, Languages, LayoutDashboard,
   MapPin, Menu, Phone, Plus, Search, Settings2, ShieldCheck, Users, Wrench, X, CircleAlert,
   LogOut, UserRound, RotateCcw, Repeat2, ChevronLeft, ChevronRight, LoaderCircle, MapPinned,
-  Mic, Square, Bell, SunMoon, ImageOff
+  Mic, Square, Bell, SunMoon, ImageOff, Copy, MessageCircle
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -35,6 +35,7 @@ import ReporterAccessPanel from '@/ReporterAccessPanel';
 import OrganizationOnboarding from '@/OrganizationOnboarding';
 import OrganizationJoin from './OrganizationJoin';
 import AuthMorph from './AuthMorph';
+import InvitationQRCode from './components/InvitationQRCode';
 import { TicketCancellationAction } from '@/components/TicketCancellationAction';
 import { TechnicianTicketDetail } from '@/components/TechnicianTicketDetail';
 import SunMoonThemeToggle from '@/components/ui/sun-moon-theme-toggle';
@@ -460,8 +461,6 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
           :<button key={id} className={`landing-nav-link ${activeSection===id?'is-active':''}`} onClick={()=>goToSection(id)} aria-current={activeSection===id?'location':undefined}>{sectionLabels[index]}</button>)}
       </nav>
       <div className="nav-actions">
-        <Link href="/login" className="landing-account-login">{tr(lang,'تسجيل الدخول','Sign in')}</Link>
-        <Link href="/signup" className="landing-account-signup">{tr(lang,'إنشاء حساب منشأة','Create organization')}</Link>
         <button className="nav-lang" onClick={()=>setLang(lang==='ar'?'en':'ar')} aria-label={tr(lang,'التبديل إلى الإنجليزية','Switch to Arabic')}><Languages size={16}/><span>{lang==='ar'?'English':'العربية'}</span></button>
         <SunMoonThemeToggle
           className="landing-theme-toggle"
