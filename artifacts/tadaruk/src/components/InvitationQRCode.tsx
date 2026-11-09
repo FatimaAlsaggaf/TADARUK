@@ -37,9 +37,9 @@ export default function InvitationQRCode({url,label}:{url:string;label:string}){
       if(!ok||!window.QRCode)return;
       element.replaceChildren();
       new window.QRCode(element,{
-        text:url,width:148,height:148,
+        text:url,width:192,height:192,
         colorDark:'#183c5e',colorLight:'#ffffff',
-        correctLevel:window.QRCode.CorrectLevel.H
+        correctLevel:window.QRCode.CorrectLevel.M
       });
     });
     return()=>{active=false;element.replaceChildren()};
