@@ -492,7 +492,7 @@
   top:25px !important;right:25px !important;
   left:auto !important;bottom:auto !important;
   width:54px !important;height:54px !important;
-  opacity:.16;
+  opacity:1;
   transform:none !important;
 }
 /* A single, always-left back control independent of Arabic/English direction. */
