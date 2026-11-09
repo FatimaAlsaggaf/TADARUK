@@ -1264,10 +1264,12 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
           requireRole(role==="reporter" && userId===current.reporterId && current.status==="awaiting_confirmation","Only the reporting employee may confirm a completed repair.");
           current.status = "closed";
           existingHistory.push({ id:`ev-${Date.now()}`, label:"أكد المبلّغ نجاح الإصلاح", actorName:String(activeUser?.name||current.reporterName), note:"تم تأكيد الإصلاح وإغلاق البلاغ", createdAt:now });
+          notifyMock(current.reporterId,current.id,"closed","تم إغلاق بلاغك",`${current.number} · أُغلق البلاغ بعد تأكيد الإصلاح`);
         } else if (action === "reject") {
           requireRole(role==="reporter" && userId===current.reporterId && current.status==="awaiting_confirmation","Only the reporter can return a repair for rework.");
           current.status="in_progress";
           existingHistory.push({id:`ev-${Date.now()}`,label:"أعاد المبلّغ البلاغ للمتابعة",actorName:String(activeUser?.name||current.reporterName),note:parsedBody?.note||"المشكلة ما زالت قائمة",createdAt:now});
+          notifyMock(current.reporterId,current.id,"reopened","أُعيد البلاغ للمتابعة",`${current.number} · استكمال الإصلاح`);
         } else if (action === "start") {
           requireRole(role==="technician" && userId===current.technicianId && ["new","review"].includes(String(current.status)),"Only the assigned technician may start a pending ticket.");
           current.status="in_progress";
@@ -1279,12 +1281,14 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
           current.status="awaiting_confirmation";
           current.repairNotes=explanation;current.resolution=explanation;current.cause=parsedBody?.cause||null;
           existingHistory.push({id:`ev-${Date.now()}`,label:"أكمل الفني الإصلاح",actorName:String(activeUser?.name||current.technicianName),note:explanation,createdAt:now});
+          notifyMock(current.reporterId,current.id,"confirmation_required","الإصلاح جاهز لتأكيدك",`${current.number} · راجع الإصلاح وأكّد الحل`);
         } else if (action === "cancel") {
           requireRole(role==="manager" || (role==="reporter" && userId===current.reporterId),"Only the reporter or manager may cancel a pending ticket.");
           requireRole(["new","review"].includes(String(current.status)) && !priorWork,"Tickets under repair or already repaired cannot be cancelled.");
           if (role==="reporter") requireRole(current.status==="new","Reporter may cancel only a new ticket.");
           current.status="cancelled";current.cancelledAt=now;current.cancelledBy=userId;
           existingHistory.push({id:`ev-${Date.now()}`,label:role==="manager"?"ألغى مدير العمليات البلاغ قبل بدء العمل":"ألغى المبلّغ البلاغ قبل بدء العمل",actorName:String(activeUser?.name||"غير معروف"),note:parsedBody?.note||"أُلغي قبل بدء الصيانة",createdAt:now});
+          if(role==="manager")notifyMock(current.reporterId,current.id,"cancelled","تم إلغاء بلاغك",`${current.number} · أُلغي قبل بدء العمل`);
         } else if (action === "reassign") {
           requireRole(role==="manager" && !["closed","cancelled"].includes(String(current.status)),"Only a manager can reassign an active ticket.");
           const techs = getStoredTechnicians();
