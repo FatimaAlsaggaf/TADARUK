@@ -2778,3 +2778,18 @@
 .dark .reporter-view .rw-edit-container .rw-edit-icon--priority { color: #ffba72; }
 .dark .reporter-view .rw-edit-container .rw-edit-icon--specialty { color: #70d9d4; }
 .dark .reporter-view .rw-edit-container .rw-edit-icon--location { color: #94c9e7; }
+
+/* Review ticket: slight differentiated icon colors rather than all-blue glyphs. */
+.reporter-view .rw-review-facts--reference .rw-review-fact:nth-child(1) svg {color:#286fc3 !important;}
+.reporter-view .rw-review-facts--reference .rw-review-fact:nth-child(2) svg {color:#238d9b !important;}
+.reporter-view .rw-review-facts--reference .rw-review-fact:nth-child(3) svg {color:#4d79c7 !important;}
+.reporter-view .rw-review-facts--reference .rw-review-fact:nth-child(4) svg {color:#168e84 !important;}
+.reporter-view .rw-review-facts--reference .rw-review-fact:nth-child(5) svg {color:#dc8b30 !important;}
+.reporter-view .rw-review-description-card h4 svg {color:#3586b8 !important;}
+.reporter-view .rw-review-ai-label svg {color:#168dbe !important;}
+.reporter-view .rw-review-attachment-label svg {color:#2873bd !important;}
+.dark .reporter-view .rw-review-facts--reference .rw-review-fact:nth-child(1) svg {color:#88b5ff !important;}
+.dark .reporter-view .rw-review-facts--reference .rw-review-fact:nth-child(2) svg {color:#78d0d7 !important;}
+.dark .reporter-view .rw-review-facts--reference .rw-review-fact:nth-child(3) svg {color:#a1baff !important;}
+.dark .reporter-view .rw-review-facts--reference .rw-review-fact:nth-child(4) svg {color:#6cddd1 !important;}
+.dark .reporter-view .rw-review-facts--reference .rw-review-fact:nth-child(5) svg {color:#ffc07e !important;}
