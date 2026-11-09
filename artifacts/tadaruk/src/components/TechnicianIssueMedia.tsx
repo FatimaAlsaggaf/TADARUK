@@ -1,99 +1,63 @@
 import { createElement, useEffect, useRef, useState, type PointerEvent, type WheelEvent } from 'react';
-import { Box, Camera, Maximize2, Move, X } from 'lucide-react';
+import { Box, Camera, Maximize2, Minus, Plus, RotateCcw, X } from 'lucide-react';
 import './technician-issue-media.css';
-
 type Lang = 'ar' | 'en';
-type ModelStatus = {status:'unavailable'|'queued'|'running'|'failed'|'ready';modelUrl?:string;validated?:boolean;approved?:boolean;hotspot?:{label:string;position:string}};
+type ModelStatus = {status:'unavailable'|'queued'|'running'|'failed'|'ready';modelUrl?:string;validated?:boolean;approved?:boolean};
 const tr=(lang:Lang,ar:string,en:string)=>lang==='ar'?ar:en;
-
-// No public third-party model URL is assumed safe. The backend must return a
-// reviewed, stored GLB from our own origin. Temporary provider URLs are unsuitable.
 function isValidModel(status:ModelStatus|null):status is ModelStatus & {modelUrl:string}{
-  if(!status||status.status!=='ready'||status.validated!==true||status.approved!==true||!status.modelUrl)return false;
-  try{
-    const url=new URL(status.modelUrl,window.location.origin);
-    return url.origin===window.location.origin && url.pathname.startsWith('/api/3d-assets/') && /\.glb$/i.test(url.pathname);
+  if(!status||status.status!=='ready'||!status.validated||!status.approved||!status.modelUrl)return false;
+  try{const url=new URL(status.modelUrl,window.location.origin);
+    return url.origin===window.location.origin&&url.pathname.startsWith('/api/3d-assets/')&&/\.glb$/i.test(url.pathname);
   }catch{return false;}
 }
-let modelViewerScript:Promise<void>|undefined;
-function loadRealModelViewer():Promise<void>{
+let loader:Promise<void>|undefined;
+function loadViewer(){
   if(customElements.get('model-viewer'))return Promise.resolve();
-  modelViewerScript??=new Promise((resolve,reject)=>{
-    const script=document.createElement('script');
-    script.type='module';
+  loader??=new Promise<void>((resolve,reject)=>{
+    const script=document.createElement('script');script.type='module';
     script.src='https://ajax.googleapis.com/ajax/libs/model-viewer/4.4.0/model-viewer.min.js';
-    script.onload=()=>resolve();
-    script.onerror=()=>reject(new Error('Unable to load the 3D viewer'));
+    script.onload=()=>resolve();script.onerror=()=>reject(new Error('model-viewer unavailable'));
     document.head.appendChild(script);
   });
-  return modelViewerScript;
+  return loader;
 }
-
-export default function TechnicianIssueMedia({ticketId,imageUrl,lang}:{ticketId:string;imageUrl:string;lang:Lang}){
+export default function TechnicianIssueMedia({ticketId,imageUrl,lang,approximateSink=false}:{
+  ticketId:string;imageUrl:string;lang:Lang;approximateSink?:boolean
+}){
   const [open,setOpen]=useState(false);
-  const [mode,setMode]=useState<'photo'|'perspective'|'model'>('photo');
+  const [mode,setMode]=useState<'photo'|'approx'|'model'>('photo');
   const [zoom,setZoom]=useState(1);
   const [offset,setOffset]=useState({x:0,y:0});
-  const [tilt,setTilt]=useState({x:0,y:0});
-  const [reduceMotion,setReduceMotion]=useState(false);
   const [model,setModel]=useState<ModelStatus|null>(null);
-  const [viewerLoaded,setViewerLoaded]=useState(false);
   const [viewerFailed,setViewerFailed]=useState(false);
   const drag=useRef<{x:number;y:number;ox:number;oy:number}|null>(null);
   const fullscreenRef=useRef<HTMLDivElement|null>(null);
-  const modelRef=useRef<HTMLElement|null>(null);
+  const viewer=useRef<HTMLElement|null>(null);
   useEffect(()=>{
-    const media=window.matchMedia('(prefers-reduced-motion: reduce)');
-    const update=()=>setReduceMotion(media.matches);
-    update();media.addEventListener?.('change',update);
-    return()=>media.removeEventListener?.('change',update);
-  },[]);
-
-
-  useEffect(()=>{
-    let active=true;
-    setModel(null);
+    let alive=true;
     fetch(`/api/tickets/${encodeURIComponent(ticketId)}/3d`,{credentials:'same-origin',headers:{Accept:'application/json'}})
-      .then(async r=>{
-        if(!r.ok || !r.headers.get('content-type')?.includes('application/json'))return null;
-        return r.json() as Promise<ModelStatus>;
-      })
-      .then(data=>{if(active)setModel(data);})
-      .catch(()=>{if(active)setModel(null);});
-    return()=>{active=false;};
+      .then(async res=>res.ok&&res.headers.get('content-type')?.includes('application/json')?res.json() as Promise<ModelStatus>:null)
+      .then(m=>{if(alive)setModel(m)}).catch(()=>{if(alive)setModel(null)});
+    return()=>{alive=false};
   },[ticketId]);
+  const hasModel=isValidModel(model)&&!viewerFailed;
+  const showApprox=approximateSink||ticketId==='ticket-demo-2401';
+  const reset=()=>{setZoom(1);setOffset({x:0,y:0})};
+  const close=()=>{setOpen(false);setMode('photo');reset()};
+  const openMode=(next:'photo'|'approx'|'model')=>{reset();setMode(next);setOpen(true)};
   useEffect(()=>{
     if(!open)return;
-    const onKey=(event:KeyboardEvent)=>{if(event.key==='Escape'){setOpen(false);setMode('photo');}};
+    const onKey=(e:KeyboardEvent)=>{if(e.key==='Escape')close()};
     window.addEventListener('keydown',onKey);
     return()=>window.removeEventListener('keydown',onKey);
   },[open]);
   useEffect(()=>{
-    if(!open||mode!=='model'||!isValidModel(model))return;
-    let live=true;
-    setViewerLoaded(false);
-    setViewerFailed(false);
-    loadRealModelViewer()
-      .then(()=>{
-        if(!live)return;
-        const el=modelRef.current;
-        if(!el)return;
-        const done=()=>{if(live)setViewerLoaded(true);};
-        const fail=()=>{if(live){setViewerFailed(true);setMode('photo');}};
-        el.addEventListener('load',done);
-        el.addEventListener('error',fail);
-        if((el as HTMLElement & {loaded?:boolean}).loaded)done();
-        cleanup=()=>{el.removeEventListener('load',done);el.removeEventListener('error',fail);};
-      }).catch(()=>{if(live){setViewerFailed(true);setMode('photo');}});
-    let cleanup=()=>{};
-    return()=>{live=false;cleanup();};
-  },[open,mode,model]);
-
-  const hasModel=isValidModel(model)&&!viewerFailed;
-  const reset=()=>{setZoom(1);setOffset({x:0,y:0});setTilt({x:0,y:0});};
-  const changeZoom=(n:number)=>setZoom(Math.min(5,Math.max(1,n)));
-  const moveStart=(e:PointerEvent<HTMLDivElement>)=>{
-    if(mode==='model'||zoom===1)return;
+    if(!open||mode!=='model'||!hasModel)return;
+    let alive=true;loadViewer().catch(()=>{if(alive){setViewerFailed(true);setMode('photo')}});
+    return()=>{alive=false};
+  },[open,mode,hasModel]);
+  const start=(e:PointerEvent<HTMLDivElement>)=>{
+    if(mode!=='photo'||zoom===1)return;
     drag.current={x:e.clientX,y:e.clientY,ox:offset.x,oy:offset.y};
     e.currentTarget.setPointerCapture(e.pointerId);
   };
@@ -101,92 +65,80 @@ export default function TechnicianIssueMedia({ticketId,imageUrl,lang}:{ticketId:
     if(!drag.current)return;
     setOffset({x:drag.current.ox+e.clientX-drag.current.x,y:drag.current.oy+e.clientY-drag.current.y});
   };
-  const moveEnd=()=>{drag.current=null;};
-  const wheel=(e:WheelEvent<HTMLDivElement>)=>{if(mode!=='model')changeZoom(zoom+(e.deltaY<0?.2:-.2));};
-  const perspectiveMove=(e:PointerEvent<HTMLDivElement>)=>{
-    if(mode!=='perspective'||reduceMotion||drag.current||e.pointerType==='touch')return;
-    const rect=e.currentTarget.getBoundingClientRect();
-    setTilt({
-      x:Math.max(-1,Math.min(1,((e.clientX-rect.left)/rect.width-.5)*2)),
-      y:Math.max(-1,Math.min(1,((e.clientY-rect.top)/rect.height-.5)*2)),
-    });
-  };
-  const toggleFullscreen=()=>{
-    const el=fullscreenRef.current;
-    if(!el)return;
+  const zoomTo=(amount:number)=>setZoom(z=>Math.max(1,Math.min(5,z+amount)));
+  const fullscreen=()=>{
     if(document.fullscreenElement)void document.exitFullscreen?.();
-    else void el.requestFullscreen?.();
+    else if(fullscreenRef.current)void fullscreenRef.current.requestFullscreen?.();
   };
-  const close=()=>{setOpen(false);setMode('photo');reset();};
   return <>
     <div className="tadaruk-photo-mini tadaruk-photo-mini--clean">
       <div className="tadaruk-photo-surface">
-        <button className="tadaruk-photo-mini-image" onClick={()=>{reset();setMode('photo');setOpen(true);}}
-          type="button" aria-label={tr(lang,'استعراض صورة العطل الأصلية','View original issue photo')}>
+        <button className="tadaruk-photo-mini-image" type="button"
+          onClick={()=>openMode('photo')} aria-label={tr(lang,'عرض صورة العطل','View issue photo')}>
           <img src={imageUrl} alt={tr(lang,'صورة العطل الأصلية','Original issue photo')}/>
         </button>
         <div className="tadaruk-photo-overlay-actions">
-          <button type="button" className="tadaruk-photo-focus-trigger" data-testid="button-photo-perspective"
-            onClick={()=>{reset();setMode(reduceMotion?'photo':'perspective');setOpen(true);}}>
-            <Move size={15}/>{tr(lang,'عرض تقريبي بعمق','Approximate depth view')}
-          </button>
-          {hasModel&&<button className="tadaruk-photo-model-button" type="button"
-            onClick={()=>{reset();setMode('model');setOpen(true);}}>
-            <Box size={16}/>{tr(lang,'عرض 3D','View 3D')}
+          {showApprox&&<button className="tadaruk-photo-focus-trigger" type="button"
+            onClick={()=>openMode('approx')} data-testid="button-approximate-3d">
+            <Box size={15}/>{tr(lang,'عرض 3D تقريبي','Approximate 3D')}
           </button>}
+          {hasModel&&<button className="tadaruk-photo-model-button" type="button"
+            onClick={()=>openMode('model')}><Box size={15}/>{tr(lang,'3D معتمد','Verified 3D')}</button>}
+          {!showApprox&&!hasModel&&<button className="tadaruk-photo-focus-trigger" type="button"
+            onClick={()=>openMode('photo')}><Maximize2 size={15}/>{tr(lang,'عرض الصورة','View photo')}</button>}
         </div>
       </div>
     </div>
-    {open&&<div className="tadaruk-media-backdrop" onClick={close} role="presentation">
-      <div ref={fullscreenRef} className="tadaruk-media-dialog tadaruk-media-dialog--minimal"
-        onClick={e=>e.stopPropagation()} role="dialog" aria-modal="true"
-        aria-label={tr(lang,'استعراض صورة العطل','Issue image viewer')}>
-        <div className="tadaruk-media-toolbar">
-          <strong><Camera size={17}/>{mode==='model'?tr(lang,'نموذج ثلاثي الأبعاد','3D model'):tr(lang,'صورة العطل','Issue photo')}</strong>
+    {open&&<div className="tadaruk-media-backdrop" role="presentation" onClick={close}>
+      <div className="tadaruk-media-dialog tadaruk-media-dialog--minimal tadaruk-media-dialog--tabs"
+        ref={fullscreenRef} onClick={e=>e.stopPropagation()} role="dialog"
+        aria-modal="true" aria-label={tr(lang,'عرض صورة البلاغ','Ticket media viewer')}>
+        <header className="tadaruk-media-toolbar">
+          <strong>{tr(lang,'تفاصيل العطل','Issue details')}</strong>
           <div className="tadaruk-media-actions">
-            {hasModel && mode==='model'&&<button type="button" onClick={()=>{setMode('photo');reset();}}>
-              <Camera size={16}/>{tr(lang,'الصورة الأصلية','Original photo')}
-            </button>}
-            {mode==='perspective'&&<button type="button"
-              onClick={()=>{setMode('photo');reset();}}>
-              <Camera size={16}/>{tr(lang,'الأصلية','Original')}
-            </button>}
-            <button type="button" onClick={toggleFullscreen} aria-label={tr(lang,'ملء الشاشة','Fullscreen')}>
-              <Maximize2 size={17}/>
-            </button>
-            <button type="button" onClick={close} aria-label={tr(lang,'إغلاق','Close')}><X size={19}/></button>
+            <button type="button" onClick={fullscreen} aria-label={tr(lang,'ملء الشاشة','Fullscreen')} title={tr(lang,'ملء الشاشة','Fullscreen')}><Maximize2 size={17}/></button>
+            <button type="button" onClick={close} aria-label={tr(lang,'إغلاق','Close')}><X size={20}/></button>
           </div>
+        </header>
+        <div className="tadaruk-media-mode-tabs" role="tablist" aria-label={tr(lang,'طرق عرض البلاغ','Issue views')}>
+          <button role="tab" aria-selected={mode==='photo'} className={mode==='photo'?'active':''}
+            onClick={()=>{reset();setMode('photo')}} type="button"><Camera size={16}/>{tr(lang,'الصورة الأصلية','Original photo')}</button>
+          {showApprox&&<button role="tab" aria-selected={mode==='approx'} className={mode==='approx'?'active':''}
+            onClick={()=>setMode('approx')} type="button"><Box size={16}/>{tr(lang,'3D تقريبي','Approximate 3D')}</button>}
+          {hasModel&&<button role="tab" aria-selected={mode==='model'} className={mode==='model'?'active':''}
+            onClick={()=>setMode('model')} type="button"><Box size={16}/>{tr(lang,'3D معتمد','Verified 3D')}</button>}
         </div>
-        {mode==='model' ?
+        {mode==='approx' && showApprox ?
+          <div className="tadaruk-approx-scene">
+            <iframe className="tadaruk-approx-frame" src="/approximate-sink-3d.html"
+              title={tr(lang,'مجسم تقريبي للمغسلة قابل للدوران','Rotatable illustrative 3D sink')}
+              sandbox="allow-scripts" loading="eager"/>
+          </div> :
+          mode==='model'&&hasModel&&model ?
           <div className="tadaruk-media-stage tadaruk-media-stage--model">
-            {!viewerLoaded&&!viewerFailed&&<span className="tadaruk-media-loading" role="status">{tr(lang,'جارٍ تحميل النموذج...','Loading model...')}</span>}
-            {hasModel&&model&&createElement('model-viewer',{
-              ref:modelRef,src:model.modelUrl,
-              alt:tr(lang,'نموذج ثلاثي الأبعاد معتمد للبلاغ','Verified 3D ticket model'),
-              'camera-controls':'','shadow-intensity':'1',exposure:'1.1',
-              'touch-action':'pan-y',style:{width:'100%',height:'100%',minHeight:'320px'}
-            })}
-            {viewerLoaded&&model?.hotspot?.label&&<span className="tadaruk-media-hotspot">{model.hotspot.label}</span>}
-          </div>
-          : <div className={`tadaruk-media-stage ${mode==='perspective'?'tadaruk-media-stage--perspective':''}`}
-            onPointerDown={moveStart} onPointerMove={e=>{move(e);perspectiveMove(e);}}
-            onPointerUp={moveEnd} onPointerCancel={moveEnd}
-            onPointerLeave={()=>setTilt({x:0,y:0})} onWheel={wheel}
-            style={{cursor:zoom>1?'grab':'zoom-in'}}>
-            <img draggable={false} src={imageUrl}
-              alt={tr(lang,'صورة العطل الأصلية غير المعدلة','Unaltered original issue photo')}
-              onDoubleClick={()=>{changeZoom(zoom===1?2:1);setOffset({x:0,y:0});}}
-              style={{transform:mode==='perspective' && !reduceMotion
-                ?`perspective(1100px) rotateY(${tilt.x*5}deg) rotateX(${-tilt.y*5}deg) translate(${offset.x}px,${offset.y}px) scale(${zoom*1.025})`
-                :`translate(${offset.x}px,${offset.y}px) scale(${zoom})`}}/>
+            {createElement('model-viewer',{ref:viewer,src:model.modelUrl,
+              alt:tr(lang,'نموذج ثلاثي الأبعاد معتمد','Verified 3D issue model'),
+              'camera-controls':'','shadow-intensity':'1',style:{width:'100%',height:'100%'}})}
+          </div> :
+          <div className="tadaruk-photo-stage-wrap">
+            <div className="tadaruk-media-stage" onPointerDown={start}
+              onPointerMove={move} onPointerUp={()=>drag.current=null}
+              onPointerCancel={()=>drag.current=null}
+              onWheel={(e:WheelEvent<HTMLDivElement>)=>zoomTo(e.deltaY<0?.2:-.2)}
+              style={{cursor:zoom>1?'grab':'zoom-in'}}>
+              <img src={imageUrl} draggable={false} alt={tr(lang,'الصورة الأصلية','Original photo')}
+                onDoubleClick={()=>{if(zoom>1)reset();else zoomTo(1)}}
+                style={{transform:`translate(${offset.x}px,${offset.y}px) scale(${zoom})`}}/>
+            </div>
+            <div className="tadaruk-photo-zoom-controls">
+              <button type="button" aria-label={tr(lang,'تكبير','Zoom in')} onClick={()=>zoomTo(.5)}><Plus size={17}/></button>
+              <button type="button" aria-label={tr(lang,'تصغير','Zoom out')} onClick={()=>{zoomTo(-.5);if(zoom<=1.5)setOffset({x:0,y:0})}}><Minus size={17}/></button>
+              <button type="button" aria-label={tr(lang,'إرجاع الصورة','Reset image')} onClick={reset}><RotateCcw size={17}/></button>
+            </div>
           </div>}
-        <div className="tadaruk-media-footer">
-          {mode==='model'
-            ?tr(lang,'قد يحتوي النموذج على تفاصيل تقديرية؛ تأكد من صورة البلاغ قبل الصيانة.','The model may be approximate; verify against the report photo.')
-            :mode==='perspective'
-              ?tr(lang,'تأثير عمق تقريبي على الصورة الأصلية، لا يكشف تفاصيل مخفية.','Approximate depth effect on the original photo; no hidden details are revealed.')
-              :tr(lang,'الصورة الأصلية كما رفعها المبلّغ.','Original photo from the reporter.')}
-        </div>
+        {mode==='approx'&&<p className="tadaruk-approx-disclaimer">
+          {tr(lang,'مجسم توضيحي تقريبي لمشهد التسريب، وليس إعادة بناء دقيقة من الصورة. اسحب لتدويره.','Illustrative sink scene, not an exact reconstruction from the photo. Drag to rotate.')}
+        </p>}
       </div>
     </div>}
   </>;
