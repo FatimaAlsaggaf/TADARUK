@@ -1,6 +1,7 @@
 import {useState,type FormEvent} from 'react';
 import {Link,useLocation} from 'wouter';
 import {ArrowLeft,ArrowRight,Building2,Check,CheckCircle2,ChevronLeft,ChevronDown,ClipboardList,Copy,Eye,EyeOff,Mail,MapPin,Plus,ShieldCheck,UserRound,Users,Wrench,X,MessageCircle,Send,Smartphone,LogIn} from 'lucide-react';
+import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from '@/components/ui/select';
 import './organization-onboarding.css';
 
 type Lang='ar'|'en';
@@ -9,7 +10,7 @@ type Member={id:number;name:string;email:string;phone:string;role:Role;specialty
 type Site={id:number;city:string;name:string};
 const tr=(lang:Lang,ar:string,en:string)=>lang==='ar'?ar:en;
 const specialties=[['plumbing','سباكة ومياه','Plumbing'],['electrical','كهرباء وإنارة','Electrical'],['cooling','تكييف وتبريد','Cooling'],['general','صيانة عامة','General maintenance'],['civil','أعمال مدنية','Civil']];
-const branches=(lang:Lang)=>[tr(lang,'المنشأة','Organization'),tr(lang,'المسؤول','Owner'),tr(lang,'الفرع','Branch'),tr(lang,'الصلاحيات','Access'),tr(lang,'الدعوات','Invites')];
+const branches=(lang:Lang)=>[tr(lang,'المنشأة','Organization'),tr(lang,'المدير','Manager'),tr(lang,'الفروع','Branches'),tr(lang,'الفنيون','Technicians'),tr(lang,'الدعوات','Invitations')];
 export default function OrganizationOnboarding({lang,mode,embedded=false}:{lang:Lang;mode:'signup'|'login';embedded?:boolean}){
  const [,go]=useLocation();
  const [step,setStep]=useState(0);
@@ -24,6 +25,7 @@ export default function OrganizationOnboarding({lang,mode,embedded=false}:{lang:
  const [newCity,setNewCity]=useState('');
  const [otherSector,setOtherSector]=useState('');
  const [otherCity,setOtherCity]=useState('');
+ const [otherSpecialty,setOtherSpecialty]=useState('');
  const [newBranch,setNewBranch]=useState('');
  const [switching,setSwitching]=useState(false);
  const [reportersByInvite,setReportersByInvite]=useState(true);
@@ -37,7 +39,8 @@ export default function OrganizationOnboarding({lang,mode,embedded=false}:{lang:
    if(sites.some(x=>x.city===city&&x.name===newBranch.trim())){setError(tr(lang,'هذا الفرع مضاف بالفعل.','This branch already exists.'));return;}
    setSites(old=>[...old,{id:Date.now()+old.length,city,name:newBranch.trim()}]);setNewBranch('');setError('');
  };
- const siteNames=sites.map(s=>s.name);
+ const specialtyLabel=(value:string)=>specialties.find(([id])=>id===value)?.[lang==='ar'?1:2]||value;
+ const branchLabel=(s:Site)=>`${s.name} · ${s.city}`;
  const normalizedPhone=(phone:string)=>phone.replace(/[^\d]/g,'').replace(/^0(?=5\d{8}$)/,'966');
  const inviteUrl=(role:Role,record?:Member)=>{
    const params=new URLSearchParams({role,organization:data.organization,branch:record?.branch||'',name:record?.name||'',specialty:record?.specialty||''});
@@ -53,24 +56,28 @@ export default function OrganizationOnboarding({lang,mode,embedded=false}:{lang:
  const inviteText=tr(lang,`انضم إلى فريق ${data.organization||'المنشأة'} على تدارك. الفرع: ${data.branch||'الفرع'}. افتح رابط تسجيل الدخول: ${entryUrl} (رابط تعريفي - دعوات الحسابات غير مفعلة بعد).`,`Join ${data.organization||'our organization'} on Tadaruk. Branch: ${data.branch||'branch'}. Sign in: ${entryUrl} (Invitation activation is not yet connected).`);
  const copy=()=>{if(navigator.clipboard){void navigator.clipboard.writeText(inviteText).then(()=>setCopied(true)).catch(()=>setCopied(false))}};
  const addMember=()=>{
-   if(!member.name.trim()||(!member.phone.trim()&&!member.email.trim())||(member.email.trim()&&!/^\S+@\S+\.\S+$/.test(member.email))){
-    setError(tr(lang,'أدخل الاسم ورقم الجوال أو البريد الإلكتروني.','Enter a name and phone or email.'));return;
-   }
-   if(member.email.trim()&&members.some(x=>x.email.toLowerCase()===member.email.trim().toLowerCase())){
-     setError(tr(lang,'هذا البريد مضاف مسبقًا.','This email is already added.'));return;
-   }
-   setMembers(old=>[...old,{...member,id:Date.now()+old.length,name:member.name.trim(),email:member.email.trim(),branch:member.branch||sites[0]?.name||data.branch,status:'pending'}]);
-   setMember({name:'',email:'',phone:'',role:'technician',specialty:'plumbing',branch:''});setError('');
+   const fullName=member.name.trim();
+   const phone=member.phone.trim();
+   const specialty=member.specialty==='other'?otherSpecialty.trim():member.specialty;
+   const branch=member.branch|| (sites[0]?branchLabel(sites[0]):'');
+   if(!fullName||!phone||!specialty||!branch){setError(tr(lang,'أدخل اسم الفني ورقم جواله وتخصصه وفرعه.','Enter technician name, phone, specialty and branch.'));return;}
+   if(!/^[+\\d()\\s-]{8,20}$/.test(phone)){setError(tr(lang,'تحقق من رقم الجوال.','Check the phone number.'));return;}
+   if(members.some(x=>x.phone.replace(/\\D/g,'')===phone.replace(/\\D/g,''))){setError(tr(lang,'رقم الجوال مضاف لفني آخر.','A technician with this phone number already exists.'));return;}
+   setMembers(old=>[...old,{id:Date.now()+old.length,name:fullName,email:'',phone,role:'technician',specialty,branch,status:'pending'}]);
+   setMember({name:'',email:'',phone:'',role:'technician',specialty:'plumbing',branch:''});
+   setOtherSpecialty('');setError('');
  };
  const next=(event:FormEvent<HTMLFormElement>)=>{
    event.preventDefault();setError('');
+   if(step===0&&!data.sector){setError(tr(lang,'اختر نوع المنشأة.','Choose the organization type.'));return;}
    if(step===0&&data.sector==='other'&&!otherSector.trim()){setError(tr(lang,'اكتب نوع المنشأة.','Enter the organization type.'));return;}
    if(step===1&&data.password.length<8){setError(tr(lang,'كلمة المرور لا تقل عن 8 أحرف.','Use at least 8 characters.'));return;}
    if(step===2&&sites.length===0){setError(tr(lang,'أضف فرعًا واحدًا على الأقل للمتابعة.','Add at least one branch to continue.'));return;}
+   if(step===3&&(member.name.trim()||member.phone.trim())){setError(tr(lang,'اضغط إضافة الفني قبل الانتقال، أو امسح الحقول للمتابعة دون إضافة.','Add the technician before continuing, or clear the fields to skip.'));return;}
    if(step===4){
      const snapshot={organization:data.organization,sector:data.sector==='other'?otherSector:data.sector,city:data.city,owner:data.owner,email:data.email,
        branch:data.branch,branchCity:data.branchCity,departments:data.departments,
-       sites,members,reportersByInvite};
+       sites,members,reportersByInvite:true};
      try{localStorage.setItem('tadaruk-organization-preview',JSON.stringify(snapshot))}catch{}
      setDone(true);
    }else setStep(s=>s+1);
@@ -118,17 +125,17 @@ export default function OrganizationOnboarding({lang,mode,embedded=false}:{lang:
       </form>:done?<div className="org-success">
         <span className="org-success-mark"><CheckCircle2 size={36}/></span>
         <h2>{tr(lang,'اكتمل إعداد المنشأة','Organization setup complete')}</h2>
-        <p>{tr(lang,'تم تجهيز بيانات المنشأة والصلاحيات في هذه المعاينة. الدعوات محفوظة كمخطط، ولم تُرسل رسائل فعلية إلى الأعضاء.','Your setup and access plan are ready in this preview. No real invitations have been sent.')}</p>
-        <div className="org-review"><b>{data.organization}</b><span>{data.branch}</span><span>{members.length} {tr(lang,'أعضاء تمت إضافتهم','team members added')}</span></div>
+        <p>{tr(lang,'اكتمل إعداد المنشأة والفنيين. يمكن مشاركة روابط الدعوات، لكن تفعيل الحسابات الفعلية يحتاج ربط خدمة المصادقة.','Setup is complete. Invitation links can be shared, while real account activation requires authentication integration.')}</p>
+        <div className="org-review"><b>{data.organization}</b><span>{sites.length} {tr(lang,'فروع','branches')}</span><span>{members.length} {tr(lang,'فني تمت إضافته','technicians added')}</span></div>
         <button type="button" className="org-next org-next--full" onClick={()=>go('/demo')}>{tr(lang,'الدخول إلى لوحة التحكم','Open dashboard')}<ChevronLeft size={18}/></button>
       </div>:<form className="org-form" onSubmit={next}>
         <span className="org-eyebrow">{tr(lang,`الخطوة ${step+1} من 5`,`Step ${step+1} of 5`)}</span>
         <h2>{[
           tr(lang,'بيانات المنشأة','Organization details'),
-          tr(lang,'حساب المسؤول','Account owner'),
+          tr(lang,'حساب مدير المنشأة','Organization manager account'),
           tr(lang,'الفروع والمدن','Branches and cities'),
-          tr(lang,'صلاحيات أعضاء المنشأة','Team access'),
-          tr(lang,'مراجعة الدعوات','Review invitations')
+          tr(lang,'إضافة الفنيين','Add technicians'),
+          tr(lang,'دعوة الفريق','Invite the team')
         ][step]}</h2>
         <div className="org-steps" aria-label={tr(lang,'خطوات إعداد المنشأة','Organization setup progress')}>
          {branches(lang).map((name,i)=><div key={name} className={i<step?'done':i===step?'current':''}><span>{i<step?<Check size={14}/>:i+1}</span><small>{name}</small></div>)}
@@ -137,10 +144,7 @@ export default function OrganizationOnboarding({lang,mode,embedded=false}:{lang:
           <p className="org-step-hint">{tr(lang,'ابدأ بإضافة بيانات المنشأة الأساسية، ثم أضف الفروع في الخطوة التالية.','Start with your organization details. Branches come later.')}</p>
           <div className="org-fields">
             {field('organization','اسم المنشأة','Organization name',tr(lang,'مثال: مجموعة الأفق','Example: Horizon Group'))}
-            <label className="org-field"><span>{tr(lang,'نوع المنشأة','Organization type')}</span><span className="org-select-wrap"><select required value={data.sector} onChange={e=>set('sector',e.target.value)}>
-              <option value="">{tr(lang,'اختر نوع المنشأة','Choose organization type')}</option>
-              {[['restaurant','مطاعم ومقاهي','Restaurants'],['health','منشأة صحية','Healthcare'],['education','تعليمية','Education'],['retail','تجزئة ومتاجر','Retail'],['office','مكاتب ومنشآت','Offices'],['other','أخرى','Other']].map(([v,ar,en])=><option key={v} value={v}>{tr(lang,ar,en)}</option>)}
-            </select><ChevronDown size={17}/></span></label>
+            <label className="org-field"><span>{tr(lang,'نوع المنشأة','Organization type')}</span><Select value={data.sector} onValueChange={value=>set('sector',value)}><SelectTrigger className="org-select-trigger"><SelectValue placeholder={tr(lang,'اختر نوع المنشأة','Choose organization type')}/></SelectTrigger><SelectContent className="org-select-content" dir={lang==='ar'?'rtl':'ltr'}>{[['restaurant','مطاعم ومقاهي','Restaurants'],['health','منشأة صحية','Healthcare'],['education','تعليمية','Education'],['retail','تجزئة ومتاجر','Retail'],['office','مكاتب ومنشآت','Offices'],['other','أخرى','Other']].map(([v,ar,en])=><SelectItem key={v} value={v}>{tr(lang,ar,en)}</SelectItem>)}</SelectContent></Select></label>
             {data.sector==='other'&&<label className="org-field org-field-wide"><span>{tr(lang,'حدد نوع المنشأة','Specify organization type')}</span><input value={otherSector} required onChange={e=>{setOtherSector(e.target.value);setError('')}} placeholder={tr(lang,'اكتب نوع المنشأة','Enter organization type')}/></label>}
           </div>
         </div>}
@@ -156,7 +160,7 @@ export default function OrganizationOnboarding({lang,mode,embedded=false}:{lang:
         {step===2&&<div className="org-site-step">
           <p className="org-muted">{tr(lang,'يمكن إضافة عدة مدن وفروع. تظهر الفروع المحددة للمبلّغ في حسابه.','Add multiple cities and branches. Reporters can select the available branches from their workspace.')}</p>
           <div className="org-fields">
-            <label className="org-field"><span>{tr(lang,'المدينة','City')}</span><span className="org-select-wrap"><select value={newCity} onChange={e=>{setNewCity(e.target.value);setError('')}}><option value="">{tr(lang,'اختر المدينة','Select a city')}</option>{[['الرياض','Riyadh'],['جدة','Jeddah'],['مكة','Makkah'],['المدينة المنورة','Madinah'],['الدمام','Dammam'],['الخبر','Khobar'],['جازان','Jazan'],['أبو عريش','Abu Arish'],['أبها','Abha'],['تبوك','Tabuk'],['حائل','Hail'],['بريدة','Buraydah'],['الطائف','Taif'],['نجران','Najran'],['ينبع','Yanbu'],['الأحساء','Al Ahsa'],['other','أخرى','Other']].map(([v,ar,en])=><option key={v} value={v}>{tr(lang,ar,en)}</option>)}</select><ChevronDown size={17}/></span></label>
+            <label className="org-field"><span>{tr(lang,'المدينة','City')}</span><Select value={newCity} onValueChange={v=>{setNewCity(v);setError('')}}><SelectTrigger className="org-select-trigger"><SelectValue placeholder={tr(lang,'اختر المدينة','Select a city')}/></SelectTrigger><SelectContent className="org-select-content" dir={lang==='ar'?'rtl':'ltr'}>{[['الرياض','Riyadh'],['جدة','Jeddah'],['مكة','Makkah'],['المدينة المنورة','Madinah'],['الدمام','Dammam'],['الخبر','Khobar'],['جازان','Jazan'],['أبو عريش','Abu Arish'],['أبها','Abha'],['تبوك','Tabuk'],['حائل','Hail'],['بريدة','Buraydah'],['الطائف','Taif'],['نجران','Najran'],['ينبع','Yanbu'],['الأحساء','Al Ahsa'],['other','أخرى','Other']].map(([v,ar,en])=><SelectItem key={v} value={v}>{tr(lang,ar,en)}</SelectItem>)}</SelectContent></Select></label>
             <label className="org-field"><span>{tr(lang,'اسم الفرع','Branch name')}</span><input value={newBranch} onChange={e=>setNewBranch(e.target.value)} placeholder={tr(lang,'مثال: فرع العليا','Example: Olaya branch')}/></label>
           </div>
           {newCity==='other'&&<label className="org-field"><span>{tr(lang,'اسم المدينة','City name')}</span><input value={otherCity} onChange={e=>setOtherCity(e.target.value)} placeholder={tr(lang,'اكتب اسم المدينة','Enter city name')}/></label>}
@@ -164,44 +168,30 @@ export default function OrganizationOnboarding({lang,mode,embedded=false}:{lang:
           {sites.length>0&&<div className="org-site-groups">{Array.from(new Set(sites.map(s=>s.city))).map(city=><div className="org-city-group" key={city}><div className="org-city-heading"><MapPin size={15}/><b>{city}</b><small>{sites.filter(s=>s.city===city).length} {tr(lang,'فروع','branches')}</small></div><div className="org-site-chips">{sites.filter(s=>s.city===city).map(s=><span key={s.id}>{s.name}<button type="button" aria-label={tr(lang,'حذف الفرع','Remove branch')} onClick={()=>setSites(old=>old.filter(x=>x.id!==s.id))}><X size={13}/></button></span>)}</div></div>)}</div>}
           <div className="org-info-inline"><MapPin size={16}/>{tr(lang,'سيشاهد المبلّغ الفروع التي أضافتها منشأته في قائمة الفروع الموجودة أصلًا في واجهته.','Reporters will choose from their organization’s branches in the existing branch selector.')}</div>
         </div>}
-        {step===3&&<div className="org-access-page">
-          <div className="org-access-explain">
-            <div><span className="org-access-icon"><Wrench size={18}/></span><b>{tr(lang,'الفني','Technician')}</b><small>{tr(lang,'يستقبل البلاغات المسندة له ويحدّث حالة الإصلاح.','Sees assigned tickets and updates repairs.')}</small></div>
-            <div><span className="org-access-icon"><Users size={18}/></span><b>{tr(lang,'المدير','Manager')}</b><small>{tr(lang,'يدير فروعه والفنيين والإسناد والمتابعة.','Manages branches, technicians, assignments and follow-ups.')}</small></div>
-            <div><span className="org-access-icon"><ClipboardList size={18}/></span><b>{tr(lang,'المبلّغ','Reporter')}</b><small>{tr(lang,'يرسل بلاغاته ويتابع بلاغاته فقط.','Submits and tracks only their own reports.')}</small></div>
-          </div>
-          <div className="org-access-heading"><h3>{tr(lang,'إضافة الفنيين والمديرين','Add technicians and managers')}</h3><small>{sites.length} {tr(lang,'فروع','branches')}</small></div>
+        {step===3&&<div className="org-access-page org-tech-setup">
+          <div className="org-tech-intro"><div className="org-tech-intro-icon"><CheckCircle2 size={22}/></div><div><b>{tr(lang,'حساب المدير جاهز ضمن إعداد المنشأة','Manager account is part of registration')}</b><p>{tr(lang,'الحساب الذي تم إنشاؤه في الخطوة الثانية هو حساب مدير المنشأة. هنا تُضاف بيانات الفنيين فقط، مع تحديد الفرع والتخصص لكل فني.','The account created in step two is the organization manager account. Add technician profiles here, assigning each branch and specialty.')}</p></div></div>
+          <div className="org-access-heading"><h3>{tr(lang,'بيانات الفني','Technician details')}</h3><span className="org-mini-count">{members.length} {tr(lang,'فني مضاف','technicians added')}</span></div>
           <div className="org-fields">
-            <label className="org-field"><span>{tr(lang,'اسم العضو','Member name')}</span><input value={member.name} placeholder={tr(lang,'الاسم الكامل','Full name')} onChange={e=>setMember(m=>({...m,name:e.target.value}))}/></label>
-            <label className="org-field"><span>{tr(lang,'رقم جوال الفني','Phone number')}</span><input type="tel" value={member.phone} placeholder="05XXXXXXXX" onChange={e=>setMember(m=>({...m,phone:e.target.value}))}/></label><label className="org-field"><span>{tr(lang,'البريد الإلكتروني (اختياري)','Email (optional)')}</span><input type="email" value={member.email} placeholder="employee@company.com" onChange={e=>setMember(m=>({...m,email:e.target.value}))}/></label>
-            <label className="org-field"><span>{tr(lang,'الدور والصلاحية','Role and access')}</span><select value={member.role} onChange={e=>setMember(m=>({...m,role:e.target.value as Role}))}>
-              <option value="technician">{tr(lang,'فني','Technician')}</option><option value="manager">{tr(lang,'مدير فرع','Branch manager')}</option><option value="reporter">{tr(lang,'مبلّغ','Reporter')}</option>
-            </select></label>
-            {member.role==='technician'&&<label className="org-field"><span>{tr(lang,'التخصص','Specialization')}</span><select value={member.specialty} onChange={e=>setMember(m=>({...m,specialty:e.target.value}))}>{specialties.map(([v,ar,en])=><option key={v} value={v}>{tr(lang,ar,en)}</option>)}</select></label>}<label className="org-field"><span>{tr(lang,'الفرع التابع له','Assigned branch')}</span><select value={member.branch||sites[0]?.name||''} onChange={e=>setMember(m=>({...m,branch:e.target.value}))}>{sites.map(s=><option key={s.id} value={s.name}>{s.name} · {s.city}</option>)}</select></label>
+            <label className="org-field"><span>{tr(lang,'اسم الفني','Technician name')}</span><input autoComplete="off" value={member.name} placeholder={tr(lang,'الاسم الكامل','Full name')} onChange={e=>{setMember(m=>({...m,name:e.target.value}));setError('')}}/></label>
+            <label className="org-field"><span>{tr(lang,'رقم الجوال','Mobile number')}</span><input type="tel" autoComplete="off" dir="ltr" value={member.phone} placeholder="05XXXXXXXX" onChange={e=>{setMember(m=>({...m,phone:e.target.value}));setError('')}}/></label>
+            <label className="org-field"><span>{tr(lang,'التخصص','Specialty')}</span><Select value={member.specialty} onValueChange={value=>{setMember(m=>({...m,specialty:value}));setError('')}}><SelectTrigger className="org-select-trigger"><SelectValue placeholder={tr(lang,'اختر التخصص','Choose specialty')}/></SelectTrigger><SelectContent className="org-select-content" dir={lang==='ar'?'rtl':'ltr'}>{[...specialties,['other','أخرى','Other']].map(([v,ar,en])=><SelectItem key={v} value={v}>{tr(lang,ar,en)}</SelectItem>)}</SelectContent></Select></label>
+            <label className="org-field"><span>{tr(lang,'الفرع التابع له','Assigned branch')}</span><Select value={member.branch|| (sites[0]?branchLabel(sites[0]):'')} onValueChange={value=>{setMember(m=>({...m,branch:value}));setError('')}}><SelectTrigger className="org-select-trigger"><SelectValue placeholder={tr(lang,'اختر الفرع','Choose branch')}/></SelectTrigger><SelectContent className="org-select-content" dir={lang==='ar'?'rtl':'ltr'}>{sites.map(s=><SelectItem key={s.id} value={branchLabel(s)}>{branchLabel(s)}</SelectItem>)}</SelectContent></Select></label>
+            {member.specialty==='other'&&<label className="org-field org-field-wide"><span>{tr(lang,'اكتب تخصص الفني','Technician specialty')}</span><input value={otherSpecialty} onChange={e=>{setOtherSpecialty(e.target.value);setError('')}} placeholder={tr(lang,'مثال: صيانة المصاعد','Example: Elevator maintenance')}/></label>}
           </div>
-          <button type="button" className="org-add" onClick={addMember}><Plus size={16}/>{tr(lang,'إضافة إلى قائمة الدعوات','Add to invitations')}</button>
-          {members.length>0&&<div className="org-invite-list">{members.map(m=><div key={m.id}><span className="org-invite-avatar"><UserRound size={17}/></span><span className="org-invite-person"><b>{m.name}</b><small>{m.phone||m.email} · {m.branch}</small></span><span className="org-role-pill">{m.role==='manager'?tr(lang,'مدير','Manager'):m.role==='reporter'?tr(lang,'مبلّغ','Reporter'):tr(lang,'فني','Technician')}</span><button type="button" className="org-whatsapp-icon" aria-label={tr(lang,'مشاركة دعوة واتساب','Share WhatsApp invite')} onClick={()=>shareWhatsapp(m.role,m)}><MessageCircle size={17}/></button><button type="button" onClick={()=>setMembers(a=>a.filter(x=>x.id!==m.id))} aria-label={tr(lang,'حذف','Remove')}><X size={16}/></button></div>)}</div>}
-          <label className="org-reporter-access"><input type="checkbox" checked={reportersByInvite} onChange={e=>setReportersByInvite(e.target.checked)}/><span><b>{tr(lang,'السماح بانضمام المبلّغين عبر دعوة الفرع','Let reporters join using a branch invitation')}</b><small>{tr(lang,'أي موظف لديه دعوة الفرع يستطيع طلب حساب مبلّغ. لن تحتاجي إضافته يدويًا؛ ويُربط بفرعه بعد التحقق.','Branch staff can request a reporter account using a branch invite, then join after verification.')}</small></span></label>
+          <div className="org-tech-add-row"><p>{tr(lang,'يُحدد النظام صلاحية «فني» تلقائيًا، ويُرسل رابط التفعيل في الخطوة التالية.','Technician access is assigned automatically. The activation link is shared in the next step.')}</p><button type="button" className="org-add org-add-tech" onClick={addMember}><Plus size={16}/>{tr(lang,'إضافة الفني','Add technician')}</button></div>
+          {members.length>0&&<div className="org-tech-list"><div className="org-tech-list-head"><b>{tr(lang,'الفنيون المضافون','Added technicians')}</b><span>{members.length}</span></div>{members.map(m=><div className="org-tech-row" key={m.id}><span className="org-invite-avatar"><Wrench size={17}/></span><span className="org-invite-person"><b>{m.name}</b><small>{m.phone} · {m.branch} · {specialtyLabel(m.specialty)}</small></span><button type="button" aria-label={tr(lang,'حذف الفني','Remove technician')} className="org-tech-remove" onClick={()=>setMembers(a=>a.filter(x=>x.id!==m.id))}><X size={16}/></button></div>)}</div>}
         </div>}
-        {step===4&&<div className="org-final-review">
-          <div className="org-final-organization"><Building2 size={21}/><span><b>{data.organization}</b><small>{sites.length} {tr(lang,'فروع','branches')} · {Array.from(new Set(sites.map(s=>s.city))).join('، ')}</small></span></div>
-          <h3>{tr(lang,'دعوات الفريق','Team invitations')}</h3>
-          {members.length>0?members.map(m=><div className="org-invite-summary" key={m.id}>
-            <span><b>{m.name}</b><small>{m.phone||m.email} · {m.branch}</small></span>
-            <div className="org-share-actions"><button type="button" onClick={()=>shareWhatsapp(m.role,m)} className="org-share-wa"><MessageCircle size={15}/>{tr(lang,'واتساب','WhatsApp')}</button>{m.email&&<button type="button" onClick={()=>shareEmail(m.role,m)}><Mail size={15}/></button>}<button type="button" onClick={()=>copyInvite(m.role,m)}><Copy size={15}/></button></div>
-          </div>):<p className="org-muted">{tr(lang,'لم تتم إضافة أعضاء بعد. يمكن دعوتهم لاحقًا من لوحة الإدارة.','No members yet. You can invite them later from the dashboard.')}</p>}
-          <div className="org-flow-explainer">
-            <h3>{tr(lang,'كيف تصل الصلاحيات؟','How does access work?')}</h3>
-            <div><span>1</span>{tr(lang,'المسؤول يحدد الفرع والدور والتخصص للفني.','The owner defines each member’s branch, role and specialty.')}</div>
-            <div><span>2</span>{tr(lang,'بعد تفعيل خدمة الدعوات يصل رابط خاص لكل عضو.','When invitations are enabled, each member gets their own invitation link.')}</div>
-            <div><span>3</span>{tr(lang,'بعد قبول الدعوة وتعيين كلمة المرور يدخل العضو لواجهته فقط.','After accepting and setting a password, they access their assigned workspace.')}</div>
+        {step===4&&<div className="org-final-review org-invitation-step">
+          <div className="org-final-organization"><Building2 size={21}/><span><b>{data.organization}</b><small>{tr(lang,'المدير: ','Manager: ')}{data.owner} · {sites.length} {tr(lang,'فروع','branches')}</small></span></div>
+          <div className="org-invite-section">
+            <div className="org-invite-section-head"><span className="org-invite-section-icon"><Wrench size={19}/></span><div><h3>{tr(lang,'دعوات الفنيين','Technician invitations')}</h3><p>{tr(lang,'لكل فني دعوة شخصية مرتبطة بتخصصه وفرعه. يضيف الفني بريده وكلمة المرور عند التفعيل.','Each technician gets a personal invitation with their assigned branch and specialty. They set their email and password when activating.')}</p></div></div>
+            {members.length>0?<div className="org-invite-summary-list">{members.map(m=><div className="org-invite-summary" key={m.id}><span><b>{m.name}</b><small>{m.phone} · {m.branch} · {specialtyLabel(m.specialty)}</small></span><div className="org-share-actions"><button type="button" onClick={()=>shareWhatsapp('technician',m)} className="org-share-wa"><MessageCircle size={16}/>{tr(lang,'واتساب','WhatsApp')}</button><button type="button" aria-label={tr(lang,'نسخ دعوة الفني','Copy technician invitation')} onClick={()=>copyInvite('technician',m)}><Copy size={16}/></button></div></div>)}</div>:<p className="org-muted">{tr(lang,'لم تتم إضافة فنيين. يمكن إضافة الفنيين لاحقًا من لوحة المدير.','No technicians added. They can also be added from the manager dashboard.')}</p>}
           </div>
-          {reportersByInvite&&<div className="org-branch-link">
-            <b>{tr(lang,'انضمام المبلّغين للفرع','Reporter joining')}</b>
-            <p>{tr(lang,'يمكن للموظفين طلب الانضمام إلى الفرع عبر رابط دعوة؛ مدير المنشأة لا يحتاج إنشاء حساب لكل مبلّغ.','Staff can request reporter access via branch invitation; the manager does not need to add every reporter manually.')}</p>
-            <div className="org-share-actions"><button type="button" className="org-share-wa" onClick={()=>shareWhatsapp('reporter')}><MessageCircle size={17}/>{tr(lang,'مشاركة عبر واتساب','Share via WhatsApp')}</button><button type="button" onClick={()=>shareEmail('reporter')}><Mail size={17}/>{tr(lang,'البريد','Email')}</button><button type="button" onClick={()=>copyInvite('reporter')}><Copy size={17}/>{copied?tr(lang,'تم النسخ','Copied'):tr(lang,'نسخ','Copy')}</button></div>
-          </div>}
-          <p className="org-final-disclosure">{tr(lang,'تفتح أزرار المشاركة تطبيق واتساب أو البريد برسالة جاهزة. تفعيل الحساب والصلاحيات الفعلية يتطلب ربط نظام المصادقة والدعوات.','Sharing opens WhatsApp or email with a prefilled message. Live activation and authorization require an authentication backend.')}</p>
+          <div className="org-invite-section">
+            <div className="org-invite-section-head"><span className="org-invite-section-icon"><ClipboardList size={19}/></span><div><h3>{tr(lang,'دعوة المبلّغين','Reporter invitation')}</h3><p>{tr(lang,'رابط واحد لموظفي المنشأة. يسجل كل موظف اسمه وبريده وكلمة المرور، ثم يختار الفرع من القائمة الموجودة في واجهة المبلّغ.','One organization-wide link. Each employee enters their name, email and password, then selects a branch in the reporter workspace.')}</p></div></div>
+            <div className="org-share-actions org-reporter-share"><button type="button" className="org-share-wa" onClick={()=>shareWhatsapp('reporter')}><MessageCircle size={17}/>{tr(lang,'مشاركة عبر واتساب','Share on WhatsApp')}</button><button type="button" onClick={()=>shareEmail('reporter')}><Mail size={17}/>{tr(lang,'البريد الإلكتروني','Email')}</button><button type="button" onClick={()=>copyInvite('reporter')}><Copy size={17}/>{copied?tr(lang,'تم النسخ','Copied'):tr(lang,'نسخ الدعوة','Copy invitation')}</button></div>
+          </div>
+          <p className="org-final-disclosure">{tr(lang,'أزرار المشاركة تفتح واتساب أو البريد برسالة جاهزة. ربط الحسابات والتحقق من الصلاحيات يتطلبان خدمة تسجيل فعلية.','Share buttons open WhatsApp or email with a prepared invitation. Account verification and live permissions require backend authentication.')}</p>
         </div>}
         {error&&<p className="org-error" role="alert">{error}</p>}
         <div className="org-bottom">{step>0&&<button type="button" className="org-prev" onClick={()=>{setError('');setStep(s=>s-1)}}>{tr(lang,'السابق','Back')}</button>}
