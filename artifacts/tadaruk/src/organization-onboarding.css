@@ -383,3 +383,9 @@
 @media(prefers-reduced-motion:reduce){
   .tadaruk-invite-qr-light{animation:none;transform:rotate(290deg)}
 }
+
+@media(min-width:651px){
+  .org-simple-invitations .org-invite-share-layout{
+    grid-template-columns:minmax(0,1fr) 190px;
+  }
+}
