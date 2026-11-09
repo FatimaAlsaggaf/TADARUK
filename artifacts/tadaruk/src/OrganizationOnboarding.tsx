@@ -115,8 +115,7 @@ export default function OrganizationOnboarding({lang,mode,embedded=false,onExit}
         <span className="org-success-mark"><CheckCircle2 size={36}/></span>
         <h2>{tr(lang,'اكتمل إعداد المنشأة','Organization setup complete')}</h2>
         <p>{tr(lang,'اكتمل نموذج إعداد المنشأة. أرسل الدعوات، ثم أضف الفنيين من لوحة المدير. التفعيل الفعلي يتطلب ربط الحسابات بالخادم.','Organization setup preview complete. Send invitations and add technicians later from the manager dashboard. Live activation requires backend accounts.')}</p>
-        <div className="org-review"><b>{data.organization}</b><span>{sites.length} {tr(lang,'فروع','branches')}</span></div>
-        <button type="button" className="org-next org-next--full" onClick={()=>go('/login')}>{tr(lang,'الذهاب إلى تسجيل الدخول','Go to sign in')}<ChevronLeft size={18}/></button>
+
       </div>:<form className="org-form" onSubmit={next}>
         <span className="org-eyebrow">{tr(lang,`الخطوة ${step+1} من 4`,`Step ${step+1} of 4`)}</span>
         <h2>{[
