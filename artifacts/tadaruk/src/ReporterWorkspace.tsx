@@ -127,9 +127,9 @@ export function ReporterHomePage({ lang, user }: ReporterPageProps) {
   const { data: overview, isLoading: overviewLoading, isError: overviewError, refetch: refetchOverview } = useGetOverview();
   const { data: tickets, isLoading, isError, refetch } = useListTickets();
   const rows = Array.isArray(tickets) ? tickets.filter(ticket => !user || ticket.reporterId === user.id) : [];
-  const openCount = rows.filter(ticket => ticket.status !== 'closed').length;
+  const openCount = rows.filter(ticket => !['closed','cancelled'].includes(ticket.status)).length;
   const waitingCount = rows.filter(ticket => ticket.status === 'awaiting_confirmation').length;
-  const resolvedCount = overview?.resolvedThisMonth ?? rows.filter(ticket => ticket.status === 'closed').length;
+  const resolvedCount = rows.filter(ticket => ticket.status === 'closed').length;
   const loading = isLoading || overviewLoading;
   const failed = isError || overviewError;
   const retry = () => { void refetch(); void refetchOverview(); };
@@ -140,17 +140,24 @@ export function ReporterHomePage({ lang, user }: ReporterPageProps) {
       description={text(lang, 'أرسل ما يحتاج إلى إصلاح، وتابع كل خطوة حتى يعود المكان للعمل.', 'Tell us what needs fixing, then follow each step until it is resolved.')}
       lang={lang}
     />
-    <section className="rw-home-intro" aria-label={text(lang, 'بدء بلاغ صيانة', 'Start a maintenance report')}>
+    <section className="rw-home-intro rw-home-intro--enhanced" aria-label={text(lang, 'بدء بلاغ صيانة', 'Start a maintenance report')}>
       <div className="rw-home-copy">
-        <h2>{text(lang, 'ما الذي يحتاج إلى عناية في فرعك؟', 'What needs attention at your branch?')}</h2>
-        <p>{text(lang, 'اكتب ما لاحظته بلغتك. سنرتب البلاغ ونبقيك على اطلاع بحالته.', 'Describe what you noticed in your own words. We will organize the report and keep you updated.')}</p>
+        <span className="rw-home-kicker"><Sparkles size={15}/>{text(lang, 'بلاغات صيانة أسرع وأوضح', 'Smarter maintenance reporting')}</span>
+        <h2>{text(lang, 'كل مشكلة لها حل يبدأ ببلاغك', 'Every fix starts with your report')}</h2>
+        <p>{text(lang, 'صف المشكلة مرة واحدة، وتابعها حتى تأكيد الإصلاح.', 'Describe the problem once and follow it through to confirmation.')}</p>
+        {waitingCount > 0 && <Link href="/workspace/tickets" className="rw-hero-awaiting" data-testid="link-hero-pending-confirmation">
+          <ShieldCheck size={17}/>{text(lang, `لديك ${waitingCount} بلاغ بانتظار تأكيد الإصلاح`, `${waitingCount} report(s) need your confirmation`)}
+        </Link>}
         <Link href="/workspace/tickets/new" className="rw-button" data-testid="link-start-report">
           {text(lang, 'أخبرنا بالمشكلة', 'Tell us about it')}
           {lang === 'ar' ? <ArrowLeft size={16}/> : <ArrowRight size={16}/>}
         </Link>
       </div>
-      <div className="rw-home-symbol" aria-hidden="true">
+      <div className="rw-home-symbol rw-home-symbol--animated" aria-hidden="true">
+        <span className="rw-home-orbit-ring rw-home-orbit-ring--one"/>
+        <span className="rw-home-orbit-ring rw-home-orbit-ring--two"/>
         <span className="rw-document-orbit"><FileText size={44} strokeWidth={1.45}/><i/><i/><i/></span>
+        <span className="rw-home-float-star"><Sparkles size={23}/></span>
       </div>
     </section>
     {loading ? <TicketLoadingState/> : failed ? <div className="rw-error" role="alert" data-testid="state-home-error">
@@ -160,11 +167,14 @@ export function ReporterHomePage({ lang, user }: ReporterPageProps) {
       </div>
     </div> : <>
       <section className="rw-overview-strip" aria-label={text(lang, 'ملخص بلاغاتي', 'My reports summary')} data-testid="overview-reporter">
-        <div className="rw-stat"><span className="rw-stat-icon"><ClipboardList size={18}/></span><span><b data-testid="count-my-reports">{rows.length}</b><small>{text(lang, 'إجمالي بلاغاتي', 'Reports submitted')}</small></span></div>
-        <div className="rw-stat"><span className="rw-stat-icon"><Clock3 size={18}/></span><span><b data-testid="count-open-reports">{openCount}</b><small>{text(lang, 'قيد المتابعة', 'Being followed up')}</small></span></div>
-        <div className="rw-stat"><span className="rw-stat-icon"><Check size={18}/></span><span><b data-testid="count-resolved-reports">{resolvedCount}</b><small>{text(lang, 'إصلاحات هذا الشهر', 'Resolved this month')}</small></span></div>
+        <Link href="/workspace/tickets" className="rw-stat rw-stat--attention" data-testid="card-confirmation-needed">
+          <span className="rw-stat-icon"><ShieldCheck size={21}/></span>
+          <span><b data-testid="count-awaiting-confirmation">{waitingCount}</b><small>{text(lang, 'بلاغات تحتاج تأكيدك', 'Needs your confirmation')}</small></span>
+          {waitingCount>0 && <span className="rw-stat-indicator" aria-hidden="true"/>}
+        </Link>
+        <div className="rw-stat rw-stat--progress"><span className="rw-stat-icon"><Clock3 size={21}/></span><span><b data-testid="count-open-reports">{openCount}</b><small>{text(lang, 'بلاغات قيد المتابعة', 'Open reports')}</small></span></div>
+        <div className="rw-stat rw-stat--done"><span className="rw-stat-icon"><CheckCircle2 size={21}/></span><span><b data-testid="count-resolved-reports">{resolvedCount}</b><small>{text(lang, 'بلاغات مغلقة', 'Closed reports')}</small></span></div>
       </section>
-      {waitingCount > 0 && <p className="rw-branch-note" data-testid="status-awaiting-confirmation"><ShieldCheck size={16}/>{text(lang, `هناك ${waitingCount} بلاغ بانتظار تأكيدك.`, `${waitingCount} report${waitingCount === 1 ? ' is' : 's are'} waiting for your confirmation.`)}</p>}
       <section className="rw-section">
         <div className="rw-section-head">
           <div><h2>{text(lang, 'آخر بلاغاتك', 'Your recent reports')}</h2></div>
