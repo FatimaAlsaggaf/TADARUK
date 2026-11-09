@@ -1785,6 +1785,7 @@ function TechniciansPage({lang}:{lang:Lang}) {
     const done=()=>{
       setOpen(false);
       setEdit(null);
+      if(!edit){try{localStorage.removeItem('tadaruk-needs-technician-setup')}catch{}}
       void query.invalidateQueries({queryKey:getListTechniciansQueryKey()});
       void query.invalidateQueries({queryKey:getListBranchesQueryKey()});
       void query.invalidateQueries({queryKey:getGetOverviewQueryKey()});
