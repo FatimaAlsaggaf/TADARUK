@@ -288,6 +288,7 @@ export function TechnicianTicketDetail({
   // Input method: 'text' or 'voice' (allow ONE input method)
   const [inputMode, setInputMode] = useState<'text' | 'voice'>('text');
   const [solutionText, setSolutionText] = useState(ticket.resolution || ticket.repairNotes || '');
+  const [expandedPhoto, setExpandedPhoto] = useState<string | null>(null);
   const [repairPhoto, setRepairPhoto] = useState<string>(() => {
     return localStorage.getItem(`tadaruk-repair-photo:${ticket.id}`) || '';
   });
@@ -794,7 +795,21 @@ export function TechnicianTicketDetail({
         </div>
       </section>
 
-
+      {expandedPhoto && (
+        <div className="tech-lightbox-scrim" role="presentation" onClick={() => setExpandedPhoto(null)}>
+          <div className="tech-lightbox-content" role="dialog" aria-modal="true"
+            aria-label={tr(lang, 'صورة بعد الإصلاح', 'After-repair photo')}
+            onClick={event => event.stopPropagation()}>
+            <button type="button" className="tech-lightbox-close"
+              onClick={() => setExpandedPhoto(null)}
+              aria-label={tr(lang, 'إغلاق الصورة', 'Close photo')}>
+              <X size={20}/>
+            </button>
+            <img src={expandedPhoto} alt={tr(lang, 'صورة بعد الإصلاح بالحجم الكامل', 'Full-size after-repair photo')}
+              className="tech-lightbox-img"/>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
