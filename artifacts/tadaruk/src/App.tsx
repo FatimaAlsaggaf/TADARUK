@@ -1487,7 +1487,27 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
   },[id]);
   const [technicianId,setTechnicianId]=useState('');
   const [pendingTechnicianId,setPendingTechnicianId]=useState<string | null>(null);
-  const act=(a:'start'|'complete'|'confirm'|'reject'|'reassign',extra:Record<string,string>={})=>{setActionFeedback('');action.mutate({ticketId:id,data:{action:a,note,...extra}},{onSuccess:()=>{void query.invalidateQueries({queryKey:getGetTicketQueryKey(id)});void query.invalidateQueries({queryKey:getListTicketsQueryKey()});void query.invalidateQueries({queryKey:getGetOverviewQueryKey()});void query.invalidateQueries({queryKey:getListKnowledgeQueryKey()});setNote('');setActionFeedback(a==='start'?tr(lang,'بدأ العمل على البلاغ.','Work has started on this report.'):a==='complete'?tr(lang,'أُرسل تقييم الإصلاح للمراجعة.','The repair was submitted for confirmation.'):a==='confirm'?tr(lang,'تم تأكيد الإصلاح وإغلاق البلاغ.','The repair was confirmed and the report closed.'):a==='reject'?tr(lang,'تمت إعادة البلاغ للفني للمتابعة.','The report was returned to the technician.'):tr(lang,'تم تحديث إسناد الفني.','The technician assignment was updated.'));}});};
+  const [showAssignmentEditor,setShowAssignmentEditor]=useState(false);
+  const [reassignReason,setReassignReason]=useState('');
+  const [reassignError,setReassignError]=useState('');
+
+  const act=(a:'start'|'complete'|'confirm'|'reject'|'reassign',extra:Record<string,string>={})=>{
+    setActionFeedback('');
+    action.mutate({ticketId:id,data:{action:a,note,...extra}},{
+      onSuccess:()=>{void query.invalidateQueries({queryKey:getGetTicketQueryKey(id)});
+        void query.invalidateQueries({queryKey:getListTicketsQueryKey()});
+        void query.invalidateQueries({queryKey:getGetOverviewQueryKey()});
+        void query.invalidateQueries({queryKey:getListTechniciansQueryKey()});
+        void query.invalidateQueries({queryKey:['tadaruk-notifications']});
+        void query.invalidateQueries({queryKey:getListKnowledgeQueryKey()});
+        setNote('');
+        setActionFeedback(a==='start'?tr(lang,'بدأ العمل على البلاغ.','Work has started.'):a==='complete'?tr(lang,'أُرسل تقييم الإصلاح للمراجعة.','Repair submitted for confirmation.'):a==='confirm'?tr(lang,'تم تأكيد الإصلاح وإغلاق البلاغ.','Ticket closed.'):a==='reject'?tr(lang,'تمت إعادة البلاغ للفني للمتابعة.','Repair returned for follow-up.'):tr(lang,'تم تحديث إسناد الفني.','Assignment updated.'));
+      }
+    });
+  };
+  const exceptionalReassign = rawTicket?.status==='in_progress'||rawTicket?.status==='awaiting_confirmation';
+  const availableReplacementTechnicians = (technicians||[]).filter(t=>t.active&&t.available&&t.branchId===rawTicket?.branchId&&t.specialization===rawTicket?.specialization&&t.id!==rawTicket?.technicianId);
+
   const ticket = rawTicket || (FALLBACK_INITIAL_TICKETS as unknown as Ticket[]).find(t => t.id === id) || (FALLBACK_INITIAL_TICKETS[0] as unknown as Ticket);
   const manager=user.role==='manager',technician=user.role==='technician',reporter=user.role==='reporter';
 
@@ -1771,43 +1791,41 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
             </>
           )}
 
-          {/* MANAGER WORKFLOW */}
+          {/* Manager: automatic assignment by default, changes only when needed. */}
           {manager && ticket.status !== 'closed' && ticket.status !== 'cancelled' && (
-            <>
-
-              <div className="field-label">
-                <span className="field-label-caption">{tr(lang, 'إعادة الإسناد إلى', 'Reassign to')}</span>
-                <TadarukSelect
-                  value={technicianId}
-                  onValueChange={(val) => {
-                    setTechnicianId(val);
-                    if (val && val !== ticket.technicianId) {
-                      setPendingTechnicianId(val);
-                    }
-                  }}
-                  ariaLabel={tr(lang, 'إعادة الإسناد إلى', 'Reassign to')}
-                  dir={lang === 'ar' ? 'rtl' : 'ltr'}
-                  placeholder={tr(lang, 'اختر فنياً', 'Choose a technician')}
-                  options={[{ value: '', label: tr(lang, 'اختر فنياً', 'Choose a technician') }, ...(technicians || []).filter(t => t.active && t.branchId === ticket.branchId).map(t => ({ value: t.id, label: `${t.name} · ${t.specialization}` }))]}
-                />
+            <div className="manager-assignment-control">
+              <div className="manager-assignment-current">
+                <span className="manager-assignment-label"><Users size={16}/>{tr(lang,'إدارة إسناد الفني','Manage assignment')}</span>
+                <b>{ticket.technicianName || tr(lang,'بانتظار إسناد تلقائي','Awaiting automatic assignment')}</b>
+                <small>{ticket.technicianId?tr(lang,'الفني المسؤول حاليًا','Currently assigned'):tr(lang,'لا يوجد فني مسند','No technician assigned')}</small>
               </div>
-              <Button
-                kind="outline"
-                onClick={() => {
-                  if (technicianId && technicianId !== ticket.technicianId) {
-                    setPendingTechnicianId(technicianId);
-                  }
-                }}
-                disabled={!technicianId || technicianId === ticket.technicianId || action.isPending}
-                data-testid="button-manager-reassign"
-              >
-                <Users size={16} />
-                {tr(lang, 'تحديث الإسناد', 'Update assignment')}
-              </Button>
+              {!showAssignmentEditor ? (
+                <Button kind="outline" onClick={()=>{setShowAssignmentEditor(true);setReassignError('');setTechnicianId('');}} data-testid="button-manager-edit-assignment">
+                  <Users size={16}/>{ticket.technicianId?tr(lang,'تغيير الفني','Change technician'):tr(lang,'إسناد فني','Assign technician')}
+                </Button>
+              ):(
+                <div className="manager-assignment-form">
+                  {exceptionalReassign && <p className="manager-assignment-exception"><CircleAlert size={16}/>{tr(lang,'بدأ العمل على البلاغ. إعادة الإسناد استثنائية وتتطلب توضيح السبب، وسيبدأ الفني الجديد المتابعة من مرحلة المراجعة.','Work has started. An exceptional reassignment requires a reason; the new technician will restart from review.')}</p>}
+                  <label className="field-label">
+                    <span>{tr(lang,'الفني البديل المتاح','Available replacement technician')}</span>
+                    <TadarukSelect value={technicianId} onValueChange={setTechnicianId}
+                      ariaLabel={tr(lang,'اختر الفني البديل','Choose replacement technician')}
+                      dir={lang==='ar'?'rtl':'ltr'} placeholder={tr(lang,'اختر فنيًا','Choose technician')}
+                      options={availableReplacementTechnicians.map(t=>({value:t.id,label:`${t.name} · ${classificationText(t.specialization,lang)}`}))}/>
+                  </label>
+                  {!availableReplacementTechnicians.length&&<p className="manager-assignment-empty">{tr(lang,'لا يوجد فني بديل متاح في الفرع بنفس التخصص حاليًا.','No eligible available technician in this branch and specialty.')}</p>}
+                  <div className="manager-assignment-buttons">
+                    <Button kind="outline" disabled={!technicianId||action.isPending}
+                      onClick={()=>{setReassignError('');setReassignReason('');setPendingTechnicianId(technicianId);}}
+                      data-testid="button-manager-reassign"><Users size={16}/>{tr(lang,'متابعة التغيير','Continue')}</Button>
+                    <Button kind="outline" onClick={()=>{setShowAssignmentEditor(false);setTechnicianId('');}}>{tr(lang,'إلغاء','Cancel')}</Button>
+                  </div>
+                </div>
+              )}
               <div className="detail-cancel-zone">
                 <TicketCancellationAction ticketId={ticket.id} ticketNumber={ticket.number} lang={lang} manager />
               </div>
-            </>
+            </div>
           )}
 
           {ticket.status === 'closed' && !reporter && (
@@ -1844,58 +1862,61 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
       </aside>
     </div>
 
-    {/* Manager Reassignment Confirmation Dialog */}
-    <AlertDialog open={Boolean(pendingTechnicianId)} onOpenChange={open => { if (!open) setPendingTechnicianId(null); }}>
-      <AlertDialogContent className="confirm-dialog" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+    {/* Confirmation and mandatory reason for post-start exceptions. */}
+    <AlertDialog open={Boolean(pendingTechnicianId)} onOpenChange={open=>{if(!open&&!action.isPending){setPendingTechnicianId(null);setReassignError('');}}}>
+      <AlertDialogContent className="confirm-dialog" dir={lang==='ar'?'rtl':'ltr'}>
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
-            <Users size={19} className="text-[#307190]" />
-            <span>{tr(lang, 'تأكيد تغيير الفني المسؤول', 'Confirm Technician Reassignment')}</span>
+            <Users size={19} className="text-[#307190]"/>{tr(lang,'تأكيد تغيير الفني','Confirm technician change')}
           </AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="reassign-confirm-body text-sm space-y-3">
-              <p className="reassign-confirm-intro text-slate-600 dark:text-slate-300">
-                {tr(
-                  lang,
-                  `هل ترغب في تغيير إسناد البلاغ (${ticket.number})؟`,
-                  `Are you sure you want to change the technician assigned to ticket (${ticket.number})?`
-                )}
-              </p>
               <div className="reassign-comparison-grid p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-500 font-semibold">{tr(lang, 'الفني الحالي:', 'Current Technician:')}</span>
-                  <span className="font-bold text-slate-700 dark:text-slate-200">{ticket.technicianName || tr(lang, 'غير مسند', 'Unassigned')}</span>
-                </div>
-                <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-200 dark:border-slate-700">
-                  <span className="text-slate-500 font-semibold">{tr(lang, 'الفني الجديد:', 'New Technician:')}</span>
-                  <span className="font-bold text-[#1f3363] dark:text-[#56f4ef]">
-                    {(technicians || []).find(t => t.id === pendingTechnicianId)?.name || ''}
-                    {((technicians || []).find(t => t.id === pendingTechnicianId)?.specialization) && ` · ${(technicians || []).find(t => t.id === pendingTechnicianId)?.specialization}`}
-                  </span>
-                </div>
+                <div className="flex items-center justify-between gap-3"><span>{tr(lang,'الفني الحالي','Current')}</span><b>{ticket.technicianName||tr(lang,'غير مسند','Unassigned')}</b></div>
+                <div className="flex items-center justify-between gap-3 border-t pt-2"><span>{tr(lang,'الفني الجديد','New')}</span><b>{(technicians||[]).find(t=>t.id===pendingTechnicianId)?.name||''}</b></div>
               </div>
+              {exceptionalReassign&&(
+                <label className="field-label">
+                  <span>{tr(lang,'سبب إعادة الإسناد الاستثنائية (إلزامي)','Reason for exceptional reassignment (required)')}</span>
+                  <textarea rows={3} required minLength={5} value={reassignReason}
+                    onChange={e=>{setReassignReason(e.target.value);setReassignError('');}}
+                    placeholder={tr(lang,'مثال: تعذر على الفني متابعة العمل بسبب ظرف طارئ','Example: The technician is unavailable due to an emergency')}
+                    data-testid="input-reassign-reason"/>
+                </label>
+              )}
+              {reassignError&&<p role="alert" className="inline-error">{reassignError}</p>}
+              <p>{tr(lang,'سيتم تحديث الفني المسؤول في جميع قوائم البلاغات وإرسال إشعار للفنيين المعنيين.','The assignment will update everywhere and notify the affected technicians.')}</p>
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => setPendingTechnicianId(null)} disabled={action.isPending}>
-            {tr(lang, 'إلغاء', 'Cancel')}
-          </AlertDialogCancel>
-          <AlertDialogAction
-            className="branch-confirm-action"
-            disabled={action.isPending}
-            onClick={(e) => {
+          <AlertDialogCancel disabled={action.isPending}>{tr(lang,'إلغاء','Cancel')}</AlertDialogCancel>
+          <AlertDialogAction className="branch-confirm-action"
+            disabled={action.isPending||(exceptionalReassign&&reassignReason.trim().length<5)}
+            onClick={async(e)=>{
               e.preventDefault();
-              if (pendingTechnicianId) {
-                const targetId = pendingTechnicianId;
-                act('reassign', { technicianId: targetId });
-                setTechnicianId(targetId);
+              if(!pendingTechnicianId)return;
+              if(exceptionalReassign&&reassignReason.trim().length<5){setReassignError(tr(lang,'اذكر سببًا لا يقل عن خمسة أحرف.','Enter at least five characters.'));return;}
+              try {
+                setReassignError('');
+                await action.mutateAsync({ticketId:id,data:{action:'reassign',technicianId:pendingTechnicianId,note:exceptionalReassign?reassignReason.trim():undefined}});
                 setPendingTechnicianId(null);
+                setReassignReason('');
+                setTechnicianId('');
+                setShowAssignmentEditor(false);
+                setActionFeedback(tr(lang,'تم تغيير الفني وإرسال الإشعارات.','Technician updated and notifications sent.'));
+                void Promise.all([
+                  query.invalidateQueries({queryKey:getGetTicketQueryKey(id)}),
+                  query.invalidateQueries({queryKey:getListTicketsQueryKey()}),
+                  query.invalidateQueries({queryKey:getGetOverviewQueryKey()}),
+                  query.invalidateQueries({queryKey:getListTechniciansQueryKey()}),
+                  query.invalidateQueries({queryKey:['tadaruk-notifications']}),
+                ]);
+              } catch {
+                setReassignError(tr(lang,'تعذر تغيير الفني. ربما تغيرت حالة البلاغ أو إسناده؛ حدّث الصفحة ثم حاول مجددًا.','Unable to reassign. The ticket may have changed; refresh and retry.'));
               }
-            }}
-            data-testid="button-confirm-reassign"
-          >
-            {action.isPending ? tr(lang, 'جارٍ التحديث...', 'Updating...') : tr(lang, 'تأكيد التغيير', 'Confirm Reassignment')}
+            }} data-testid="button-confirm-reassign">
+            {action.isPending?tr(lang,'جارٍ الحفظ...','Saving...'):tr(lang,'تأكيد تغيير الفني','Confirm change')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
