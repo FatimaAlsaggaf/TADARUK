@@ -657,6 +657,13 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
   const profileMenuRef=useRef<HTMLDivElement>(null);
   const branchContext=useContext(ReporterBranchContext);
   const isReporter=user.role==='reporter';
+  const {data:teamTechnicians,isSuccess:technicianListReady}=useListTechnicians({
+    query:{enabled:user.role==='manager',queryKey:getListTechniciansQueryKey()}
+  });
+  const needsTechnicians=user.role==='manager'&&(
+    (technicianListReady&&Array.isArray(teamTechnicians)&&teamTechnicians.length===0)||
+    (typeof window!=='undefined'&&localStorage.getItem('tadaruk-needs-technician-setup')==='1')
+  );
   const [showNotifications,setShowNotifications]=useState(false);
   const [demoReadIds,setDemoReadIds]=useState<string[]>([]);
   const notificationsRef=useRef<HTMLDivElement>(null);
@@ -1067,6 +1074,10 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
             transition={{duration:reduced?0:.32,ease:[.22,.72,.18,1]}}
           ><Icon size={19}/></motion.span>
           <span>{tr(lang,ar as string,en as string)}</span>
+          {needsTechnicians&&(path as string)==='/workspace/technicians'&&
+            <span className="technicians-setup-dot" role="status"
+              aria-label={tr(lang,'يرجى إضافة أول فني لإسناد المهام','Add your first technician to enable assignments')}
+              title={tr(lang,'أضف أول فني لتفعيل الإسناد','Add your first technician')}/>}
         </Link>;
       })}</nav>
     </aside>
@@ -1701,7 +1712,7 @@ const TECHNICIAN_SPECIALTIES = [
 function TechniciansPage({lang}:{lang:Lang}) {
   const {data:techs,isLoading,isError,refetch}=useListTechnicians();
   const {data:branches}=useListBranches();
-  const safeTechs = Array.isArray(techs) && techs.length > 0 ? techs : (FALLBACK_TECHNICIANS as unknown as Technician[]);
+  const safeTechs = Array.isArray(techs) ? techs : (FALLBACK_TECHNICIANS as unknown as Technician[]);
   const safeBranches = Array.isArray(branches) && branches.length > 0 ? branches : (FALLBACK_BRANCHES as unknown as Branch[]);
   const create=useCreateTechnician();
   const update=useUpdateTechnician();
