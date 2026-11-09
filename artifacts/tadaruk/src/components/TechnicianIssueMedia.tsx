@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type PointerEvent, type WheelEvent } from 'react';
+import { createElement, useEffect, useRef, useState, type PointerEvent, type WheelEvent } from 'react';
 import { Box, Camera, Maximize2, Minus, Move, Plus, RotateCcw, X } from 'lucide-react';
 import './technician-issue-media.css';
 
@@ -136,10 +136,13 @@ export default function TechnicianIssueMedia({ticketId,imageUrl,lang}:{ticketId:
           </div>:
           <div className="tadaruk-media-stage tadaruk-media-stage--model">
             {!viewerLoaded&&!viewerFailed&&<span className="tadaruk-media-loading" role="status">{tr(lang,'جارٍ تحميل النموذج الحقيقي...','Loading verified 3D model...')}</span>}
-            {hasModel&&<model-viewer ref={modelRef as any} src={model.modelUrl}
-              alt={tr(lang,'نموذج ثلاثي الأبعاد مولد من صورة البلاغ ويحتاج تأكيدًا بصريًا من الفني','AI-generated model; technician must verify fidelity against the photo')}
-              camera-controls interaction-prompt="auto" shadow-intensity="1" exposure="1.1"
-              touch-action="pan-y" style={{width:'100%',height:'100%',minHeight:'320px'}}/>}
+            {hasModel&&createElement('model-viewer',{
+              ref:modelRef,src:model.modelUrl,
+              alt:tr(lang,'نموذج ثلاثي الأبعاد مولد من صورة البلاغ','AI-generated model from the issue photo'),
+              'camera-controls':'','interaction-prompt':'auto','shadow-intensity':'1',
+              exposure:'1.1','touch-action':'pan-y',
+              style:{width:'100%',height:'100%',minHeight:'320px'}
+            })}
             {viewerLoaded&&model?.hotspot?.label&&<span className="tadaruk-media-hotspot">{model.hotspot.label}</span>}
           </div>
         }
