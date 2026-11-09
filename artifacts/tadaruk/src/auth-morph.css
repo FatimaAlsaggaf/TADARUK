@@ -603,3 +603,161 @@
   .auth-morph-register .org-bottom .org-prev{font-size:13px !important}
   .auth-morph-register .org-bottom .org-next{flex:1 1 auto !important}
 }
+
+
+/* Nov 9 UX corrections: no repeated navigation, visible shader, predictable directions. */
+.auth-morph-page{
+  background:#eaf6fc !important;
+}
+.auth-striped-waves{
+  opacity:1 !important;
+  filter:none !important;
+}
+.auth-striped-waves>div{
+  opacity:.96 !important;
+}
+.auth-striped-waves::after{
+  display:none !important;
+  content:none !important;
+}
+/* Physical left: theme, language, then home/back (login only). Physical right: logo. */
+.auth-morph-header{
+  display:flex !important;
+  direction:ltr !important;
+  justify-content:space-between !important;
+  align-items:center !important;
+  grid-template-columns:none !important;
+  gap:12px !important;
+}
+.auth-morph-header-actions.nav-actions{
+  order:0 !important;
+  justify-self:auto !important;
+  justify-content:flex-start !important;
+  direction:ltr !important;
+  gap:clamp(7px,1.5vw,20px) !important;
+  flex:0 1 auto;
+  flex-wrap:nowrap !important;
+  min-width:0;
+}
+.auth-morph-header-actions .landing-theme-toggle{
+  flex:0 0 auto;
+  order:0;
+}
+.auth-morph-header-actions .nav-lang{
+  order:1;
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  white-space:nowrap;
+}
+.auth-morph-header-actions .auth-morph-home{
+  order:2;
+  justify-self:auto;
+  direction:ltr !important;
+  margin:0 !important;
+  font-family:var(--app-font-sans),sans-serif !important;
+}
+.auth-morph-brand{
+  order:1;
+  justify-self:auto !important;
+  flex:0 0 auto;
+  margin-inline-start:auto;
+}
+.auth-morph-card.auth-morph-signup::before{
+  display:none !important;
+  content:none !important;
+}
+/* Blue circle is an actual contextual Back button, not a decorative dot. */
+.auth-morph-register .org-wizard-back-circle{
+  position:absolute !important;
+  top:24px;
+  right:26px;
+  left:auto;
+  z-index:15;
+  display:grid !important;
+  place-items:center;
+  width:56px;
+  height:56px;
+  border:0;
+  border-radius:50%;
+  background:#78a9c5;
+  color:#fff;
+  box-shadow:0 8px 23px #1e527431;
+  cursor:pointer;
+  transition:background-color .2s,box-shadow .2s,transform .2s;
+}
+.auth-morph-register .org-wizard-back-circle:hover{
+  background:#6499b7;
+  box-shadow:0 10px 25px #1e52744c;
+  transform:translateY(-1px);
+}
+.auth-morph-register .org-wizard-back-circle:focus-visible{
+  outline:3px solid #1e6993;
+  outline-offset:4px;
+}
+/* Continue is on the physical left; no second Back at bottom. */
+.auth-morph-register .org-bottom.org-wizard-continue{
+  display:flex !important;
+  direction:ltr !important;
+  justify-content:flex-start !important;
+  align-items:center;
+  gap:10px;
+}
+.auth-morph-register .org-bottom.org-wizard-continue .org-next{
+  flex:0 0 auto !important;
+  margin:0 auto 0 0 !important;
+  min-width:112px;
+}
+.dark .auth-striped-waves>div{
+  opacity:.9 !important;
+}
+.dark .auth-striped-waves::after{
+  display:none !important;
+}
+.dark .auth-morph-register .org-wizard-back-circle{
+  background:#214e72;
+  color:#f6fcff;
+}
+.dark .auth-morph-register .org-wizard-back-circle:hover{
+  background:#2b6388;
+}
+@media(max-width:850px){
+  .auth-morph-header-actions.nav-actions{gap:8px !important;}
+  .auth-morph-register .org-wizard-back-circle{
+    width:49px;height:49px;right:19px;top:19px;
+  }
+}
+@media(max-width:560px){
+  .auth-morph-header{
+    display:flex !important;
+    grid-template-columns:none !important;
+    flex-wrap:nowrap !important;
+    gap:7px !important;
+  }
+  .auth-morph-header-actions.nav-actions{
+    gap:4px !important;
+    flex-wrap:nowrap !important;
+  }
+  .auth-morph-header-actions .nav-lang{
+    gap:3px;
+    min-height:36px;
+  }
+  .auth-morph-header-actions .auth-morph-home{
+    padding:6px 3px !important;
+    font-size:11px !important;
+  }
+  .auth-morph-brand img{
+    width:clamp(76px,22vw,105px) !important;
+  }
+  .auth-morph-register .org-wizard-back-circle{
+    width:44px;height:44px;right:16px;top:16px;
+  }
+  .auth-morph-register .org-bottom.org-wizard-continue .org-next{
+    flex:0 0 auto !important;
+    width:auto !important;
+    min-width:110px;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .auth-morph-register .org-wizard-back-circle{transition:none !important;}
+}
