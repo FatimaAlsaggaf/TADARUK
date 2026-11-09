@@ -1331,3 +1331,8 @@
 @media(prefers-reduced-motion:reduce) {
   .tech-photo-depth-trigger,.tech-depth-stage {transition:none !important;transform:none !important;will-change:auto;}
 }
+
+/* TADARUK stage accents */
+
+.tech-ticket-detail .tech-stage.is-done,.tech-ticket-detail .tech-stage.is-complete{color:#307190 !important;}
+.tech-ticket-detail .tech-stage.is-active{color:#1f3363 !important;}

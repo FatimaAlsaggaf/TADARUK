@@ -32,6 +32,7 @@ import {
 import NotFound from '@/pages/not-found';
 import { ReporterHomePage, ReporterNewTicketPage, ReporterTicketsPage } from '@/ReporterWorkspace';
 import ReporterAccessPanel from '@/ReporterAccessPanel';
+import OrganizationOnboarding from '@/OrganizationOnboarding';
 import { TicketCancellationAction } from '@/components/TicketCancellationAction';
 import { TechnicianTicketDetail } from '@/components/TechnicianTicketDetail';
 import SunMoonThemeToggle from '@/components/ui/sun-moon-theme-toggle';
@@ -462,6 +463,8 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
         {sectionIds.map((id,index)=><button key={id} className={`landing-nav-link ${activeSection===id?'is-active':''}`} onClick={()=>goToSection(id)} aria-current={activeSection===id?'location':undefined}>{sectionLabels[index]}</button>)}
       </nav>
       <div className="nav-actions">
+        <Link href="/login" className="landing-account-login">{tr(lang,'تسجيل الدخول','Sign in')}</Link>
+        <Link href="/signup" className="landing-account-signup">{tr(lang,'إنشاء حساب منشأة','Create organization')}</Link>
         <button className="nav-lang" onClick={()=>setLang(lang==='ar'?'en':'ar')} aria-label={tr(lang,'التبديل إلى الإنجليزية','Switch to Arabic')}><Languages size={16}/><span>{lang==='ar'?'English':'العربية'}</span></button>
         <SunMoonThemeToggle
           className="landing-theme-toggle"
@@ -1829,7 +1832,7 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
                     ? tr(lang,'لا يوجد فني بديل متاح حاليًا.','No replacement technician is available right now.')
                     : tr(lang,'لا يوجد فني متاح لهذا البلاغ حاليًا.','No technician is available for this ticket right now.')}
                 </p>
-              ) : !showAssignmentEditor ? (
+              ) : ticket.technicianId && !showAssignmentEditor ? (
                 <Button kind="outline" onClick={()=>{setShowAssignmentEditor(true);setReassignError('');setTechnicianId('');}} data-testid="button-manager-edit-assignment">
                   <Users size={16}/>{ticket.technicianId?tr(lang,'تغيير الفني','Change technician'):tr(lang,'إسناد فني','Assign technician')}
                 </Button>
@@ -1837,7 +1840,7 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
                 <div className="manager-assignment-form">
                   {exceptionalReassign && <p className="manager-assignment-exception"><CircleAlert size={16}/><span>{tr(lang,'بدأ العمل؛ يلزم توضيح سبب التغيير عند التأكيد.','Work has started; a reason will be required to confirm the change.')}</span></p>}
                   <label className="field-label">
-                    <span>{tr(lang,'الفني البديل','Replacement technician')}</span>
+                    <span>{ticket.technicianId?tr(lang,'الفني البديل','Replacement technician'):tr(lang,'اختر الفني المتاح','Choose available technician')}</span>
                     <TadarukSelect value={technicianId} onValueChange={setTechnicianId}
                       ariaLabel={tr(lang,'اختر الفني البديل','Choose replacement technician')}
                       dir={lang==='ar'?'rtl':'ltr'} placeholder={tr(lang,'اختر فنيًا','Choose technician')}
@@ -1847,7 +1850,7 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
                     <Button kind="outline" disabled={!technicianId||action.isPending}
                       onClick={()=>{setReassignError('');setReassignReason('');setPendingTechnicianId(technicianId);}}
                       data-testid="button-manager-reassign"><Users size={16}/>{tr(lang,'متابعة','Continue')}</Button>
-                    <Button kind="outline" onClick={()=>{setShowAssignmentEditor(false);setTechnicianId('');}}>{tr(lang,'إلغاء','Cancel')}</Button>
+                    {ticket.technicianId&&<Button kind="outline" onClick={()=>{setShowAssignmentEditor(false);setTechnicianId('');}}>{tr(lang,'إلغاء','Cancel')}</Button>}
                   </div>
                 </div>
               )}
@@ -2313,7 +2316,7 @@ function AppRoutes() {
   const workspaceRoutes=['/workspace','/workspace/tickets','/workspace/tickets/new','/workspace/technicians','/workspace/branches','/workspace/knowledge'];
   const isTicketDetail=/^\/workspace\/tickets\/[^/]+$/.test(path)&&path!=='/workspace/tickets/new';
   if(workspaceRoutes.includes(path)||isTicketDetail)return <WorkspaceRouter {...prefs}/>;
-  return <Switch><Route path="/"><Landing lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route path="/demo"><DemoPage lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route component={NotFound}/></Switch>;
+  return <Switch><Route path="/"><Landing lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route path="/signup"><OrganizationOnboarding lang={prefs.lang} mode="signup"/></Route><Route path="/login"><OrganizationOnboarding lang={prefs.lang} mode="login"/></Route><Route path="/demo"><DemoPage lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route component={NotFound}/></Switch>;
 }
 function App() { return <QueryClientProvider client={qc}><AppRoutes/></QueryClientProvider>; }
 export default App;

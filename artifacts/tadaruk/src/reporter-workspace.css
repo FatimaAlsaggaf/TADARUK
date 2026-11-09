@@ -3147,3 +3147,16 @@
     flex-basis:100% !important;
   }
 }
+
+/* One soft motion glow, no clutter in reporter hero */
+.reporter-view .rw-home-intro--enhanced{isolation:isolate !important;}
+.reporter-view .rw-home-intro--enhanced::before{
+ content:"" !important;display:block !important;position:absolute !important;
+ width:300px;height:300px;top:50%;inset-inline-end:-110px;inset-inline-start:auto;
+ border-radius:50%;background:radial-gradient(circle,#9ad9ec38 0%,#9ad9ec17 40%,transparent 70%);
+ animation:rw-beacon-breathe 7s ease-in-out infinite alternate !important;
+ pointer-events:none;
+}
+.reporter-view .rw-home-intro--enhanced::after{content:none !important;display:none !important;}
+@keyframes rw-beacon-breathe{from{transform:translateY(-50%) scale(.85);opacity:.65}to{transform:translateY(-50%) scale(1.13);opacity:1}}
+@media(prefers-reduced-motion:reduce){.reporter-view .rw-home-intro--enhanced::before{animation:none !important;transform:translateY(-50%) !important;}}
