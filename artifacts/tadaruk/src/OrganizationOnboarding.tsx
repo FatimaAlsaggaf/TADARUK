@@ -56,7 +56,10 @@ export default function OrganizationOnboarding({lang,mode,embedded=false,onExit}
      const snapshot={organization:data.organization,sector:data.sector==='other'?otherSector:data.sector,city:data.city,owner:data.owner,email:data.email,
        branch:data.branch,branchCity:data.branchCity,departments:data.departments,
        sites,reportersByInvite:true};
-     try{localStorage.setItem('tadaruk-organization-preview',JSON.stringify(snapshot))}catch{}
+     try{
+       localStorage.setItem('tadaruk-organization-preview',JSON.stringify(snapshot));
+       localStorage.setItem('tadaruk-needs-technician-setup','1');
+     }catch{}
      setDone(true);
    }else setStep(s=>s+1);
  };
