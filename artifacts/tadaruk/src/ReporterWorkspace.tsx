@@ -452,7 +452,10 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
         if (photo) {
           try {
             localStorage.setItem(`tadaruk-photo:${ticket.id}`, photo);
-            if (additionalPhoto) localStorage.setItem(`tadaruk-photo-extra:${ticket.id}`, additionalPhoto);
+            if (additionalPhoto) {
+              try { localStorage.setItem(`tadaruk-photo-extra:${ticket.id}`, additionalPhoto); }
+              catch { setPhotoError(text(lang, 'تم إرسال البلاغ، لكن لم تُحفظ الصورة الثانية على هذا الجهاز.', 'Report sent, but the optional second photo could not be saved on this device.')); }
+            }
           }
           catch {
             setPhotoError(text(lang, 'أُرسل البلاغ، لكن تعذر حفظ الصورة على هذا الجهاز.', 'The report was sent, but this device could not keep the photo.'));
