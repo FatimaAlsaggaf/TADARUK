@@ -33,6 +33,7 @@ import NotFound from '@/pages/not-found';
 import { ReporterHomePage, ReporterNewTicketPage, ReporterTicketsPage } from '@/ReporterWorkspace';
 import ReporterAccessPanel from '@/ReporterAccessPanel';
 import OrganizationOnboarding from '@/OrganizationOnboarding';
+import OrganizationJoin from './OrganizationJoin';
 import { TicketCancellationAction } from '@/components/TicketCancellationAction';
 import { TechnicianTicketDetail } from '@/components/TechnicianTicketDetail';
 import SunMoonThemeToggle from '@/components/ui/sun-moon-theme-toggle';
@@ -2329,7 +2330,7 @@ function AppRoutes() {
   const workspaceRoutes=['/workspace','/workspace/tickets','/workspace/tickets/new','/workspace/technicians','/workspace/branches','/workspace/knowledge'];
   const isTicketDetail=/^\/workspace\/tickets\/[^/]+$/.test(path)&&path!=='/workspace/tickets/new';
   if(workspaceRoutes.includes(path)||isTicketDetail)return <WorkspaceRouter {...prefs}/>;
-  return <Switch><Route path="/"><Landing lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route path="/signup"><OrganizationOnboarding lang={prefs.lang} mode="signup"/></Route><Route path="/login"><OrganizationOnboarding lang={prefs.lang} mode="login"/></Route><Route path="/demo"><DemoPage lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route component={NotFound}/></Switch>;
+  return <Switch><Route path="/"><Landing lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route path="/signup"><OrganizationOnboarding lang={prefs.lang} mode="signup"/></Route><Route path="/join"><OrganizationJoin lang={prefs.lang}/></Route><Route path="/login"><OrganizationOnboarding lang={prefs.lang} mode="login"/></Route><Route path="/demo"><DemoPage lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route component={NotFound}/></Switch>;
 }
 function App() { return <QueryClientProvider client={qc}><AppRoutes/></QueryClientProvider>; }
 export default App;

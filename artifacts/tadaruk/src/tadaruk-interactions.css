@@ -9763,3 +9763,10 @@ body:has(.dark .reporter-shell) #root {
 @media(max-width:600px){.app-shell .compact-timeline-item--refined{column-gap:12px !important;}
 .app-shell .compact-timeline-item--refined .compact-timeline-row{align-items:flex-start !important;}
 .app-shell .compact-timeline-item--refined .compact-timeline-row time{font-size:10.5px !important;}}
+
+/* Remove the unintended teal vertical accent from assignment history content */
+.app-shell .compact-timeline-item--refined.is-assignment .compact-timeline-content,
+.app-shell .compact-timeline-item--refined.is-assignment .compact-timeline-row,
+.app-shell .compact-timeline-item--refined.is-assignment .compact-timeline-note{border-inline-start:0 !important;border-inline-end:0 !important;box-shadow:none !important}
+.app-shell .compact-timeline-item--refined.is-assignment .compact-timeline-content::before,
+.app-shell .compact-timeline-item--refined.is-assignment .compact-timeline-content::after{display:none !important;content:none !important}
