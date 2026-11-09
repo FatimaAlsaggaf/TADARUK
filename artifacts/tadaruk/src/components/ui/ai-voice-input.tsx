@@ -521,15 +521,15 @@ export function AiVoiceInput({
           className="overflow-hidden rounded-2xl border border-cyan-500/20 bg-gradient-to-b from-white via-slate-50 to-[#56F4EF]/5 p-6 shadow-2xl backdrop-blur sm:max-w-md dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-[#1F3363]/40 dark:text-slate-100"
           dir={lang === "ar" ? "rtl" : "ltr"}
         >
-          <DialogHeader className="text-center sm:text-center">
+          <DialogHeader className="items-center text-center sm:text-center [&_h2]:text-center [&_p]:text-center">
             <div className="mx-auto mb-1 flex items-center justify-center gap-1.5 text-xs font-bold tracking-wider text-[#307190] dark:text-[#56F4EF]">
               <Sparkles className="h-3.5 w-3.5 text-[#56F4EF]" />
               {text(lang, "تفريغ صوتي بالذكاء الاصطناعي", "AI VOICE NOTE")}
             </div>
-            <DialogTitle className="font-serif text-2xl font-bold text-[#1F3363] dark:text-white">
+            <DialogTitle className="w-full text-center font-serif text-2xl font-bold text-[#1F3363] dark:text-white">
               {text(lang, "صف المشكلة بصوتك", "Describe the issue aloud")}
             </DialogTitle>
-            <DialogDescription className="text-xs text-slate-500 dark:text-slate-400">
+            <DialogDescription className="mx-auto max-w-[380px] text-center text-xs leading-6 text-slate-500 dark:text-slate-400">
               {text(
                 lang,
                 "تحدّث بحرية عن العطل ومكانه؛ سيقوم تدارك بتحويل صوتك إلى بلاغ مكتوب.",
@@ -560,20 +560,18 @@ export function AiVoiceInput({
                 className={cn(
                   "relative flex h-16 w-16 items-center justify-center rounded-2xl shadow-xl transition-all duration-300",
                   isRecording
-                    ? "bg-gradient-to-br from-[#1F3363] via-[#24476B] to-[#1F3363] text-[#56F4EF] ring-4 ring-[#56F4EF]/40 scale-105"
+                    ? "tadaruk-voice-active-square text-[#56F4EF]"
                     : stage === "processing"
                       ? "bg-[#1F3363] text-[#56F4EF]"
                       : "bg-[#1F3363] text-white hover:scale-105 hover:bg-[#28487d]",
                 )}
-                aria-label={isRecording ? "Stop recording" : "Start recording"}
+                aria-label={isRecording ? text(lang, "إيقاف التسجيل", "Stop recording") : text(lang, "بدء التسجيل", "Start recording")}
               >
                 {stage === "processing" ? (
                   <LoaderCircle className="h-7 w-7 animate-spin text-[#56F4EF]" />
                 ) : stage === "transcribed" ? (
                   <Check className="h-7 w-7 text-[#56F4EF]" />
-                ) : isRecording ? (
-                  <span className="tadaruk-voice-recording-mark" aria-hidden="true" />
-                ) : (
+                ) : isRecording ? null : (
                   <Mic className="h-7 w-7" />
                 )}
               </button>
