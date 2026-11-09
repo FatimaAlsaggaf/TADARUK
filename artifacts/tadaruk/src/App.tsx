@@ -1800,26 +1800,31 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
                   <strong>{ticket.technicianName || tr(lang,'لم يُسند بعد','Not assigned yet')}</strong>
                 </div>
               </div>
-              {!showAssignmentEditor ? (
+              {availableReplacementTechnicians.length === 0 ? (
+                <p className="manager-assignment-empty" role="status">
+                  {ticket.technicianId
+                    ? tr(lang,'لا يوجد فني بديل متاح حاليًا.','No replacement technician is available right now.')
+                    : tr(lang,'لا يوجد فني متاح لهذا البلاغ حاليًا.','No technician is available for this ticket right now.')}
+                </p>
+              ) : !showAssignmentEditor ? (
                 <Button kind="outline" onClick={()=>{setShowAssignmentEditor(true);setReassignError('');setTechnicianId('');}} data-testid="button-manager-edit-assignment">
                   <Users size={16}/>{ticket.technicianId?tr(lang,'تغيير الفني','Change technician'):tr(lang,'إسناد فني','Assign technician')}
                 </Button>
-              ):(
+              ) : (
                 <div className="manager-assignment-form">
-                  {exceptionalReassign && <p className="manager-assignment-exception"><CircleAlert size={16}/><span>{tr(lang,'بدأ العمل؛ يجب ذكر سبب التغيير عند التأكيد.','Work started; a reason is required when confirming.')}</span></p>}
-                  {availableReplacementTechnicians.length > 0 && <label className="field-label">
-                    <span>{tr(lang,'الفني البديل المتاح','Available replacement technician')}</span>
+                  {exceptionalReassign && <p className="manager-assignment-exception"><CircleAlert size={16}/><span>{tr(lang,'بدأ العمل؛ يلزم توضيح سبب التغيير عند التأكيد.','Work has started; a reason will be required to confirm the change.')}</span></p>}
+                  <label className="field-label">
+                    <span>{tr(lang,'الفني البديل','Replacement technician')}</span>
                     <TadarukSelect value={technicianId} onValueChange={setTechnicianId}
                       ariaLabel={tr(lang,'اختر الفني البديل','Choose replacement technician')}
                       dir={lang==='ar'?'rtl':'ltr'} placeholder={tr(lang,'اختر فنيًا','Choose technician')}
                       options={availableReplacementTechnicians.map(t=>({value:t.id,label:`${t.name} · ${classificationText(t.specialization,lang)}`}))}/>
-                  </label>}
-                  {!availableReplacementTechnicians.length&&<p className="manager-assignment-empty" role="status">{tr(lang,'لا يوجد بديل متاح بنفس التخصص في هذا الفرع.','No replacement is available in this branch and specialty.')}</p>}
+                  </label>
                   <div className="manager-assignment-buttons">
-                    {availableReplacementTechnicians.length > 0 && <Button kind="outline" disabled={!technicianId||action.isPending}
+                    <Button kind="outline" disabled={!technicianId||action.isPending}
                       onClick={()=>{setReassignError('');setReassignReason('');setPendingTechnicianId(technicianId);}}
-                      data-testid="button-manager-reassign"><Users size={16}/>{tr(lang,'متابعة التغيير','Continue')}</Button>}
-                    <Button kind="outline" onClick={()=>{setShowAssignmentEditor(false);setTechnicianId('');}}>{tr(lang,'رجوع','Back')}</Button>
+                      data-testid="button-manager-reassign"><Users size={16}/>{tr(lang,'متابعة','Continue')}</Button>
+                    <Button kind="outline" onClick={()=>{setShowAssignmentEditor(false);setTechnicianId('');}}>{tr(lang,'إلغاء','Cancel')}</Button>
                   </div>
                 </div>
               )}
