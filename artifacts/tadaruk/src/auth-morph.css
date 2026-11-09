@@ -576,3 +576,30 @@
   .auth-morph-register .org-steps>div small{font-size:10px !important;}
 }
 @media(prefers-reduced-motion:reduce){.auth-striped-waves{filter:none !important;}}
+
+
+/* Previous steps also keep their Back affordance on the physical left. */
+.auth-morph-register .org-bottom{
+  display:flex !important;
+  direction:ltr !important;
+  justify-content:space-between !important;
+  width:100%;
+}
+.auth-morph-register .org-bottom .org-prev{
+  display:inline-flex;
+  direction:ltr;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  margin:0 !important;
+  font-family:var(--app-font-sans),sans-serif !important;
+}
+.auth-morph-register .org-bottom .org-next{
+  margin-left:auto !important;
+  flex:0 1 auto !important;
+}
+@media(max-width:560px){
+  .auth-morph-register .org-bottom{gap:8px}
+  .auth-morph-register .org-bottom .org-prev{font-size:13px !important}
+  .auth-morph-register .org-bottom .org-next{flex:1 1 auto !important}
+}
