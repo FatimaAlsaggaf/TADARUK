@@ -29,7 +29,7 @@ function loadRealModelViewer():Promise<void>{
   return modelViewerScript;
 }
 
-export default function TechnicianIssueMedia({ticketId,imageUrl,lang}:{ticketId:string;imageUrl:string;lang:Lang}){
+export default function TechnicianIssueMedia({ticketId,imageUrl,lang,sinkLeakExample=false}:{ticketId:string;imageUrl:string;lang:Lang;sinkLeakExample?:boolean}){
   const [open,setOpen]=useState(false);
   const [mode,setMode]=useState<'photo'|'model'|'demo'>('photo');
   const [zoom,setZoom]=useState(1);
@@ -83,7 +83,7 @@ export default function TechnicianIssueMedia({ticketId,imageUrl,lang}:{ticketId:
   const hasModel=isValidModel(model)&&!viewerFailed;
   // An opt-in demo is available on this ONE seeded sink ticket only.
   // It is a real procedural 3D scene, never claimed to be AI reconstruction.
-  const showSinkDemo=ticketId==='ticket-demo-2401';
+  const showSinkDemo=ticketId==='ticket-demo-2401' || sinkLeakExample;
   const reset=()=>{setZoom(1);setOffset({x:0,y:0});};
   const changeZoom=(n:number)=>setZoom(Math.min(5,Math.max(1,n)));
   const moveStart=(e:PointerEvent<HTMLDivElement>)=>{
