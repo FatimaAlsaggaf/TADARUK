@@ -1555,7 +1555,11 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
             <span><Clock3 size={16}/><span><small>{tr(lang,'تاريخ البلاغ','Reported')}</small><b>{dateText(ticket.createdAt,lang)}</b></span></span>
           </div>
           {(ticket.imageUrl||localPhoto)&&<PhotoAttachmentCard imageUrl={ticket.imageUrl||localPhoto} lang={lang} variant="detail" localOnly={!ticket.imageUrl&&Boolean(localPhoto)}/>}
-          {localExtraPhoto && <div className="mt-3"><span className="mb-2 block text-xs font-semibold text-slate-500">{tr(lang,'الصورة الإضافية (محفوظة على هذا الجهاز)','Additional photo (saved on this device)')}</span><PhotoAttachmentCard imageUrl={localExtraPhoto} lang={lang} variant="detail" localOnly/></div>}
+          {localExtraPhoto && <div className="mt-3"><span className="mb-2 block text-xs font-semibold text-slate-500">{tr(lang,'صورة إضافية متاحة على هذا الجهاز فقط','Additional image available on this device only')}</span><PhotoAttachmentCard imageUrl={localExtraPhoto} lang={lang} variant="detail" localOnly/></div>}
+          {!ticket.imageUrl&&!localPhoto && <div className="detail-photo-unavailable" role="status">
+            <ImageOff size={19}/>
+            <span>{tr(lang,'لم تُحفظ صورة لهذا البلاغ. لا يمكن عرض مرفق غير موجود في البيانات.','No image is stored with this ticket.')}</span>
+          </div>}
         </div>
 
         {/* Streamlined Compact Activity History (سجل المتابعة) */}
@@ -1748,9 +1752,10 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
                     <span>{tr(lang, 'البلاغ مسجل وبانتظار استلام الفني', 'Report submitted — Awaiting technician')}</span>
                   </div>
                   <p>{tr(lang, 'تم إرسال البلاغ إلى الفريق. يمكنك إلغاؤه في حال حُلت المشكلة قبل بدء العمل.', 'Report sent. You can cancel it if resolved before work begins.')}</p>
-                  <div className="detail-cancel-zone">
-                    <TicketCancellationAction ticketId={ticket.id} ticketNumber={ticket.number} lang={lang} />
-                  </div>
+                  {!(ticket.history||[]).some(event=>event.label==='بدأ الفني العمل') &&
+                    <div className="detail-cancel-zone">
+                      <TicketCancellationAction ticketId={ticket.id} ticketNumber={ticket.number} lang={lang} />
+                    </div>}
                 </div>
               )}
 
@@ -1834,9 +1839,12 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
                   </div>
                 </div>
               )}
-              <div className="detail-cancel-zone">
-                <TicketCancellationAction ticketId={ticket.id} ticketNumber={ticket.number} lang={lang} manager />
-              </div>
+              {(ticket.status==='new'||ticket.status==='review') &&
+                !(ticket.history||[]).some(event=>event.label==='بدأ الفني العمل') && (
+                  <div className="detail-cancel-zone">
+                    <TicketCancellationAction ticketId={ticket.id} ticketNumber={ticket.number} lang={lang} manager />
+                  </div>
+                )}
             </div>
           )}
 
