@@ -104,3 +104,54 @@
   }
   .reporter-shell .reporter-header-controls.unified-account-controls{gap:5px !important}
 }
+
+
+/* Reporter previously used another notification popover; replicate the common one. */
+.reporter-shell .reporter-header-controls .workspace-header-notifications-popover{
+  position:absolute !important;
+  top:calc(100% + 10px) !important;
+  inset-inline-end:0 !important;
+  width:min(350px,calc(100vw - 28px)) !important;
+  background:#ffffff;
+  border:1px solid #dbe5ee;
+  border-radius:14px;
+  box-shadow:0 14px 32px rgba(31,51,99,.14);
+  overflow:hidden;
+}
+.reporter-shell .reporter-header-controls .workspace-header-bell{
+  display:inline-grid;
+  place-items:center;
+  position:relative;
+  min-width:42px;
+  min-height:42px;
+  padding:8px;
+  border-radius:12px;
+  border:1px solid #dce5ee;
+  color:#235779;
+  background:#fffdfa;
+  cursor:pointer;
+}
+.reporter-shell .reporter-header-controls .workspace-header-bell:hover{
+  background:#ecf6fa;
+  border-color:#b5d5e6;
+}
+.reporter-shell .reporter-header-controls .workspace-notifications-empty{
+  padding:19px 14px;
+  color:#71849a;
+  font-size:12px;
+  line-height:1.7;
+}
+.dark .reporter-shell .reporter-header-controls .workspace-header-notifications-popover{
+  background:#182d44;
+  border-color:#395069;
+}
+.dark .reporter-shell .reporter-header-controls .workspace-header-bell{
+  color:#d1eef7;
+  border-color:#34536a;
+  background:#1b354c;
+}
+.dark .reporter-shell .reporter-header-controls .workspace-notifications-empty{color:#c2d0df}
+.dark .app-shell .unified-account-frame .technician-menu-theme-label,
+.dark .reporter-shell .reporter-header-controls .technician-menu-theme-label{
+  color:#e1ecf6;
+}
