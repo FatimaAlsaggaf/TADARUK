@@ -205,3 +205,24 @@
  .technician-invite-share-tools{width:100%;flex-direction:row;min-width:0}
  .technician-invite-share-button{flex:1;padding:8px;font-size:12px}
 }
+
+
+/* Same small red dot language as unread notifications: no technicians yet. */
+.side-nav .technicians-setup-dot{
+  display:inline-block;
+  flex:0 0 auto;
+  width:9px;height:9px;
+  margin-inline-start:auto;
+  background:#ec454b;
+  border-radius:50%;
+  border:2px solid #fff;
+  box-shadow:0 0 0 2px #ec454b23;
+  animation:tadaruk-setup-dot 2.4s ease-in-out infinite;
+}
+@keyframes tadaruk-setup-dot{
+  50%{box-shadow:0 0 0 5px #ec454b18}
+}
+.dark .side-nav .technicians-setup-dot{border-color:#172b40}
+@media(prefers-reduced-motion:reduce){
+  .side-nav .technicians-setup-dot{animation:none}
+}
