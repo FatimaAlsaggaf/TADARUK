@@ -36,6 +36,7 @@ import OrganizationOnboarding from '@/OrganizationOnboarding';
 import OrganizationJoin from './OrganizationJoin';
 import AuthMorph from './AuthMorph';
 import InvitationQRCode from './components/InvitationQRCode';
+import {createInvitationLink} from './invitation-link';
 import { TicketCancellationAction } from '@/components/TicketCancellationAction';
 import { TechnicianTicketDetail } from '@/components/TechnicianTicketDetail';
 import SunMoonThemeToggle from '@/components/ui/sun-moon-theme-toggle';
@@ -1740,9 +1741,7 @@ function TechniciansPage({lang}:{lang:Lang}) {
   const inviteBranch=safeBranches.find(branch=>branch.id===inviteBranchId);
   const inviteSpecialtyValue=inviteSpecialty===TECHNICIAN_OTHER_SPECIALTY?inviteCustomSpecialty.trim():inviteSpecialty;
   const inviteReady=Boolean(inviteBranch&&inviteSpecialtyValue.length>=2);
-  const inviteLink=typeof window==='undefined'?'':window.location.origin+'/join?'+new URLSearchParams({
-    role:'technician',organization:orgName,branch:inviteBranch?.name||'',specialty:inviteSpecialtyValue
-  }).toString();
+  const inviteLink=createInvitationLink('technician',orgName,inviteBranch?.name||'',inviteSpecialtyValue);
   const inviteMessage=tr(lang,'دعوة للانضمام إلى فريق الصيانة في '+orgName+'. افتح الرابط وأكمل بياناتك: '+inviteLink,
     'Join the maintenance team at '+orgName+'. Complete your profile: '+inviteLink);
   const inviteViaWhatsapp=()=>{
