@@ -2,12 +2,13 @@ import {useState,type FormEvent} from 'react';
 import {Link,useLocation} from 'wouter';
 import {ArrowLeft,Building2,CheckCircle2,ClipboardList,LockKeyhole,Mail,Phone,ShieldCheck,UserRound,Wrench} from 'lucide-react';
 import './organization-onboarding.css';
+import {readQrInviteParams} from './invitationQrUrl';
 import {readInvitationLink} from './invitation-link';
 type Lang='ar'|'en';
 const tr=(l:Lang,ar:string,en:string)=>l==='ar'?ar:en;
 export default function OrganizationJoin({lang}:{lang:Lang}){
  const [,go]=useLocation();
- const params=new URLSearchParams(typeof window!=='undefined'?window.location.search:'');
+ const params=readQrInviteParams(typeof window!=='undefined'?window.location.search:'');
  const invitation=readInvitationLink(typeof window!=='undefined'?window.location.search:'');
  const {role,organization,branch,specialty}=invitation;
  const name=params.get('name')||'';
