@@ -12,7 +12,7 @@ import {
   CheckCircle2, ChevronDown, ClipboardList, Clock3, Filter, Languages, LayoutDashboard,
   MapPin, Menu, Phone, Plus, Search, Settings2, ShieldCheck, Users, Wrench, X, CircleAlert,
   LogOut, UserRound, RotateCcw, Repeat2, ChevronLeft, ChevronRight, LoaderCircle, MapPinned,
-  Mic, Square, Bell, SunMoon, ImageOff
+  Mic, Square, Bell, SunMoon, ImageOff, Copy, MessageCircle
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -35,6 +35,7 @@ import ReporterAccessPanel from '@/ReporterAccessPanel';
 import OrganizationOnboarding from '@/OrganizationOnboarding';
 import OrganizationJoin from './OrganizationJoin';
 import AuthMorph from './AuthMorph';
+import InvitationQRCode from './components/InvitationQRCode';
 import { TicketCancellationAction } from '@/components/TicketCancellationAction';
 import { TechnicianTicketDetail } from '@/components/TechnicianTicketDetail';
 import SunMoonThemeToggle from '@/components/ui/sun-moon-theme-toggle';
@@ -460,8 +461,6 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
           :<button key={id} className={`landing-nav-link ${activeSection===id?'is-active':''}`} onClick={()=>goToSection(id)} aria-current={activeSection===id?'location':undefined}>{sectionLabels[index]}</button>)}
       </nav>
       <div className="nav-actions">
-        <Link href="/login" className="landing-account-login">{tr(lang,'تسجيل الدخول','Sign in')}</Link>
-        <Link href="/signup" className="landing-account-signup">{tr(lang,'إنشاء حساب منشأة','Create organization')}</Link>
         <button className="nav-lang" onClick={()=>setLang(lang==='ar'?'en':'ar')} aria-label={tr(lang,'التبديل إلى الإنجليزية','Switch to Arabic')}><Languages size={16}/><span>{lang==='ar'?'English':'العربية'}</span></button>
         <SunMoonThemeToggle
           className="landing-theme-toggle"
@@ -1715,7 +1714,38 @@ function TechniciansPage({lang}:{lang:Lang}) {
   const [specialtyChoice,setSpecialtyChoice]=useState('');
   const [customSpecialty,setCustomSpecialty]=useState('');
   const [fieldErrors,setFieldErrors]=useState<Record<string,string>>({});
+  const [inviteOpen,setInviteOpen]=useState(false);
+  const [inviteBranchId,setInviteBranchId]=useState('');
+  const [inviteSpecialty,setInviteSpecialty]=useState('');
+  const [inviteCustomSpecialty,setInviteCustomSpecialty]=useState('');
+  const [inviteCopied,setInviteCopied]=useState(false);
+  const [inviteError,setInviteError]=useState('');
+  const orgName=useMemo(()=>{
+    try{
+      const preview=JSON.parse(localStorage.getItem('tadaruk-organization-preview')||'null');
+      return typeof preview?.organization==='string'&&preview.organization.trim()?preview.organization.trim():'تدارك';
+    }catch{return 'تدارك';}
+  },[]);
+
   const branchOptions=useMemo(()=>(branches||[]).filter(b=>b.active||b.id===edit?.branchId),[branches,edit?.branchId]);
+  const inviteBranch=safeBranches.find(branch=>branch.id===inviteBranchId);
+  const inviteSpecialtyValue=inviteSpecialty===TECHNICIAN_OTHER_SPECIALTY?inviteCustomSpecialty.trim():inviteSpecialty;
+  const inviteReady=Boolean(inviteBranch&&inviteSpecialtyValue.length>=2);
+  const inviteLink=typeof window==='undefined'?'':window.location.origin+'/join?'+new URLSearchParams({
+    role:'technician',organization:orgName,branch:inviteBranch?.name||'',specialty:inviteSpecialtyValue
+  }).toString();
+  const inviteMessage=tr(lang,'دعوة للانضمام إلى فريق الصيانة في '+orgName+'. افتح الرابط وأكمل بياناتك: '+inviteLink,
+    'Join the maintenance team at '+orgName+'. Complete your profile: '+inviteLink);
+  const inviteViaWhatsapp=()=>{
+    if(!inviteReady)return;
+    window.open('https://wa.me/?text='+encodeURIComponent(inviteMessage),'_blank','noopener,noreferrer');
+  };
+  const copyInvitation=()=>{
+    if(!inviteReady)return;
+    if(!navigator.clipboard){setInviteError(tr(lang,'نسخ الرابط غير متاح في هذا المتصفح.','Clipboard unavailable in this browser.'));return;}
+    void navigator.clipboard.writeText(inviteLink).then(()=>{setInviteCopied(true);setInviteError('')})
+      .catch(()=>setInviteError(tr(lang,'تعذّر نسخ الرابط.','Could not copy link.')));
+  };
   const specialtyOptions=[
     ...TECHNICIAN_SPECIALTIES.map(specialty=>({value:specialty.value,label:tr(lang,specialty.ar,specialty.en)})),
     {value:TECHNICIAN_OTHER_SPECIALTY,label:tr(lang,'أخرى','Other')},
@@ -1771,8 +1801,27 @@ function TechniciansPage({lang}:{lang:Lang}) {
   };
 
   return <div className="page-enter">
-    <PageTitle eyebrow={tr(lang,'الفريق الميداني','PEOPLE / FIELD TEAM')} title={tr(lang,'الفنيون','Technicians')} description={tr(lang,'توزيع واضح للمهارات والتوفر في كل فرع.','A clear view of skills and availability by branch.')} action={<Button onClick={()=>begin(null)}><Plus size={17}/>{tr(lang,'إضافة فني','Add technician')}</Button>}/>
+    <PageTitle eyebrow={tr(lang,'الفريق الميداني','PEOPLE / FIELD TEAM')} title={tr(lang,'الفنيون','Technicians')} description={tr(lang,'توزيع واضح للمهارات والتوفر في كل فرع.','A clear view of skills and availability by branch.')} action={<div className="technician-invite-actions"><Button kind="outline" onClick={()=>{setInviteOpen(true);setInviteBranchId(safeBranches[0]?.id||'');setInviteSpecialty('');setInviteCopied(false);setInviteError('')}}><MessageCircle size={17}/>{tr(lang,'دعوة فني','Invite technician')}</Button><Button onClick={()=>begin(null)}><Plus size={17}/>{tr(lang,'إضافة فني','Add technician')}</Button></div>}/>
     {isLoading?<State title={tr(lang,'جاري تحميل الفريق','Loading team')} loading/>:isError?<State title={tr(lang,'تعذر تحميل الفنيين','Could not load technicians')} retry={()=>void refetch()}/>:!safeTechs?.length?<div className="empty-panel" aria-live="polite"><Users size={26}/><h3>{tr(lang,'لا يوجد فنّيون مسجلون بعد','No technicians added yet')}</h3><p>{tr(lang,'أضف أعضاء فريق الصيانة لتسهيل إسناد البلاغات.','Add maintenance staff to make ticket assignment easier.')}</p><Button onClick={()=>begin(null)}><Plus size={17}/>{tr(lang,'إضافة أول فني','Add the first technician')}</Button></div>:<div className="people-grid">{safeTechs.map(t=><article className="person-card" key={t.id}><div className="person-card-head"><Avatar name={t.name} size="lg"/><button className="edit-button" onClick={()=>begin(t)} aria-label={`${tr(lang,'تعديل','Edit')} ${t.name}`}><Settings2 size={17}/></button></div><h3>{t.name}</h3><span className="specialization">{classificationText(t.specialization,lang)}</span><div className="person-card-meta">{t.phone?<a className="technician-phone" dir="rtl" href={`tel:${t.phone.replace(/[\s()-]/g,'')}`} aria-label={`${tr(lang,'اتصال بالفني','Call technician')} ${t.name}: ${t.phone}`} data-testid={`link-technician-phone-${t.id}`}><Phone size={15}/><b dir="ltr">{t.phone}</b></a>:<span className="technician-phone-missing"><Phone size={15}/>{tr(lang,'لم يضاف رقم الجوال','Phone not added')}</span>}<span><Building2 size={15}/>{t.branchName}</span><span><Activity size={15}/>{t.workload} {tr(lang,'مهام مفتوحة','open tasks')}</span></div><div className="person-card-bottom"><span className={`availability ${t.available&&t.active?'available':'unavailable'}`}><i/>{t.active?(t.available?tr(lang,'متاح','Available'):tr(lang,'غير متاح','Unavailable')):tr(lang,'غير نشط','Inactive')}</span><button onClick={()=>update.mutate({technicianId:t.id,data:{available:!t.available}},{onSuccess:()=>void query.invalidateQueries({queryKey:getListTechniciansQueryKey()})})} className="availability-toggle">{t.available?tr(lang,'تعيين غير متاح','Set unavailable'):tr(lang,'تعيين متاح','Set available')}</button></div></article>)}</div>}
+    {inviteOpen&&<Modal title={tr(lang,'دعوة فني','Invite technician')} close={()=>setInviteOpen(false)}>
+      <div className="technician-invite-modal" dir={lang==='ar'?'rtl':'ltr'}>
+        <p>{tr(lang,'اختر الفرع والتخصص، والفني يعبّي بياناته بنفسه من رابط الدعوة.','Choose a branch and specialty. The technician fills out their own details via the invitation.')}</p>
+        <div className="technician-invite-fields">
+          <div className="field-label"><span className="field-label-caption">{tr(lang,'الفرع','Branch')}</span><TadarukSelect value={inviteBranchId} onValueChange={v=>{setInviteBranchId(v);setInviteCopied(false)}} ariaLabel={tr(lang,'فرع الفني','Technician branch')} dir={lang==='ar'?'rtl':'ltr'} placeholder={tr(lang,'اختر الفرع','Choose branch')} options={safeBranches.map(branch=>({value:branch.id,label:branch.name}))}/></div>
+          <div className="field-label"><span className="field-label-caption">{tr(lang,'التخصص','Specialization')}</span><TadarukSelect value={inviteSpecialty} onValueChange={v=>{setInviteSpecialty(v);setInviteCopied(false)}} ariaLabel={tr(lang,'تخصص الفني','Technician specialty')} dir={lang==='ar'?'rtl':'ltr'} placeholder={tr(lang,'اختر التخصص','Choose specialty')} options={specialtyOptions}/></div>
+          {inviteSpecialty===TECHNICIAN_OTHER_SPECIALTY&&<label className="field-label">{tr(lang,'التخصص الآخر','Other specialty')}<input value={inviteCustomSpecialty} onChange={e=>{setInviteCustomSpecialty(e.target.value);setInviteCopied(false)}} placeholder={tr(lang,'اكتب التخصص','Enter specialty')}/></label>}
+        </div>
+        {inviteReady?<div className="technician-invite-share">
+          <InvitationQRCode url={inviteLink} label={tr(lang,'رمز QR لدعوة الفني','Technician invitation QR code')}/>
+          <div className="technician-invite-share-tools">
+            <button type="button" onClick={inviteViaWhatsapp} className="technician-invite-share-button"><MessageCircle size={18}/>{tr(lang,'مشاركة واتساب','Share WhatsApp')}</button>
+            <button type="button" onClick={copyInvitation} className="technician-invite-share-button"><Copy size={18}/>{inviteCopied?tr(lang,'تم النسخ','Copied'):tr(lang,'نسخ الرابط','Copy link')}</button>
+          </div>
+        </div>:<p className="technician-invite-hint">{tr(lang,'حدد الفرع والتخصص لعرض الرابط ورمز QR.','Select branch and specialty to view the link and QR code.')}</p>}
+        {inviteError&&<p role="alert" className="inline-error">{inviteError}</p>}
+        <p className="technician-invite-disclaimer">{tr(lang,'الدعوة للتجربة. إنشاء حساب فعلي والتحقق من الرابط والصلاحيات يتطلب نظام مصادقة على الخادم.','This is a demo invitation. Creating accounts and verifying invitation roles require backend authentication.')}</p>
+      </div>
+    </Modal>}
     {open&&<Modal key={edit?.id||'new-technician'} title={edit?tr(lang,'تعديل بيانات الفني','Edit technician'):tr(lang,'إضافة فني','Add technician')} close={close}>
       <form noValidate onSubmit={save}>
         <label className="field-label">{tr(lang,'الاسم','Name')}<input name="name" required minLength={2} defaultValue={edit?.name} placeholder={tr(lang,'مثال: أحمد السالم','Example: Alex Smith')} aria-invalid={!!fieldErrors.name} onChange={()=>setFieldErrors(current=>({...current,name:''}))} data-testid="input-technician-name"/><FieldMessage message={fieldErrors.name}/></label>

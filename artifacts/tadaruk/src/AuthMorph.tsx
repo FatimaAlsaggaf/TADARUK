@@ -52,18 +52,19 @@ export default function AuthMorph({lang,setLang,dark,setDark}:{lang:Lang;setLang
  ];
  return <main className="auth-morph-page" dir={lang==='ar'?'rtl':'ltr'}>
   <div className="auth-striped-waves" aria-hidden="true">
-    <StripedWaves preset="2" background={dark?'#0d2238':'#abcad9'} color1={dark?'#5de6ef':'#12385d'} color2={dark?'#3692bc':'#247fa2'} color3={dark?'#a0d0ed':'#18678a'} speed={32} density={77} lineWidth={75} distance={115} angle={38} glowOnHover={false}/>
+    <StripedWaves preset="2" background={dark?'#0d2238':'#e8f4fa'} color1={dark?'#5de6ef':'#80b7d3'} color2={dark?'#3692bc':'#9ac7de'} color3={dark?'#a0d0ed':'#b8d9e9'} speed={20} density={52} lineWidth={40} distance={115} angle={38} glowOnHover={false}/>
   </div>
   <header className="auth-morph-header">
     <Link href="/" className="auth-morph-brand" aria-label={tr(lang,'تدارك - الرئيسية','Tadaruk - Home')}><img src={`${import.meta.env.BASE_URL}${dark?'brand-logo-dark.png':'brand-logo.png'}`} alt="تدارك TADARUK" /></Link>
     <div className="nav-actions auth-morph-header-actions">
       <button className="nav-lang" type="button" onClick={()=>setLang(lang==='ar'?'en':'ar')} aria-label={tr(lang,'التبديل إلى الإنجليزية','Switch to Arabic')}><Languages size={16}/><span>{lang==='ar'?'English':'العربية'}</span></button>
       <SunMoonThemeToggle className="landing-theme-toggle" theme={dark?'dark':'light'} onThemeChange={theme=>setDark(theme==='dark')} aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')} data-testid="theme-toggle-auth" size={40} duration={860}/>
-      <Link href="/" className="auth-morph-home">{tr(lang,'الرئيسية','Home')} <ArrowLeft size={16}/></Link>
+      
     </div>
+    <Link href="/" className="auth-morph-home"><ArrowLeft size={17}/>{tr(lang,'رجوع','Back')}</Link>
   </header>
   <section className={`auth-morph-card ${signup?'auth-morph-signup':''}`} aria-label={tr(lang,'الدخول وإنشاء الحساب','Sign in and registration')}>
-    <div className="auth-signup-back" aria-hidden={!signup}><button type="button" onClick={()=>toggle(false)} tabIndex={signup?0:-1}><span className="auth-signup-back-icon"><ArrowLeft size={19}/></span><span>{tr(lang,'تسجيل الدخول','Sign in')}</span></button></div>
+    <div className="auth-signup-back" aria-hidden={!signup}><button type="button" onClick={()=>toggle(false)} tabIndex={signup?0:-1}><span className="auth-signup-back-icon"><ArrowLeft size={18}/></span><span>{tr(lang,'رجوع','Back')}</span></button></div>
     <div className="auth-morph-form-area">
      <div className="auth-morph-login" aria-hidden={signup}>
       <form className="auth-morph-login-form" onSubmit={onLogin}>
@@ -90,7 +91,6 @@ export default function AuthMorph({lang,setLang,dark,setDark}:{lang:Lang;setLang
     <div className="auth-morph-panels" aria-hidden="false">
       <div className="auth-morph-panel auth-morph-left">
         <div className="auth-morph-panel-content">
-         <img className="auth-morph-panel-mark" src={`${import.meta.env.BASE_URL}${dark?'brand-mark-dark.png':'brand-mark.png'}`} alt="" aria-hidden="true"/>
           <h2>{tr(lang,'جديد في تدارك؟','New to Tadaruk?')}</h2>
           <p>{tr(lang,'أنشئ حساب المنشأة وابدأ بتنظيم الفروع وفريق الصيانة.','Create your organization and manage branches and maintenance staff.')}</p>
          <button type="button" onClick={()=>toggle(true)} tabIndex={signup?-1:0}>{tr(lang,'إنشاء حساب منشأة','Create account')}</button>
