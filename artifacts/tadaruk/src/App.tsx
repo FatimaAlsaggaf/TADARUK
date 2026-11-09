@@ -456,9 +456,7 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
     <header className="landing-nav wrap">
       <Link href="/" className="landing-brand" aria-label="TADARUK home" onClick={closeMenu}><Brand darkMode={dark}/></Link>
       <nav className={`landing-links ${mobileOpen?'is-open':''}`} aria-label={tr(lang,'التنقل الرئيسي','Main navigation')}>
-        {sectionIds.map((id,index)=>id==='final'
-          ?<Link key={id} href="/login" className="landing-nav-link" onClick={closeMenu}>{sectionLabels[index]}</Link>
-          :<button key={id} className={`landing-nav-link ${activeSection===id?'is-active':''}`} onClick={()=>goToSection(id)} aria-current={activeSection===id?'location':undefined}>{sectionLabels[index]}</button>)}
+        {sectionIds.map((id,index)=><button key={id} className={`landing-nav-link ${activeSection===id?'is-active':''}`} onClick={()=>goToSection(id)} aria-current={activeSection===id?'location':undefined}>{sectionLabels[index]}</button>)}
       </nav>
       <div className="nav-actions">
         <button className="nav-lang" onClick={()=>setLang(lang==='ar'?'en':'ar')} aria-label={tr(lang,'التبديل إلى الإنجليزية','Switch to Arabic')}><Languages size={16}/><span>{lang==='ar'?'English':'العربية'}</span></button>

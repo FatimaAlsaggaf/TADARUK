@@ -761,3 +761,99 @@
 @media(prefers-reduced-motion:reduce){
   .auth-morph-register .org-wizard-back-circle{transition:none !important;}
 }
+
+
+/* Restore original Morph transition. Previous signup display:none suppressed the circle animation. */
+.auth-morph-page{background:#edf6fa !important;}
+.auth-veiled-background{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  overflow:hidden;
+  pointer-events:none;
+  width:100%;
+  min-height:100dvh;
+}
+.auth-veiled-background .auth-morph-dark-veil{
+  width:100%;height:100%;pointer-events:none;
+}
+.auth-morph-page::after{display:none !important;content:none !important;}
+.auth-morph-header{position:relative;z-index:5;}
+.auth-morph-card{position:relative;z-index:2;background:#fff !important;}
+.auth-morph-card::before,
+.auth-morph-card:not(.auth-morph-signup)::before,
+.auth-morph-card.auth-morph-signup::before{
+  background:#19466f !important;
+  opacity:1 !important;
+}
+.auth-morph-card.auth-morph-signup::before{
+  display:block !important;
+  content:"" !important;
+  top:24px !important;
+  right:26px !important;
+  left:auto !important;
+  bottom:auto !important;
+  width:56px !important;
+  height:56px !important;
+  transform:none !important;
+  border-radius:50% !important;
+  transition:top 1.45s cubic-bezier(.65,0,.25,1),
+             right 1.45s cubic-bezier(.65,0,.25,1),
+             width 1.45s cubic-bezier(.65,0,.25,1),
+             height 1.45s cubic-bezier(.65,0,.25,1),
+             transform 1.45s cubic-bezier(.65,0,.25,1) !important;
+}
+.auth-morph-card:not(.auth-morph-signup) .auth-morph-left,
+.auth-morph-card:not(.auth-morph-signup) .auth-morph-left h2{
+  color:#f5faff !important;
+}
+.auth-morph-card:not(.auth-morph-signup) .auth-morph-left p{
+  color:#d8eaf6 !important;
+}
+.auth-morph-card:not(.auth-morph-signup) .auth-morph-left button{
+  color:#f7fbff !important;
+  background:#ffffff0d !important;
+  border-color:#dbeefe !important;
+}
+.auth-morph-card:not(.auth-morph-signup) .auth-morph-left button:hover{
+  background:#ffffff24 !important;
+}
+.auth-morph-register .org-wizard-back-circle{
+  background:transparent !important;
+  box-shadow:none !important;
+  border:0 !important;
+  color:#fff !important;
+  z-index:20 !important;
+  transition:color .2s ease !important;
+}
+.auth-morph-register .org-wizard-back-circle:hover{
+  background:transparent !important;
+  box-shadow:none !important;
+  transform:none !important;
+}
+.auth-morph-register .org-wizard-back-circle:focus-visible{
+  outline:3px solid #83c9e4;
+  outline-offset:4px;
+}
+.dark .auth-morph-page{background:#0b2032 !important;}
+.dark .auth-morph-card::before,
+.dark .auth-morph-card:not(.auth-morph-signup)::before,
+.dark .auth-morph-card.auth-morph-signup::before{
+  background:#163b5c !important;
+}
+.dark .auth-morph-register .org-wizard-back-circle{
+  background:transparent !important;
+  color:#fff !important;
+}
+@media(max-width:850px){
+  .auth-morph-card.auth-morph-signup::before{
+    top:19px !important;right:19px !important;
+    width:49px !important;height:49px !important;
+  }
+}
+@media(max-width:560px){
+  .auth-morph-card.auth-morph-signup::before{
+    top:16px !important;right:16px !important;
+    width:44px !important;height:44px !important;
+  }
+}

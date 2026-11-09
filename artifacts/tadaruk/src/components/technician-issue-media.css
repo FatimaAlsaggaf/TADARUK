@@ -217,3 +217,45 @@
 .tadaruk-media-dialog--tabs.tadaruk-media-dialog--expanded .tadaruk-approx-frame{
   width:100%;height:100%;
 }
+
+
+/* Temporary upload lets the team test media with a different photo, without changing ticket data. */
+.tadaruk-photo-overlay-actions{flex-wrap:wrap;gap:8px}
+.tadaruk-media-upload-error{font-size:12px;color:#a53030;margin:7px 0}
+.tadaruk-image-perspective{
+  display:flex;align-items:center;justify-content:center;perspective:1000px;
+  flex:1 1 auto;min-height:min(60dvh,420px);width:100%;
+  padding:clamp(22px,5vw,64px);
+  overflow:hidden;touch-action:none;cursor:grab;
+  background:radial-gradient(ellipse at 50% 28%,#e2f0f8,#93b8cd 64%,#456b85 100%);
+}
+.tadaruk-image-perspective:active{cursor:grabbing}
+.tadaruk-image-perspective-plane{
+  position:relative;display:grid;place-items:center;
+  transform-style:preserve-3d;
+  width:min(72vw,530px);height:min(47dvh,380px);
+  border:5px solid #d9ecf5;
+  border-radius:18px;
+  box-shadow:17px 23px 0 #143957aa,28px 45px 58px #041a2e6b;
+  background:#f1f7fa;
+  transition:transform .08s ease-out;
+  pointer-events:none;
+}
+.tadaruk-image-perspective-plane img{
+  max-width:100%;max-height:100%;width:100%;height:100%;
+  object-fit:contain;border-radius:11px;user-select:none;
+}
+.tadaruk-media-dialog--tabs:fullscreen .tadaruk-image-perspective,
+.tadaruk-media-dialog--tabs.tadaruk-media-dialog--expanded .tadaruk-image-perspective{
+  flex:1 1 auto;height:auto;min-height:0;max-height:none;
+}
+.dark .tadaruk-image-perspective{
+  background:radial-gradient(ellipse at 50% 25%,#254861,#101f32 75%);
+}
+@media(max-width:600px){
+  .tadaruk-image-perspective{padding:25px;min-height:44dvh}
+  .tadaruk-image-perspective-plane{width:75vw;height:min(40dvh,320px)}
+}
+@media(prefers-reduced-motion:reduce){
+  .tadaruk-image-perspective-plane{transition:none}
+}

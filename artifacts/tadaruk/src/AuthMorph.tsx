@@ -2,9 +2,9 @@ import {useEffect,useState,type FormEvent} from 'react';
 import {useQueryClient} from '@tanstack/react-query';
 import {useListDemoUsers,useSelectDemoAccount,getGetDemoSessionQueryKey,type DemoUser} from '@workspace/api-client-react';
 import {Link,useLocation} from 'wouter';
-import {Building2,ClipboardList,Eye,EyeOff,LockKeyhole,Mail,Wrench,ArrowLeft,Languages} from 'lucide-react';
+import {Building2,ClipboardList,Eye,EyeOff,LockKeyhole,Mail,Wrench,ArrowLeft,ArrowRight,Languages} from 'lucide-react';
 import SunMoonThemeToggle from './components/ui/sun-moon-theme-toggle';
-import StripedWaves from './components/StripedWaves';
+import DarkVeil from './AuthDarkVeil';
 import OrganizationOnboarding from './OrganizationOnboarding';
 import './auth-morph.css';
 
@@ -51,14 +51,17 @@ export default function AuthMorph({lang,setLang,dark,setDark}:{lang:Lang;setLang
    {name:tr(lang,'المبلّغ','Reporter'),note:tr(lang,'تقديم بلاغ','Report an issue'),icon:ClipboardList,role:'reporter'},
  ];
  return <main className="auth-morph-page" dir={lang==='ar'?'rtl':'ltr'}>
-  <div className="auth-striped-waves" aria-hidden="true">
-    <StripedWaves preset="2" background={dark?'#0d2238':'#eaf6fc'} color1={dark?'#5de6ef':'#226e9e'} color2={dark?'#3692bc':'#419ac8'} color3={dark?'#a0d0ed':'#75b9d9'} speed={27} density={70} lineWidth={60} distance={115} angle={38} glowOnHover={false}/>
+  <div className="auth-veiled-background" aria-hidden="true">
+    <DarkVeil lightMode={!dark} color={dark?'#4ba7c7':'#367fa6'}
+      speed={0.5} scale={1} flow={1} warp={0} sheen={0.5} glow={0.4}
+      grain={0.02} quality={0.5} mouseInteraction mouseStrength={0.65}
+      fade={0.12} opacity={dark?0.85:0.58} className="auth-morph-dark-veil"/>
   </div>
   <header className="auth-morph-header">
     <div className="nav-actions auth-morph-header-actions">
       <SunMoonThemeToggle className="landing-theme-toggle" theme={dark?'dark':'light'} onThemeChange={theme=>setDark(theme==='dark')} aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')} data-testid="theme-toggle-auth" size={40} duration={860}/>
       <button className="nav-lang" type="button" onClick={()=>setLang(lang==='ar'?'en':'ar')} aria-label={tr(lang,'التبديل إلى الإنجليزية','Switch to Arabic')}><Languages size={16}/><span>{lang==='ar'?'English':'العربية'}</span></button>
-      {!signup&&<Link href="/" className="auth-morph-home"><ArrowLeft size={17}/>{tr(lang,'رجوع','Back')}</Link>}
+      {!signup&&<Link href="/" className="auth-morph-home">{lang==='ar'?<ArrowRight size={17}/>:<ArrowLeft size={17}/>} {tr(lang,'رجوع','Back')}</Link>}
     </div>
     <div className="auth-morph-brand" aria-label={tr(lang,'شعار تدارك','Tadaruk logo')}><img src={`${import.meta.env.BASE_URL}${dark?'brand-logo-dark.png':'brand-logo.png'}`} alt="تدارك TADARUK" /></div>
   </header>
