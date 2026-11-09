@@ -5,7 +5,7 @@ import { motion, useReducedMotion } from 'motion/react';
 import {
   ArrowLeft, ArrowRight, ArrowUpLeft, ArrowUpRight, Building2, CalendarDays, Camera, Check, CheckCircle2,
   ChevronLeft, ChevronRight, CircleAlert, ClipboardList, Clock3, FileText, ImagePlus,
-  LoaderCircle, MapPin, Plus, RefreshCw, RotateCcw, Search, Send, ShieldCheck, Sparkles,
+  LoaderCircle, MapPin, Pencil, Plus, RefreshCw, RotateCcw, Search, Send, ShieldCheck, Sparkles,
   Ticket as TicketIcon, Trash2, UserRound, Wrench, X
 } from 'lucide-react';
 import {
@@ -1143,6 +1143,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                   data-testid="button-edit-report"
                 >
                   {text(lang, 'تعديل', 'Edit')}
+                  <Pencil size={16}/>
                 </button>
               ) : (
                 <button
