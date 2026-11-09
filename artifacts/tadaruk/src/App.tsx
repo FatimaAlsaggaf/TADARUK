@@ -71,8 +71,15 @@ const priorityText = (priority: string, lang: Lang) => {
   return m[priority]?.[lang === 'ar' ? 0 : 1] || priority;
 };
 const classificationText = (value: string, lang: Lang) => {
-  const m: Record<string,[string,string]> = {cooling:['تكييف وتبريد','Cooling'],electrical:['كهرباء','Electrical'],plumbing:['سباكة','Plumbing'],general:['عام','General']};
-  return m[value]?.[lang === 'ar' ? 0 : 1] || value;
+  const m: Record<string,[string,string]> = {
+    cooling:['تكييف وتبريد','Cooling'],hvac:['تكييف وتبريد','HVAC'],
+    electrical:['كهرباء وإنارة','Electrical'],plumbing:['سباكة ومياه','Plumbing'],
+    general:['صيانة عامة','General'],civil:['أعمال مدنية وتشطيبات','Civil'],
+    equipment:['معدات وآلات','Equipment'],safety:['سلامة وأمان','Safety'],
+    'air conditioning':['تكييف وتبريد','Air conditioning'],
+    'maintenance':['صيانة عامة','Maintenance']
+  };
+  return m[value?.trim().toLowerCase()]?.[lang === 'ar' ? 0 : 1] || value;
 };
 const dateText = (date: string, lang: Lang) => new Intl.DateTimeFormat(lang === 'ar' ? 'ar' : 'en', {day:'numeric',month:'short'}).format(new Date(date));
 const isGoogleMapsShareUrl = (value:string|null|undefined):value is string => {
@@ -677,7 +684,7 @@ function DemoPage({lang,setLang,dark,setDark}:{lang:Lang;setLang:(lang:Lang)=>vo
         ? <div className="role-grid"><div className="skeleton-card"/><div className="skeleton-card"/><div className="skeleton-card"/></div>
         : <div className="role-grid">{rawList.map(user=>{
             const RoleIcon=user.role==='manager'?Building2:user.role==='technician'?Wrench:ClipboardList;
-            const branch=[user.branchName || tr(lang,'جميع الفروع','All branches'),user.specialization].filter(Boolean).join(' · ');
+            const branch=[user.branchName || tr(lang,'جميع الفروع','All branches'),user.specialization ? classificationText(user.specialization,lang) : null].filter(Boolean).join(' · ');
             return <SpotlightCard className="role-card-spotlight" key={user.id} theme={dark?'dark':'light'} spotlightColor="rgba(86, 244, 239, .88)" intensity={.16} borderGlow={.24} softness={.9} spotlightSize={240} proximity={72} smoothing={.4} flare={false}>
               <button type="button" className={`role-card role-${user.role}`} onClick={()=>enter(user.id)} disabled={select.isPending} aria-busy={select.isPending} data-testid={`select-role-${user.role}`}>
                 <span className="role-card-top">
@@ -850,7 +857,7 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
             {user.specialization&&(
               <div className="profile-data-row">
                 <span className="profile-data-label">{tr(lang,'مجال التخصص','Specialization')}</span>
-                <span className="profile-data-value">{user.specialization}</span>
+                <span className="profile-data-value">{classificationText(user.specialization,lang)}</span>
               </div>
             )}
             <div className="profile-data-row">
@@ -1586,11 +1593,9 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
                 const isDone = /أكمل|أكد|إغلاق|إصلاح|closed|completed|confirmed/i.test(ev.label);
                 const isStart = /بدأ|تنفيذ|فحص|work started|started/i.test(ev.label);
                 const kind = isCancelled ? 'is-cancelled' : isDone ? 'is-complete' : isAssignment ? 'is-assignment' : isStart ? 'is-work' : 'is-general';
-                const TimelineIcon = isCancelled ? CircleAlert : isDone ? CheckCircle2 : isAssignment ? Users : isStart ? Wrench : ClipboardList;
+
                 return <div className={`compact-timeline-item compact-timeline-item--refined ${kind} ${index===0?'is-latest':''}`} key={ev.id}>
-                  <span className={`compact-timeline-event-icon ${kind}`}>
-                    <TimelineIcon size={17}/>
-                  </span>
+                  <span className={`compact-timeline-event-icon ${kind}`} aria-hidden="true"/>
                   <div className="compact-timeline-content">
                     <div className="compact-timeline-row">
                       <b>{ev.label}</b>
@@ -2029,7 +2034,7 @@ function TechniciansPage({lang}:{lang:Lang}) {
 
   return <div className="page-enter">
     <PageTitle eyebrow={tr(lang,'الفريق الميداني','PEOPLE / FIELD TEAM')} title={tr(lang,'الفنيون','Technicians')} description={tr(lang,'توزيع واضح للمهارات والتوفر في كل فرع.','A clear view of skills and availability by branch.')} action={<Button onClick={()=>begin(null)}><Plus size={17}/>{tr(lang,'إضافة فني','Add technician')}</Button>}/>
-    {isLoading?<State title={tr(lang,'جاري تحميل الفريق','Loading team')} loading/>:isError?<State title={tr(lang,'تعذر تحميل الفنيين','Could not load technicians')} retry={()=>void refetch()}/>:!safeTechs?.length?<div className="empty-panel" aria-live="polite"><Users size={26}/><h3>{tr(lang,'لا يوجد فنّيون مسجلون بعد','No technicians added yet')}</h3><p>{tr(lang,'أضف أعضاء فريق الصيانة لتسهيل إسناد البلاغات.','Add maintenance staff to make ticket assignment easier.')}</p><Button onClick={()=>begin(null)}><Plus size={17}/>{tr(lang,'إضافة أول فني','Add the first technician')}</Button></div>:<div className="people-grid">{safeTechs.map(t=><article className="person-card" key={t.id}><div className="person-card-head"><Avatar name={t.name} size="lg"/><button className="edit-button" onClick={()=>begin(t)} aria-label={`${tr(lang,'تعديل','Edit')} ${t.name}`}><Settings2 size={17}/></button></div><h3>{t.name}</h3><span className="specialization">{t.specialization}</span><div className="person-card-meta">{t.phone?<a className="technician-phone" dir="rtl" href={`tel:${t.phone.replace(/[\s()-]/g,'')}`} aria-label={`${tr(lang,'اتصال بالفني','Call technician')} ${t.name}: ${t.phone}`} data-testid={`link-technician-phone-${t.id}`}><Phone size={15}/><b dir="ltr">{t.phone}</b></a>:<span className="technician-phone-missing"><Phone size={15}/>{tr(lang,'لم يضاف رقم الجوال','Phone not added')}</span>}<span><Building2 size={15}/>{t.branchName}</span><span><Activity size={15}/>{t.workload} {tr(lang,'مهام مفتوحة','open tasks')}</span></div><div className="person-card-bottom"><span className={`availability ${t.available&&t.active?'available':'unavailable'}`}><i/>{t.active?(t.available?tr(lang,'متاح','Available'):tr(lang,'غير متاح','Unavailable')):tr(lang,'غير نشط','Inactive')}</span><button onClick={()=>update.mutate({technicianId:t.id,data:{available:!t.available}},{onSuccess:()=>void query.invalidateQueries({queryKey:getListTechniciansQueryKey()})})} className="availability-toggle">{t.available?tr(lang,'تعيين غير متاح','Set unavailable'):tr(lang,'تعيين متاح','Set available')}</button></div></article>)}</div>}
+    {isLoading?<State title={tr(lang,'جاري تحميل الفريق','Loading team')} loading/>:isError?<State title={tr(lang,'تعذر تحميل الفنيين','Could not load technicians')} retry={()=>void refetch()}/>:!safeTechs?.length?<div className="empty-panel" aria-live="polite"><Users size={26}/><h3>{tr(lang,'لا يوجد فنّيون مسجلون بعد','No technicians added yet')}</h3><p>{tr(lang,'أضف أعضاء فريق الصيانة لتسهيل إسناد البلاغات.','Add maintenance staff to make ticket assignment easier.')}</p><Button onClick={()=>begin(null)}><Plus size={17}/>{tr(lang,'إضافة أول فني','Add the first technician')}</Button></div>:<div className="people-grid">{safeTechs.map(t=><article className="person-card" key={t.id}><div className="person-card-head"><Avatar name={t.name} size="lg"/><button className="edit-button" onClick={()=>begin(t)} aria-label={`${tr(lang,'تعديل','Edit')} ${t.name}`}><Settings2 size={17}/></button></div><h3>{t.name}</h3><span className="specialization">{classificationText(t.specialization,lang)}</span><div className="person-card-meta">{t.phone?<a className="technician-phone" dir="rtl" href={`tel:${t.phone.replace(/[\s()-]/g,'')}`} aria-label={`${tr(lang,'اتصال بالفني','Call technician')} ${t.name}: ${t.phone}`} data-testid={`link-technician-phone-${t.id}`}><Phone size={15}/><b dir="ltr">{t.phone}</b></a>:<span className="technician-phone-missing"><Phone size={15}/>{tr(lang,'لم يضاف رقم الجوال','Phone not added')}</span>}<span><Building2 size={15}/>{t.branchName}</span><span><Activity size={15}/>{t.workload} {tr(lang,'مهام مفتوحة','open tasks')}</span></div><div className="person-card-bottom"><span className={`availability ${t.available&&t.active?'available':'unavailable'}`}><i/>{t.active?(t.available?tr(lang,'متاح','Available'):tr(lang,'غير متاح','Unavailable')):tr(lang,'غير نشط','Inactive')}</span><button onClick={()=>update.mutate({technicianId:t.id,data:{available:!t.available}},{onSuccess:()=>void query.invalidateQueries({queryKey:getListTechniciansQueryKey()})})} className="availability-toggle">{t.available?tr(lang,'تعيين غير متاح','Set unavailable'):tr(lang,'تعيين متاح','Set available')}</button></div></article>)}</div>}
     {open&&<Modal key={edit?.id||'new-technician'} title={edit?tr(lang,'تعديل بيانات الفني','Edit technician'):tr(lang,'إضافة فني','Add technician')} close={close}>
       <form noValidate onSubmit={save}>
         <label className="field-label">{tr(lang,'الاسم','Name')}<input name="name" required minLength={2} defaultValue={edit?.name} placeholder={tr(lang,'مثال: أحمد السالم','Example: Alex Smith')} aria-invalid={!!fieldErrors.name} onChange={()=>setFieldErrors(current=>({...current,name:''}))} data-testid="input-technician-name"/><FieldMessage message={fieldErrors.name}/></label>
