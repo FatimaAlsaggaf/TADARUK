@@ -124,15 +124,14 @@ function TicketLoadingState() {
 }
 
 export function ReporterHomePage({ lang, user }: ReporterPageProps) {
-  const { data: overview, isLoading: overviewLoading, isError: overviewError, refetch: refetchOverview } = useGetOverview();
   const { data: tickets, isLoading, isError, refetch } = useListTickets();
   const rows = Array.isArray(tickets) ? tickets.filter(ticket => !user || ticket.reporterId === user.id) : [];
   const openCount = rows.filter(ticket => !['closed','cancelled'].includes(ticket.status)).length;
   const waitingCount = rows.filter(ticket => ticket.status === 'awaiting_confirmation').length;
   const resolvedCount = rows.filter(ticket => ticket.status === 'closed').length;
-  const loading = isLoading || overviewLoading;
-  const failed = isError || overviewError;
-  const retry = () => { void refetch(); void refetchOverview(); };
+  const loading = isLoading;
+  const failed = isError;
+  const retry = () => { void refetch(); };
 
   return <div className="reporter-view" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
     <ReporterHeading
