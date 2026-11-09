@@ -81,3 +81,52 @@
 @media(prefers-reduced-motion:reduce) {
  .tadaruk-media-dialog--minimal .tadaruk-media-stage > img {transition:none !important;}
 }
+
+/* Overlay one meaningful optional depth action on the actual issue photo. */
+.tadaruk-photo-mini--clean {display:flex;justify-content:center;width:100%;margin-top:14px;}
+.tadaruk-photo-surface {
+  position:relative;
+  width:min(100%,390px);
+  max-width:390px;
+  border-radius:16px;
+  overflow:hidden;
+  border:1px solid #d8e8f1;
+  background:#f0f6fa;
+}
+.tadaruk-photo-mini--clean .tadaruk-photo-mini-image {
+  width:100% !important;max-width:none !important;
+  border:0 !important;border-radius:0 !important;
+  max-height:none !important;
+}
+.tadaruk-photo-mini--clean .tadaruk-photo-mini-image img {
+  width:100% !important;height:255px !important;object-fit:contain !important;
+}
+.tadaruk-photo-overlay-actions {
+  position:absolute;
+  z-index:2;
+  inset-inline-start:12px;
+  bottom:12px;
+  display:flex;gap:7px;align-items:center;
+}
+.tadaruk-photo-mini--clean .tadaruk-photo-focus-trigger,
+.tadaruk-photo-mini--clean .tadaruk-photo-model-button {
+  width:auto !important;min-height:37px !important;
+  max-width:100%;
+  border-radius:11px !important;
+  padding:8px 11px !important;
+  background:rgba(22,48,82,.92) !important;
+  border:1px solid rgba(255,255,255,.25) !important;
+  color:#fff !important;
+  font-size:12px !important;
+  font-weight:750 !important;
+  box-shadow:0 4px 12px rgba(8,30,52,.18);
+  backdrop-filter:blur(7px);
+}
+.tadaruk-photo-mini--clean .tadaruk-photo-focus-trigger:hover {
+  background:#245f85 !important;
+}
+.dark .tadaruk-photo-surface {background:#1c3247;border-color:#456579;}
+@media(max-width:600px){
+  .tadaruk-photo-surface{width:min(100%,340px);}
+  .tadaruk-photo-mini--clean .tadaruk-photo-mini-image img{height:210px !important;}
+}
