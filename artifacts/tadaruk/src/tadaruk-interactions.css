@@ -9531,3 +9531,70 @@ body:has(.dark .reporter-shell) #root {
  .app-shell .compact-timeline-item--refined .compact-timeline-row b {font-size:15px !important;}
  .app-shell .compact-timeline-item--refined .compact-timeline-note {font-size:13.5px !important;}
 }
+
+/* Compact reporter / manager activity timeline: circles and dates, no nested cards. */
+.app-shell .compact-timeline-panel {padding:17px 20px !important;border-radius:16px !important;}
+.app-shell .compact-timeline-head {
+  margin-bottom:10px !important;padding-bottom:10px !important;
+  border-bottom:1px solid #e2ebf4 !important;
+}
+.app-shell .compact-timeline-list {display:flex !important;flex-direction:column !important;gap:0 !important;}
+.app-shell .compact-timeline-item--refined {
+  display:grid !important;grid-template-columns:20px minmax(0,1fr) !important;
+  align-items:start !important;gap:12px !important;
+  padding:9px 0 13px !important;margin:0 !important;
+}
+.app-shell .compact-timeline-item--refined:last-child {padding-bottom:0 !important;}
+.app-shell .compact-timeline-item--refined:not(:last-child)::before {
+  top:24px !important;bottom:-3px !important;inset-inline-start:9px !important;
+  width:1px !important;background:#c5d7e6 !important;
+}
+.app-shell .compact-timeline-event-icon {
+  display:block !important;width:19px !important;height:19px !important;
+  flex:0 0 19px !important;border:3px solid #a1bdd5 !important;
+  border-radius:50% !important;background:#fff !important;
+  box-shadow:0 0 0 2px #fff !important;
+}
+.app-shell .compact-timeline-event-icon.is-complete {border-color:#2b83a5 !important;background:#e6f6fc !important;}
+.app-shell .compact-timeline-event-icon.is-work {border-color:#2d69a5 !important;background:#e5f0fa !important;}
+.app-shell .compact-timeline-event-icon.is-assignment {border-color:#4c9eb4 !important;background:#edf8fa !important;}
+.app-shell .compact-timeline-event-icon.is-cancelled {border-color:#bd6270 !important;background:#fff0f1 !important;}
+.app-shell .compact-timeline-content,
+.app-shell .compact-timeline-item--refined.is-latest .compact-timeline-content {
+  display:block !important;
+  width:100% !important;min-width:0 !important;
+  margin:0 !important;padding:0 !important;
+  border:0 !important;background:transparent !important;
+  box-shadow:none !important;border-radius:0 !important;
+}
+.app-shell .compact-timeline-item--refined .compact-timeline-row {
+  display:flex !important;align-items:baseline !important;
+  justify-content:space-between !important;
+  flex-wrap:wrap !important;gap:4px 12px !important;
+}
+.app-shell .compact-timeline-item--refined .compact-timeline-row b {
+  font-size:13.5px !important;line-height:1.55 !important;
+}
+.app-shell .compact-timeline-item--refined .compact-timeline-row time {
+  margin-inline-start:auto !important;font-size:11.5px !important;
+  white-space:nowrap !important;color:#7188a0 !important;
+}
+.app-shell .compact-timeline-item--refined .compact-timeline-content small {
+  display:block !important;font-size:11px !important;margin-top:1px !important;
+}
+.app-shell .compact-timeline-item--refined .compact-timeline-note {
+  background:transparent !important;border:0 !important;
+  border-radius:0 !important;box-shadow:none !important;
+  padding:0 !important;margin:3px 0 0 !important;
+  font-size:12px !important;line-height:1.55 !important;
+  color:#687f97 !important;
+}
+.dark .app-shell .compact-timeline-content,
+.dark .app-shell .compact-timeline-item--refined.is-latest .compact-timeline-content {background:transparent !important;border:0 !important;}
+.dark .app-shell .compact-timeline-event-icon {background:#1d354f !important;box-shadow:0 0 0 2px #17293d !important;}
+.dark .app-shell .compact-timeline-item--refined .compact-timeline-note {background:transparent !important;color:#afc4d6 !important;}
+@media(max-width:600px){
+ .app-shell .compact-timeline-panel{padding:15px !important;}
+ .app-shell .compact-timeline-item--refined{gap:9px !important;}
+ .app-shell .compact-timeline-item--refined .compact-timeline-row time{font-size:10.5px !important;}
+}
