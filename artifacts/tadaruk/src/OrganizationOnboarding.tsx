@@ -146,7 +146,7 @@ export default function OrganizationOnboarding({lang,mode,embedded=false,onExit}
           </div>
         </div>}
         {step===2&&<div className="org-site-step">
-          <p className="org-muted">{tr(lang,'يمكن إضافة عدة مدن وفروع. تظهر الفروع المحددة للمبلّغ في حسابه.','Add multiple cities and branches. Reporters can select the available branches from their workspace.')}</p>
+          <p className="org-muted">{tr(lang,'يمكنك إضافة فروع منشأتك في أكثر من مدينة.','Add your organization’s branches across multiple cities.')}</p>
           <div className="org-fields">
             <label className="org-field"><span>{tr(lang,'المدينة','City')}</span><Select value={newCity} onValueChange={v=>{setNewCity(v);setError('')}}><SelectTrigger className="org-select-trigger"><SelectValue placeholder={'اختر المدينة'}/></SelectTrigger><SelectContent className="org-select-content org-city-select" dir="rtl">{['الرياض','جدة','مكة','المدينة المنورة','الدمام','الخبر','جازان','أبو عريش','أبها','تبوك','حائل','بريدة','الطائف','نجران','ينبع','الأحساء','other'].map(value=><SelectItem key={value} value={value}>{value==='other'?'أخرى':value}</SelectItem>)}</SelectContent></Select></label>
             <label className="org-field"><span>{tr(lang,'اسم الفرع','Branch name')}</span><input value={newBranch} onChange={e=>setNewBranch(e.target.value)} placeholder={tr(lang,'مثال: فرع العليا','Example: Olaya branch')}/></label>
@@ -154,7 +154,7 @@ export default function OrganizationOnboarding({lang,mode,embedded=false,onExit}
           {newCity==='other'&&<label className="org-field"><span>{tr(lang,'اسم المدينة','City name')}</span><input value={otherCity} onChange={e=>setOtherCity(e.target.value)} placeholder={tr(lang,'اكتب اسم المدينة','Enter city name')}/></label>}
           <button type="button" className="org-add org-add-branch" onClick={addSite}><Plus size={17}/>{tr(lang,'إضافة الفرع','Add branch')}</button>
           {sites.length>0&&<div className="org-site-groups">{Array.from(new Set(sites.map(s=>s.city))).map(city=><div className="org-city-group" key={city}><div className="org-city-heading"><MapPin size={15}/><b>{city}</b><small>{sites.filter(s=>s.city===city).length} {tr(lang,'فروع','branches')}</small></div><div className="org-site-chips">{sites.filter(s=>s.city===city).map(s=><span key={s.id}>{s.name}<button type="button" aria-label={tr(lang,'حذف الفرع','Remove branch')} onClick={()=>setSites(old=>old.filter(x=>x.id!==s.id))}><X size={13}/></button></span>)}</div></div>)}</div>}
-          <div className="org-info-inline"><MapPin size={16}/>{tr(lang,'سيشاهد المبلّغ الفروع التي أضافتها منشأته في قائمة الفروع الموجودة أصلًا في واجهته.','Reporters will choose from their organization’s branches in the existing branch selector.')}</div>
+          <div className="org-info-inline org-branch-info"><MapPin size={17} aria-hidden="true"/><span>{tr(lang,'يختار المبلّغ الفرع المناسب عند تقديم بلاغ.','Reporters select the relevant branch when submitting a ticket.')}</span></div>
         </div>}
         {step===3&&<div className="org-final-review org-invitation-step org-simple-invitations">
           <div className="org-final-organization"><Building2 size={21}/><span><b>{data.organization}</b><small>{tr(lang,'المدير: ','Manager: ')}{data.owner} · {sites.length} {tr(lang,'فروع','branches')}</small></span></div>

@@ -458,3 +458,25 @@
     filter:none;
   }
 }
+
+
+/* Branch selection hint: one concise line with the icon alongside text in RTL/LTR. */
+.org-site-step .org-branch-info{
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:9px !important;
+  text-align:start !important;
+  line-height:1.65;
+}
+.org-site-step .org-branch-info svg{
+  flex:0 0 17px !important;
+  width:17px;
+  height:17px;
+  align-self:center;
+}
+.org-site-step .org-branch-info span{
+  min-width:0;
+  flex:1;
+}
