@@ -25,6 +25,7 @@ import {
   X,
 } from 'lucide-react';
 import TechnicianIssueMedia from './TechnicianIssueMedia';
+import {prepareRepairPhoto,prepareSavedRepairPhoto} from '../services/repair-photo';
 import type { Ticket, DemoUser } from '@workspace/api-client-react';
 
 type Lang = 'ar' | 'en';
@@ -269,7 +270,7 @@ export interface TechnicianTicketDetailProps {
   ticket: Ticket;
   lang: Lang;
   user: DemoUser;
-  act: (action: 'start' | 'complete' | 'confirm' | 'reject' | 'reassign', extra?: Record<string, string>) => void;
+  act: (action: 'start' | 'complete' | 'attach_photo' | 'confirm' | 'reject' | 'reassign', extra?: Record<string, string>) => void;
   action: { isPending: boolean };
   actionFeedback?: string;
   localPhoto?: string;
@@ -290,16 +291,17 @@ export function TechnicianTicketDetail({
   const [solutionText, setSolutionText] = useState(ticket.resolution || ticket.repairNotes || '');
   const [expandedPhoto, setExpandedPhoto] = useState<string | null>(null);
   const [repairPhoto, setRepairPhoto] = useState<string>(() => {
-    return localStorage.getItem(`tadaruk-repair-photo:${ticket.id}`) || '';
+    return ticket.repairImageUrl || localStorage.getItem(`tadaruk-repair-photo:${ticket.id}`) || '';
   });
+  const [photoLoading,setPhotoLoading]=useState(false);
   // Sync solution text if ticket changes from backend
   useEffect(() => {
     if (ticket.resolution || ticket.repairNotes) {
       setSolutionText(ticket.resolution || ticket.repairNotes || '');
     }
     const saved = localStorage.getItem(`tadaruk-repair-photo:${ticket.id}`);
-    if (saved) setRepairPhoto(saved);
-  }, [ticket.id, ticket.resolution, ticket.repairNotes]);
+    setRepairPhoto(ticket.repairImageUrl || saved || '');
+  }, [ticket.id, ticket.repairImageUrl, ticket.resolution, ticket.repairNotes]);
 
   // Stage mapping (1: Received, 2: In Progress, 3: Awaiting Confirmation, 4: Closed)
   const currentStage =
@@ -316,33 +318,37 @@ export function TechnicianTicketDetail({
   const [photoError, setPhotoError] = useState('');
 
   // Handle repair photo upload
-  const handleRepairPhotoChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleRepairPhotoChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
-    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/jpg'];
-    const ALLOWED_EXTENSIONS = ['.png', '.jpg', '.jpeg'];
-    const lowerName = file.name.toLowerCase();
-    const hasValidExt = ALLOWED_EXTENSIONS.some(ext => lowerName.endsWith(ext));
-    if (!ALLOWED_TYPES.includes(file.type) && !hasValidExt) {
-      setPhotoError(tr(lang, 'صيغة الصورة غير مدعومة. الصيغ المقبولة هي: PNG, JPG, JPEG فقط.', 'Unsupported image format. Accepted formats are: PNG, JPG, JPEG only.'));
-      e.target.value = '';
-      return;
-    }
-    if (file.size > 12 * 1024 * 1024) {
-      setPhotoError(tr(lang, 'حجم الصورة أكبر من ١٢ ميجابايت.', 'The image is larger than 12 MB.'));
-      e.target.value = '';
-      return;
-    }
     setPhotoError('');
-    const reader = new FileReader();
-    reader.onload = ev => {
-      const dataUrl = ev.target?.result as string;
-      if (dataUrl) {
-        setRepairPhoto(dataUrl);
-        localStorage.setItem(`tadaruk-repair-photo:${ticket.id}`, dataUrl);
+    setPhotoLoading(true);
+    try {
+      const compressed = await prepareRepairPhoto(file);
+      setRepairPhoto(compressed);
+      try { localStorage.setItem(`tadaruk-repair-photo:${ticket.id}`, compressed); } catch {
+        // The photo can still be submitted to the API even if local storage is full.
       }
-    };
-    reader.readAsDataURL(file);
+    } catch {
+      setPhotoError(tr(lang,'تعذّر معالجة الصورة. استخدم JPG أو PNG بحجم لا يتجاوز 12 ميجابايت.','Could not process the image. Use JPG or PNG up to 12 MB.'));
+    } finally {
+      setPhotoLoading(false);
+    }
+  };
+
+  const syncPreviouslySavedPhoto = async () => {
+    if (!repairPhoto || photoLoading) return;
+    setPhotoLoading(true);setPhotoError('');
+    try {
+      const compressed = await prepareSavedRepairPhoto(repairPhoto);
+      setRepairPhoto(compressed);
+      act('attach_photo',{repairImageUrl:compressed});
+    } catch {
+      setPhotoError(tr(lang,'تعذّر إرسال الصورة السابقة. اختر صورة JPG أو PNG جديدة.','Could not submit the older photo. Please select a new JPG or PNG.'));
+    } finally {
+      setPhotoLoading(false);
+    }
   };
 
   const mapLink = branchMapUrl(
@@ -662,6 +668,7 @@ export function TechnicianTicketDetail({
                 </div>
               )}
 
+              {photoLoading&&<p className="tech-photo-formats-hint" role="status">{tr(lang,'جارٍ تجهيز الصورة…','Preparing photo…')}</p>}
               {photoError && (
                 <p className="tech-photo-error-msg" role="alert">
                   <CircleAlert size={14} />
@@ -681,16 +688,16 @@ export function TechnicianTicketDetail({
             <button
               type="button"
               className="tech-primary-action-btn"
-              disabled={!solutionText.trim() || !repairPhoto || action.isPending || !isAssignedToMe}
+              disabled={!solutionText.trim() || !repairPhoto || photoLoading || action.isPending || !isAssignedToMe}
               onClick={() => {
                 if (!repairPhoto) {
                   setPhotoError(tr(lang, 'إرفاق صورة الحل إلزامي لإتمام الإصلاح.', 'Attaching a solution photo is required to complete the repair.'));
                   return;
                 }
-                localStorage.setItem(`tadaruk-repair-photo:${ticket.id}`, repairPhoto);
                 act('complete', {
                   note: solutionText.trim(),
                   resolution: solutionText.trim(),
+                  repairImageUrl:repairPhoto,
                 });
               }}
               data-testid="button-tech-complete"
@@ -727,17 +734,24 @@ export function TechnicianTicketDetail({
               <span className="tech-record-label">{tr(lang, 'الحل الموثق من طرفك:', 'Documented solution:')}</span>
               <p className="tech-record-text">{ticket.resolution || ticket.repairNotes || solutionText}</p>
 
-              {repairPhoto && (
+              {(ticket.repairImageUrl || repairPhoto) && (
                 <div className="tech-documented-photo">
                   <span className="tech-record-label">{tr(lang, 'صورة بعد الإصلاح:', 'After-repair photo:')}</span>
                   <img
-                    src={repairPhoto}
+                    src={ticket.repairImageUrl || repairPhoto}
                     alt={tr(lang, 'صورة بعد الإصلاح', 'After repair')}
                     className="tech-documented-img"
-                    onClick={() => setExpandedPhoto(repairPhoto)}
+                    onClick={() => setExpandedPhoto(ticket.repairImageUrl || repairPhoto)}
                   />
                 </div>
               )}
+              {!ticket.repairImageUrl&&repairPhoto&&(
+                <button type="button" className="tech-photo-upload-btn" disabled={photoLoading||action.isPending}
+                  onClick={()=>void syncPreviouslySavedPhoto()}>
+                  <Camera size={15}/>{tr(lang,'إرسال صورة الإصلاح للمبلّغ','Send repair photo to reporter')}
+                </button>
+              )}
+              {photoError&&<p className="tech-photo-error-msg" role="alert">{photoError}</p>}
             </div>
           </div>
         ) : (
