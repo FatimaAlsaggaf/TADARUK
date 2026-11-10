@@ -50,6 +50,8 @@ export interface Ticket {
   /** @nullable */
   imageUrl: string | null;
   /** @nullable */
+  repairImageUrl: string | null;
+  /** @nullable */
   repairNotes: string | null;
   /** @nullable */
   cause: string | null;
