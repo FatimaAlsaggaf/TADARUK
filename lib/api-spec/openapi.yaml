@@ -530,7 +530,7 @@ components:
         createdAt: { type: string, format: date-time }
     Ticket:
       type: object
-      required: [id, number, title, description, category, priority, specialization, location, status, cancelledAt, cancelledBy, reporterId, reporterName, branchId, branchName, branchCity, branchAddress, branchLatitude, branchLongitude, branchGoogleMapsUrl, technicianId, technicianName, imageUrl, repairNotes, cause, resolution, createdAt, updatedAt, history]
+      required: [id, number, title, description, category, priority, specialization, location, status, cancelledAt, cancelledBy, reporterId, reporterName, branchId, branchName, branchCity, branchAddress, branchLatitude, branchLongitude, branchGoogleMapsUrl, technicianId, technicianName, imageUrl, repairImageUrl, repairNotes, cause, resolution, createdAt, updatedAt, history]
       properties:
         id: { type: string }
         number: { type: string }
@@ -555,6 +555,7 @@ components:
         technicianId: { type: ["string", "null"] }
         technicianName: { type: ["string", "null"] }
         imageUrl: { type: ["string", "null"] }
+        repairImageUrl: { type: ["string", "null"] }
         repairNotes: { type: ["string", "null"] }
         cause: { type: ["string", "null"] }
         resolution: { type: ["string", "null"] }
@@ -598,10 +599,11 @@ components:
       type: object
       required: [action]
       properties:
-        action: { type: string, enum: [start, complete, confirm, reject, reassign, cancel] }
+        action: { type: string, enum: [start, complete, attach_photo, confirm, reject, reassign, cancel] }
         note: { type: string }
         cause: { type: string }
         resolution: { type: string }
+        repairImageUrl: { type: string }
         technicianId: { type: string }
     Overview:
       type: object

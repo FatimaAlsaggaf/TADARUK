@@ -9892,3 +9892,180 @@ body:has(.dark .reporter-shell) #root {
  .app-shell .compact-timeline-item--refined .compact-timeline-content{min-height:76px;padding:10px 12px !important}
  .app-shell .compact-timeline-item--refined .compact-timeline-row{gap:3px !important;flex-direction:column;align-items:flex-start !important}
 }
+
+
+/* QA refinement: compact, subtle timeline with genuinely small circular markers. */
+.app-shell .compact-timeline-panel{
+  padding:clamp(15px,2.2vw,22px) !important;
+  border-radius:18px !important;
+}
+.app-shell .compact-timeline-list{gap:0 !important}
+.app-shell .compact-timeline-item--refined{
+  align-items:flex-start !important;
+  gap:12px !important;
+  padding:0 0 10px !important;
+  min-height:0 !important;
+}
+.app-shell .compact-timeline-item--refined:last-child{padding-bottom:0 !important}
+.app-shell .compact-timeline-item--refined .compact-timeline-event-icon,
+.app-shell .compact-timeline-event-icon.is-assignment,
+.app-shell .compact-timeline-event-icon.is-complete,
+.app-shell .compact-timeline-event-icon.is-work,
+.app-shell .compact-timeline-event-icon.is-general,
+.app-shell .compact-timeline-event-icon.is-cancelled{
+  width:17px !important;height:17px !important;
+  flex:0 0 17px !important;
+  min-width:17px !important;
+  border:2.5px solid #4d8aab !important;
+  background:#fff !important;
+  border-radius:50% !important;
+  box-shadow:none !important;
+  margin-top:20px !important;
+  padding:0 !important;
+}
+.app-shell .compact-timeline-item--refined.is-latest .compact-timeline-event-icon{
+  background:#1c507b !important;
+  border-color:#1c507b !important;
+  box-shadow:0 0 0 3px #e1edf7 !important;
+}
+.app-shell .compact-timeline-item--refined:not(:last-child)::before{
+  inset-inline-start:8px !important;
+  top:38px !important;
+  bottom:-4px !important;
+  width:1.5px !important;
+  background:#c8dce9 !important;
+  border:0 !important;
+}
+.app-shell .compact-timeline-item--refined .compact-timeline-content,
+.app-shell .compact-timeline-item--refined.is-latest .compact-timeline-content{
+  width:100%;
+  min-height:0 !important;
+  margin:0 !important;
+  padding:11px 14px !important;
+  gap:3px !important;
+  border:1px solid #e2ebf4 !important;
+  border-radius:12px !important;
+  background:#fbfdff !important;
+  box-shadow:none !important;
+}
+.app-shell .compact-timeline-item--refined.is-latest .compact-timeline-content{
+  background:#f1f7fc !important;
+  border-color:#d4e4f1 !important;
+}
+.app-shell .compact-timeline-item--refined .compact-timeline-row b{
+  font-size:13.5px !important;
+  line-height:1.5 !important;
+}
+.app-shell .compact-timeline-item--refined .compact-timeline-row time{
+  font-size:11px !important;
+}
+.app-shell .compact-timeline-item--refined .compact-timeline-content small{
+  font-size:11.5px !important;
+}
+.app-shell .compact-timeline-item--refined .compact-timeline-note{
+  border:0 !important;
+  border-inline-start:0 !important;
+  padding:2px 0 0 !important;
+  margin:1px 0 0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  font-size:12px !important;
+  line-height:1.7 !important;
+}
+.dark .app-shell .compact-timeline-item--refined .compact-timeline-content,
+.dark .app-shell .compact-timeline-item--refined.is-latest .compact-timeline-content{
+  background:#1b3147 !important;
+  border-color:#35536e !important;
+}
+.dark .app-shell .compact-timeline-item--refined .compact-timeline-event-icon{
+  background:#1c3851 !important;
+  border-color:#83b9d4 !important;
+}
+.dark .app-shell .compact-timeline-item--refined.is-latest .compact-timeline-event-icon{
+  background:#84bbd8 !important;
+  border-color:#84bbd8 !important;
+  box-shadow:0 0 0 3px #28465b !important;
+}
+.dark .app-shell .compact-timeline-item--refined:not(:last-child)::before{background:#456985 !important}
+
+/* Reporter sees technician's saved proof image before confirming the fix. */
+.reporter-repair-evidence,
+.resolution-photo-panel{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  border:1px solid #d5e6ee;
+  border-radius:14px;
+  background:#f5fafc;
+  padding:12px;
+  min-width:0;
+}
+.reporter-repair-evidence-header{
+  display:flex;
+  gap:8px;align-items:center;
+  color:#275d7f;
+  font-weight:750;
+  font-size:13px;
+}
+.reporter-repair-evidence-header svg{flex:none}
+.reporter-repair-evidence-trigger{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:7px;
+  padding:0;
+  border:0;
+  background:transparent;
+  max-width:100%;
+  text-align:start;
+  cursor:zoom-in;
+}
+.reporter-repair-evidence-trigger img{
+  width:100%;
+  max-width:min(100%,340px);
+  max-height:250px;
+  object-fit:contain;
+  object-position:top right;
+  border-radius:12px;
+  border:1px solid #d0e0ea;
+  background:white;
+}
+.reporter-repair-evidence-trigger span{
+  display:inline-flex;align-items:center;gap:6px;
+  font-weight:650;
+  font-size:12px;
+  color:#286989;
+}
+.reporter-repair-evidence-trigger:focus-visible{outline:3px solid #328da9;outline-offset:4px}
+.reporter-repair-evidence-missing{
+  background:#fff8ed;
+  color:#876130;
+  border:1px solid #f1ddb7;
+  border-radius:10px;
+  padding:10px 12px;
+  line-height:1.75;
+  font-size:12px;
+}
+.resolution-photo-panel h3{margin:0;color:#254d71;font-size:17px}
+.repair-photo-lightbox{display:grid;place-items:center;width:100%}
+.repair-photo-lightbox img{
+  max-width:100%;
+  max-height:min(74dvh,740px);
+  width:auto;
+  height:auto;
+  border-radius:10px;
+  object-fit:contain;
+}
+.dark .reporter-repair-evidence,
+.dark .resolution-photo-panel{background:#19364b;border-color:#385a70}
+.dark .reporter-repair-evidence-header,.dark .resolution-photo-panel h3{color:#d2e9f5}
+.dark .reporter-repair-evidence-trigger span{color:#a7d9ed}
+.dark .reporter-repair-evidence-missing{background:#413729;color:#f5dfad;border-color:#775d32}
+@media(max-width:620px){
+  .app-shell .compact-timeline-item--refined{gap:9px !important;padding-bottom:9px !important}
+  .app-shell .compact-timeline-item--refined .compact-timeline-event-icon{width:15px !important;height:15px !important;flex-basis:15px !important;margin-top:19px !important}
+  .app-shell .compact-timeline-item--refined:not(:last-child)::before{inset-inline-start:7px !important;top:34px !important}
+  .app-shell .compact-timeline-item--refined .compact-timeline-content{padding:9px 11px !important}
+  .reporter-repair-evidence-trigger img{max-height:200px}
+}

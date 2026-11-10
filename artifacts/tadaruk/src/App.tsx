@@ -12,7 +12,7 @@ import {
   CheckCircle2, ChevronDown, ClipboardList, Clock3, Filter, Languages, LayoutDashboard,
   MapPin, Menu, Phone, Plus, Search, Settings2, ShieldCheck, Users, Wrench, X, CircleAlert,
   LogOut, UserRound, RotateCcw, Repeat2, ChevronLeft, ChevronRight, LoaderCircle, MapPinned,
-  Mic, Square, Bell, SunMoon, ImageOff, Copy, MessageCircle, FileText
+  Mic, Square, Bell, SunMoon, ImageOff, Copy, MessageCircle, FileText, Maximize2
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -1221,21 +1221,24 @@ function TicketsPage({lang,user}:{lang:Lang;user:DemoUser}) {
 function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
   const params=useParams<{ticketId:string}>();const id=params.ticketId||'';const {data:rawTicket,isLoading,isError,refetch}=useGetTicket(id,{query:{enabled:!!id,queryKey:getGetTicketQueryKey(id)}});
   const {data:technicians}=useListTechnicians({query:{enabled:user.role==='manager',queryKey:getListTechniciansQueryKey()}});
-  const action=usePerformTicketAction();const query=useQueryClient();const [note,setNote]=useState('');const [cause,setCause]=useState('');const [resolution,setResolution]=useState('');const [repairInputMode,setRepairInputMode]=useState<'voice'|'text'>('voice');const [actionFeedback,setActionFeedback]=useState('');
+  const action=usePerformTicketAction();const query=useQueryClient();const [repairPhotoOpen,setRepairPhotoOpen]=useState(false);const [note,setNote]=useState('');const [cause,setCause]=useState('');const [resolution,setResolution]=useState('');const [repairInputMode,setRepairInputMode]=useState<'voice'|'text'>('voice');const [actionFeedback,setActionFeedback]=useState('');
   const reduced=useReducedMotion()===true || (typeof window!=='undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true);
   const [localPhoto,setLocalPhoto]=useState(()=>localStorage.getItem(`tadaruk-photo:${id}`)||'');
   const [localExtraPhoto,setLocalExtraPhoto]=useState(()=>localStorage.getItem(`tadaruk-photo-extra:${id}`)||'');
+  // Same-browser fallback for photos submitted by older demo builds.
+  const [localRepairPhoto,setLocalRepairPhoto]=useState(()=>localStorage.getItem(`tadaruk-repair-photo:${id}`)||'');
   useEffect(()=>{
     setLocalPhoto(localStorage.getItem(`tadaruk-photo:${id}`)||'');
     setLocalExtraPhoto(localStorage.getItem(`tadaruk-photo-extra:${id}`)||'');
-  },[id]);
+    setLocalRepairPhoto(localStorage.getItem(`tadaruk-repair-photo:${id}`)||'');
+  },[id,rawTicket?.status]);
   const [technicianId,setTechnicianId]=useState('');
   const [pendingTechnicianId,setPendingTechnicianId]=useState<string | null>(null);
   const [showAssignmentEditor,setShowAssignmentEditor]=useState(false);
   const [reassignReason,setReassignReason]=useState('');
   const [reassignError,setReassignError]=useState('');
 
-  const act=(a:'start'|'complete'|'confirm'|'reject'|'reassign',extra:Record<string,string>={})=>{
+  const act=(a:'start'|'complete'|'attach_photo'|'confirm'|'reject'|'reassign',extra:Record<string,string>={})=>{
     setActionFeedback('');
     action.mutate({ticketId:id,data:{action:a,note,...extra}},{
       onSuccess:()=>{void query.invalidateQueries({queryKey:getGetTicketQueryKey(id)});
@@ -1245,7 +1248,7 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
         void query.invalidateQueries({queryKey:['tadaruk-notifications']});
         void query.invalidateQueries({queryKey:getListKnowledgeQueryKey()});
         setNote('');
-        setActionFeedback(a==='start'?tr(lang,'بدأ العمل على البلاغ.','Work has started.'):a==='complete'?tr(lang,'أُرسل تقييم الإصلاح للمراجعة.','Repair submitted for confirmation.'):a==='confirm'?tr(lang,'تم تأكيد الإصلاح وإغلاق البلاغ.','Ticket closed.'):a==='reject'?tr(lang,'تمت إعادة البلاغ للفني للمتابعة.','Repair returned for follow-up.'):tr(lang,'تم تحديث إسناد الفني.','Assignment updated.'));
+        setActionFeedback(a==='start'?tr(lang,'بدأ العمل على البلاغ.','Work has started.'):a==='complete'?tr(lang,'أُرسل تقييم الإصلاح للمراجعة.','Repair submitted for confirmation.'):a==='attach_photo'?tr(lang,'تم إرسال صورة الإصلاح للمبلّغ.','Repair photo sent to reporter.'):a==='confirm'?tr(lang,'تم تأكيد الإصلاح وإغلاق البلاغ.','Ticket closed.'):a==='reject'?tr(lang,'تمت إعادة البلاغ للفني للمتابعة.','Repair returned for follow-up.'):tr(lang,'تم تحديث إسناد الفني.','Assignment updated.'));
       }
     });
   };
@@ -1259,6 +1262,7 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
   const selectedDifferentSpecialty = Boolean(technicianId && branchAvailableTechnicians.some(t=>t.id===technicianId&&t.specialization!==rawTicket?.specialization));
 
   const ticket = rawTicket || (FALLBACK_INITIAL_TICKETS as unknown as Ticket[]).find(t => t.id === id) || (FALLBACK_INITIAL_TICKETS[0] as unknown as Ticket);
+  const repairProofUrl = ticket.repairImageUrl || localRepairPhoto;
   const manager=user.role==='manager',technician=user.role==='technician',reporter=user.role==='reporter';
 
   if (technician) {
@@ -1395,6 +1399,14 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
           </section>
         )}
 
+        {repairProofUrl&&ticket.status==='closed'&&<section className="panel resolution-photo-panel">
+          <h3>{tr(lang,'صورة الإصلاح المؤكدة','Confirmed repair photo')}</h3>
+          <button type="button" className="reporter-repair-evidence-trigger" onClick={()=>setRepairPhotoOpen(true)}
+            aria-label={tr(lang,'تكبير صورة الإصلاح','Enlarge repair photo')}>
+            <img src={repairProofUrl} loading="lazy" alt={tr(lang,'الصورة بعد الإصلاح','Photo after repair')}/>
+            <span><Maximize2 size={15}/>{tr(lang,'عرض الصورة','View photo')}</span>
+          </button>
+        </section>}
         {/* Contextual Action Panel */}
         <section className={`action-panel ${manager?'action-panel--assignment':''}`} aria-busy={action.isPending}>
           {!manager && <span className="eyebrow">{tr(lang,'الخطوة التالية','NEXT STEP')}</span>}
@@ -1542,6 +1554,19 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
               {ticket.status === 'awaiting_confirmation' && (
                 <div className="reporter-confirm-box">
                   <h4>{tr(lang, 'قيّم الفني الإصلاح — هل تم حل المشكلة؟', 'Technician completed repair — Was it fixed?')}</h4>
+                  {repairProofUrl ? (
+                    <div className="reporter-repair-evidence">
+                      <div className="reporter-repair-evidence-header">
+                        <CheckCircle2 size={17}/>
+                        <span>{tr(lang,'صورة الإصلاح المرفقة من الفني','After-repair photo from technician')}</span>
+                      </div>
+                      <button type="button" className="reporter-repair-evidence-trigger" onClick={()=>setRepairPhotoOpen(true)}
+                        aria-label={tr(lang,'تكبير صورة الإصلاح','Enlarge repair photo')}>
+                        <img src={repairProofUrl} loading="lazy" alt={tr(lang,'الصورة بعد الإصلاح','Photo after repair')}/>
+                        <span><Maximize2 size={15}/>{tr(lang,'عرض الصورة','View photo')}</span>
+                      </button>
+                    </div>
+                  ) : <p className="reporter-repair-evidence-missing">{tr(lang,'صورة الإصلاح لم تصل بعد. يمكن طلب إرسالها من الفني قبل التأكيد.','The repair photo has not been received. Ask the technician to send it before confirming.')}</p>}
                   <div className="reporter-confirm-actions">
                     <Button kind="primary" onClick={() => act('confirm')} disabled={action.isPending} data-testid="button-reporter-confirm">
                       <Check size={16} />
@@ -1655,6 +1680,9 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
       </aside>
     </div>
 
+    {repairPhotoOpen&&repairProofUrl&&<Modal title={tr(lang,'صورة الإصلاح من الفني','Technician repair photo')} close={()=>setRepairPhotoOpen(false)} dir={lang==='ar'?'rtl':'ltr'}>
+      <div className="repair-photo-lightbox"><img src={repairProofUrl} alt={tr(lang,'صورة الإصلاح بالحجم الكامل','Full repair photo')}/></div>
+    </Modal>}
     {/* Confirmation and mandatory reason for post-start exceptions. */}
     <AlertDialog open={Boolean(pendingTechnicianId)} onOpenChange={open=>{if(!open&&!action.isPending){setPendingTechnicianId(null);setReassignError('');}}}>
       <AlertDialogContent className="confirm-dialog" dir={lang==='ar'?'rtl':'ltr'}>

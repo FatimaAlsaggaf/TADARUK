@@ -12,6 +12,7 @@ export type TicketActionInputAction = typeof TicketActionInputAction[keyof typeo
 export const TicketActionInputAction = {
   start: 'start',
   complete: 'complete',
+  attach_photo: 'attach_photo',
   confirm: 'confirm',
   reject: 'reject',
   reassign: 'reassign',

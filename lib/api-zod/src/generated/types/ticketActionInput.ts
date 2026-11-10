@@ -12,5 +12,6 @@ export interface TicketActionInput {
   note?: string;
   cause?: string;
   resolution?: string;
+  repairImageUrl?: string;
   technicianId?: string;
 }
