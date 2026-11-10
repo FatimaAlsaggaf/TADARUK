@@ -3,6 +3,7 @@ import { and, asc, count, desc, eq, isNull, ne } from "drizzle-orm";
 import {
   branchesTable,
   db,
+  pool,
   teamMembersTable,
   ticketEventsTable,
   ticketsTable,
@@ -37,6 +38,8 @@ export function ensureDemoData(): Promise<void> {
 }
 
 async function seedDemoData(): Promise<void> {
+  // Add repair-photo storage to existing demo databases without wiping existing tickets.
+  await pool.query('ALTER TABLE tadaruk_tickets ADD COLUMN IF NOT EXISTS repair_image_url text');
   await db.insert(branchesTable).values(
     seedBranches.map((branch) => ({ ...branch, organizationId: DEMO_ORGANIZATION })),
   ).onConflictDoNothing();
@@ -275,6 +278,7 @@ export async function toTicketView(ticket: TicketRecord) {
     technicianId: ticket.technicianId,
     technicianName: technician?.name ?? null,
     imageUrl: ticket.imageUrl,
+    repairImageUrl: ticket.repairImageUrl,
     repairNotes: ticket.repairNotes,
     cause: ticket.cause,
     resolution: ticket.resolution,
