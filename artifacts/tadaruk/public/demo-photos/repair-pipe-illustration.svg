@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="520" viewBox="0 0 840 520" role="img" aria-label="Illustration of repaired water pipe connection under a sink">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#edf4f8"/><stop offset="1" stop-color="#bdd1dd"/></linearGradient>
+<linearGradient id="metal" x1="0" y1="0" x2="1" y2=".25"><stop stop-color="#8b9ca8"/><stop offset=".25" stop-color="#f4f7f9"/><stop offset=".52" stop-color="#9aabb5"/><stop offset=".78" stop-color="#e0e9ef"/><stop offset="1" stop-color="#6c8290"/></linearGradient>
+<linearGradient id="dark" x1="0" y1="0" x2=".9" y2="1"><stop stop-color="#334c60"/><stop offset="1" stop-color="#71899a"/></linearGradient>
+<filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="14"/></filter>
+</defs>
+<rect width="840" height="520" fill="url(#bg)"/>
+<path d="M0 414L840 400V520H0Z" fill="#d2dce2"/>
+<g opacity=".3" stroke="#a9bbc7" stroke-width="2"><path d="M0 466L840 444M195 413L156 520M475 406L520 520M695 404L764 520"/></g>
+<ellipse cx="419" cy="437" rx="252" ry="34" fill="#45576a" opacity=".25" filter="url(#shadow)"/>
+<rect x="115" y="57" width="605" height="67" rx="12" fill="url(#dark)"/>
+<rect x="127" y="52" width="581" height="42" rx="8" fill="url(#metal)"/>
+<path d="M155 94H673" stroke="#d9e3e9" stroke-width="4"/>
+<rect x="162" y="122" width="36" height="283" rx="11" fill="url(#metal)"/>
+<rect x="648" y="122" width="37" height="283" rx="11" fill="url(#metal)"/>
+<path d="M403 120V236Q403 260 425 260H506Q540 260 540 292V362" fill="none" stroke="#4f6471" stroke-width="46" stroke-linecap="round"/>
+<path d="M403 120V236Q403 260 425 260H506Q540 260 540 292V362" fill="none" stroke="url(#metal)" stroke-width="35" stroke-linecap="round"/>
+<path d="M402 126V238Q402 258 425 258H510Q539 258 539 291V357" fill="none" stroke="#e5edf3" stroke-width="6" opacity=".8"/>
+<rect x="379" y="172" width="49" height="36" rx="7" fill="url(#metal)" stroke="#536c7c" stroke-width="3"/>
+<path d="M384 181H425M384 198H425" stroke="#637c8b" stroke-width="4"/>
+<rect x="515" y="305" width="49" height="34" rx="8" fill="url(#metal)" stroke="#536c7c" stroke-width="3"/>
+<path d="M520 315H558M520 328H558" stroke="#607788" stroke-width="4"/>
+<path d="M540 361V403" stroke="url(#metal)" stroke-width="38" stroke-linecap="round"/>
+<circle cx="585" cy="190" r="52" fill="#0e7f78" stroke="#e6f9f5" stroke-width="8"/>
+<path d="M564 190L580 205L608 174" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+<g fill="#fff" opacity=".55"><circle cx="240" cy="186" r="3"/><circle cx="617" cy="326" r="3"/></g>
+</svg>

@@ -10069,3 +10069,118 @@ body:has(.dark .reporter-shell) #root {
   .app-shell .compact-timeline-item--refined .compact-timeline-content{padding:9px 11px !important}
   .reporter-repair-evidence-trigger img{max-height:200px}
 }
+
+
+/* Clean alternating timeline — independent from legacy compact-timeline overrides. */
+.app-shell .tadaruk-ref-timeline{
+  display:flex;flex-direction:column;position:relative;isolation:isolate;
+  padding:8px 8px 6px;margin:0;gap:0;
+}
+.app-shell .tadaruk-ref-timeline::before{
+  content:"";position:absolute;z-index:0;
+  width:1.5px;top:26px;bottom:26px;left:50%;
+  transform:translateX(-50%);background:#bbd0e2;border-radius:99px;
+}
+.app-shell .tadaruk-ref-event{
+  display:grid;direction:inherit;
+  grid-template-columns:minmax(0,1fr) 20px minmax(0,1fr);
+  align-items:center;gap:0 16px;
+  position:relative;z-index:1;
+  min-height:90px;padding:14px 0;
+}
+.app-shell .tadaruk-ref-event .tadaruk-ref-dot{
+  grid-column:2;grid-row:1;
+  box-sizing:border-box;justify-self:center;
+  width:12px;height:12px;border-radius:50%;
+  background:#f7fbff;border:2px solid #5c9fc9;
+  box-shadow:0 0 0 3px #edf6fd;
+}
+.app-shell .tadaruk-ref-event.is-current .tadaruk-ref-dot{
+  width:14px;height:14px;
+  background:#255986;border:2px solid #255986;
+  box-shadow:0 0 0 3px #dbeefa;
+}
+.app-shell .tadaruk-ref-event .tadaruk-ref-date{
+  grid-row:1;grid-column:3;
+  justify-self:start;
+  color:#7990a8;font-size:11px;line-height:1.55;
+  font-weight:500;white-space:normal;min-width:0;
+}
+.app-shell .tadaruk-ref-event .tadaruk-ref-content{
+  grid-row:1;grid-column:1;justify-self:end;
+  width:min(100%,355px);min-width:0;
+  text-align:start;background:none;border:0;box-shadow:none;
+  padding:0;display:flex;flex-direction:column;gap:3px;
+}
+.app-shell .tadaruk-ref-event .tadaruk-ref-content strong{
+  font-size:14px;color:#1f4269;font-weight:800;line-height:1.5;
+}
+.app-shell .tadaruk-ref-event .tadaruk-ref-content small{
+  font-size:11px;color:#68809a;line-height:1.45;
+}
+.app-shell .tadaruk-ref-event .tadaruk-ref-content p{
+  margin:1px 0 0;padding:0;border:0;background:transparent;
+  font-size:12px;color:#687d91;line-height:1.65;overflow-wrap:anywhere;
+}
+.app-shell .tadaruk-ref-event.is-alternate .tadaruk-ref-date{
+  grid-column:1;justify-self:end;text-align:end;
+}
+.app-shell .tadaruk-ref-event.is-alternate .tadaruk-ref-content{
+  grid-column:3;justify-self:start;
+}
+.app-shell .tadaruk-ref-event.is-alternate .tadaruk-ref-content{
+  text-align:start;
+}
+.app-shell .tadaruk-ref-event.is-current .tadaruk-ref-content strong{
+  color:#193c66;
+}
+.app-shell .compact-timeline-panel:has(.tadaruk-ref-timeline){
+  border-radius:19px !important;padding:18px 22px !important;
+}
+.app-shell .compact-timeline-panel:has(.tadaruk-ref-timeline) .compact-timeline-head{
+  margin-bottom:0 !important;padding-bottom:12px !important;
+}
+.repair-demo-note{
+  display:inline-flex;align-items:center;gap:5px;
+  font-weight:500;font-size:10.5px;line-height:1.5;
+  color:#657f96;background:#e9f2f8;border-radius:7px;
+  padding:3px 7px;margin-inline-start:auto;
+}
+.dark .app-shell .tadaruk-ref-timeline::before{background:#456c8a;}
+.dark .app-shell .tadaruk-ref-event .tadaruk-ref-dot{
+  background:#21384b;border-color:#89b9d0;box-shadow:0 0 0 3px #244154;
+}
+.dark .app-shell .tadaruk-ref-event.is-current .tadaruk-ref-dot{
+  background:#83bbdb;border-color:#83bbdb;
+}
+.dark .app-shell .tadaruk-ref-event .tadaruk-ref-content strong{color:#dcebf7;}
+.dark .app-shell .tadaruk-ref-event .tadaruk-ref-content small,
+.dark .app-shell .tadaruk-ref-event .tadaruk-ref-date,
+.dark .app-shell .tadaruk-ref-event .tadaruk-ref-content p{color:#aec6d8;}
+.dark .repair-demo-note{background:#23465a;color:#c6dfea;}
+@media(max-width:700px){
+  .app-shell .compact-timeline-panel:has(.tadaruk-ref-timeline){padding:14px !important;}
+  .app-shell .tadaruk-ref-timeline{padding:8px 3px;gap:0;}
+  .app-shell .tadaruk-ref-timeline::before{
+    left:auto;right:9px;transform:none;top:28px;bottom:30px;
+  }
+  .app-shell .tadaruk-ref-event{
+    grid-template-columns:20px minmax(0,1fr) !important;
+    gap:4px 12px;min-height:70px;padding:12px 0;align-items:start;
+  }
+  .app-shell .tadaruk-ref-event .tadaruk-ref-dot{
+    grid-column:1 !important;grid-row:1 / span 2 !important;
+    justify-self:center;margin-top:3px;
+  }
+  .app-shell .tadaruk-ref-event .tadaruk-ref-content,
+  .app-shell .tadaruk-ref-event.is-alternate .tadaruk-ref-content{
+    grid-column:2 !important;grid-row:1 !important;
+    justify-self:stretch;width:auto;text-align:start;
+  }
+  .app-shell .tadaruk-ref-event .tadaruk-ref-date,
+  .app-shell .tadaruk-ref-event.is-alternate .tadaruk-ref-date{
+    grid-column:2 !important;grid-row:2 !important;
+    justify-self:start;text-align:start;
+    font-size:10.5px;
+  }
+}
