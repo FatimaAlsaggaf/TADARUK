@@ -52,6 +52,7 @@ export const ticketsTable = pgTable("tadaruk_tickets", {
   branchId: text("branch_id").notNull(),
   technicianId: text("technician_id"),
   imageUrl: text("image_url"),
+  repairImageUrl: text("repair_image_url"),
   repairNotes: text("repair_notes"),
   cause: text("cause"),
   resolution: text("resolution"),
