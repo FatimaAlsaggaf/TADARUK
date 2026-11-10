@@ -45,6 +45,7 @@ import './tadaruk-interactions.css';
 import './technician-contact.css';
 import './technician-ticket.css';
 import './unified-workspace-header.css';
+import './timeline-one-side.css';
 
 const qc = new QueryClient();
 type Lang = 'ar' | 'en';
