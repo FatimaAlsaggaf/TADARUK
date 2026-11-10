@@ -102,7 +102,7 @@ export default function OrganizationOnboarding({lang,mode,embedded=false,onExit}
       </div>
     </aside>}
     <section className={embedded?'org-embedded-panel':'org-panel'}>
-      <div className="org-auth-topline"><span>{tr(lang,'حساب المنشأة','Organization account')}</span><span>{mode==='login'?tr(lang,'تسجيل الدخول','Sign in'):tr(lang,'إنشاء حساب','Create account')}</span></div>
+
       {mode==='login'?<form className="org-form org-login-form" onSubmit={e=>{e.preventDefault();go('/login')}}>
         <span className="org-eyebrow">{tr(lang,'مرحبًا مجددًا','WELCOME BACK')}</span>
         <h2>{tr(lang,'تسجيل الدخول','Sign in')}</h2>
