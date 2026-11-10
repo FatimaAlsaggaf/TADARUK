@@ -9797,3 +9797,98 @@ body:has(.dark .reporter-shell) #root {
     transform:translateY(12px) scale(.94) !important;
   }
 }
+
+
+/* Team QA: one consistent timeline system. No green/purple status stripes. */
+.app-shell .compact-timeline-panel{
+  padding:clamp(15px,2.6vw,24px) !important;
+  border-radius:20px !important;
+}
+.app-shell .compact-timeline-list{
+  display:flex !important;
+  flex-direction:column;
+  gap:9px !important;
+}
+.app-shell .compact-timeline-item--refined{
+  gap:12px !important;
+  padding:0 !important;
+  align-items:center !important;
+  min-height:92px;
+}
+.app-shell .compact-timeline-item--refined:not(:last-child)::before{
+  top:44px !important;
+  bottom:-44px !important;
+  width:2px !important;
+  background:#b5d3e5 !important;
+}
+.app-shell .compact-timeline-event-icon,
+.app-shell .compact-timeline-event-icon.is-assignment,
+.app-shell .compact-timeline-event-icon.is-complete,
+.app-shell .compact-timeline-event-icon.is-work,
+.app-shell .compact-timeline-event-icon.is-general,
+.app-shell .compact-timeline-event-icon.is-cancelled{
+  width:34px !important;height:34px !important;flex:0 0 34px !important;
+  border-radius:50% !important;
+  background:#f8fcff !important;
+  border:5px solid #2c7395 !important;
+  box-shadow:0 0 0 4px #e6f1f8 !important;
+  color:#2c7395 !important;
+}
+.app-shell .compact-timeline-item--refined.is-latest .compact-timeline-event-icon{
+  background:#1e416d !important;
+  border-color:#1e416d !important;
+}
+.app-shell .compact-timeline-item--refined .compact-timeline-content,
+.app-shell .compact-timeline-item--refined.is-latest .compact-timeline-content{
+  flex:1 1 auto;
+  min-height:88px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:13px clamp(13px,2vw,19px) !important;
+  margin:0 !important;
+  gap:3px !important;
+  background:#f7fafd !important;
+  border:1px solid #dce7f1 !important;
+  border-radius:14px !important;
+  box-shadow:none !important;
+}
+.app-shell .compact-timeline-item--refined .compact-timeline-content::before,
+.app-shell .compact-timeline-item--refined .compact-timeline-content::after{
+  content:none !important;
+  display:none !important;
+  border:0 !important;
+}
+.app-shell .compact-timeline-item--refined .compact-timeline-note,
+.dark .app-shell .compact-timeline-item--refined .compact-timeline-note{
+  margin-top:3px !important;
+  border:0 !important;
+  border-inline-start:0 !important;
+  box-shadow:none !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  padding:0 !important;
+  line-height:1.75;
+}
+.dark .app-shell .compact-timeline-item--refined .compact-timeline-content,
+.dark .app-shell .compact-timeline-item--refined.is-latest .compact-timeline-content{
+  background:#1e334a !important;
+  border-color:#3d5974 !important;
+}
+.dark .app-shell .compact-timeline-event-icon{
+  background:#203a54 !important;
+  border-color:#65b1cd !important;
+  box-shadow:0 0 0 4px #284661 !important;
+}
+.dark .app-shell .compact-timeline-item--refined.is-latest .compact-timeline-event-icon{
+  background:#a8d8f1 !important;
+  border-color:#a8d8f1 !important;
+}
+.dark .app-shell .compact-timeline-item--refined:not(:last-child)::before{
+  background:#426784 !important;
+}
+@media(max-width:620px){
+ .app-shell .compact-timeline-item--refined{min-height:78px}
+ .app-shell .compact-timeline-item--refined .compact-timeline-content{min-height:76px;padding:10px 12px !important}
+ .app-shell .compact-timeline-item--refined .compact-timeline-row{gap:3px !important;flex-direction:column;align-items:flex-start !important}
+}

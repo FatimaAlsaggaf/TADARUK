@@ -12,7 +12,7 @@ import {
   CheckCircle2, ChevronDown, ClipboardList, Clock3, Filter, Languages, LayoutDashboard,
   MapPin, Menu, Phone, Plus, Search, Settings2, ShieldCheck, Users, Wrench, X, CircleAlert,
   LogOut, UserRound, RotateCcw, Repeat2, ChevronLeft, ChevronRight, LoaderCircle, MapPinned,
-  Mic, Square, Bell, SunMoon, ImageOff, Copy, MessageCircle
+  Mic, Square, Bell, SunMoon, ImageOff, Copy, MessageCircle, FileText
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -917,7 +917,7 @@ function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode
           {showNotifications&&(
             <div className="workspace-header-notifications-popover" role="region" aria-label={tr(lang,'الإشعارات','Notifications')}>
               <div className="notifications-head">
-                <div className="notifications-title-wrap"><Bell size={15}/><b>{tr(lang,'الإشعارات','Notifications')}</b>{unreadCount>0&&<span className="notifications-count-badge">{unreadCount}</span>}{demoOnly&&<span style={{fontSize:11,opacity:.72,fontWeight:700}}>{tr(lang,'تجريبي','Demo')}</span>}</div>
+                <div className="notifications-title-wrap"><Bell size={15}/><b>{tr(lang,'الإشعارات','Notifications')}</b>{unreadCount>0&&<span className="notifications-count-badge">{unreadCount}</span>}</div>
                 {unreadCount>0&&<button type="button" className="notifications-mark-read" onClick={markAllNotificationsRead}>{tr(lang,'تحديد الكل كمقروء','Mark all read')}</button>}
               </div>
               <div className="notifications-list">
@@ -1221,7 +1221,7 @@ function TicketsPage({lang,user}:{lang:Lang;user:DemoUser}) {
 function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
   const params=useParams<{ticketId:string}>();const id=params.ticketId||'';const {data:rawTicket,isLoading,isError,refetch}=useGetTicket(id,{query:{enabled:!!id,queryKey:getGetTicketQueryKey(id)}});
   const {data:technicians}=useListTechnicians({query:{enabled:user.role==='manager',queryKey:getListTechniciansQueryKey()}});
-  const action=usePerformTicketAction();const query=useQueryClient();const [note,setNote]=useState('');const [cause,setCause]=useState('');const [resolution,setResolution]=useState('');const [actionFeedback,setActionFeedback]=useState('');
+  const action=usePerformTicketAction();const query=useQueryClient();const [note,setNote]=useState('');const [cause,setCause]=useState('');const [resolution,setResolution]=useState('');const [repairInputMode,setRepairInputMode]=useState<'voice'|'text'>('voice');const [actionFeedback,setActionFeedback]=useState('');
   const reduced=useReducedMotion()===true || (typeof window!=='undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true);
   const [localPhoto,setLocalPhoto]=useState(()=>localStorage.getItem(`tadaruk-photo:${id}`)||'');
   const [localExtraPhoto,setLocalExtraPhoto]=useState(()=>localStorage.getItem(`tadaruk-photo-extra:${id}`)||'');
@@ -1446,16 +1446,31 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
                         data-testid="input-tech-cause"
                       />
                     </label>
-                    <div className="field-label">
-                      <span>{tr(lang, 'إجراء وتقييم الإصلاح المنفذ', 'Repair action taken')}</span>
-                      <textarea
-                        value={resolution}
-                        onChange={e => setResolution(e.target.value)}
-                        rows={3}
-                        placeholder={tr(lang, 'ماذا فعلت لحل المشكلة؟', 'What was done to resolve the issue?')}
-                        data-testid="input-tech-resolution"
-                      />
-                      <VoiceRecorder lang={lang} onTranscript={text => setResolution(current => current ? `${current.trimEnd()} ${text}` : text)} />
+                    <div className="tech-repair-entry">
+                      <h4>{tr(lang,'كيف أصلحت المشكلة؟','How did you fix the issue?')}</h4>
+                      <p className="tech-repair-entry-hint">{tr(lang,'وثّق الإصلاح كتابة أو صوتيًا قبل إرساله للتأكيد.','Document your repair by text or voice before submitting.')}</p>
+                      <div className="tech-repair-input-tabs" role="tablist" aria-label={tr(lang,'طريقة توثيق الإصلاح','Repair documentation method')}>
+                        <button type="button" role="tab" aria-selected={repairInputMode==='text'} className={repairInputMode==='text'?'is-active':''} onClick={()=>setRepairInputMode('text')}><FileText size={17}/>{tr(lang,'كتابة الحل (نص)','Write resolution')}</button>
+                        <button type="button" role="tab" aria-selected={repairInputMode==='voice'} className={repairInputMode==='voice'?'is-active':''} onClick={()=>setRepairInputMode('voice')}><Mic size={17}/>{tr(lang,'تسجيل صوتي','Voice recording')}</button>
+                      </div>
+                      {repairInputMode==='text'?(
+                        <label className="field-label tech-repair-text-entry">
+                          <span>{tr(lang,'اشرح ما قمت به لحل العطل','Describe how you fixed the issue')}</span>
+                          <textarea value={resolution} onChange={e=>setResolution(e.target.value)} rows={4}
+                            placeholder={tr(lang,'اكتب تفاصيل الإصلاح هنا…','Write the repair details here…')}
+                            data-testid="input-tech-resolution"/>
+                        </label>
+                      ):(
+                        <div className="tech-repair-voice-entry">
+                          <p>{tr(lang,'سجّل شرحًا صوتيًا لما قمت به لحل العطل.','Describe your repair by voice.')}</p>
+                          <VoiceRecorder lang={lang} onTranscript={text => setResolution(current => current ? `${current.trimEnd()} ${text}` : text)}/>
+                          <div className="tech-repair-transcript" role="status" aria-live="polite">
+                            <b>{tr(lang,'النص المسجل:','Transcription:')}</b>
+                            <div className="tech-repair-transcript-body">{resolution}</div>
+                            {resolution&&<button type="button" className="tech-repair-transcript-clear" onClick={()=>setResolution('')}><RotateCcw size={15}/>{tr(lang,'مسح النص','Clear transcription')}</button>}
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <Button
                       kind="primary"

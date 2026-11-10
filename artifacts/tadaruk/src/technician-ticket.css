@@ -1336,3 +1336,133 @@
 
 .tech-ticket-detail .tech-stage.is-done,.tech-ticket-detail .tech-stage.is-complete{color:#307190 !important;}
 .tech-ticket-detail .tech-stage.is-active{color:#1f3363 !important;}
+
+
+/* Repair documentation: single focused text / voice editor for technician QA. */
+.tech-repair-entry{
+  display:flex;
+  flex-direction:column;
+  gap:13px;
+  border:1px solid #dae6f2;
+  border-radius:19px;
+  background:#fcfdff;
+  padding:clamp(15px,2.6vw,23px);
+  min-width:0;
+}
+.tech-repair-entry>h4{
+  font-size:clamp(19px,2.1vw,23px);
+  line-height:1.5;
+  color:#1e416d;
+  font-weight:850;
+  margin:0 !important;
+}
+.tech-repair-entry-hint{
+  color:#7085a0;
+  font-size:13px;
+  line-height:1.7;
+  margin:-6px 0 3px !important;
+}
+.tech-repair-input-tabs{
+  display:flex;
+  align-self:flex-start;
+  max-width:100%;
+  flex-wrap:wrap;
+  gap:4px;
+  background:#eef3f8;
+  border:1px solid #e2ebf4;
+  padding:5px;
+  border-radius:13px;
+}
+.tech-repair-input-tabs button{
+  display:inline-flex;align-items:center;justify-content:center;
+  gap:8px;min-height:42px;padding:8px 13px;
+  border:0;border-radius:10px;
+  background:transparent;color:#607a96;
+  font-size:13px;font-weight:750;cursor:pointer;
+}
+.tech-repair-input-tabs button.is-active{
+  background:#fff;color:#204771;
+  box-shadow:0 2px 7px #173a611b;
+}
+.tech-repair-input-tabs button:focus-visible,
+.tech-repair-transcript-clear:focus-visible{
+  outline:2px solid #257ba2;outline-offset:3px;
+}
+.tech-repair-voice-entry{
+  display:flex;flex-direction:column;gap:12px;
+  border:1.5px dashed #c9dcea;
+  padding:18px;
+  border-radius:15px;
+  background:#fff;
+}
+.tech-repair-voice-entry>p{
+  margin:0;
+  color:#506981;
+  font-size:13px;
+  font-weight:650;
+  line-height:1.8;
+}
+.tech-repair-voice-entry .voice-capture{
+  margin:0;
+}
+.tech-repair-voice-entry .voice-button{
+  border-radius:12px;
+  min-height:46px;
+  background:#213e71;
+  border:1px solid #213e71;
+  color:#fff;
+  font-weight:780;
+}
+.tech-repair-voice-entry .voice-button:hover{background:#2a5a8b;color:#fff;}
+.tech-repair-transcript{
+  margin-top:5px;
+  padding:12px 15px;
+  border:1px solid #dce6f0;
+  border-radius:13px;
+  background:#fafcff;
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  min-height:97px;
+}
+.tech-repair-transcript>b{color:#287397;font-size:12px;font-weight:800;}
+.tech-repair-transcript-body{
+  min-height:38px;
+  color:#1f416b;
+  font-size:13px;
+  line-height:1.8;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.tech-repair-transcript-clear{
+  display:inline-flex;align-self:flex-start;
+  align-items:center;gap:6px;
+  background:none;border:0;color:#637e99;
+  padding:4px 0;cursor:pointer;font-size:12px;
+}
+.tech-repair-text-entry textarea{
+  width:100%;
+  border-radius:12px;
+  border:1px solid #ccdce9;
+  background:#fff;
+  padding:13px 15px;
+  min-height:125px;
+  color:#233f64;
+}
+.dark .tech-repair-entry{background:#162c40;border-color:#3a5870;}
+.dark .tech-repair-entry>h4{color:#e7f2fb;}
+.dark .tech-repair-entry-hint,.dark .tech-repair-voice-entry>p{color:#b7cde0;}
+.dark .tech-repair-input-tabs{background:#1b3951;border-color:#3a5972;}
+.dark .tech-repair-input-tabs button{color:#d4e5f2;}
+.dark .tech-repair-input-tabs button.is-active{background:#335a76;color:#fff;}
+.dark .tech-repair-voice-entry{background:#193448;border-color:#4d708b;}
+.dark .tech-repair-transcript{background:#213d54;border-color:#46667e;}
+.dark .tech-repair-transcript>b{color:#a3e1f4;}
+.dark .tech-repair-transcript-body{color:#ecf6ff;}
+.dark .tech-repair-text-entry textarea{background:#1c344c;border-color:#476780;color:#f1f7fe;}
+@media(max-width:550px){
+ .tech-repair-entry{padding:13px;gap:10px}
+ .tech-repair-input-tabs{width:100%}
+ .tech-repair-input-tabs button{flex:1;min-width:0;font-size:12px;padding:8px}
+ .tech-repair-voice-entry{padding:12px}
+}
