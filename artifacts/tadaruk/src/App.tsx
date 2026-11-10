@@ -12,7 +12,7 @@ import {
   CheckCircle2, ChevronDown, ClipboardList, Clock3, Filter, Languages, LayoutDashboard,
   MapPin, Menu, Phone, Plus, Search, Settings2, ShieldCheck, Users, Wrench, X, CircleAlert,
   LogOut, UserRound, RotateCcw, Repeat2, ChevronLeft, ChevronRight, LoaderCircle, MapPinned,
-  Mic, Square, Bell, SunMoon, ImageOff, Copy, MessageCircle
+  Mic, Square, Bell, SunMoon, ImageOff, Copy, MessageCircle, FileText
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
