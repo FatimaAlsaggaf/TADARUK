@@ -124,6 +124,7 @@ export const GetOverviewResponse = zod.object({
   "technicianId": zod.string().nullable(),
   "technicianName": zod.string().nullable(),
   "imageUrl": zod.string().nullable(),
+  "repairImageUrl": zod.string().nullable(),
   "repairNotes": zod.string().nullable(),
   "cause": zod.string().nullable(),
   "resolution": zod.string().nullable(),
@@ -246,6 +247,7 @@ export const ListTicketsResponseItem = zod.object({
   "technicianId": zod.string().nullable(),
   "technicianName": zod.string().nullable(),
   "imageUrl": zod.string().nullable(),
+  "repairImageUrl": zod.string().nullable(),
   "repairNotes": zod.string().nullable(),
   "cause": zod.string().nullable(),
   "resolution": zod.string().nullable(),
@@ -314,6 +316,7 @@ export const CreateTicketResponse = zod.object({
   "technicianId": zod.string().nullable(),
   "technicianName": zod.string().nullable(),
   "imageUrl": zod.string().nullable(),
+  "repairImageUrl": zod.string().nullable(),
   "repairNotes": zod.string().nullable(),
   "cause": zod.string().nullable(),
   "resolution": zod.string().nullable(),
@@ -368,6 +371,7 @@ export const GetTicketResponse = zod.object({
   "technicianId": zod.string().nullable(),
   "technicianName": zod.string().nullable(),
   "imageUrl": zod.string().nullable(),
+  "repairImageUrl": zod.string().nullable(),
   "repairNotes": zod.string().nullable(),
   "cause": zod.string().nullable(),
   "resolution": zod.string().nullable(),
@@ -391,10 +395,11 @@ export const PerformTicketActionParams = zod.object({
 })
 
 export const PerformTicketActionBody = zod.object({
-  "action": zod.enum(['start', 'complete', 'confirm', 'reject', 'reassign', 'cancel']),
+  "action": zod.enum(['start', 'complete', 'attach_photo', 'confirm', 'reject', 'reassign', 'cancel']),
   "note": zod.string().optional(),
   "cause": zod.string().optional(),
   "resolution": zod.string().optional(),
+  "repairImageUrl": zod.string().optional(),
   "technicianId": zod.string().optional()
 })
 
@@ -430,6 +435,7 @@ export const PerformTicketActionResponse = zod.object({
   "technicianId": zod.string().nullable(),
   "technicianName": zod.string().nullable(),
   "imageUrl": zod.string().nullable(),
+  "repairImageUrl": zod.string().nullable(),
   "repairNotes": zod.string().nullable(),
   "cause": zod.string().nullable(),
   "resolution": zod.string().nullable(),
