@@ -271,7 +271,7 @@ export interface TechnicianTicketDetailProps {
   lang: Lang;
   user: DemoUser;
   act: (action: 'start' | 'complete' | 'attach_photo' | 'confirm' | 'reject' | 'reassign', extra?: Record<string, string>) => void;
-  action: { isPending: boolean };
+  action: { isPending: boolean; isError?:boolean };
   actionFeedback?: string;
   localPhoto?: string;
   reduced?: boolean;
@@ -789,6 +789,10 @@ export function TechnicianTicketDetail({
           </div>
         )}
 
+        {action.isError&&<p role="alert" className="tech-photo-error-msg">
+          <CircleAlert size={15}/>
+          {tr(lang,'تعذّر حفظ التحديث على الخادم. تأكد من الاتصال ثم أعد المحاولة.','Could not save the update to the server. Check your connection and retry.')}
+        </p>}
         {actionFeedback && (
           <div className="mt-3 text-xs font-bold text-[#1f3363] dark:text-[#56f4ef] flex items-center gap-2">
             <Check size={14} />
