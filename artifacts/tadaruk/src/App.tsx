@@ -1263,6 +1263,10 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
 
   const ticket = rawTicket || (FALLBACK_INITIAL_TICKETS as unknown as Ticket[]).find(t => t.id === id) || (FALLBACK_INITIAL_TICKETS[0] as unknown as Ticket);
   const repairProofUrl = ticket.repairImageUrl || localRepairPhoto;
+  // Only seed/demo tickets may display an illustrative image; it must never pretend
+  // to be a photo taken or submitted by a technician.
+  const isRepairIllustration = !repairProofUrl && ticket.id.startsWith('ticket-demo-');
+  const shownRepairImage = repairProofUrl || (isRepairIllustration ? `${import.meta.env.BASE_URL}demo-photos/repair-pipe-illustration.svg` : '');
   const manager=user.role==='manager',technician=user.role==='technician',reporter=user.role==='reporter';
 
   if (technician) {
@@ -1309,7 +1313,7 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
             <span><Clock3 size={16}/><span><small>{tr(lang,'تاريخ البلاغ','Reported')}</small><b>{dateText(ticket.createdAt,lang)}</b></span></span>
           </div>
           {(ticket.imageUrl||localPhoto)&&<PhotoAttachmentCard imageUrl={ticket.imageUrl||localPhoto} lang={lang} variant="detail" localOnly={!ticket.imageUrl&&Boolean(localPhoto)}/>}
-          {localExtraPhoto && <div className="mt-3"><span className="mb-2 block text-xs font-semibold text-slate-500">{tr(lang,'صورة إضافية متاحة على هذا الجهاز فقط','Additional image available on this device only')}</span><PhotoAttachmentCard imageUrl={localExtraPhoto} lang={lang} variant="detail" localOnly/></div>}
+          {localExtraPhoto && <div className="mt-3"><PhotoAttachmentCard imageUrl={localExtraPhoto} lang={lang} variant="detail" localOnly/></div>}
           {!ticket.imageUrl&&!localPhoto && <div className="detail-photo-unavailable" role="status">
             <ImageOff size={19}/>
             <span>{tr(lang,'لم تُحفظ صورة لهذا البلاغ. لا يمكن عرض مرفق غير موجود في البيانات.','No image is stored with this ticket.')}</span>
@@ -1327,7 +1331,7 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
               {(ticket.history || []).length} {tr(lang, 'أحداث', 'events')}
             </span>
           </div>
-          <div className="compact-timeline-list">
+          <div className="tadaruk-ref-timeline" dir={lang==='ar'?'rtl':'ltr'}>
             {(!ticket.history || ticket.history.length === 0) ? (
               <p className="compact-timeline-empty">{tr(lang, 'لا توجد أحداث مسجلة بعد.', 'No events recorded yet.')}</p>
             ) : (
@@ -1338,17 +1342,15 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
                 const isStart = /بدأ|تنفيذ|فحص|work started|started/i.test(ev.label);
                 const kind = isCancelled ? 'is-cancelled' : isDone ? 'is-complete' : isAssignment ? 'is-assignment' : isStart ? 'is-work' : 'is-general';
 
-                return <div className={`compact-timeline-item compact-timeline-item--refined ${kind} ${index===0?'is-latest':''}`} key={ev.id}>
-                  <span className={`compact-timeline-event-icon ${kind}`} aria-hidden="true"/>
-                  <div className="compact-timeline-content">
-                    <div className="compact-timeline-row">
-                      <b>{ev.label}</b>
-                      <time dateTime={ev.createdAt}>{new Intl.DateTimeFormat(lang==='ar'?'ar-SA':'en-US',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'}).format(new Date(ev.createdAt))}</time>
-                    </div>
+                const eventDate = new Intl.DateTimeFormat(lang==='ar'?'ar-SA':'en-US',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'}).format(new Date(ev.createdAt));
+                return <div className={`tadaruk-ref-event ${index%2?'is-alternate':''} ${index===0?'is-current':''}`} key={ev.id}>
+                  <time className="tadaruk-ref-date" dateTime={ev.createdAt}>{eventDate}</time>
+                  <span className="tadaruk-ref-dot" aria-hidden="true"/>
+                  <div className="tadaruk-ref-content">
+                    <strong>{ev.label}</strong>
                     <small>{ev.actorName}</small>
-                    {ev.note && !['بلاغ صيانة ذكي','بلاغ جديد عبر النظام الذكي','تم اختيار الفني حسب التخصص والتوفر.'].includes(ev.note.trim()) && (
-                      <p className="compact-timeline-note">{ev.note}</p>
-                    )}
+                    {ev.note && !['بلاغ صيانة ذكي','بلاغ جديد عبر النظام الذكي','تم اختيار الفني حسب التخصص والتوفر.'].includes(ev.note.trim()) &&
+                      <p>{ev.note}</p>}
                   </div>
                 </div>;
               })
@@ -1399,11 +1401,11 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
           </section>
         )}
 
-        {repairProofUrl&&ticket.status==='closed'&&<section className="panel resolution-photo-panel">
-          <h3>{tr(lang,'صورة الإصلاح المؤكدة','Confirmed repair photo')}</h3>
+        {shownRepairImage&&ticket.status==='closed'&&<section className="panel resolution-photo-panel">
+          <h3>{isRepairIllustration?tr(lang,'صورة توضيحية للإصلاح','Illustrative repair image'):tr(lang,'صورة الإصلاح المؤكدة','Confirmed repair photo')}</h3>
           <button type="button" className="reporter-repair-evidence-trigger" onClick={()=>setRepairPhotoOpen(true)}
             aria-label={tr(lang,'تكبير صورة الإصلاح','Enlarge repair photo')}>
-            <img src={repairProofUrl} loading="lazy" alt={tr(lang,'الصورة بعد الإصلاح','Photo after repair')}/>
+            <img src={shownRepairImage} loading="lazy" alt={tr(lang,'الصورة بعد الإصلاح','Photo after repair')}/>
             <span><Maximize2 size={15}/>{tr(lang,'عرض الصورة','View photo')}</span>
           </button>
         </section>}
@@ -1554,15 +1556,16 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
               {ticket.status === 'awaiting_confirmation' && (
                 <div className="reporter-confirm-box">
                   <h4>{tr(lang, 'قيّم الفني الإصلاح — هل تم حل المشكلة؟', 'Technician completed repair — Was it fixed?')}</h4>
-                  {repairProofUrl ? (
+                  {shownRepairImage ? (
                     <div className="reporter-repair-evidence">
                       <div className="reporter-repair-evidence-header">
                         <CheckCircle2 size={17}/>
                         <span>{tr(lang,'صورة الإصلاح المرفقة من الفني','After-repair photo from technician')}</span>
+                        {isRepairIllustration&&<small className="repair-demo-note">{tr(lang,'صورة توضيحية وليست مرفقًا حقيقيًا','Illustration, not an actual attachment')}</small>}
                       </div>
                       <button type="button" className="reporter-repair-evidence-trigger" onClick={()=>setRepairPhotoOpen(true)}
                         aria-label={tr(lang,'تكبير صورة الإصلاح','Enlarge repair photo')}>
-                        <img src={repairProofUrl} loading="lazy" alt={tr(lang,'الصورة بعد الإصلاح','Photo after repair')}/>
+                        <img src={shownRepairImage} loading="lazy" alt={tr(lang,'الصورة بعد الإصلاح','Photo after repair')}/>
                         <span><Maximize2 size={15}/>{tr(lang,'عرض الصورة','View photo')}</span>
                       </button>
                     </div>
@@ -1680,8 +1683,8 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
       </aside>
     </div>
 
-    {repairPhotoOpen&&repairProofUrl&&<Modal title={tr(lang,'صورة الإصلاح من الفني','Technician repair photo')} close={()=>setRepairPhotoOpen(false)} dir={lang==='ar'?'rtl':'ltr'}>
-      <div className="repair-photo-lightbox"><img src={repairProofUrl} alt={tr(lang,'صورة الإصلاح بالحجم الكامل','Full repair photo')}/></div>
+    {repairPhotoOpen&&shownRepairImage&&<Modal title={isRepairIllustration?tr(lang,'صورة توضيحية للإصلاح','Illustrative repair image'):tr(lang,'صورة الإصلاح من الفني','Technician repair photo')} close={()=>setRepairPhotoOpen(false)} dir={lang==='ar'?'rtl':'ltr'}>
+      <div className="repair-photo-lightbox"><img src={shownRepairImage} alt={tr(lang,'صورة الإصلاح بالحجم الكامل','Full repair photo')}/></div>
     </Modal>}
     {/* Confirmation and mandatory reason for post-start exceptions. */}
     <AlertDialog open={Boolean(pendingTechnicianId)} onOpenChange={open=>{if(!open&&!action.isPending){setPendingTechnicianId(null);setReassignError('');}}}>
