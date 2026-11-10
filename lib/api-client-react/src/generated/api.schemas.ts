@@ -220,6 +220,8 @@ export interface Ticket {
   /** @nullable */
   imageUrl: string | null;
   /** @nullable */
+  repairImageUrl: string | null;
+  /** @nullable */
   repairNotes: string | null;
   /** @nullable */
   cause: string | null;
@@ -296,6 +298,7 @@ export type TicketActionInputAction = typeof TicketActionInputAction[keyof typeo
 export const TicketActionInputAction = {
   start: 'start',
   complete: 'complete',
+  attach_photo: 'attach_photo',
   confirm: 'confirm',
   reject: 'reject',
   reassign: 'reassign',
@@ -307,6 +310,7 @@ export interface TicketActionInput {
   note?: string;
   cause?: string;
   resolution?: string;
+  repairImageUrl?: string;
   technicianId?: string;
 }
 
