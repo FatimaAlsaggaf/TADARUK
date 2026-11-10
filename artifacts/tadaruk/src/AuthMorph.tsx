@@ -2,7 +2,7 @@ import {useEffect,useState,type FormEvent} from 'react';
 import {useQueryClient} from '@tanstack/react-query';
 import {useListDemoUsers,useSelectDemoAccount,getGetDemoSessionQueryKey,type DemoUser} from '@workspace/api-client-react';
 import {Link,useLocation} from 'wouter';
-import {Building2,ClipboardList,Eye,EyeOff,LockKeyhole,Mail,Wrench,ArrowLeft,ArrowRight,Languages} from 'lucide-react';
+import {Building2,ClipboardList,Eye,EyeOff,LockKeyhole,Mail,Wrench,ArrowLeft,ArrowRight,Languages,CheckCircle2} from 'lucide-react';
 import SunMoonThemeToggle from './components/ui/sun-moon-theme-toggle';
 import DarkVeil from './AuthDarkVeil';
 import OrganizationOnboarding from './OrganizationOnboarding';
@@ -24,6 +24,11 @@ export default function AuthMorph({lang,setLang,dark,setDark}:{lang:Lang;setLang
  const [password,setPassword]=useState('');
  const [showPassword,setShowPassword]=useState(false);
  const [showRecovery,setShowRecovery]=useState(false);
+ const [recoveryEmail,setRecoveryEmail]=useState('');
+ const [newPassword,setNewPassword]=useState('');
+ const [confirmPassword,setConfirmPassword]=useState('');
+ const [recoveryDone,setRecoveryDone]=useState(false);
+ const [recoveryError,setRecoveryError]=useState('');
  const [loginNotice,setLoginNotice]=useState('');
  const qc=useQueryClient();
  const {data:users}=useListDemoUsers();
@@ -40,6 +45,20 @@ export default function AuthMorph({lang,setLang,dark,setDark}:{lang:Lang;setLang
  };
  useEffect(()=>{setSignup(signupRoute)},[signupRoute]);
  const toggle=(next:boolean)=>{if(next===signup)return;setSignup(next);window.setTimeout(()=>go(next?'/signup':'/login'),90)};
+ const onRecovery=(event:FormEvent<HTMLFormElement>)=>{
+   event.preventDefault();
+   if(newPassword!==confirmPassword){
+     setRecoveryError(tr(lang,'كلمتا المرور غير متطابقتين.','Passwords do not match.'));
+     return;
+   }
+   // Presentation-only form: intentionally does not change server credentials.
+   setRecoveryError('');
+   setRecoveryDone(true);
+ };
+ const resetRecovery=()=>{
+   setShowRecovery(false);setRecoveryDone(false);setRecoveryError('');
+   setNewPassword('');setConfirmPassword('');
+ };
  const onLogin=(event:FormEvent<HTMLFormElement>)=>{
    event.preventDefault();
    // Real credentials are not authenticated by the current demo backend.
@@ -68,19 +87,32 @@ export default function AuthMorph({lang,setLang,dark,setDark}:{lang:Lang;setLang
   <section className={`auth-morph-card ${signup?'auth-morph-signup':''}`} aria-label={tr(lang,'الدخول وإنشاء الحساب','Sign in and registration')}>
     <div className="auth-morph-form-area">
      <div className="auth-morph-login" aria-hidden={signup}>
-      <form className="auth-morph-login-form" onSubmit={onLogin}>
-       <h1>{tr(lang,'تسجيل الدخول','Sign in')}</h1>
-       <p className="auth-morph-subtitle">{tr(lang,'العودة إلى مساحة الصيانة','Welcome back to your workspace')}</p>
-       <label className="auth-morph-input"><Mail size={19}/><input type="email" required autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder={tr(lang,'البريد الإلكتروني','Email address')} tabIndex={signup?-1:0}/></label>
-       <label className="auth-morph-input"><LockKeyhole size={19}/><input type={showPassword?'text':'password'} minLength={4} required autoComplete="current-password" placeholder={tr(lang,'كلمة المرور','Password')} value={password} onChange={e=>setPassword(e.target.value)} tabIndex={signup?-1:0}/><button type="button" aria-label={tr(lang,'إظهار أو إخفاء كلمة المرور','Toggle password visibility')} onClick={()=>setShowPassword(v=>!v)}>{showPassword?<EyeOff size={18}/>:<Eye size={18}/>}</button></label>
-       <button type="submit" className="auth-morph-primary" tabIndex={signup?-1:0}>{tr(lang,'دخول','Sign in')}</button>
-       <button type="button" className="auth-morph-forgot" onClick={()=>setShowRecovery(v=>!v)} tabIndex={signup?-1:0} aria-expanded={showRecovery}>{tr(lang,'نسيت كلمة المرور؟','Forgot your password?')}</button>
-       {showRecovery&&<p className="auth-morph-login-notice" role="status">{tr(lang,'في النسخة التجريبية، اطلب إعادة تعيين كلمة المرور من مدير المنشأة؛ استعادة البريد لم تُفعّل بعد.','In this demo, contact your organization manager to reset access. Email recovery is not yet enabled.')}</p>}
-       {loginNotice&&<p className="auth-morph-login-notice" role="status">{loginNotice}</p>}
-       <div className="auth-morph-demo">
-         <small>{tr(lang,'الدخول بحساب تجريبي','Try a demo account')}</small>
-         <div className="auth-morph-roles">{roles.map(({name,role,note,icon:Icon})=><button type="button" key={role} tabIndex={signup?-1:0} className="auth-morph-role" onClick={()=>enterDemo(role)} disabled={selectDemo.isPending} title={note}><span><Icon size={23}/></span><b>{name}</b><small>{note}</small></button>)}</div>
-       </div>
+      <form className="auth-morph-login-form" onSubmit={showRecovery?onRecovery:onLogin}>
+       {showRecovery?<>
+         <h1>{recoveryDone?tr(lang,'تم تغيير كلمة المرور','Password updated'):tr(lang,'استعادة كلمة المرور','Reset password')}</h1>
+         {recoveryDone?<>
+           <div className="auth-morph-recovery-success" role="status"><CheckCircle2 size={27}/><span>{tr(lang,'تم تحديث كلمة المرور بنجاح.','Your password has been updated.')}</span></div>
+           <button type="button" className="auth-morph-primary" onClick={resetRecovery}>{tr(lang,'العودة لتسجيل الدخول','Back to sign in')}</button>
+         </>:<>
+           <label className="auth-morph-input"><Mail size={19}/><input type="email" required autoComplete="email" value={recoveryEmail} onChange={e=>setRecoveryEmail(e.target.value)} placeholder={tr(lang,'البريد الإلكتروني','Email address')}/></label>
+           <label className="auth-morph-input"><LockKeyhole size={19}/><input type="password" minLength={8} required autoComplete="new-password" value={newPassword} onChange={e=>{setNewPassword(e.target.value);setRecoveryError('')}} placeholder={tr(lang,'كلمة المرور الجديدة','New password')}/></label>
+           <label className="auth-morph-input"><LockKeyhole size={19}/><input type="password" minLength={8} required autoComplete="new-password" value={confirmPassword} onChange={e=>{setConfirmPassword(e.target.value);setRecoveryError('')}} placeholder={tr(lang,'تأكيد كلمة المرور','Confirm new password')}/></label>
+           {recoveryError&&<p className="auth-morph-login-notice" role="alert">{recoveryError}</p>}
+           <button type="submit" className="auth-morph-primary">{tr(lang,'تغيير كلمة المرور','Change password')}</button>
+           <button type="button" className="auth-morph-forgot" onClick={resetRecovery}>{tr(lang,'رجوع لتسجيل الدخول','Back to sign in')}</button>
+         </>}
+       </>:<>
+         <h1>{tr(lang,'تسجيل الدخول','Sign in')}</h1>
+         <label className="auth-morph-input"><Mail size={19}/><input type="email" required autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder={tr(lang,'البريد الإلكتروني','Email address')} tabIndex={signup?-1:0}/></label>
+         <label className="auth-morph-input"><LockKeyhole size={19}/><input type={showPassword?'text':'password'} minLength={4} required autoComplete="current-password" placeholder={tr(lang,'كلمة المرور','Password')} value={password} onChange={e=>setPassword(e.target.value)} tabIndex={signup?-1:0}/><button type="button" aria-label={tr(lang,'إظهار أو إخفاء كلمة المرور','Toggle password visibility')} onClick={()=>setShowPassword(v=>!v)}>{showPassword?<EyeOff size={18}/>:<Eye size={18}/>}</button></label>
+         <button type="submit" className="auth-morph-primary" tabIndex={signup?-1:0}>{tr(lang,'دخول','Sign in')}</button>
+         <button type="button" className="auth-morph-forgot" onClick={()=>{setRecoveryEmail(email);setShowRecovery(true);setLoginNotice('')}} tabIndex={signup?-1:0}>{tr(lang,'نسيت كلمة المرور؟','Forgot your password?')}</button>
+         {loginNotice&&<p className="auth-morph-login-notice" role="status">{loginNotice}</p>}
+         <div className="auth-morph-demo">
+           <small>{tr(lang,'الدخول بحساب تجريبي','Try a demo account')}</small>
+           <div className="auth-morph-roles">{roles.map(({name,role,note,icon:Icon})=><button type="button" key={role} tabIndex={signup?-1:0} className="auth-morph-role" onClick={()=>enterDemo(role)} disabled={selectDemo.isPending} title={note}><span><Icon size={23}/></span><b>{name}</b><small>{note}</small></button>)}</div>
+         </div>
+       </>}
       </form>
      </div>
      <div className="auth-morph-register" aria-hidden={!signup}>
