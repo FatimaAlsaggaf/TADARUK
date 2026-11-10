@@ -35,9 +35,7 @@ export default function PhotoAttachmentCard({
           {isArabic ? 'مرفق صورة' : 'Photo attachment'}
         </span>
         <strong>{isArabic ? 'صورة المشكلة' : 'Issue photo'}</strong>
-        {localOnly && !onRemove && <span className="photo-attachment-meta">
-          {isArabic ? 'متاحة على هذا الجهاز فقط' : 'Available on this device only'}
-        </span>}
+
         {onRemove && <span className="photo-attachment-meta">
           {isArabic ? 'جاهزة للإرسال' : 'Ready to send'}
         </span>}
