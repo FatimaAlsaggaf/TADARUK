@@ -1,0 +1,128 @@
+/* Ticket activity history: one compact rail on the START side (right in Arabic).
+   Show actual recorded events only; never render planned milestones. */
+.app-shell .tadaruk-vertical-history{
+  position:relative;
+  isolation:isolate;
+  display:flex;
+  flex-direction:column;
+  gap:0;
+  padding:8px 3px 6px;
+  width:100%;
+  min-width:0;
+}
+.app-shell .tadaruk-vertical-history:has(.tadaruk-history-row)::before{
+  content:"";
+  position:absolute;
+  inset-inline-start:9px;
+  top:26px;
+  bottom:27px;
+  width:1.5px;
+  border-radius:3px;
+  background:#c7d9e7;
+  z-index:0;
+  pointer-events:none;
+}
+.app-shell .tadaruk-history-row{
+  display:grid;
+  grid-template-columns:20px minmax(0,1fr);
+  column-gap:14px;
+  padding:11px 0;
+  min-height:0;
+  align-items:start;
+  position:relative;
+  z-index:1;
+  direction:inherit;
+}
+.app-shell .tadaruk-history-dot{
+  grid-column:1;
+  grid-row:1;
+  width:12px;
+  height:12px;
+  margin:5px 4px 0;
+  border:2px solid #5c96bd;
+  background:#fff;
+  border-radius:50%;
+  box-shadow:0 0 0 3px #f5faff;
+  box-sizing:border-box;
+  align-self:start;
+  justify-self:center;
+}
+.app-shell .tadaruk-history-row.is-current .tadaruk-history-dot{
+  background:#285883;
+  border-color:#285883;
+  box-shadow:0 0 0 3px #e5f1fa;
+}
+.app-shell .tadaruk-history-detail{
+  grid-column:2;
+  grid-row:1;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:3px;
+  min-width:0;
+  margin:0;
+  padding:0;
+  text-align:start;
+  border:0;
+  background:transparent;
+  box-shadow:none;
+}
+.app-shell .tadaruk-history-detail time{
+  color:#738ba1;
+  font-size:11px;
+  font-weight:500;
+  line-height:1.5;
+}
+.app-shell .tadaruk-history-detail strong{
+  color:#1b3d68;
+  font-size:14px;
+  font-weight:800;
+  line-height:1.55;
+}
+.app-shell .tadaruk-history-detail small{
+  color:#6f879e;
+  font-size:11.5px;
+  line-height:1.5;
+  font-weight:500;
+}
+.app-shell .tadaruk-history-detail p{
+  color:#617b93;
+  font-size:12px;
+  line-height:1.7;
+  font-weight:400;
+  overflow-wrap:anywhere;
+  margin:1px 0 0;
+  padding:0;
+  background:transparent;
+  border:0;
+}
+.app-shell .compact-timeline-panel:has(.tadaruk-vertical-history){
+  padding:clamp(14px,2.2vw,22px)!important;
+  border-radius:18px!important;
+}
+.app-shell .compact-timeline-panel:has(.tadaruk-vertical-history) .compact-timeline-head{
+  margin-bottom:0!important;
+  padding-bottom:12px!important;
+}
+.dark .app-shell .tadaruk-vertical-history::before{background:#456885;}
+.dark .app-shell .tadaruk-history-dot{
+  background:#1a354c;
+  border-color:#8bbbd8;
+  box-shadow:0 0 0 3px #213d55;
+}
+.dark .app-shell .tadaruk-history-row.is-current .tadaruk-history-dot{
+  background:#94c7e7;
+  border-color:#94c7e7;
+}
+.dark .app-shell .tadaruk-history-detail strong{color:#e3eff9;}
+.dark .app-shell .tadaruk-history-detail time,
+.dark .app-shell .tadaruk-history-detail small,
+.dark .app-shell .tadaruk-history-detail p{color:#aec7d8;}
+@media(max-width:560px){
+  .app-shell .tadaruk-history-row{
+    padding:10px 0;
+    column-gap:11px;
+  }
+  .app-shell .tadaruk-history-detail strong{font-size:13px;}
+  .app-shell .tadaruk-history-detail p{font-size:11.5px;}
+}
