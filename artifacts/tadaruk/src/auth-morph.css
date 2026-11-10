@@ -896,3 +896,42 @@
 @media(max-width:560px){
   .auth-veiled-background .auth-morph-dark-veil{filter:none !important;opacity:1 !important}
 }
+
+
+/* Team test polish: keep the original circle morph, upgrade only its fill. */
+.auth-morph-card::before,
+.auth-morph-card:not(.auth-morph-signup)::before,
+.auth-morph-card.auth-morph-signup::before{
+  background:linear-gradient(145deg,#12355e 0%,#205d8a 49%,#3b9eba 100%) !important;
+}
+.dark .auth-morph-card::before,
+.dark .auth-morph-card:not(.auth-morph-signup)::before,
+.dark .auth-morph-card.auth-morph-signup::before{
+  background:linear-gradient(145deg,#0e2846 0%,#16456e 52%,#247a9c 100%) !important;
+}
+.auth-morph-login-form{gap:14px !important;}
+.auth-morph-login-form h1{margin:0 0 8px !important;}
+.auth-morph-login-form .auth-morph-recovery-success{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:12px;width:100%;padding:22px;
+  background:#ebf7f4;border:1px solid #bce2d5;border-radius:18px;
+  color:#17634d;font-size:17px;line-height:1.7;font-weight:750;
+}
+.dark .auth-morph-login-form .auth-morph-recovery-success{
+  background:#153b37;border-color:#2a6e61;color:#c5f1e7;
+}
+/* Skip the redundant signup top strip; retain the 4-step progress tracker. */
+.auth-morph-signup .auth-morph-register-content{
+  padding-top:76px !important;
+}
+.auth-morph-register .org-embedded-panel{padding-top:0 !important;}
+.auth-morph-register .org-form{margin-top:0 !important;}
+.auth-morph-register .org-eyebrow{margin-top:0 !important;}
+@media(max-width:850px){
+ .auth-morph-signup .auth-morph-register-content{padding-top:70px !important;}
+}
+@media(max-width:560px){
+ .auth-morph-signup .auth-morph-register-content{padding-top:58px !important;}
+ .auth-morph-login-form{gap:11px !important;}
+ .auth-morph-login-form h1{margin-bottom:5px !important;}
+}
