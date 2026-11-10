@@ -1331,22 +1331,19 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
               {(ticket.history || []).length} {tr(lang, 'أحداث', 'events')}
             </span>
           </div>
-          <div className="tadaruk-ref-timeline" dir={lang==='ar'?'rtl':'ltr'}>
-            {(!ticket.history || ticket.history.length === 0) ? (
-              <p className="compact-timeline-empty">{tr(lang, 'لا توجد أحداث مسجلة بعد.', 'No events recorded yet.')}</p>
+          <div className="tadaruk-vertical-history" dir={lang==='ar'?'rtl':'ltr'}>
+            {(!ticket.history || ticket.history.length===0) ? (
+              <p className="compact-timeline-empty">{tr(lang,'لا توجد أحداث مسجلة بعد.','No events recorded yet.')}</p>
             ) : (
-              [...(ticket.history || [])].sort((a,b)=>new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime()).map((ev,index) => {
-                const isCancelled = /أُلغي|ألغى|إلغاء|cancel/i.test(ev.label);
-                const isAssignment = /إسناد|تعيين|فني آخر|assigned|reassign/i.test(ev.label);
-                const isDone = /أكمل|أكد|إغلاق|إصلاح|closed|completed|confirmed/i.test(ev.label);
-                const isStart = /بدأ|تنفيذ|فحص|work started|started/i.test(ev.label);
-                const kind = isCancelled ? 'is-cancelled' : isDone ? 'is-complete' : isAssignment ? 'is-assignment' : isStart ? 'is-work' : 'is-general';
-
-                const eventDate = new Intl.DateTimeFormat(lang==='ar'?'ar-SA':'en-US',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'}).format(new Date(ev.createdAt));
-                return <div className={`tadaruk-ref-event ${index%2?'is-alternate':''} ${index===0?'is-current':''}`} key={ev.id}>
-                  <time className="tadaruk-ref-date" dateTime={ev.createdAt}>{eventDate}</time>
-                  <span className="tadaruk-ref-dot" aria-hidden="true"/>
-                  <div className="tadaruk-ref-content">
+              // Ticket history contains actions that actually happened, not planned future steps.
+              [...ticket.history].sort((a,b)=>new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime()).map((ev,index)=>{
+                const eventDate=new Intl.DateTimeFormat(lang==='ar'?'ar-SA':'en-US',{
+                  day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'
+                }).format(new Date(ev.createdAt));
+                return <div className={`tadaruk-history-row ${index===0?'is-current':''}`} key={ev.id}>
+                  <span className="tadaruk-history-dot" aria-hidden="true"/>
+                  <div className="tadaruk-history-detail">
+                    <time dateTime={ev.createdAt}>{eventDate}</time>
                     <strong>{ev.label}</strong>
                     <small>{ev.actorName}</small>
                     {ev.note && !['بلاغ صيانة ذكي','بلاغ جديد عبر النظام الذكي','تم اختيار الفني حسب التخصص والتوفر.'].includes(ev.note.trim()) &&
