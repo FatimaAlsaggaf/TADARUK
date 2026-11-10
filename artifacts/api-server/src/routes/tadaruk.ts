@@ -758,11 +758,30 @@ router.post("/tickets/:ticketId/actions", async (req, res): Promise<void> => {
         res.status(400).json({ error: "Add a short repair note before completion." });
         return;
       }
+      // Images are saved with the ticket (not just the technician's local browser).
+      if (!parsed.data.repairImageUrl || !/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(parsed.data.repairImageUrl) || parsed.data.repairImageUrl.length > 750_000) {
+        res.status(400).json({ error: "Attach a compressed JPEG repair photo (max 750 kB encoded) before submitting." });
+        return;
+      }
       update.status = "awaiting_confirmation";
+      update.repairImageUrl = parsed.data.repairImageUrl;
       update.repairNotes = parsed.data.note?.trim() || parsed.data.resolution?.trim() || null;
       update.cause = parsed.data.cause?.trim() || null;
       update.resolution = parsed.data.resolution?.trim() || parsed.data.note?.trim() || null;
       eventLabel = "أكمل الفني الإصلاح";
+    } else if (action === "attach_photo") {
+      // Allow an already-submitted repair photo from the technician's older browser
+      // to be synchronized to the reporter while confirmation is still pending.
+      if (member.role !== "technician" || ticket.technicianId !== member.id || ticket.status !== "awaiting_confirmation") {
+        res.status(403).json({ error: "Only the assigned technician may attach a pending repair photo." });
+        return;
+      }
+      if (!parsed.data.repairImageUrl || !/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(parsed.data.repairImageUrl) || parsed.data.repairImageUrl.length > 750_000) {
+        res.status(400).json({ error: "A compressed JPEG repair image is required." });
+        return;
+      }
+      update.repairImageUrl = parsed.data.repairImageUrl;
+      eventLabel = "أرفق الفني صورة الإصلاح";
     } else if (action === "confirm" || action === "reject") {
       if (member.role !== "reporter" || ticket.reporterId !== member.id) {
         res.status(403).json({ error: "Only the reporting employee can confirm the repair." });
@@ -854,7 +873,7 @@ router.post("/tickets/:ticketId/actions", async (req, res): Promise<void> => {
       eq(ticketsTable.id, ticket.id),
       eq(ticketsTable.organizationId, DEMO_ORGANIZATION),
       eq(ticketsTable.status, ticket.status),
-      ...((action === "start" || action === "complete") ? [eq(ticketsTable.technicianId, member.id)] : []),
+      ...((action === "start" || action === "complete" || action === "attach_photo") ? [eq(ticketsTable.technicianId, member.id)] : []),
       isNull(ticketsTable.cancelledAt),
     )).returning();
     if (!updated) {
