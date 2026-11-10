@@ -337,6 +337,25 @@ export function TechnicianTicketDetail({
     }
   };
 
+  const submitRepairWithPhoto = async () => {
+    if (!repairPhoto || !solutionText.trim() || photoLoading || action.isPending) return;
+    setPhotoError('');setPhotoLoading(true);
+    try {
+      // Old photos saved before server persistence may still be PNGs or oversized.
+      const compressed = await prepareSavedRepairPhoto(repairPhoto);
+      setRepairPhoto(compressed);
+      act('complete', {
+        note: solutionText.trim(),
+        resolution: solutionText.trim(),
+        repairImageUrl: compressed,
+      });
+    } catch {
+      setPhotoError(tr(lang,'تعذّر إرسال الصورة. جرّب رفع صورة جديدة.','The image could not be sent. Please upload a new photo.'));
+    } finally {
+      setPhotoLoading(false);
+    }
+  };
+
   const syncPreviouslySavedPhoto = async () => {
     if (!repairPhoto || photoLoading) return;
     setPhotoLoading(true);setPhotoError('');
@@ -689,17 +708,7 @@ export function TechnicianTicketDetail({
               type="button"
               className="tech-primary-action-btn"
               disabled={!solutionText.trim() || !repairPhoto || photoLoading || action.isPending || !isAssignedToMe}
-              onClick={() => {
-                if (!repairPhoto) {
-                  setPhotoError(tr(lang, 'إرفاق صورة الحل إلزامي لإتمام الإصلاح.', 'Attaching a solution photo is required to complete the repair.'));
-                  return;
-                }
-                act('complete', {
-                  note: solutionText.trim(),
-                  resolution: solutionText.trim(),
-                  repairImageUrl:repairPhoto,
-                });
-              }}
+              onClick={()=>void submitRepairWithPhoto()}
               data-testid="button-tech-complete"
             >
               {action.isPending ? (
