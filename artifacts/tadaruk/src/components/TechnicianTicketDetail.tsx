@@ -17,6 +17,8 @@ import {
   MapPinned,
   Maximize2,
   Layers3,
+  Lightbulb,
+  Sparkles,
   Mic,
   RotateCcw,
   Square,
@@ -26,7 +28,16 @@ import {
 } from 'lucide-react';
 import TechnicianIssueMedia from './TechnicianIssueMedia';
 import {prepareRepairPhoto,prepareSavedRepairPhoto} from '../services/repair-photo';
-import type { Ticket, DemoUser } from '@workspace/api-client-react';
+import {
+  getGetAiStatusQueryKey,
+  getListSimilarSolutionsQueryKey,
+  useGetAiStatus,
+  useListSimilarSolutions,
+  useSuggestTicketFix,
+  type DemoUser,
+  type SimilarSolution,
+  type Ticket,
+} from '@workspace/api-client-react';
 
 type Lang = 'ar' | 'en';
 
@@ -266,6 +277,180 @@ function TechVoiceRecorder({
   );
 }
 
+/**
+ * Fixes from earlier, confirmed tickets that look like this one. The technician
+ * can copy one into the repair note as a starting point.
+ */
+function SimilarSolutionsPanel({
+  ticket,
+  lang,
+  onUse,
+}: {
+  ticket: Ticket;
+  lang: Lang;
+  onUse?: (solution: SimilarSolution) => void;
+}) {
+  const { data, isLoading } = useListSimilarSolutions(ticket.id, {
+    query: { queryKey: getListSimilarSolutionsQueryKey(ticket.id), staleTime: 30_000 },
+  });
+  const solutions = Array.isArray(data) ? data : [];
+  if (isLoading) {
+    return (
+      <section className="tech-similar-card" aria-busy="true">
+        <div className="tech-similar-head">
+          <Lightbulb size={16} />
+          <h3>{tr(lang, 'نبحث عن مشاكل مشابهة انحلت قبل...', 'Looking for similar solved problems...')}</h3>
+        </div>
+      </section>
+    );
+  }
+  if (!solutions.length) return null;
+  return (
+    <section className="tech-similar-card" data-testid="panel-similar-solutions">
+      <div className="tech-similar-head">
+        <Lightbulb size={16} />
+        <div>
+          <h3>{tr(lang, 'حلول مقترحة من مشاكل مشابهة', 'Suggested fixes from similar problems')}</h3>
+          <p>
+            {tr(
+              lang,
+              'هذه حلول سجّلها الفنيون لبلاغات شبيهة وأكد المبلّغ نجاحها.',
+              'Fixes technicians documented on similar tickets, confirmed by the reporter.',
+            )}
+          </p>
+        </div>
+      </div>
+      <ul className="tech-similar-list">
+        {solutions.map(solution => (
+          <li key={solution.ticketId} className="tech-similar-item" data-testid={`similar-${solution.ticketNumber}`}>
+            <div className="tech-similar-meta">
+              <b>{solution.title}</b>
+              <span className="tech-similar-score" title={tr(lang, 'نسبة التشابه', 'Similarity')}>
+                {tr(lang, `تشابه ${solution.score}٪`, `${solution.score}% match`)}
+              </span>
+            </div>
+            {solution.cause && (
+              <p className="tech-similar-line">
+                <span>{tr(lang, 'السبب:', 'Cause:')}</span> {solution.cause}
+              </p>
+            )}
+            <p className="tech-similar-line">
+              <span>{tr(lang, 'الحل:', 'Fix:')}</span> {solution.resolution}
+            </p>
+            <div className="tech-similar-foot">
+              <small>
+                {solution.ticketNumber}
+                {solution.technicianName ? ` · ${solution.technicianName}` : ''}
+                {solution.branchName ? ` · ${solution.branchName}` : ''}
+              </small>
+              {onUse && (
+                <button
+                  type="button"
+                  className="tech-similar-use"
+                  onClick={() => onUse(solution)}
+                  data-testid={`button-use-solution-${solution.ticketNumber}`}
+                >
+                  <Check size={13} />
+                  {tr(lang, 'استخدم هذا الحل', 'Use this fix')}
+                </button>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/**
+ * Claude reads the ticket plus the closest confirmed fixes and proposes steps.
+ * Only shown when the server has AI configured.
+ */
+function AiFixSuggestionCard({
+  ticket,
+  lang,
+  onUse,
+}: {
+  ticket: Ticket;
+  lang: Lang;
+  onUse?: (text: string) => void;
+}) {
+  const status = useGetAiStatus({ query: { queryKey: getGetAiStatusQueryKey(), staleTime: 5 * 60_000 } });
+  const suggest = useSuggestTicketFix();
+  if (status.data?.enabled !== true) return null;
+  const result = suggest.data;
+  return (
+    <section className="tech-similar-card tech-ai-card" data-testid="panel-ai-suggestion">
+      <div className="tech-similar-head">
+        <Sparkles size={16} />
+        <div>
+          <h3>{tr(lang, 'اقتراح الذكاء الاصطناعي', 'AI repair suggestion')}</h3>
+          <p>
+            {tr(
+              lang,
+              'يقرأ البلاغ والحلول المؤكدة لمشاكل مشابهة ويقترح خطوات. راجعها بخبرتك قبل التنفيذ.',
+              'Reads the ticket and confirmed fixes for similar problems, then proposes steps. Use your judgment before acting.',
+            )}
+          </p>
+        </div>
+      </div>
+
+      {!result && (
+        <button
+          type="button"
+          className="tech-similar-use tech-ai-ask"
+          disabled={suggest.isPending}
+          onClick={() => suggest.mutate({ ticketId: ticket.id })}
+          data-testid="button-ai-suggest"
+        >
+          {suggest.isPending ? <LoaderCircle size={13} className="animate-spin" /> : <Sparkles size={13} />}
+          {suggest.isPending
+            ? tr(lang, 'جارٍ التفكير...', 'Thinking...')
+            : tr(lang, 'اقترح لي طريقة الحل', 'Suggest how to fix it')}
+        </button>
+      )}
+      {suggest.isError && (
+        <p className="tech-similar-line">{tr(lang, 'تعذر الحصول على اقتراح الآن.', 'Could not get a suggestion right now.')}</p>
+      )}
+      {result && !result.available && (
+        <p className="tech-similar-line">{tr(lang, 'الاقتراح غير متاح حالياً.', 'Suggestion is not available right now.')}</p>
+      )}
+      {result?.available && (
+        <div className="tech-ai-result" data-testid="ai-suggestion-result">
+          <p className="tech-similar-line"><b>{result.summary}</b></p>
+          {result.likelyCause && (
+            <p className="tech-similar-line"><span>{tr(lang, 'السبب المحتمل:', 'Likely cause:')}</span> {result.likelyCause}</p>
+          )}
+          <ol className="tech-ai-steps">
+            {result.steps.map(step => <li key={step}>{step}</li>)}
+          </ol>
+          {result.safetyNote && (
+            <p className="tech-ai-safety"><CircleAlert size={14} /> {result.safetyNote}</p>
+          )}
+          <div className="tech-similar-foot">
+            <small>
+              {result.basedOn.length
+                ? tr(lang, `مبني على: ${result.basedOn.join('، ')}`, `Based on: ${result.basedOn.join(', ')}`)
+                : tr(lang, 'لا توجد حلول سابقة مطابقة؛ خطوات فحص عامة.', 'No matching past fixes; general inspection steps.')}
+            </small>
+            {onUse && (
+              <button
+                type="button"
+                className="tech-similar-use"
+                onClick={() => onUse(result.steps.join('، '))}
+                data-testid="button-use-ai-suggestion"
+              >
+                <Check size={13} />
+                {tr(lang, 'استخدمه كبداية للحل', 'Use as a starting note')}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
 export interface TechnicianTicketDetailProps {
   ticket: Ticket;
   lang: Lang;
@@ -458,6 +643,28 @@ export function TechnicianTicketDetail({
           </span>
         </div>
       </header>
+
+      {/* Suggested fixes from the knowledge base while the work is still open */}
+      {['new', 'review', 'in_progress'].includes(ticket.status) && (
+        <AiFixSuggestionCard
+          ticket={ticket}
+          lang={lang}
+          onUse={ticket.status === 'in_progress' && isAssignedToMe ? text => {
+            setInputMode('text');
+            setSolutionText(text);
+          } : undefined}
+        />
+      )}
+      {['new', 'review', 'in_progress'].includes(ticket.status) && (
+        <SimilarSolutionsPanel
+          ticket={ticket}
+          lang={lang}
+          onUse={ticket.status === 'in_progress' && isAssignedToMe ? solution => {
+            setInputMode('text');
+            setSolutionText(solution.resolution);
+          } : undefined}
+        />
+      )}
 
       {/* 3. Priority 2: Clear Section to Update Ticket Status (Action Hub) */}
       <section className="tech-action-hub" aria-busy={action.isPending}>

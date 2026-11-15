@@ -8,6 +8,16 @@ export type BodyType<T> = T;
 
 export type AuthTokenGetter = () => Promise<string | null> | string | null;
 
+import {
+  canReassignTo,
+  canTransition,
+  chooseTechnician,
+  initialStatus,
+  rankSimilarSolutions,
+  TICKET_TRANSITIONS,
+  type TicketAction,
+} from "@workspace/ticket-linking";
+
 const NO_BODY_STATUS = new Set([204, 205, 304]);
 const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
 
@@ -1186,12 +1196,13 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
         const techs = getStoredTechnicians();
         const randNum = Math.floor(2500 + Math.random() * 500);
         const targetBranch = branches.find(b => b.id === payload.branchId) || branches[0];
-        const eligible = techs.filter(tech => tech.specialization === payload.specialization &&
-          tech.branchId === targetBranch.id && tech.active && tech.available);
-        const assignedTech = eligible.sort((a,b)=>{
-          const load = (id: unknown) => tickets.filter(t=>t.technicianId===id && !["closed","cancelled"].includes(String(t.status))).length;
-          return load(a.id) - load(b.id);
-        })[0];
+        const assignment = decideFallbackAssignment(
+          String(targetBranch.id),
+          String(payload.specialization || "general"),
+          techs,
+          tickets,
+        );
+        const assignedTech = assignment.technician;
         const newTicket = {
           id: `ticket-demo-${Date.now()}`,
           number: `TDR-${randNum}`,
@@ -1201,7 +1212,7 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
           priority: payload.priority || "medium",
           specialization: payload.specialization || "general",
           location: payload.location || "داخل الفرع",
-          status: assignedTech ? "new" : "review",
+          status: initialStatus(Boolean(assignedTech)),
           cancelledAt: null,
           cancelledBy: null,
           reporterId: user?.id || "demo-reporter",
@@ -1223,7 +1234,9 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
           updatedAt: new Date().toISOString(),
           history: [
             { id: `ev-${Date.now()}`, label: "تم تسجيل البلاغ", actorName: user?.name || "سارة القحطاني", note: "بلاغ صيانة ذكي", createdAt: new Date().toISOString() },
-            { id: `ev-${Date.now() + 1}`, label: assignedTech ? "إسناد للفني" : "بانتظار إسناد فني", actorName: "النظام التلقائي", note: assignedTech ? `مسند إلى ${assignedTech.name}` : "لا يوجد فني متاح في الفرع بالتخصص المطلوب", createdAt: new Date().toISOString() }
+            assignedTech
+              ? { id: `ev-${Date.now() + 1}`, label: "أُسند البلاغ تلقائياً", actorName: "النظام التلقائي", note: assignment.reason.ar, createdAt: new Date().toISOString() }
+              : { id: `ev-${Date.now() + 1}`, label: "بانتظار إسناد الإدارة", actorName: "النظام التلقائي", note: assignment.reason.ar, createdAt: new Date().toISOString() }
           ],
         };
         const updated = [newTicket, ...tickets];
@@ -1251,6 +1264,11 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
         const parsedBody = typeof body === "string" ? JSON.parse(body) : (body || {});
         const action = parsedBody?.action;
         const current = { ...tickets[ticketIndex] };
+        const workflowRole = String(getActiveUser()?.role || "");
+        // Same status rules as the server: an action outside the workflow leaves the ticket unchanged.
+        if (action in TICKET_TRANSITIONS && action !== "cancel" && workflowRole && !canTransition(action as TicketAction, workflowRole, String(current.status))) {
+          return current as unknown as T;
+        }
         const existingHistory = Array.isArray(current.history) ? [...current.history] : [];
         const activeUser = getActiveUser();
         const role = activeUser?.role;
@@ -1318,6 +1336,44 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
     }
   }
 
+  // 13b. Similar solutions (/api/tickets/:id/similar-solutions)
+  if (apiPath.startsWith("/api/tickets/") && apiPath.endsWith("/similar-solutions")) {
+    const ticketId = apiPath.split("/")[3];
+    const tickets = getStoredTickets();
+    const ticket = tickets.find(t => t.id === ticketId);
+    if (!ticket) return [] as unknown as T;
+    return fallbackSimilarSolutions(
+      `${ticket.title ?? ""} ${ticket.description ?? ""}`,
+      String(ticket.specialization || ticket.category || "general"),
+      String(ticket.id),
+      tickets,
+    ) as unknown as T;
+  }
+
+  // 13b2. AI is server-only: the static demo reports it as unavailable.
+  if (apiPath === "/api/ai/status") {
+    return { enabled: false, model: null } as unknown as T;
+  }
+  if (apiPath.startsWith("/api/tickets/") && apiPath.endsWith("/ai-suggestion")) {
+    return { available: false, summary: "", likelyCause: "", steps: [], safetyNote: "", basedOn: [] } as unknown as T;
+  }
+
+  // 13c. Assignment preview (/api/assignment/preview)
+  if (apiPath === "/api/assignment/preview") {
+    const decision = decideFallbackAssignment(
+      searchParams.get("branchId") || "",
+      searchParams.get("specialization") || "general",
+      getStoredTechnicians(),
+      getStoredTickets(),
+    );
+    return {
+      technicianId: decision.technician?.id ?? null,
+      technicianName: decision.technician?.name ?? null,
+      rule: decision.rule,
+      reason: decision.reason.ar,
+    } as unknown as T;
+  }
+
   // 14. Single Ticket (/api/tickets/:id)
   if (apiPath.startsWith("/api/tickets/")) {
     const parts = apiPath.split("/");
@@ -1332,4 +1388,62 @@ function tryHandleClientFallback<T>(rawUrl: string, method: string, body?: unkno
   }
 
   return undefined;
+}
+
+function decideFallbackAssignment(
+  branchId: string,
+  specialization: string,
+  techs: Array<Record<string, unknown>>,
+  tickets: Array<Record<string, unknown>>,
+) {
+  const openStatuses = new Set(["new", "review", "in_progress", "awaiting_confirmation"]);
+  return chooseTechnician(
+    techs.map(tech => ({
+      id: String(tech.id),
+      name: String(tech.name),
+      branchId: (tech.branchId as string) ?? null,
+      specialization: (tech.specialization as string) ?? null,
+      available: tech.available !== false,
+      active: tech.active !== false,
+      workload: tickets.filter(t => t.technicianId === tech.id && openStatuses.has(String(t.status))).length,
+    })),
+    { branchId, specialization },
+  );
+}
+
+function fallbackSimilarSolutions(
+  text: string,
+  specialization: string,
+  excludeId: string,
+  tickets: Array<Record<string, unknown>>,
+) {
+  const fromTickets = tickets
+    .filter(t => t.status === "closed" && (t.resolution || t.repairNotes))
+    .map(t => ({
+      id: String(t.id),
+      text: `${t.title ?? ""} ${t.description ?? ""}`,
+      specialization: String(t.specialization || t.category || "general"),
+      ticketNumber: String(t.number ?? ""),
+      title: String(t.title ?? ""),
+      branchName: String(t.branchName ?? ""),
+      technicianName: String(t.technicianName ?? ""),
+      cause: (t.cause as string) || null,
+      resolution: String(t.resolution || t.repairNotes),
+      resolvedAt: String(t.updatedAt || new Date().toISOString()),
+    }));
+  const known = new Set(fromTickets.map(t => t.id));
+  const fromKnowledge = FALLBACK_KNOWLEDGE.filter(k => !known.has(k.ticketId)).map(k => ({
+    id: k.ticketId,
+    text: `${k.title} ${k.cause ?? ""}`,
+    specialization: k.category,
+    ticketNumber: k.ticketNumber,
+    title: k.title,
+    branchName: k.branchName,
+    technicianName: k.technicianName,
+    cause: k.cause,
+    resolution: k.resolution,
+    resolvedAt: k.createdAt,
+  }));
+  return rankSimilarSolutions({ text, specialization, excludeId }, [...fromTickets, ...fromKnowledge])
+    .map(({ id, score, text: _text, ...rest }) => ({ ticketId: id, ...rest, score: Math.round(score * 100) }));
 }

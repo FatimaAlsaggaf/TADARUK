@@ -1123,6 +1123,8 @@
 .rw-preview-facts > div > span svg { color: #438e91; }
 .rw-preview-facts > div > b { color: var(--rw-ink); font-size: 12px; font-weight: 700; }
 .rw-preview-facts .rw-priority { flex-direction: row; }
+.rw-preview-facts > .rw-fact-assignee { grid-column: 1 / -1; }
+.rw-fact-reason { color: var(--rw-muted); font-size: 11px; line-height: 1.6; }
 .rw-editing-note { display: flex; align-items: center; gap: 8px; padding: 10px 12px; margin: 0 0 16px; border-radius: 9px; background: var(--rw-cyan-soft); color: var(--rw-muted); font-size: 11px; }
 .rw-editing-note svg { color: #318c8d; }
 .rw-source-note { padding: 11px 13px; margin-top: 12px; border-inline-start: 2px solid #76dadd; border-radius: 7px; background: color-mix(in srgb, var(--rw-paper) 74%, var(--rw-surface)); }

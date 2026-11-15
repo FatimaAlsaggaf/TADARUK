@@ -6,21 +6,29 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './aiStatus';
+export * from './assignmentPreview';
+export * from './assignmentPreviewRule';
 export * from './branch';
 export * from './branchInput';
 export * from './branchUpdate';
+export * from './clarificationQuestion';
+export * from './clarificationQuestionField';
 export * from './demoSession';
 export * from './demoSessionInput';
 export * from './demoUser';
 export * from './demoUserRole';
+export * from './fixSuggestion';
 export * from './healthStatus';
 export * from './knowledgeEntry';
 export * from './listKnowledgeParams';
 export * from './listTicketsParams';
 export * from './overview';
+export * from './previewAssignmentParams';
 export * from './reporterAccess';
 export * from './reporterBranch';
 export * from './reporterBranchAccessInput';
+export * from './similarSolution';
 export * from './technician';
 export * from './technicianInput';
 export * from './technicianUpdate';
@@ -29,6 +37,7 @@ export * from './ticketActionInput';
 export * from './ticketActionInputAction';
 export * from './ticketAnalysis';
 export * from './ticketAnalysisInput';
+export * from './ticketAnalysisInputAnswersItem';
 export * from './ticketAnalysisMode';
 export * from './ticketAnalysisPriority';
 export * from './ticketEvent';

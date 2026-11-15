@@ -18,6 +18,13 @@ import {
   ListDemoUsersResponse,
   ListKnowledgeQueryParams,
   ListKnowledgeResponse,
+  ListSimilarSolutionsParams,
+  SuggestTicketFixParams,
+  SuggestTicketFixResponse,
+  GetAiStatusResponse,
+  ListSimilarSolutionsResponse,
+  PreviewAssignmentQueryParams,
+  PreviewAssignmentResponse,
   ListReporterAccessResponse,
   ListReporterBranchesResponse,
   ListTechniciansResponse,
@@ -49,10 +56,20 @@ import {
   type TeamMemberRecord,
 } from "@workspace/db";
 import {
+  canReassignTo,
+  canTransition,
+  clarificationQuestions,
+  initialStatus,
+  TICKET_TRANSITIONS,
+} from "@workspace/ticket-linking";
+import { analyzeReport, isAiEnabled, structureRepairNote, suggestFix } from "../lib/ai";
+import {
   addTicketEvent,
+  decideAssignment,
   DEMO_ACCOUNT_IDS,
   DEMO_ORGANIZATION,
   ensureDemoData,
+  findSimilarSolutions,
   getAuthorizedBranchIds,
   getBranch,
   getDemoMember,
@@ -397,7 +414,7 @@ router.post("/tickets/analyze", async (req, res): Promise<void> => {
   const has = (terms: string[]) => terms.some((term) => lower.includes(term));
   const locationTerms: Array<[string, string[]]> = [
     ["المطبخ", ["المطبخ", "المطبخ التحضيري", "kitchen"]],
-    ["صالة العملاء", ["صالة العملاء", "صالة الجلوس", "منطقة العملاء", "customer hall", "dining area"]],
+    ["صالة العملاء", ["صالة العملاء", "صالة الجلوس", "منطقة العملاء", "الصالة", "customer hall", "dining area"]],
     ["المستودع", ["المستودع", "المخزن", "warehouse", "stockroom"]],
     ["دورات المياه", ["دورات المياه", "دورة المياه", "الحمام", "الحمامات", "restroom", "bathroom", "toilet"]],
     ["منطقة التحضير", ["منطقة التحضير", "prep area", "preparation area"]],
@@ -425,15 +442,46 @@ router.post("/tickets/analyze", async (req, res): Promise<void> => {
   const category = specialization;
   const firstSentence = original.split(/[.!؟\n]/)[0]?.trim() || original;
   const title = firstSentence.split(/\s+/).slice(0, 8).join(" ").slice(0, 80);
-  const response = {
+  // Answers to earlier clarification questions are folded into the text the rules see.
+  const answers = parsed.data.answers ?? [];
+  const ai = await analyzeReport({ description: original, location: requestedLocation, answers });
+
+  const ruleQuestions = clarificationQuestions({
+    description: [original, ...answers.map((item) => item.answer)].join(" "),
+    location: extractedLocation,
+    specialization,
+    urgent: urgentIssue,
+  });
+  const ruleAnswered = new Set(answers.map((item) => item.question));
+  const final = ai ?? {
     title: title || "بلاغ صيانة جديد",
     description: original,
     category,
     priority,
+    priorityReason: undefined,
     specialization,
     location: extractedLocation || (urgentIssue ? "غير محدد" : ""),
-    needsClarification: !extractedLocation && !urgentIssue,
-    mode: "demo",
+    questions: ruleQuestions
+      .map(({ field, question }) => ({ field, question: question.ar }))
+      .filter((item) => !ruleAnswered.has(item.question)),
+  };
+  const similarSolutions = await findSimilarSolutions({
+    text: `${final.title} ${final.description}`,
+    specialization: final.specialization,
+    limit: 2,
+  }).catch(() => []);
+  const response = {
+    title: final.title,
+    description: final.description,
+    category: final.category,
+    priority: final.priority,
+    specialization: final.specialization,
+    location: final.location,
+    needsClarification: final.questions.length > 0,
+    mode: ai ? "provider" : "demo",
+    ...(final.priorityReason ? { priorityReason: final.priorityReason } : {}),
+    questions: final.questions,
+    similarSolutions,
   };
   res.json(AnalyzeTicketResponse.parse(response));
 });
@@ -541,26 +589,8 @@ router.post("/tickets", async (req, res): Promise<void> => {
       res.status(400).json({ error: "The selected branch is inactive." });
       return;
     }
-    const qualified = await db.select().from(teamMembersTable).where(and(
-      eq(teamMembersTable.organizationId, DEMO_ORGANIZATION),
-      eq(teamMembersTable.role, "technician"),
-      eq(teamMembersTable.branchId, branchId),
-      eq(teamMembersTable.specialization, parsed.data.specialization),
-      eq(teamMembersTable.available, true),
-      eq(teamMembersTable.active, true),
-    ));
-    const workloads = await Promise.all(qualified.map(async (technician) => {
-      const assignments = await db.select().from(ticketsTable).where(and(
-        eq(ticketsTable.organizationId, DEMO_ORGANIZATION),
-        eq(ticketsTable.technicianId, technician.id),
-        ne(ticketsTable.status, "closed"),
-        ne(ticketsTable.status, "cancelled"),
-        isNull(ticketsTable.cancelledAt),
-      ));
-      return { technician, workload: assignments.length };
-    }));
-    workloads.sort((a, b) => a.workload - b.workload);
-    const technician = workloads[0]?.technician;
+    const assignment = await decideAssignment(branchId, parsed.data.specialization);
+    const technician = assignment.technician;
     const id = randomUUID();
     const now = new Date();
     const [ticket] = await db.insert(ticketsTable).values({
@@ -570,7 +600,7 @@ router.post("/tickets", async (req, res): Promise<void> => {
       ...ticketData,
       branchId,
       imageUrl: ticketData.imageUrl ?? null,
-      status: technician ? "new" : "review",
+      status: initialStatus(Boolean(technician)),
       reporterId: member.id,
       technicianId: technician?.id ?? null,
       createdAt: now,
@@ -578,10 +608,10 @@ router.post("/tickets", async (req, res): Promise<void> => {
     }).returning();
     await addTicketEvent(id, member.id, "تم إنشاء البلاغ", null);
     if (technician) {
-      await addTicketEvent(id, member.id, "أُسند البلاغ تلقائياً", `تم إسناده إلى ${technician.name} حسب التخصص والتوفر.`);
+      await addTicketEvent(id, member.id, "أُسند البلاغ تلقائياً", assignment.reason.ar);
       await notifyTicket(technician.id, id, "assigned", "بلاغ صيانة جديد مسند إليك", `${ticket.number} · ${ticket.title}`);
     } else {
-      await addTicketEvent(id, member.id, "بانتظار إسناد الإدارة", "لا يوجد فني متاح بالتخصص المطلوب في هذا الفرع.");
+      await addTicketEvent(id, member.id, "بانتظار إسناد الإدارة", assignment.reason.ar);
     }
     res.status(201).json(CreateTicketResponse.parse(await toTicketView(ticket)));
   } catch (error) {
@@ -653,6 +683,14 @@ router.post("/tickets/:ticketId/actions", async (req, res): Promise<void> => {
     const action = parsed.data.action;
     if (action !== "cancel" && (ticket.status === "cancelled" || ticket.cancelledAt)) {
       res.status(409).json({ error: "Cancelled tickets cannot be changed." });
+      return;
+    }
+    if (!TICKET_TRANSITIONS[action].roles.includes(member.role as never)) {
+      res.status(403).json({ error: "This role cannot perform that action." });
+      return;
+    }
+    if (action !== "cancel" && !canTransition(action, member.role, ticket.status)) {
+      res.status(400).json({ error: `The "${action}" action is not allowed while the ticket is "${ticket.status}".` });
       return;
     }
     const now = new Date();
@@ -733,6 +771,7 @@ router.post("/tickets/:ticketId/actions", async (req, res): Promise<void> => {
 
     let update: Partial<typeof ticketsTable.$inferInsert> = { updatedAt: now };
     let eventLabel = "";
+    let reassignNote: string | null = null;
 
     if (action === "start") {
       if (member.role !== "technician" || ticket.technicianId !== member.id) {
@@ -743,8 +782,8 @@ router.post("/tickets/:ticketId/actions", async (req, res): Promise<void> => {
         res.status(400).json({ error: "This ticket cannot be started in its current state." });
         return;
       }
-      update.status = "in_progress";
-      eventLabel = "بدأ الفني العمل";
+      update.status = TICKET_TRANSITIONS.start.to;
+      eventLabel = TICKET_TRANSITIONS.start.label;
     } else if (action === "complete") {
       if (member.role !== "technician" || ticket.technicianId !== member.id) {
         res.status(403).json({ error: "Only the assigned technician can complete this repair." });
@@ -763,12 +802,21 @@ router.post("/tickets/:ticketId/actions", async (req, res): Promise<void> => {
         res.status(400).json({ error: "Attach a compressed JPEG repair photo (max 750 kB encoded) before submitting." });
         return;
       }
-      update.status = "awaiting_confirmation";
+      update.status = TICKET_TRANSITIONS.complete.to;
       update.repairImageUrl = parsed.data.repairImageUrl;
-      update.repairNotes = parsed.data.note?.trim() || parsed.data.resolution?.trim() || null;
-      update.cause = parsed.data.cause?.trim() || null;
-      update.resolution = parsed.data.resolution?.trim() || parsed.data.note?.trim() || null;
-      eventLabel = "أكمل الفني الإصلاح";
+      const rawNote = parsed.data.note?.trim() || parsed.data.resolution?.trim() || "";
+      const rawResolution = parsed.data.resolution?.trim() || parsed.data.note?.trim() || "";
+      // Keep the technician's own words in repairNotes; store a cleaned cause +
+      // resolution for the knowledge base when AI is available.
+      const cleaned = await structureRepairNote({
+        ticketTitle: ticket.title,
+        note: rawResolution,
+        cause: parsed.data.cause,
+      });
+      update.repairNotes = rawNote || null;
+      update.cause = parsed.data.cause?.trim() || cleaned?.cause || null;
+      update.resolution = cleaned?.resolution || rawResolution || null;
+      eventLabel = TICKET_TRANSITIONS.complete.label;
     } else if (action === "attach_photo") {
       // Allow an already-submitted repair photo from the technician's older browser
       // to be synchronized to the reporter while confirmation is still pending.
@@ -791,8 +839,8 @@ router.post("/tickets/:ticketId/actions", async (req, res): Promise<void> => {
         res.status(400).json({ error: "This ticket is not waiting for confirmation." });
         return;
       }
-      update.status = action === "confirm" ? "closed" : "in_progress";
-      eventLabel = action === "confirm" ? "أكد المبلّغ نجاح الإصلاح" : "أعاد المبلّغ فتح البلاغ";
+      update.status = TICKET_TRANSITIONS[action].to;
+      eventLabel = TICKET_TRANSITIONS[action].label;
     } else if (action === "cancel") {
       let cancellationLabel = "";
       let cancellationNote = parsed.data.note?.trim() || null;
@@ -880,7 +928,7 @@ router.post("/tickets/:ticketId/actions", async (req, res): Promise<void> => {
       res.status(409).json({ error: "The ticket changed before the action could be completed." });
       return;
     }
-    await addTicketEvent(ticket.id, member.id, eventLabel, parsed.data.note ?? null);
+    await addTicketEvent(ticket.id, member.id, eventLabel, parsed.data.note?.trim() || reassignNote);
     if (action === "complete") {
       await notifyTicket(ticket.reporterId, ticket.id, "confirmation_required",
         "الإصلاح جاهز لتأكيدك", `${ticket.number} · راجع الإصلاح وأكّد الحل أو أعد البلاغ للمتابعة.`);
@@ -892,6 +940,101 @@ router.post("/tickets/:ticketId/actions", async (req, res): Promise<void> => {
         "عاد البلاغ للمتابعة", `${ticket.number} · أُعيد البلاغ لاستكمال الإصلاح.`);
     }
     res.json(PerformTicketActionResponse.parse(await toTicketView(updated)));
+  } catch (error) {
+    res.status(500).json({ error: errorMessage(error) });
+  }
+});
+
+router.get("/tickets/:ticketId/similar-solutions", async (req, res): Promise<void> => {
+  const parsed = ListSimilarSolutionsParams.safeParse(req.params);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  try {
+    const member = await requireMember(req, res);
+    if (!member) return;
+    const ticket = await getVisibleTicket(member, parsed.data.ticketId);
+    if (!ticket) {
+      res.status(404).json({ error: "Ticket not found." });
+      return;
+    }
+    const solutions = await findSimilarSolutions({
+      text: `${ticket.title} ${ticket.description}`,
+      specialization: ticket.specialization,
+      excludeTicketId: ticket.id,
+    });
+    res.json(ListSimilarSolutionsResponse.parse(solutions));
+  } catch (error) {
+    res.status(500).json({ error: errorMessage(error) });
+  }
+});
+
+router.post("/tickets/:ticketId/ai-suggestion", async (req, res): Promise<void> => {
+  const parsed = SuggestTicketFixParams.safeParse(req.params);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  try {
+    const member = await requireMember(req, res);
+    if (!member) return;
+    if (member.role === "reporter") {
+      res.status(403).json({ error: "Repair suggestions are for technicians and managers." });
+      return;
+    }
+    const ticket = await getVisibleTicket(member, parsed.data.ticketId);
+    if (!ticket) {
+      res.status(404).json({ error: "Ticket not found." });
+      return;
+    }
+    const pastFixes = await findSimilarSolutions({
+      text: `${ticket.title} ${ticket.description}`,
+      specialization: ticket.specialization,
+      excludeTicketId: ticket.id,
+      limit: 4,
+    });
+    const suggestion = await suggestFix({ ticket, pastFixes });
+    res.json(SuggestTicketFixResponse.parse(suggestion
+      ? { available: true, ...suggestion }
+      : { available: false, summary: "", likelyCause: "", steps: [], safetyNote: "", basedOn: [] }));
+  } catch (error) {
+    res.status(500).json({ error: errorMessage(error) });
+  }
+});
+
+router.get("/ai/status", (_req, res): void => {
+  const enabled = isAiEnabled();
+  res.json(GetAiStatusResponse.parse({
+    enabled,
+    model: enabled ? process.env.TADARUK_AI_MODEL || "claude-opus-5-5" : null,
+  }));
+});
+
+router.get("/assignment/preview", async (req, res): Promise<void> => {
+  const parsed = PreviewAssignmentQueryParams.safeParse(req.query);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  try {
+    const member = await requireMember(req, res);
+    if (!member) return;
+    if (member.role === "technician") {
+      res.status(403).json({ error: "Technicians cannot preview assignments." });
+      return;
+    }
+    if (member.role === "reporter" && !getAuthorizedBranchIds(member).includes(parsed.data.branchId)) {
+      res.status(403).json({ error: "This branch is not authorized for the reporter." });
+      return;
+    }
+    const decision = await decideAssignment(parsed.data.branchId, parsed.data.specialization);
+    res.json(PreviewAssignmentResponse.parse({
+      technicianId: decision.technician?.id ?? null,
+      technicianName: decision.technician?.name ?? null,
+      rule: decision.rule,
+      reason: decision.reason.ar,
+    }));
   } catch (error) {
     res.status(500).json({ error: errorMessage(error) });
   }

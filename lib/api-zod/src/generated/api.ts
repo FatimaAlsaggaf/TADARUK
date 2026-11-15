@@ -191,8 +191,17 @@ export const analyzeTicketBodyDescriptionMin = 4;
 export const AnalyzeTicketBody = zod.object({
   "description": zod.string().min(analyzeTicketBodyDescriptionMin),
   "location": zod.string().optional(),
-  "imageUrl": zod.string().optional()
+  "imageUrl": zod.string().optional(),
+  "answers": zod.array(zod.object({
+  "question": zod.string(),
+  "answer": zod.string()
+})).optional()
 })
+
+export const analyzeTicketResponseSimilarSolutionsItemScoreMin = 0;
+export const analyzeTicketResponseSimilarSolutionsItemScoreMax = 100;
+
+
 
 export const AnalyzeTicketResponse = zod.object({
   "title": zod.string(),
@@ -202,7 +211,24 @@ export const AnalyzeTicketResponse = zod.object({
   "specialization": zod.string(),
   "location": zod.string(),
   "needsClarification": zod.boolean(),
-  "mode": zod.enum(['demo', 'provider'])
+  "mode": zod.enum(['demo', 'provider']),
+  "priorityReason": zod.string().optional(),
+  "questions": zod.array(zod.object({
+  "field": zod.enum(['location', 'details']),
+  "question": zod.string()
+})).optional(),
+  "similarSolutions": zod.array(zod.object({
+  "ticketId": zod.string(),
+  "ticketNumber": zod.string(),
+  "title": zod.string(),
+  "specialization": zod.string(),
+  "branchName": zod.string(),
+  "technicianName": zod.string(),
+  "cause": zod.string().nullable(),
+  "resolution": zod.string(),
+  "score": zod.number().int().min(analyzeTicketResponseSimilarSolutionsItemScoreMin).max(analyzeTicketResponseSimilarSolutionsItemScoreMax),
+  "resolvedAt": zod.coerce.date()
+})).optional()
 })
 
 
@@ -645,6 +671,75 @@ export const UpdateTechnicianResponse = zod.object({
   "available": zod.boolean(),
   "active": zod.boolean(),
   "workload": zod.number().int()
+})
+
+
+/**
+ * @summary Confirmed fixes from past tickets that look like this one
+ */
+export const ListSimilarSolutionsParams = zod.object({
+  "ticketId": zod.coerce.string()
+})
+
+export const listSimilarSolutionsResponseScoreMin = 0;
+export const listSimilarSolutionsResponseScoreMax = 100;
+
+
+
+export const ListSimilarSolutionsResponseItem = zod.object({
+  "ticketId": zod.string(),
+  "ticketNumber": zod.string(),
+  "title": zod.string(),
+  "specialization": zod.string(),
+  "branchName": zod.string(),
+  "technicianName": zod.string(),
+  "cause": zod.string().nullable(),
+  "resolution": zod.string(),
+  "score": zod.number().int().min(listSimilarSolutionsResponseScoreMin).max(listSimilarSolutionsResponseScoreMax),
+  "resolvedAt": zod.coerce.date()
+})
+export const ListSimilarSolutionsResponse = zod.array(ListSimilarSolutionsResponseItem)
+
+
+/**
+ * @summary AI-suggested repair steps grounded in similar confirmed fixes
+ */
+export const SuggestTicketFixParams = zod.object({
+  "ticketId": zod.coerce.string()
+})
+
+export const SuggestTicketFixResponse = zod.object({
+  "available": zod.boolean(),
+  "summary": zod.string(),
+  "likelyCause": zod.string(),
+  "steps": zod.array(zod.string()),
+  "safetyNote": zod.string(),
+  "basedOn": zod.array(zod.string())
+})
+
+
+/**
+ * @summary Whether the AI provider is configured on the server
+ */
+export const GetAiStatusResponse = zod.object({
+  "enabled": zod.boolean(),
+  "model": zod.string().nullish()
+})
+
+
+/**
+ * @summary Show which technician a new ticket would be routed to
+ */
+export const PreviewAssignmentQueryParams = zod.object({
+  "branchId": zod.coerce.string(),
+  "specialization": zod.coerce.string()
+})
+
+export const PreviewAssignmentResponse = zod.object({
+  "technicianId": zod.string().nullable(),
+  "technicianName": zod.string().nullable(),
+  "rule": zod.enum(['specialist', 'general', 'none']),
+  "reason": zod.string()
 })
 
 

@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, asc, count, desc, eq, isNull, ne } from "drizzle-orm";
+import { and, asc, count, desc, eq, isNotNull, isNull, ne } from "drizzle-orm";
 import {
   branchesTable,
   db,
@@ -10,6 +10,11 @@ import {
   type TicketRecord,
 } from "@workspace/db";
 import type { Request } from "express";
+import {
+  chooseTechnician,
+  rankSimilarSolutions,
+  type AssignmentDecision,
+} from "@workspace/ticket-linking";
 
 export const DEMO_ORGANIZATION = "restaurant-demo";
 export const DEMO_ACCOUNT_IDS = ["demo-manager", "demo-reporter", "demo-tech"] as const;
@@ -27,6 +32,7 @@ const seedMembers = [
   { id: "demo-tech", name: "سالم الحربي", role: "technician", initials: "سح", branchId: "branch-olaya", specialization: "plumbing", available: true, active: true },
   { id: "tech-cooling", name: "مازن القحطاني", role: "technician", initials: "مق", branchId: "branch-olaya", specialization: "cooling", available: true, active: true },
   { id: "tech-electrical", name: "هند الشهري", role: "technician", initials: "هش", branchId: "branch-olaya", specialization: "electrical", available: true, active: true },
+  { id: "tech-general", name: "فهد العنزي", role: "technician", initials: "فع", branchId: "branch-olaya", specialization: "general", available: true, active: true },
   { id: "tech-jeddah", name: "عمر المالكي", role: "technician", initials: "عم", branchId: "branch-jeddah", specialization: "plumbing", available: true, active: true },
 ];
 
@@ -125,6 +131,100 @@ async function seedDemoData(): Promise<void> {
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 30),
     },
   ];
+
+  // Confirmed fixes from earlier weeks. They make up the knowledge base that
+  // similar new tickets are matched against.
+  const day = 1000 * 60 * 60 * 24;
+  const resolvedTickets = [
+    {
+      id: "ticket-demo-2390",
+      number: "TDR-2390",
+      title: "تسرب مياه من وصلة صنبور المغسلة",
+      description: "مياه تنقط باستمرار من تحت مغسلة المطبخ وتتجمع على الأرض.",
+      category: "plumbing",
+      priority: "high",
+      specialization: "plumbing",
+      location: "المطبخ — المغسلة",
+      technicianId: "demo-tech",
+      branchId: "branch-olaya",
+      cause: "تلف الجلدة المطاطية في وصلة الصنبور.",
+      resolution: "قفل المحبس الرئيسي، تغيير الجلدة المطاطية وشريط التفلون، ثم فتح الماء والتأكد من عدم وجود تنقيط لمدة خمس دقائق.",
+      age: 21,
+    },
+    {
+      id: "ticket-demo-2391",
+      number: "TDR-2391",
+      title: "مكيف صالة العملاء لا يبرد",
+      description: "المكيف في صالة العملاء يشتغل لكن يطلع هواء حار وما يبرد.",
+      category: "cooling",
+      priority: "high",
+      specialization: "cooling",
+      location: "صالة العملاء",
+      technicianId: "tech-cooling",
+      branchId: "branch-olaya",
+      cause: "انسداد الفلاتر بالغبار ونقص في غاز التبريد.",
+      resolution: "غسل الفلاتر وتنظيف الوحدة الداخلية، فحص التسريب وتعبئة الغاز، ثم قياس حرارة الهواء الخارج (١٢ درجة).",
+      age: 16,
+    },
+    {
+      id: "ticket-demo-2392",
+      number: "TDR-2392",
+      title: "ارتفاع حرارة ثلاجة التحضير",
+      description: "حرارة الثلاجة مرتفعة والأكل ما يبرد زين، والباب ما يسكر كويس.",
+      category: "cooling",
+      priority: "urgent",
+      specialization: "cooling",
+      location: "المطبخ — منطقة التحضير",
+      technicianId: "tech-cooling",
+      branchId: "branch-olaya",
+      cause: "اتساخ المكثف الخلفي وتلف جلدة باب الثلاجة.",
+      resolution: "تنظيف المكثف بالهواء المضغوط وتغيير جلدة الباب، ثم متابعة الحرارة حتى وصلت ٤ درجات خلال ساعة.",
+      age: 12,
+    },
+    {
+      id: "ticket-demo-2393",
+      number: "TDR-2393",
+      title: "إنارة منطقة الاستلام تومض وتنطفئ",
+      description: "اللمبات فوق نقطة الاستلام تومض ثم تنطفئ ولا تعمل.",
+      category: "electrical",
+      priority: "medium",
+      specialization: "electrical",
+      location: "منطقة الاستلام",
+      technicianId: "tech-electrical",
+      branchId: "branch-olaya",
+      cause: "تلف المحول (البالست) الخاص بوحدة الإنارة.",
+      resolution: "فصل القاطع، استبدال البالست والمصباح بوحدة LED، ثم إعادة التشغيل والتأكد من ثبات الإضاءة.",
+      age: 9,
+    },
+    {
+      id: "ticket-demo-2394",
+      number: "TDR-2394",
+      title: "صوت اهتزاز مزعج من المكيف",
+      description: "المكيف يطلع صوت اهتزاز وطقطقة عالية عند التشغيل.",
+      category: "cooling",
+      priority: "low",
+      specialization: "cooling",
+      location: "صالة الجلسات",
+      technicianId: "tech-cooling",
+      branchId: "branch-olaya",
+      cause: "ارتخاء براغي قاعدة مروحة الوحدة.",
+      resolution: "شد براغي قاعدة المروحة وتركيب مانع اهتزاز مطاطي، والتأكد من اختفاء الصوت بعد التشغيل.",
+      age: 5,
+    },
+  ];
+  await db.insert(ticketsTable).values(resolvedTickets.map(({ age, ...ticket }) => {
+    const createdAt = new Date(Date.now() - day * age);
+    return {
+      ...ticket,
+      organizationId: DEMO_ORGANIZATION,
+      status: "closed",
+      reporterId: "demo-reporter",
+      repairNotes: ticket.resolution,
+      imageUrl: null,
+      createdAt,
+      updatedAt: new Date(createdAt.getTime() + day / 3),
+    };
+  })).onConflictDoNothing();
 
   await db.insert(ticketsTable).values(
     sampleTickets.map((ticket) => ({ ...ticket, organizationId: DEMO_ORGANIZATION })),
@@ -319,4 +419,88 @@ export async function getDemoUserFromRequest(req: Request) {
   const userId = req.signedCookies?.tadarukDemoUser as string | undefined;
   if (!userId || !DEMO_ACCOUNT_IDS.some((id) => id === userId)) return undefined;
   return getDemoMember(userId);
+}
+
+async function openWorkload(technicianId: string): Promise<number> {
+  const [row] = await db.select({ total: count() }).from(ticketsTable).where(and(
+    eq(ticketsTable.organizationId, DEMO_ORGANIZATION),
+    eq(ticketsTable.technicianId, technicianId),
+    ne(ticketsTable.status, "closed"),
+    ne(ticketsTable.status, "cancelled"),
+    isNull(ticketsTable.cancelledAt),
+  ));
+  return Number(row?.total ?? 0);
+}
+
+/** Pick the technician for a ticket in a branch (see `chooseTechnician` for the rules). */
+export async function decideAssignment(
+  branchId: string,
+  specialization: string,
+): Promise<AssignmentDecision<{
+  id: string; name: string; branchId: string | null; specialization: string | null;
+  available: boolean; active: boolean; workload: number;
+}>> {
+  await ensureDemoData();
+  const technicians = await db.select().from(teamMembersTable).where(and(
+    eq(teamMembersTable.organizationId, DEMO_ORGANIZATION),
+    eq(teamMembersTable.role, "technician"),
+    eq(teamMembersTable.branchId, branchId),
+  ));
+  const withWorkload = await Promise.all(technicians.map(async (technician) => ({
+    id: technician.id,
+    name: technician.name,
+    branchId: technician.branchId,
+    specialization: technician.specialization,
+    available: technician.available,
+    active: technician.active,
+    workload: await openWorkload(technician.id),
+  })));
+  return chooseTechnician(withWorkload, { branchId, specialization });
+}
+
+/**
+ * Confirmed fixes (closed tickets with a documented solution) that look like
+ * the given problem. Used to suggest a solution to the technician.
+ */
+export async function findSimilarSolutions(query: {
+  text: string;
+  specialization?: string | null;
+  excludeTicketId?: string;
+  limit?: number;
+}) {
+  await ensureDemoData();
+  const resolved = await db.select().from(ticketsTable).where(and(
+    eq(ticketsTable.organizationId, DEMO_ORGANIZATION),
+    eq(ticketsTable.status, "closed"),
+    isNull(ticketsTable.cancelledAt),
+    isNotNull(ticketsTable.resolution),
+  ));
+  const ranked = rankSimilarSolutions(
+    { text: query.text, specialization: query.specialization, excludeId: query.excludeTicketId },
+    resolved.map((ticket) => ({
+      id: ticket.id,
+      text: `${ticket.title} ${ticket.description}`,
+      specialization: ticket.specialization,
+      ticket,
+    })),
+    { limit: query.limit ?? 3 },
+  );
+  return Promise.all(ranked.map(async ({ ticket, score }) => {
+    const [branch, technician] = await Promise.all([
+      getBranch(ticket.branchId),
+      ticket.technicianId ? getMember(ticket.technicianId) : Promise.resolve(undefined),
+    ]);
+    return {
+      ticketId: ticket.id,
+      ticketNumber: ticket.number,
+      title: ticket.title,
+      specialization: ticket.specialization,
+      branchName: branch?.name ?? "",
+      technicianName: technician?.name ?? "",
+      cause: ticket.cause,
+      resolution: ticket.resolution ?? "",
+      score: Math.round(score * 100),
+      resolvedAt: ticket.updatedAt.toISOString(),
+    };
+  }));
 }

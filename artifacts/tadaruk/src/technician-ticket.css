@@ -1466,3 +1466,50 @@
  .tech-repair-input-tabs button{flex:1;min-width:0;font-size:12px;padding:8px}
  .tech-repair-voice-entry{padding:12px}
 }
+/* Suggested fixes from similar, confirmed tickets */
+.tech-similar-card {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-inline-start: 3px solid #307190;
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+}
+.tech-similar-head { display: flex; align-items: flex-start; gap: 10px; color: #307190; }
+.tech-similar-head h3 { margin: 0; font-size: 14px; font-weight: 800; color: hsl(var(--foreground)); }
+.tech-similar-head p { margin: 4px 0 0; font-size: 12px; color: hsl(var(--muted-foreground)); line-height: 1.6; }
+.tech-similar-list { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 10px; }
+.tech-similar-item {
+  border: 1px solid hsl(var(--border));
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: hsl(var(--muted) / 0.35);
+}
+.tech-similar-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.tech-similar-meta b { font-size: 13px; color: hsl(var(--foreground)); }
+.tech-similar-score {
+  font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+  background: rgba(48, 113, 144, 0.12); color: #307190; white-space: nowrap;
+}
+.tech-similar-line { margin: 6px 0 0; font-size: 12.5px; line-height: 1.7; color: hsl(var(--foreground)); }
+.tech-similar-line span { font-weight: 700; color: hsl(var(--muted-foreground)); }
+.tech-similar-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+.tech-similar-foot small { font-size: 11px; color: hsl(var(--muted-foreground)); }
+.tech-similar-use {
+  display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700;
+  padding: 5px 10px; border-radius: 8px; border: 1px solid #307190; color: #307190; background: transparent; cursor: pointer;
+}
+.tech-similar-use:hover { background: #307190; color: #fff; }
+.dark .tech-similar-head, .dark .tech-similar-score, .dark .tech-similar-use { color: #56f4ef; border-color: #56f4ef; }
+.dark .tech-similar-card { border-inline-start-color: #56f4ef; }
+.dark .tech-similar-use:hover { background: #56f4ef; color: #0b1a33; }
+
+.tech-ai-card { border-inline-start-color: #6d4fd8; }
+.tech-ai-card .tech-similar-head { color: #6d4fd8; }
+.tech-ai-ask { margin-top: 12px; border-color: #6d4fd8; color: #6d4fd8; }
+.tech-ai-ask:hover { background: #6d4fd8; }
+.tech-ai-result { margin-top: 10px; }
+.tech-ai-steps { list-style: decimal; margin: 8px 0 0; padding-inline-start: 20px; font-size: 12.5px; line-height: 1.8; color: hsl(var(--foreground)); }
+.tech-ai-safety { display: flex; align-items: center; gap: 6px; margin: 8px 0 0; font-size: 12px; color: #b45309; }
+.dark .tech-ai-card { border-inline-start-color: #a78bfa; }
+.dark .tech-ai-card .tech-similar-head, .dark .tech-ai-ask { color: #a78bfa; border-color: #a78bfa; }

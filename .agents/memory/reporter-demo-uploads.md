@@ -3,7 +3,7 @@ name: Reporter demo boundaries
 description: Demo authentication, local photo storage, and frontend AI analysis boundaries.
 ---
 
-Keep the TADARUK Reporter experience on demo accounts for now. Photos attached to reports may be stored only in the current browser; do not imply cross-device or server persistence. The user says reports usually include a photo, so show any available report image prominently in ticket details. Keep frontend analysis deterministic and visibly labeled as demo until the teammate responsible for real AI integration delivers that connection; never present mock output as live AI. The demo composer should still produce a complete, editable sample preview from short, partial, image-only, or empty input.
+Keep the TADARUK Reporter experience on demo accounts for now. Photos attached to reports may be stored only in the current browser; do not imply cross-device or server persistence. The user says reports usually include a photo, so show any available report image prominently in ticket details. Real AI (Claude, server-side in `artifacts/api-server/src/lib/ai.ts`) now analyzes reports when `ANTHROPIC_API_KEY` is set and returns `mode: "provider"`; otherwise the reporter UI falls back to the deterministic demo adapter, which must stay labeled «تحليل تجريبي». Never present demo output as live AI. The demo composer should still produce a complete, editable sample preview from short, partial, image-only, or empty input.
 
 **Why:** the user chose to keep the demo accounts, said report photos are usually present, assigned real AI integration to a teammate, and asked for a smooth demo flow that prepares a ticket even when input is sparse.
 

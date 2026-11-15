@@ -10,7 +10,8 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@tanstack/react-query": "catalog:"
+    "@tanstack/react-query": "catalog:",
+    "@workspace/ticket-linking": "workspace:*"
   },
   "peerDependencies": {
     "react": ">=18"
