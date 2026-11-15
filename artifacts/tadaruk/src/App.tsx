@@ -5,6 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import BlurText from '@/components/BlurText';
 import SpotlightCard from '@/components/SpotlightCard';
 import FolderFloat from '@/components/FolderFloat';
+import PitchHook from '@/pages/PitchHook';
 import PhotoAttachmentCard from '@/components/PhotoAttachmentCard';
 import { FieldMessage } from '@/components/FieldMessage';
 import {
@@ -2153,6 +2154,7 @@ function AppRoutes() {
   useEffect(()=>{if(path==='/demo')go('/login');},[path,go]);
   const workspaceRoutes=['/workspace','/workspace/tickets','/workspace/tickets/new','/workspace/technicians','/workspace/branches','/workspace/knowledge'];
   const isTicketDetail=/^\/workspace\/tickets\/[^/]+$/.test(path)&&path!=='/workspace/tickets/new';
+  if(path==='/pitch')return <PitchHook/>;
   if(workspaceRoutes.includes(path)||isTicketDetail)return <WorkspaceRouter {...prefs}/>;
   if(path==='/login'||path==='/signup'||path==='/demo')return <AuthMorph lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/>;
   return <Switch><Route path="/"><Landing lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route path="/signup"><OrganizationOnboarding lang={prefs.lang} mode="signup"/></Route><Route path="/join"><OrganizationJoin lang={prefs.lang}/></Route><Route path="/login"><OrganizationOnboarding lang={prefs.lang} mode="login"/></Route><Route component={NotFound}/></Switch>;
