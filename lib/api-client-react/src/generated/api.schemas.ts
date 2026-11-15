@@ -232,11 +232,17 @@ export interface Ticket {
   history: TicketEvent[];
 }
 
+export type TicketAnalysisInputAnswersItem = {
+  question: string;
+  answer: string;
+};
+
 export interface TicketAnalysisInput {
   /** @minLength 4 */
   description: string;
   location?: string;
   imageUrl?: string;
+  answers?: TicketAnalysisInputAnswersItem[];
 }
 
 export type TicketAnalysisPriority = typeof TicketAnalysisPriority[keyof typeof TicketAnalysisPriority];
@@ -257,6 +263,37 @@ export const TicketAnalysisMode = {
   provider: 'provider',
 } as const;
 
+export type ClarificationQuestionField = typeof ClarificationQuestionField[keyof typeof ClarificationQuestionField];
+
+
+export const ClarificationQuestionField = {
+  location: 'location',
+  details: 'details',
+} as const;
+
+export interface ClarificationQuestion {
+  field: ClarificationQuestionField;
+  question: string;
+}
+
+export interface SimilarSolution {
+  ticketId: string;
+  ticketNumber: string;
+  title: string;
+  specialization: string;
+  branchName: string;
+  technicianName: string;
+  /** @nullable */
+  cause: string | null;
+  resolution: string;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  score: number;
+  resolvedAt: string;
+}
+
 export interface TicketAnalysis {
   title: string;
   description: string;
@@ -266,6 +303,42 @@ export interface TicketAnalysis {
   location: string;
   needsClarification: boolean;
   mode: TicketAnalysisMode;
+  priorityReason?: string;
+  questions?: ClarificationQuestion[];
+  similarSolutions?: SimilarSolution[];
+}
+
+export interface FixSuggestion {
+  available: boolean;
+  summary: string;
+  likelyCause: string;
+  steps: string[];
+  safetyNote: string;
+  basedOn: string[];
+}
+
+export interface AiStatus {
+  enabled: boolean;
+  /** @nullable */
+  model?: string | null;
+}
+
+export type AssignmentPreviewRule = typeof AssignmentPreviewRule[keyof typeof AssignmentPreviewRule];
+
+
+export const AssignmentPreviewRule = {
+  specialist: 'specialist',
+  general: 'general',
+  none: 'none',
+} as const;
+
+export interface AssignmentPreview {
+  /** @nullable */
+  technicianId: string | null;
+  /** @nullable */
+  technicianName: string | null;
+  rule: AssignmentPreviewRule;
+  reason: string;
 }
 
 export type TicketInputPriority = typeof TicketInputPriority[keyof typeof TicketInputPriority];
@@ -343,6 +416,11 @@ export type ListTicketsParams = {
 status?: string;
 search?: string;
 branchId?: string;
+};
+
+export type PreviewAssignmentParams = {
+branchId: string;
+specialization: string;
 };
 
 export type ListKnowledgeParams = {

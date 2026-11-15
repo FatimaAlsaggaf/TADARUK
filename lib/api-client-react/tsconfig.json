@@ -6,7 +6,18 @@
     "emitDeclarationOnly": true,
     "outDir": "dist",
     "rootDir": "src",
-    "lib": ["dom", "dom.iterable", "es2022"]
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "es2022"
+    ]
   },
-  "include": ["src"]
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "../ticket-linking"
+    }
+  ]
 }

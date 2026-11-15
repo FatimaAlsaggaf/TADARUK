@@ -379,6 +379,85 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Technician"
+  /tickets/{ticketId}/similar-solutions:
+    get:
+      operationId: listSimilarSolutions
+      tags: [tickets]
+      summary: Confirmed fixes from past tickets that look like this one
+      parameters:
+        - name: ticketId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Most similar documented solutions first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SimilarSolution"
+        "404":
+          description: Ticket not found or not visible
+  /tickets/{ticketId}/ai-suggestion:
+    post:
+      operationId: suggestTicketFix
+      tags: [tickets]
+      summary: AI-suggested repair steps grounded in similar confirmed fixes
+      parameters:
+        - name: ticketId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Suggested steps, or available=false when AI is not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FixSuggestion"
+        "404":
+          description: Ticket not found or not visible
+  /ai/status:
+    get:
+      operationId: getAiStatus
+      tags: [tickets]
+      summary: Whether the AI provider is configured on the server
+      responses:
+        "200":
+          description: AI availability
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiStatus"
+  /assignment/preview:
+    get:
+      operationId: previewAssignment
+      tags: [tickets]
+      summary: Show which technician a new ticket would be routed to
+      parameters:
+        - name: branchId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: specialization
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Technician that would receive the ticket and why
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssignmentPreview"
+        "403":
+          description: Branch not authorized for this reporter
   /knowledge:
     get:
       operationId: listKnowledge
@@ -571,6 +650,14 @@ components:
         description: { type: string, minLength: 4 }
         location: { type: string }
         imageUrl: { type: string }
+        answers:
+          type: array
+          items:
+            type: object
+            required: [question, answer]
+            properties:
+              question: { type: string }
+              answer: { type: string }
     TicketAnalysis:
       type: object
       required: [title, description, category, priority, specialization, location, needsClarification, mode]
@@ -583,6 +670,61 @@ components:
         location: { type: string }
         needsClarification: { type: boolean }
         mode: { type: string, enum: [demo, provider] }
+        priorityReason: { type: string }
+        questions:
+          type: array
+          items: { $ref: "#/components/schemas/ClarificationQuestion" }
+        similarSolutions:
+          type: array
+          items: { $ref: "#/components/schemas/SimilarSolution" }
+    ClarificationQuestion:
+      type: object
+      required: [field, question]
+      properties:
+        field: { type: string, enum: [location, details] }
+        question: { type: string }
+    SimilarSolution:
+      type: object
+      required: [ticketId, ticketNumber, title, specialization, branchName, technicianName, cause, resolution, score, resolvedAt]
+      properties:
+        ticketId: { type: string }
+        ticketNumber: { type: string }
+        title: { type: string }
+        specialization: { type: string }
+        branchName: { type: string }
+        technicianName: { type: string }
+        cause: { type: ["string", "null"] }
+        resolution: { type: string }
+        score: { type: integer, minimum: 0, maximum: 100 }
+        resolvedAt: { type: string, format: date-time }
+    FixSuggestion:
+      type: object
+      required: [available, summary, likelyCause, steps, safetyNote, basedOn]
+      properties:
+        available: { type: boolean }
+        summary: { type: string }
+        likelyCause: { type: string }
+        steps:
+          type: array
+          items: { type: string }
+        safetyNote: { type: string }
+        basedOn:
+          type: array
+          items: { type: string }
+    AiStatus:
+      type: object
+      required: [enabled]
+      properties:
+        enabled: { type: boolean }
+        model: { type: ["string", "null"] }
+    AssignmentPreview:
+      type: object
+      required: [technicianId, technicianName, rule, reason]
+      properties:
+        technicianId: { type: ["string", "null"] }
+        technicianName: { type: ["string", "null"] }
+        rule: { type: string, enum: [specialist, general, none] }
+        reason: { type: string }
     TicketInput:
       type: object
       required: [title, description, category, priority, specialization, location]

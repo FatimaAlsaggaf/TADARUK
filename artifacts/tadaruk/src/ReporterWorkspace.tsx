@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import {
   getGetOverviewQueryKey, getListTicketsQueryKey, useCreateTicket, useListReporterBranches,
-  useListTickets,
+  useListTickets, usePreviewAssignment, getPreviewAssignmentQueryKey, analyzeTicket,
   type DemoUser, type ReporterBranch, type Ticket, type TicketAnalysis, type TicketInput, type TicketPriority,
   FALLBACK_REPORTER_BRANCHES
 } from '@workspace/api-client-react';
@@ -288,6 +288,10 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
   const [selectedLocation, setSelectedLocation] = useState('');
   const [otherLocation, setOtherLocation] = useState('');
   const [needsLocation, setNeedsLocation] = useState(false);
+  // Questions the AI asked about missing details, and the reporter's answers so far.
+  const [aiQuestions, setAiQuestions] = useState<Array<{ field: string; question: string }>>([]);
+  const [aiAnswers, setAiAnswers] = useState<Record<string, string>>({});
+  const [answerHistory, setAnswerHistory] = useState<Array<{ question: string; answer: string }>>([]);
   const [photo, setPhoto] = useState('');
 
   const [photoError, setPhotoError] = useState('');
@@ -307,7 +311,17 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
   const [aiStage, setAiStage] = useState<number>(0);
   const reduced = useReducedMotion() === true;
   const analyze = useMutation({
-    mutationFn: (input: ReporterDemoAnalysisRequest) => reporterDemoAnalysisAdapter.analyze(input),
+    // Real AI on the server when it is configured; otherwise the labeled demo analysis.
+    mutationFn: async (input: ReporterDemoAnalysisRequest): Promise<TicketAnalysis> => {
+      try {
+        const { locale: _locale, ...body } = input;
+        const result = await analyzeTicket(body);
+        if (result && typeof result === 'object' && result.mode === 'provider') return result;
+      } catch {
+        // Server or AI unavailable: fall through to the demo analysis.
+      }
+      return reporterDemoAnalysisAdapter.analyze(input);
+    },
   });
   const create = useCreateTicket();
   const queryClient = useQueryClient();
@@ -323,6 +337,15 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
     ?? '';
   const selectedBranch = allowedBranches.find(branch => branch.id === effectiveBranchId) || allowedBranches[0];
   const canUseBranch = Boolean(selectedBranch);
+  // Who will receive the ticket once it is sent (same rules the server applies on submit).
+  const previewParams = { branchId: effectiveBranchId, specialization: specialization || 'general' };
+  const assignmentPreview = usePreviewAssignment(previewParams, {
+    query: {
+      enabled: Boolean(analysis && effectiveBranchId),
+      queryKey: getPreviewAssignmentQueryKey(previewParams),
+      staleTime: 15_000,
+    },
+  });
 
   const renderBranchChoice = () => {
     if (branchesLoading) return <p className="rw-branch-note" role="status" data-testid="status-branches-loading">
@@ -392,6 +415,8 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
         onSuccess: suggestion => {
           setIsAnalyzing(false);
           setAiStage(0);
+          setAnswerHistory([]);
+          if (askAiQuestions(suggestion)) return;
           if ((suggestion.needsClarification || !suggestion.location) && !suppliedLocation) {
             setSelectedLocation('');
             setOtherLocation('');
@@ -413,6 +438,40 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
       window.clearTimeout(t2);
       window.clearTimeout(t3);
     };
+  };
+
+  /** When the AI still needs details, show its questions instead of the review. */
+  const askAiQuestions = (suggestion: TicketAnalysis) => {
+    const questions = suggestion.mode === 'provider' ? suggestion.questions ?? [] : [];
+    if (!questions.length) return false;
+    setAnalysis(suggestion);
+    setAiQuestions(questions);
+    setAiAnswers({});
+    return true;
+  };
+
+  const handleAiAnswers = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const answered = aiQuestions
+      .map(item => ({ question: item.question, answer: (aiAnswers[item.question] || '').trim() }))
+      .filter(item => item.answer);
+    if (!answered.length) return;
+    const history = [...answerHistory, ...answered];
+    setAnswerHistory(history);
+    const locationAnswer = answered.find((_, index) => aiQuestions[index]?.field === 'location')?.answer;
+    analyze.mutate({
+      description: description.trim(),
+      locale: lang,
+      answers: history,
+      ...(location.trim() ? { location: location.trim() } : {}),
+    }, {
+      onSuccess: suggestion => {
+        // Ask at most two rounds, then let the reporter fix anything in the review.
+        if (history.length < 4 && askAiQuestions(suggestion)) return;
+        setAiQuestions([]);
+        beginReview(suggestion, suggestion.location || locationAnswer || '');
+      },
+    });
   };
 
   const handleClarify = (event: FormEvent<HTMLFormElement>) => {
@@ -439,6 +498,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
   const backToCompose = () => {
     setAnalysis(null);
     setNeedsLocation(false);
+    setAiQuestions([]);
     setReviewEditing(false);
     setIsAnalyzing(false);
     if (reviewLocation) setLocation(reviewLocation);
@@ -499,7 +559,10 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
   // Step 2: تحليل وتجهيز البلاغ (while analyzing or needing location clarification)
   // Step 3: مراجعة وتأكيد البلاغ
   // Step 4: تم الإرسال بنجاح
-  const step = submittedTicket ? 4 : analysis && !needsLocation ? 3 : (isAnalyzing || needsLocation) ? 2 : 1;
+  const needsAnswers = aiQuestions.length > 0;
+  const step = submittedTicket ? 4
+    : analysis && !needsLocation && !needsAnswers ? 3
+    : (isAnalyzing || needsLocation || needsAnswers) ? 2 : 1;
   const nextIcon = lang === 'ar' ? <ArrowLeft size={17}/> : <ArrowRight size={17}/>;
 
   return (
@@ -812,6 +875,57 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                 })}
               </div>
             </div>
+          ) : needsAnswers ? (
+            <form onSubmit={handleAiAnswers} data-testid="form-ai-questions">
+              <div className="rw-clarify-card">
+                <div className="rw-clarify-badge">
+                  <Sparkles size={15} />
+                  <span>{text(lang, 'الذكاء الاصطناعي يحتاج معلومة', 'AI NEEDS A DETAIL')}</span>
+                </div>
+                <h2>{text(lang, 'باقي شي بسيط عشان نجهز البلاغ', 'One more detail to prepare the report')}</h2>
+                <p>{text(lang, 'جاوب باختصار عشان يوصل الفني للمشكلة على طول.', 'A short answer helps the technician go straight to the problem.')}</p>
+                {aiQuestions.map((item, index) => (
+                  <label className="rw-field mt-3" key={item.question}>
+                    <span>{item.question}</span>
+                    <input
+                      autoFocus={index === 0}
+                      value={aiAnswers[item.question] || ''}
+                      onChange={event => {
+                        const value = event.currentTarget.value;
+                        setAiAnswers(current => ({ ...current, [item.question]: value }));
+                      }}
+                      placeholder={item.field === 'location'
+                        ? text(lang, 'مثال: المطبخ تحت المغسلة', 'Example: kitchen, under the sink')
+                        : text(lang, 'اكتب إجابتك', 'Your answer')}
+                      data-testid={`input-ai-answer-${index}`}
+                    />
+                  </label>
+                ))}
+              </div>
+              {analyze.isError && (
+                <p className="rw-inline-error" role="alert">
+                  {text(lang, 'تعذر تجهيز البلاغ. حاول مرة أخرى.', 'Could not prepare the report. Please try again.')}
+                </p>
+              )}
+              <div className="rw-form-actions">
+                <button
+                  type="submit"
+                  className="rw-button rw-button-primary"
+                  disabled={analyze.isPending || !aiQuestions.some(item => (aiAnswers[item.question] || '').trim())}
+                  data-testid="button-submit-ai-answers"
+                >
+                  {analyze.isPending ? (
+                    <span className="rw-busy"><LoaderCircle size={16} className="animate-spin" />{text(lang, 'جارٍ التجهيز...', 'Preparing...')}</span>
+                  ) : (
+                    <>{text(lang, 'متابعة', 'Continue')}{nextIcon}</>
+                  )}
+                </button>
+                <button type="button" className="rw-button rw-button-quiet" onClick={backToCompose}>
+                  {lang === 'ar' ? <ArrowUpRight size={15}/> : <ArrowUpLeft size={15}/>}
+                  {text(lang, 'العودة للوصف', 'Back to description')}
+                </button>
+              </div>
+            </form>
           ) : needsLocation ? (
             <form
               onSubmit={handleClarify}
@@ -927,7 +1041,9 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                 <>
                   <section className="rw-review-hero rw-review-hero--reference" aria-label={text(lang, 'ملخص البلاغ', 'Report summary')}>
                     <div className="rw-review-hero-top">
-                      <span className="rw-review-ai-label"><Sparkles size={17}/>{text(lang, 'ملخص البلاغ بالذكاء الاصطناعي', 'AI prepared report')}</span>
+                      <span className="rw-review-ai-label" data-testid="badge-analysis-mode"><Sparkles size={17}/>{analysis.mode === 'provider'
+                        ? text(lang, 'ملخص البلاغ بالذكاء الاصطناعي', 'AI prepared report')
+                        : text(lang, 'ملخص البلاغ (تحليل تجريبي)', 'Report summary (demo analysis)')}</span>
                       <span className="rw-review-ready-badge"><Check size={15}/>{text(lang, 'جاهز للإرسال', 'Ready to send')}</span>
                     </div>
                     <h3 data-testid="text-generated-title">{title}</h3>
@@ -952,7 +1068,26 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
                     <div className="rw-review-fact"><span><MapPin size={16}/>{text(lang, 'الموقع داخل الفرع', 'Location')}</span><strong>{reviewLocation || text(lang, 'غير محدد', 'Not specified')}</strong></div>
                     {category !== specialization && <div className="rw-review-fact"><span><ClipboardList size={16}/>{text(lang, 'تصنيف العطل', 'Category')}</span><strong>{classificationLabel(category, lang)}</strong></div>}
                     <div className="rw-review-fact"><span><Wrench size={16}/>{text(lang, 'التخصص المطلوب', 'Specialty')}</span><strong>{classificationLabel(specialization, lang)}</strong></div>
-                    <div className="rw-review-fact rw-review-priority"><span><CircleAlert size={16}/>{text(lang, 'الأولوية', 'Priority')}</span><span className={`rw-priority-badge rw-priority-${priority}`} data-testid="badge-preview-priority">{priorityLabel(priority, lang)}</span></div>
+                    <div className="rw-review-fact rw-review-priority"><span><CircleAlert size={16}/>{text(lang, 'الأولوية', 'Priority')}</span><span className={`rw-priority-badge rw-priority-${priority}`} data-testid="badge-preview-priority">{priorityLabel(priority, lang)}</span>
+                      {analysis.priorityReason && priority === analysis.priority && (
+                        <small className="rw-fact-reason" data-testid="text-priority-reason">{analysis.priorityReason}</small>
+                      )}
+                    </div>
+                    <div className="rw-review-fact rw-fact-assignee" data-testid="card-preview-assignee">
+                      <span><UserRound size={16}/>{text(lang, 'الفني المسؤول', 'Responsible technician')}</span>
+                      {assignmentPreview.isLoading ? (
+                        <strong><LoaderCircle size={13} className="animate-spin" /> {text(lang, 'جارٍ اختيار الفني...', 'Choosing a technician...')}</strong>
+                      ) : assignmentPreview.data ? (
+                        <>
+                          <strong data-testid="text-preview-assignee">
+                            {assignmentPreview.data.technicianName || text(lang, 'مدير العمليات يحدد الفني', 'Operations manager will assign')}
+                          </strong>
+                          <small className="rw-fact-reason">{assignmentPreview.data.reason}</small>
+                        </>
+                      ) : (
+                        <strong>{text(lang, 'يُحدد تلقائياً عند الإرسال', 'Chosen automatically on submit')}</strong>
+                      )}
+                    </div>
                   </div>
 
                   <section className="rw-review-description-card" aria-label={text(lang, 'وصف البلاغ', 'Report description')}>

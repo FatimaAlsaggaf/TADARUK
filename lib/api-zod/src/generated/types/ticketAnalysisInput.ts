@@ -5,10 +5,12 @@
  * TADARUK maintenance operations API
  * OpenAPI spec version: 0.1.0
  */
+import type { TicketAnalysisInputAnswersItem } from './ticketAnalysisInputAnswersItem';
 
 export interface TicketAnalysisInput {
   /** @minLength 4 */
   description: string;
   location?: string;
   imageUrl?: string;
+  answers?: TicketAnalysisInputAnswersItem[];
 }

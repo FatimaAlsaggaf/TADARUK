@@ -5,6 +5,8 @@
  * TADARUK maintenance operations API
  * OpenAPI spec version: 0.1.0
  */
+import type { ClarificationQuestion } from './clarificationQuestion';
+import type { SimilarSolution } from './similarSolution';
 import type { TicketAnalysisMode } from './ticketAnalysisMode';
 import type { TicketAnalysisPriority } from './ticketAnalysisPriority';
 
@@ -17,4 +19,7 @@ export interface TicketAnalysis {
   location: string;
   needsClarification: boolean;
   mode: TicketAnalysisMode;
+  priorityReason?: string;
+  questions?: ClarificationQuestion[];
+  similarSolutions?: SimilarSolution[];
 }

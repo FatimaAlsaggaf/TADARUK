@@ -20,20 +20,25 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  AiStatus,
+  AssignmentPreview,
   Branch,
   BranchInput,
   BranchUpdate,
   DemoSession,
   DemoSessionInput,
   DemoUser,
+  FixSuggestion,
   HealthStatus,
   KnowledgeEntry,
   ListKnowledgeParams,
   ListTicketsParams,
   Overview,
+  PreviewAssignmentParams,
   ReporterAccess,
   ReporterBranch,
   ReporterBranchAccessInput,
+  SimilarSolution,
   Technician,
   TechnicianInput,
   TechnicianUpdate,
@@ -1717,6 +1722,318 @@ export const useUpdateTechnician = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getUpdateTechnicianMutationOptions(options));
     }
+
+export const getListSimilarSolutionsUrl = (ticketId: string,) => {
+
+
+
+
+  return `/api/tickets/${ticketId}/similar-solutions`
+}
+
+/**
+ * @summary Confirmed fixes from past tickets that look like this one
+ */
+export const listSimilarSolutions = async (ticketId: string, options?: Parameters<typeof customFetch>[1]): Promise<SimilarSolution[]> => {
+
+  return customFetch<SimilarSolution[]>(getListSimilarSolutionsUrl(ticketId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListSimilarSolutionsQueryKey = (ticketId: string,) => {
+    return [
+    `/api/tickets/${ticketId}/similar-solutions`
+    ] as const;
+    }
+
+
+export const getListSimilarSolutionsQueryOptions = <TData = Awaited<ReturnType<typeof listSimilarSolutions>>, TError = ErrorType<void>>(ticketId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSimilarSolutions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListSimilarSolutionsQueryKey(ticketId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSimilarSolutions>>> = ({ signal }) => listSimilarSolutions(ticketId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: ticketId !== null && ticketId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSimilarSolutions>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListSimilarSolutionsQueryResult = NonNullable<Awaited<ReturnType<typeof listSimilarSolutions>>>
+export type ListSimilarSolutionsQueryError = ErrorType<void>
+
+
+/**
+ * @summary Confirmed fixes from past tickets that look like this one
+ */
+
+export function useListSimilarSolutions<TData = Awaited<ReturnType<typeof listSimilarSolutions>>, TError = ErrorType<void>>(
+ ticketId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSimilarSolutions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListSimilarSolutionsQueryOptions(ticketId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSuggestTicketFixUrl = (ticketId: string,) => {
+
+
+
+
+  return `/api/tickets/${ticketId}/ai-suggestion`
+}
+
+/**
+ * @summary AI-suggested repair steps grounded in similar confirmed fixes
+ */
+export const suggestTicketFix = async (ticketId: string, options?: Parameters<typeof customFetch>[1]): Promise<FixSuggestion> => {
+
+  return customFetch<FixSuggestion>(getSuggestTicketFixUrl(ticketId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getSuggestTicketFixMutationKey = () => ['suggestTicketFix'] as const;
+
+export const getSuggestTicketFixMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof suggestTicketFix>>, TError,SuggestTicketFixMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof suggestTicketFix>>, TError,SuggestTicketFixMutationVariables, TContext> => {
+
+const mutationKey = getSuggestTicketFixMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof suggestTicketFix>>, SuggestTicketFixMutationVariables> = (props) => {
+          const {ticketId} = props ?? {};
+
+          return  suggestTicketFix(ticketId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SuggestTicketFixMutationResult = NonNullable<Awaited<ReturnType<typeof suggestTicketFix>>>
+
+    export type SuggestTicketFixMutationError = ErrorType<void>
+    export type SuggestTicketFixMutationVariables = {ticketId: string}
+
+    /**
+ * @summary AI-suggested repair steps grounded in similar confirmed fixes
+ */
+export const useSuggestTicketFix = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof suggestTicketFix>>, TError,SuggestTicketFixMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof suggestTicketFix>>,
+        TError,
+        SuggestTicketFixMutationVariables,
+        TContext
+      > => {
+      return useMutation(getSuggestTicketFixMutationOptions(options));
+    }
+
+export const getGetAiStatusUrl = () => {
+
+
+
+
+  return `/api/ai/status`
+}
+
+/**
+ * @summary Whether the AI provider is configured on the server
+ */
+export const getAiStatus = async ( options?: Parameters<typeof customFetch>[1]): Promise<AiStatus> => {
+
+  return customFetch<AiStatus>(getGetAiStatusUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAiStatusQueryKey = () => {
+    return [
+    `/api/ai/status`
+    ] as const;
+    }
+
+
+export const getGetAiStatusQueryOptions = <TData = Awaited<ReturnType<typeof getAiStatus>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAiStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAiStatusQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAiStatus>>> = ({ signal }) => getAiStatus({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAiStatus>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAiStatusQueryResult = NonNullable<Awaited<ReturnType<typeof getAiStatus>>>
+export type GetAiStatusQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Whether the AI provider is configured on the server
+ */
+
+export function useGetAiStatus<TData = Awaited<ReturnType<typeof getAiStatus>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAiStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAiStatusQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getPreviewAssignmentUrl = (params: PreviewAssignmentParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/assignment/preview?${stringifiedParams}` : `/api/assignment/preview`
+}
+
+/**
+ * @summary Show which technician a new ticket would be routed to
+ */
+export const previewAssignment = async (params: PreviewAssignmentParams, options?: Parameters<typeof customFetch>[1]): Promise<AssignmentPreview> => {
+
+  return customFetch<AssignmentPreview>(getPreviewAssignmentUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getPreviewAssignmentQueryKey = (params?: PreviewAssignmentParams,) => {
+    return [
+    `/api/assignment/preview`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getPreviewAssignmentQueryOptions = <TData = Awaited<ReturnType<typeof previewAssignment>>, TError = ErrorType<void>>(params: PreviewAssignmentParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof previewAssignment>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getPreviewAssignmentQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof previewAssignment>>> = ({ signal }) => previewAssignment(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof previewAssignment>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type PreviewAssignmentQueryResult = NonNullable<Awaited<ReturnType<typeof previewAssignment>>>
+export type PreviewAssignmentQueryError = ErrorType<void>
+
+
+/**
+ * @summary Show which technician a new ticket would be routed to
+ */
+
+export function usePreviewAssignment<TData = Awaited<ReturnType<typeof previewAssignment>>, TError = ErrorType<void>>(
+ params: PreviewAssignmentParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof previewAssignment>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getPreviewAssignmentQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getListKnowledgeUrl = (params?: ListKnowledgeParams,) => {
   const normalizedParams = new URLSearchParams();
