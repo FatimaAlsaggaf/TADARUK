@@ -1,0 +1,185 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&display=swap');
+
+.pitch-hook-root {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  overflow: auto;
+  color: #f6fbff;
+  background: radial-gradient(ellipse at 50% 35%, #17365b 0%, #0b192d 47%, #070f1e 100%);
+  font-family: 'IBM Plex Sans Arabic', 'Tajawal', sans-serif;
+  direction: rtl;
+  isolation: isolate;
+  min-height: 100dvh;
+}
+.pitch-hook-root *, .pitch-hook-root *::before, .pitch-hook-root *::after { box-sizing: border-box; }
+.pitch-hook-root button { font-family: inherit; cursor: pointer; }
+.pitch-bg-orb { position: absolute; width: 540px; height: 540px; border-radius: 50%; filter: blur(110px); opacity: .23; pointer-events: none; z-index: -1; }
+.pitch-bg-orb-one { background: #2f82a5; top: -290px; right: -140px; }
+.pitch-bg-orb-two { background: #27548c; bottom: -330px; left: -110px; }
+.pitch-grain { position: absolute; inset: 0; opacity: .06; pointer-events: none; background-image: repeating-linear-gradient(0deg,transparent 0,transparent 3px,rgba(255,255,255,.13) 4px); }
+.pitch-toolbar { position: relative; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 16px; width: min(100%, 1320px); padding: 20px clamp(18px,4vw,54px); margin: auto; }
+.pitch-toolbar-title { display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 800; letter-spacing: -.02em; }
+.pitch-toolbar-title small { display: block; margin-top: 2px; color: #90abc3; font-size: 10px; font-weight: 500; letter-spacing: 0; }
+.pitch-mini-mark { display: grid; place-items: center; width: 37px; height: 37px; border-radius: 12px; background: #183f60; color: #5bf1e3; font-size: 21px; box-shadow: inset 0 0 0 1px #2b6881; }
+.pitch-toolbar-actions { display: flex; gap: 7px; }
+.pitch-toolbar-actions button { width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid #2c4863; border-radius: 10px; background: #142c45b8; color: #d6e5f3; transition: background .2s; }
+.pitch-toolbar-actions button:hover { background: #244562; }
+.pitch-main-stage { position: relative; width: 100%; max-width: 1440px; margin: auto; min-height: calc(100dvh - 84px); display: flex; flex-direction: column; align-items: center; }
+.pitch-stage-hint { position: relative; z-index: 3; text-align: center; padding: 0 16px; margin-top: 2px; }
+.pitch-eyebrow { display: inline-block; color: #5de6d9; font-size: 11px; font-weight: 700; letter-spacing: .05em; }
+.pitch-stage-hint h1 { margin: 3px 0 2px; font-size: clamp(20px, 2.4vw, 29px); line-height: 1.5; font-weight: 800; letter-spacing: -.035em; }
+.pitch-stage-hint p { color: #99b4ca; font-size: 12px; line-height: 1.6; margin: 0; }
+.pitch-scene { position: relative; flex: 1; width: 100%; min-height: 660px; margin: 3px auto 0; display: flex; justify-content: center; align-items: center; }
+.pitch-phone-anchor { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: 302px; height: 645px; z-index: 5; animation: pitch-phone-arrive .5s cubic-bezier(.18,.8,.2,1) both; transition: opacity .9s, filter .9s, transform .9s; }
+@keyframes pitch-phone-arrive { from { opacity: 0; transform: translate(-50%,-45%) scale(.9); filter: blur(8px); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); filter: blur(0); } }
+.pitch-device { position: absolute; inset: 0; border: 2px solid #737982; border-radius: 52px; padding: 8px; background: linear-gradient(145deg,#404b57,#101a26 18%,#050a11 48%,#35414e 83%,#1c242d); box-shadow: 0 42px 100px #000a, 0 12px 30px #0009, inset 0 0 0 2px #0a0f15, inset 0 0 0 4px #303a45; }
+.pitch-device::before { content: ''; position: absolute; inset: 3px; border-radius: 48px; border: 1px solid #a7b0b83d; pointer-events: none; }
+.pitch-device-side { position: absolute; width: 3px; border-radius: 3px; background: linear-gradient(#717d88,#26303b); }
+.pitch-side-left { left: -4px; top: 117px; height: 61px; box-shadow: 0 75px 0 #414e5a; }
+.pitch-side-right { right: -4px; top: 178px; height: 76px; }
+.pitch-glass { position: relative; height: 100%; width: 100%; border-radius: 43px; overflow: hidden; background: #050e1a; box-shadow: inset 0 0 0 1px #ffffff14; }
+.pitch-island { position: absolute; z-index: 15; width: 102px; height: 27px; border-radius: 20px; background: #020306; top: 11px; left: 50%; transform: translateX(-50%); box-shadow: 0 1px 1px #a1a4ad2b; }
+.pitch-island span { position: absolute; width: 7px; height: 7px; right: 11px; top: 10px; border-radius: 50%; background: #172b4a; box-shadow: inset 0 0 2px #4d6690; }
+.pitch-phone-status { position: absolute; z-index: 14; top: 17px; left: 25px; right: 25px; display: flex; justify-content: space-between; direction: ltr; color: #fff; font: 700 12px/1 Arial,sans-serif; }
+.pitch-status-symbols { font-size: 10px; letter-spacing: 1px; }
+.pitch-home-indicator { position: absolute; z-index: 15; bottom: 9px; left: 50%; transform: translateX(-50%); width: 104px; height: 4px; border-radius: 10px; background: #d9e0e6; opacity: .85; }
+.pitch-lock { position: absolute; inset: 0; overflow: hidden; background: linear-gradient(165deg,#11273f 0%,#28455c 36%,#0e1b2f 75%,#060d1b 100%); }
+.pitch-lock-wallpaper { position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 32%,#6ca0af66,transparent 39%),radial-gradient(ellipse at 75% 70%,#234d7888,transparent 48%); }
+.pitch-lock-wallpaper::after { content: ''; position: absolute; width: 230px; height: 370px; left: 18%; top: 28%; border: 2px solid #a3c5d11c; border-radius: 50%; transform: rotate(-38deg); box-shadow: 0 0 0 44px #b7e0ec08,0 0 0 85px #b7e0ec05; }
+.pitch-lock-content { position: relative; z-index: 2; padding: 71px 15px 0; text-align: center; }
+.pitch-lock-date { font-size: 12px; color: #e4f0f9; }
+.pitch-lock-time { font: 200 67px/1.18 Arial,sans-serif; color: #fff; margin-top: 4px; letter-spacing: -3px; }
+.pitch-lock-notifications { margin-top: 40px; display: flex; flex-direction: column; gap: 7px; }
+.pitch-lock-ready { border: 1px solid #ffffff40; padding: 13px; color: #e9f6ff; border-radius: 13px; background: #ffffff19; font-size: 12px; }
+.pitch-lock-alert { width: 100%; min-height: 62px; display: flex; align-items: center; gap: 9px; padding: 10px 11px; text-align: right; color: #172638; background: #eff6f9ee; border: 0; border-radius: 14px; box-shadow: 0 8px 22px #09182924; animation: pitch-notification-in .38s cubic-bezier(.2,.8,.2,1) both; }
+.pitch-lock-alert > span:nth-child(2) { min-width: 0; flex: 1; }
+.pitch-lock-alert strong { display: block; font-size: 11.5px; font-weight: 800; }
+.pitch-lock-alert small { display: block; font-size: 10px; color: #526b7a; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pitch-whats-icon { display: grid; place-items: center; width: 29px; height: 29px; flex: 0 0 29px; border-radius: 9px; background: #25bc65; color: white; font: 800 20px Arial,sans-serif; }
+.pitch-unread { color: #fff; background: #dd4757; border-radius: 15px; padding: 2px 6px; font: 700 10px Arial,sans-serif; }
+.pitch-lock-alert-main { outline: 2px solid #a5f8d5aa; cursor: pointer; }
+.pitch-lock-alert-main:hover { background: #fff; }
+.pitch-lock-alert-second { min-height: 51px; background: #f5f9f9d9; }
+@keyframes pitch-notification-in { from { opacity: 0; transform: translateY(-16px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.pitch-lock-bottom { position: absolute; bottom: 33px; right: 34px; left: 34px; display: flex; justify-content: space-between; color: #fff; font-size: 20px; }
+.pitch-start-overlay { position: absolute; z-index: 18; inset: 0; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; border: 0; border-radius: 50px; background: #09182999; color: white; text-align: center; backdrop-filter: blur(4px); }
+.pitch-start-play { display: grid; place-items: center; width: 65px; height: 65px; border-radius: 50%; color: #10293f; background: #6de4d8; margin-bottom: 12px; box-shadow: 0 0 0 13px #65e5da25,0 0 50px #65e5da66; }
+.pitch-start-overlay strong { font-size: 16px; }
+.pitch-start-overlay small { font-size: 10px; color: #c5e0e9; }
+.pitch-chat-screen { position: absolute; inset: 0; background: #ece9e2; color: #142a2e; display: flex; flex-direction: column; padding-top: 43px; }
+.pitch-chat-header { height: 55px; flex: 0 0 55px; display: flex; align-items: center; gap: 8px; background: #f8faf8; padding: 0 9px; border-bottom: 1px solid #d7dfda; }
+.pitch-chat-header button { display: grid; place-items: center; border: 0; background: transparent; color: #386a62; padding: 0; }
+.pitch-chat-avatar { width: 32px; height: 32px; flex: 0 0 32px; display: grid; place-items: center; border-radius: 50%; background: #d2e8de; color: #327461; font-size: 16px; font-weight: 800; }
+.pitch-chat-title { min-width: 0; flex: 1; }
+.pitch-chat-title strong { display: block; font-size: 11.5px; }
+.pitch-chat-title small { display: block; color: #82928c; font-size: 8.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pitch-chat-list { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; align-items: flex-start; gap: 7px; padding: 13px 10px 18px; background: #ece9e2; background-image: radial-gradient(#b8c7bb35 1px,transparent 1px); background-size: 19px 19px; scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: #aab9b0 transparent; }
+.pitch-chat-day { align-self: center; padding: 3px 13px; border-radius: 7px; background: #dce6e2; font-size: 9px; color: #6c8178; }
+.pitch-chat-bubble { position: relative; max-width: 90%; min-width: 135px; flex: 0 0 auto; border-radius: 11px 11px 4px 11px; background: #fff; padding: 7px 9px 6px; box-shadow: 0 2px 4px #00000013; animation: pitch-bubble-in .27s ease-out both; text-align: right; }
+.pitch-chat-bubble.is-mine { align-self: flex-end; border-radius: 11px 11px 11px 4px; background: #dcf6df; }
+@keyframes pitch-bubble-in { from { opacity: 0; transform: translateY(9px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.pitch-chat-sender { color: #0c8a79; font-size: 10px; font-weight: 800; display: block; }
+.pitch-chat-bubble.is-mine .pitch-chat-sender { color: #32728c; }
+.pitch-chat-bubble p { font-size: 11.2px; color: #27363a; margin: 3px 0 1px; line-height: 1.65; }
+.pitch-chat-meta { display: flex; align-items: center; justify-content: flex-end; gap: 3px; color: #81908b; font-size: 8px; line-height: 1; margin-top: 3px; }
+.pitch-chat-meta svg { color: #42b7df; }
+.pitch-photo-message { position: relative; display: block; margin-top: 6px; padding: 0; border: 0; background: #dbe8e4; border-radius: 7px; width: 178px; height: 122px; overflow: hidden; }
+.pitch-photo-message img { width: 100%; height: 100%; object-fit: cover; }
+.pitch-photo-fallback { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 14px; color: #568176; }
+.pitch-photo-fallback small { color: #55756e; font-size: 9px; line-height: 1.5; }
+.pitch-photo-expand { position: absolute; left: 5px; top: 5px; border-radius: 6px; background: #162e32a8; color: white; padding: 4px; display: grid; place-items: center; }
+.pitch-voice-button { display: flex; align-items: center; gap: 7px; width: 222px; max-width: 100%; padding: 5px 0; border: 0; background: transparent; color: #3a716d; }
+.pitch-voice-button:disabled { opacity: .65; cursor: default; }
+.pitch-voice-play { width: 26px; height: 26px; flex: 0 0 26px; border-radius: 50%; display: grid; place-items: center; background: #3ca58d; color: #fff; }
+.pitch-wave { display: flex; flex: 1; align-items: center; gap: 2px; height: 28px; direction: ltr; }
+.pitch-wave span { width: 2px; flex: 1; max-width: 3px; background: #7cbcb1; border-radius: 2px; }
+.pitch-voice-button.is-playing .pitch-wave span { animation: pitch-wave-pulse .5s ease-in-out infinite alternate; }
+.pitch-voice-button.is-playing .pitch-wave span:nth-child(3n) { animation-delay: .16s; }
+.pitch-voice-button.is-playing .pitch-wave span:nth-child(4n) { animation-delay: .31s; }
+@keyframes pitch-wave-pulse { to { transform: scaleY(.35); } }
+.pitch-voice-duration { white-space: nowrap; font-size: 9px; color: #719087; }
+.pitch-voice-prompt { align-self: center; font-size: 9.5px; color: #3c7668; border-radius: 9px; padding: 7px 12px; background: #d8f3e8; text-align: center; }
+.pitch-chat-composer { flex: 0 0 43px; height: 43px; display: flex; align-items: center; gap: 9px; padding: 5px 13px 15px; background: #f8faf8; color: #718f87; font-size: 18px; }
+.pitch-chat-placeholder { flex: 1; padding: 4px 12px; border-radius: 18px; background: #f0f3f1; color: #9ba9a2; font-size: 11px; }
+.pitch-footer-controls { position: relative; z-index: 6; min-height: 47px; margin: -7px auto 18px; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; }
+.pitch-footer-controls button, .pitch-question-card button, .pitch-visit { display: inline-flex; align-items: center; justify-content: center; gap: 9px; padding: 10px 16px; border-radius: 11px; border: 1px solid #56e1d5; background: #55e1d4; color: #0b2839; font-size: 12px; font-weight: 800; text-decoration: none; box-shadow: 0 7px 20px #31cbbd20; }
+.pitch-footer-controls button:hover, .pitch-question-card button:hover { background: #80f5e7; }
+.pitch-footer-controls span { font-size: 10px; color: #799bb4; }
+.pitch-question-card { position: absolute; z-index: 7; right: 5%; top: 33%; width: min(280px, 23vw); padding: 18px; border: 1px solid #396c88; background: #0b2236d9; border-radius: 20px; box-shadow: 0 20px 50px #0006; backdrop-filter: blur(14px); animation: pitch-question-appear .6s ease-out both; }
+.pitch-question-card h2 { font-size: clamp(13px,1.55vw,20px); margin: 8px 0; color: #fff; font-weight: 800; }
+.pitch-question-card h2:nth-of-type(3) { color: #72e7db; }
+.pitch-question-card button { margin-top: 17px; font-size: 11px; width: 100%; }
+@keyframes pitch-question-appear { from { opacity: 0; transform: translateX(25px); } to { opacity: 1; transform: translateX(0); } }
+.pitch-stage-question .pitch-phone-anchor { filter: brightness(.66); }
+.pitch-stage-transfer .pitch-phone-anchor { filter: brightness(.45); }
+.pitch-folder-area { position: absolute; z-index: 4; left: 4%; top: 49%; width: 330px; height: 250px; transform: translateY(-50%); opacity: 0; pointer-events: none; transition: opacity .6s ease; }
+.pitch-stage-transfer .pitch-folder-area, .pitch-stage-final .pitch-folder-area { opacity: 1; }
+.pitch-folder-area .folder-float-wrapper { padding: 130px 0 0; }
+.pitch-folder-area .folder-float__folder { filter: drop-shadow(0 28px 50px #0008); }
+.pitch-folder-area .folder-float__front { background: linear-gradient(175deg,#253e6d,#172749 65%,#0f1c34); }
+.pitch-flying-card { position: fixed; z-index: 40; width: 170px; height: 43px; display: flex; align-items: center; gap: 8px; padding: 10px; background: #fff; border: 1px solid #c7e4de; border-radius: 12px; color: #21415d; font-size: 11px; font-weight: 700; box-shadow: 0 12px 30px #0007; pointer-events: none; animation: pitch-flight 1.25s cubic-bezier(.27,.5,.21,1) forwards; }
+.pitch-flying-card svg { color: #23a78f; flex: 0 0 auto; }
+@keyframes pitch-flight { 0% { opacity: 0; transform: translate(0,0) rotate(0deg) scale(.7); } 14% { opacity: 1; } 65% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--flight-x),var(--flight-y)) rotate(-8deg) scale(.22); } }
+.pitch-stage-final .pitch-phone-anchor { opacity: .12; filter: blur(7px); transform: translate(-50%,-50%) scale(.92); pointer-events: none; }
+.pitch-stage-final .pitch-folder-area { left: 20%; top: 50%; transform: translateY(-50%); }
+.pitch-final-brand { position: absolute; right: 12%; top: 42%; z-index: 9; width: 280px; display: flex; flex-direction: column; align-items: center; gap: 8px; animation: pitch-brand-appear .7s .3s both; }
+.pitch-final-brand img { width: 190px; max-height: 80px; object-fit: contain; }
+.pitch-final-brand strong { font-size: 43px; font-weight: 800; color: #fff; }
+.pitch-final-brand p { font-size: 15px; color: #b3d0de; text-align: center; margin: 0 0 13px; }
+@keyframes pitch-brand-appear { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+.pitch-image-modal { position: fixed; z-index: 100; inset: 0; background: #020a11e9; display: grid; place-items: center; padding: 36px; }
+.pitch-image-modal img { max-width: min(900px,90vw); max-height: 86vh; object-fit: contain; border-radius: 15px; }
+.pitch-image-modal button { position: absolute; top: 24px; left: 25px; width: 38px; height: 38px; border: 1px solid #ffffff44; border-radius: 12px; background: #ffffff20; color: #fff; }
+.pitch-settings-backdrop { position: fixed; inset: 0; z-index: 120; display: flex; justify-content: flex-end; background: #000b; backdrop-filter: blur(5px); }
+.pitch-settings-panel { height: 100%; width: min(430px, 100%); overflow: auto; background: #f6fafb; color: #1b3c4b; padding: 24px; box-shadow: -25px 0 70px #0007; }
+.pitch-settings-head { display: flex; align-items: start; justify-content: space-between; gap: 15px; border-bottom: 1px solid #d7e4e9; padding-bottom: 16px; }
+.pitch-settings-head strong { font-size: 18px; font-weight: 800; }
+.pitch-settings-head p { font-size: 11px; color: #667f8e; line-height: 1.7; margin: 6px 0 0; }
+.pitch-settings-head button { border: 0; background: #e3edf0; border-radius: 9px; padding: 8px; color: #315163; }
+.pitch-settings-panel h3 { font-size: 13px; font-weight: 800; margin: 22px 0 12px; }
+.pitch-settings-explain { font-size: 11px; line-height: 1.7; color: #637d8b; }
+.pitch-asset-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid #d6e4e8; border-radius: 11px; padding: 11px; margin: 7px 0; background: #fff; cursor: pointer; font-size: 11px; font-weight: 700; }
+.pitch-asset-row:hover { border-color: #7bb6b3; }
+.pitch-asset-status { flex: 0 0 auto; color: #087a76; font-size: 10px; }
+.pitch-asset-row input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.pitch-settings-done { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 11px; border: 0; border-radius: 10px; background: #123d54; color: #fff; margin-top: 22px; font-weight: 800; }
+@media (max-width: 950px) {
+  .pitch-question-card { right: 3%; width: 230px; }
+  .pitch-folder-area { left: 1%; transform: translateY(-50%) scale(.85); transform-origin: center left; }
+  .pitch-stage-final .pitch-folder-area { left: 5%; }
+  .pitch-final-brand { right: 3%; width: 240px; }
+}
+@media (max-width: 690px) {
+  .pitch-toolbar { padding: 13px 12px; }
+  .pitch-toolbar-title { font-size: 12px; gap: 7px; }
+  .pitch-toolbar-title small { font-size: 8px; }
+  .pitch-mini-mark { width: 31px; height: 31px; font-size: 18px; }
+  .pitch-toolbar-actions { gap: 3px; }
+  .pitch-toolbar-actions button { width: 31px; height: 31px; }
+  .pitch-stage-hint h1 { font-size: 18px; }
+  .pitch-stage-hint p { font-size: 10px; }
+  .pitch-scene { min-height: 535px; }
+  .pitch-phone-anchor { width: 302px; height: 645px; transform: translate(-50%,-50%) scale(.77); }
+  @keyframes pitch-phone-arrive { from { opacity: 0; transform: translate(-50%,-45%) scale(.69); filter: blur(7px); } to { opacity: 1; transform: translate(-50%,-50%) scale(.77); filter: blur(0); } }
+  .pitch-stage-final .pitch-phone-anchor { transform: translate(-50%,-50%) scale(.72); }
+  .pitch-question-card { top: auto; right: 50%; bottom: 3%; transform: translateX(50%); width: min(320px,90vw); padding: 12px; text-align: center; }
+  .pitch-question-card h2 { font-size: 13px; display: inline; margin: 0 5px; }
+  .pitch-question-card h2::after { content: ' · '; }
+  .pitch-question-card h2:nth-of-type(3)::after { content: ''; }
+  .pitch-question-card button { margin-top: 9px; padding: 8px; }
+  @keyframes pitch-question-appear { from { opacity: 0; transform: translate(50%,15px); } to { opacity: 1; transform: translate(50%,0); } }
+  .pitch-folder-area { left: 50%; top: 47%; transform: translate(-50%,-50%) scale(.86); transform-origin: center; }
+  .pitch-stage-final .pitch-folder-area { left: 50%; top: 39%; transform: translate(-50%,-50%) scale(.84); }
+  .pitch-stage-final .pitch-phone-anchor { opacity: .07; }
+  .pitch-final-brand { right: 50%; top: 76%; transform: translateX(50%); width: 90%; }
+  .pitch-final-brand img { width: 150px; max-height: 44px; }
+  .pitch-final-brand strong { font-size: 26px; }
+  .pitch-final-brand p { font-size: 11px; }
+  @keyframes pitch-brand-appear { from { opacity: 0; transform: translate(50%,15px); } to { opacity: 1; transform: translate(50%,0); } }
+  .pitch-footer-controls { margin: 0 8px 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pitch-phone-anchor, .pitch-lock-alert, .pitch-chat-bubble, .pitch-flying-card, .pitch-question-card, .pitch-final-brand { animation-duration: .01ms !important; }
+  .pitch-voice-button.is-playing .pitch-wave span { animation: none; }
+}
