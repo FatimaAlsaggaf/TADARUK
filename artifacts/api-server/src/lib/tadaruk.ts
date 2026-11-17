@@ -39,6 +39,11 @@ const seedMembers = [
 let seedPromise: Promise<void> | undefined;
 
 export function ensureDemoData(): Promise<void> {
+  // Never insert demo branches/users/tickets into the user's connected
+  // Supabase project during Vercel Preview or Production requests.
+  if (process.env.VERCEL && process.env.TADARUK_ALLOW_DEMO_SEED !== "true") {
+    return Promise.resolve();
+  }
   seedPromise ??= seedDemoData();
   return seedPromise;
 }

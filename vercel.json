@@ -1,11 +1,13 @@
 {
   "version": 2,
-  "buildCommand": "pnpm --filter @workspace/tadaruk run typecheck && pnpm --filter @workspace/tadaruk run build",
+  "buildCommand": "pnpm --filter @workspace/tadaruk run typecheck && pnpm --filter @workspace/tadaruk run build && pnpm --filter @workspace/api-server run build",
   "outputDirectory": "artifacts/tadaruk/dist/public",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
+  "functions": {
+    "api/index.js": { "includeFiles": "artifacts/api-server/dist/**" }
+  },
+  "routes": [
+    { "src": "^/api(?:/(.*))?$", "dest": "/api/index?requested=$1" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
