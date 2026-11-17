@@ -2047,7 +2047,7 @@ function Modal({title,children,close,description,dir}:{title:string;children:Rea
   return <Dialog open onOpenChange={open=>{if(!open)close();}}><DialogContent className="modal-card modal-radix" dir={dir}><DialogHeader className="modal-head"><DialogTitle>{title}</DialogTitle>{description&&<DialogDescription>{description}</DialogDescription>}</DialogHeader>{children}</DialogContent></Dialog>;
 }
 function WorkspaceRouter({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;dark:boolean;setDark:(x:boolean)=>void}) {
-  const {data:session}=useGetDemoSession();const user=session?.user;const [location]=useLocation();
+  const {data:session,isLoading:sessionLoading,isError:sessionError,refetch:refetchSession}=useGetDemoSession();const user=session?.user;const [location,go]=useLocation();
   const branchQuery=useListReporterBranches({query:{enabled:user?.role==='reporter',queryKey:getListReporterBranchesQueryKey()}});
   const reporterBranches=(Array.isArray(branchQuery.data) && branchQuery.data.length > 0) ? branchQuery.data : (FALLBACK_REPORTER_BRANCHES as unknown as ReporterBranch[]);
   const [selectedBranchId,setSelectedBranchId]=useState(reporterBranches[0]?.id || '');
@@ -2078,6 +2078,14 @@ function WorkspaceRouter({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)
             :normalizedLocation==='/workspace/branches'?tr(lang,'الفروع','Branches')
               :normalizedLocation==='/workspace/knowledge'?tr(lang,'قاعدة المعرفة','Knowledge base')
                 :tr(lang,'مساحة العمل','Workspace');
+  useEffect(()=>{
+    if(!sessionLoading && !sessionError && !user) go('/login');
+  },[sessionLoading,sessionError,user,go]);
+  if(!user) return <State
+    title={sessionError?tr(lang,'تعذر استعادة الحساب','Could not restore account'):sessionLoading?tr(lang,'جاري استعادة الحساب','Restoring account'):tr(lang,'يرجى تسجيل الدخول','Please sign in')}
+    loading={sessionLoading}
+    retry={sessionError?()=>{void refetchSession();}:undefined}
+  />;
   return <ReporterBranchContext.Provider value={{branches:reporterBranches,selectedBranchId,selectBranch,status:branchStatus}}>
     <WorkspaceShell title={title} lang={lang} setLang={setLang} dark={dark} setDark={setDark}>
       <Switch>
