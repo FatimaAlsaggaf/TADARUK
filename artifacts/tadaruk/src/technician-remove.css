@@ -1,0 +1,32 @@
+/* Technician card actions: compact, accessible, and responsive. */
+.person-card .person-card-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-inline-start: auto;
+}
+.person-card .remove-technician-button {
+  color: #a65a65;
+  border: 1px solid transparent;
+  transition: background-color .18s ease, color .18s ease;
+}
+.person-card .remove-technician-button:hover {
+  background: rgba(214, 53, 68, .10);
+  color: #c23042;
+}
+.person-card .remove-technician-button:focus-visible {
+  outline: 2px solid #ce3e53;
+  outline-offset: 2px;
+}
+.remove-technician-confirm {
+  background: #b72e42 !important;
+  color: #fff !important;
+  border-color: #b72e42 !important;
+}
+.remove-technician-confirm:hover:not(:disabled) {
+  background: #992238 !important;
+}
+.remove-technician-confirm:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}

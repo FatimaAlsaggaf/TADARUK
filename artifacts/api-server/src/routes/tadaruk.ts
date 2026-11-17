@@ -1127,6 +1127,7 @@ router.get("/technicians", async (req, res): Promise<void> => {
     const technicians = await db.select().from(teamMembersTable).where(and(
       eq(teamMembersTable.organizationId, DEMO_ORGANIZATION),
       eq(teamMembersTable.role, "technician"),
+      eq(teamMembersTable.active, true),
     )).orderBy(asc(teamMembersTable.name));
     res.json(ListTechniciansResponse.parse(await Promise.all(technicians.map(technicianView))));
   } catch (error) {
@@ -1198,6 +1199,54 @@ router.patch("/technicians/:technicianId", async (req, res): Promise<void> => {
       return;
     }
     res.json(UpdateTechnicianResponse.parse(await technicianView(technician)));
+  } catch (error) {
+    res.status(500).json({ error: errorMessage(error) });
+  }
+});
+
+/**
+ * Remove a technician from the active team, preserving historic ticket/event
+ * attribution. A technician with unresolved assignments must be reassigned first.
+ */
+router.delete("/technicians/:technicianId", async (req, res): Promise<void> => {
+  const parsed = UpdateTechnicianParams.safeParse(req.params);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  try {
+    const manager = await requireManager(req, res);
+    if (!manager) return;
+    const technicianId = parsed.data.technicianId;
+    const [technician] = await db.select().from(teamMembersTable).where(and(
+      eq(teamMembersTable.id, technicianId),
+      eq(teamMembersTable.organizationId, DEMO_ORGANIZATION),
+      eq(teamMembersTable.role, "technician"),
+      eq(teamMembersTable.active, true),
+    )).limit(1);
+    if (!technician) {
+      res.status(404).json({ error: "Technician not found in active team." });
+      return;
+    }
+    const assigned = await db.select({ id: ticketsTable.id }).from(ticketsTable).where(and(
+      eq(ticketsTable.organizationId, DEMO_ORGANIZATION),
+      eq(ticketsTable.technicianId, technicianId),
+      ne(ticketsTable.status, "closed"),
+      ne(ticketsTable.status, "cancelled"),
+      isNull(ticketsTable.cancelledAt),
+    )).limit(1);
+    if (assigned.length) {
+      res.status(409).json({ error: "This technician has open tickets. Reassign or close them before removal." });
+      return;
+    }
+    await db.update(teamMembersTable).set({ active: false, available: false }).where(and(
+      eq(teamMembersTable.id, technicianId),
+      eq(teamMembersTable.organizationId, DEMO_ORGANIZATION),
+      eq(teamMembersTable.role, "technician"),
+      eq(teamMembersTable.active, true),
+    ));
+    res.setHeader("Cache-Control", "no-store");
+    res.json({ removed: true, technicianId });
   } catch (error) {
     res.status(500).json({ error: errorMessage(error) });
   }
