@@ -651,10 +651,10 @@ function usePrefs() {
   useEffect(()=>{document.documentElement.classList.toggle('dark',dark);localStorage.setItem('tadaruk-theme',dark?'dark':'light');},[dark]);
   return {lang,setLang:(x:Lang)=>setLangState(x),dark,setDark};
 }
-function WorkspaceShell({children,lang,setLang,dark,setDark}:{children:ReactNode;title:string;lang:Lang;setLang:(x:Lang)=>void;dark:boolean;setDark:(x:boolean)=>void}) {
+function WorkspaceShell({children,lang,setLang,dark,setDark,authenticatedUser}:{children:ReactNode;title:string;lang:Lang;setLang:(x:Lang)=>void;dark:boolean;setDark:(x:boolean)=>void;authenticatedUser:DemoUser}) {
   const {data:session}=useGetDemoSession();
-  const defaultUser: DemoUser = { id: 'demo-reporter', name: 'سارة القحطاني', role: 'reporter', initials: 'سق', branchId: 'branch-olaya', branchName: 'فرع العليا', specialization: null };
-  const user=session?.user || (typeof window !== 'undefined' ? (() => { try { return JSON.parse(localStorage.getItem('tadaruk-demo-session-user') || 'null'); } catch { return null; } })() : null) || defaultUser; const [location,go]=useLocation(); const [menu,setMenu]=useState(false); const [mobile,setMobile]=useState(false);
+  // Always use the verified server session, never an old localStorage identity.
+  const user=authenticatedUser; const [location,go]=useLocation(); const [menu,setMenu]=useState(false); const [mobile,setMobile]=useState(false);
   const [showProfile,setShowProfile]=useState(false);
   const profileMenuRef=useRef<HTMLDivElement>(null);
   const branchContext=useContext(ReporterBranchContext);
@@ -2087,7 +2087,7 @@ function WorkspaceRouter({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)
     retry={sessionError?()=>{void refetchSession();}:undefined}
   />;
   return <ReporterBranchContext.Provider value={{branches:reporterBranches,selectedBranchId,selectBranch,status:branchStatus}}>
-    <WorkspaceShell title={title} lang={lang} setLang={setLang} dark={dark} setDark={setDark}>
+    <WorkspaceShell title={title} lang={lang} setLang={setLang} dark={dark} setDark={setDark} authenticatedUser={user}>
       <Switch>
         <Route path="/workspace">{user?user.role==='reporter'?<ReporterHomePage lang={lang} user={user}/>:<OverviewPage lang={lang} user={user}/>:<State title={tr(lang,'جاري استعادة الحساب','Restoring account')} loading/>}</Route>
         <Route path="/workspace/tickets/new">{user?.role==='reporter'?<ReporterNewTicketPage lang={lang} user={user} selectedBranchId={selectedBranchId}/>:user?<State title={tr(lang,'إنشاء البلاغات متاح للمبلّغ فقط','Only reporters can create tickets')}/>:<State title={tr(lang,'جاري استعادة الحساب','Restoring account')} loading/>}</Route>
