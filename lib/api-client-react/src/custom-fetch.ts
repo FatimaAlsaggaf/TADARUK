@@ -344,7 +344,7 @@ export async function customFetch<T = unknown>(
     // Real deployments must never silently turn failed authentication or
     // failed database requests into a simulated localStorage session.
     const allowLocalFallback = typeof window !== "undefined" &&
-      /^(localhost|127\\.0\\.0\\.1)$/.test(window.location.hostname);
+      ["localhost", "127.0.0.1"].includes(window.location.hostname);
     try {
       const response = await fetch(input, { ...init, method, headers });
       const contentType = (response.headers.get("content-type") || "").toLowerCase();
