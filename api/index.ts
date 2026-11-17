@@ -14,5 +14,5 @@ export default function handler(req: IncomingMessage, res: ServerResponse) {
     const safePath = originalPath.replace(/^\/+/, "");
     req.url = "/api/" + safePath + (current.search || "");
   }
-  return app(req, res);
+  return app.handle(req as any, res as any);
 }
