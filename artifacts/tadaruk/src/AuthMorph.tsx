@@ -37,10 +37,10 @@ export default function AuthMorph({lang,setLang,dark,setDark}:{lang:Lang;setLang
  const enterDemo=(role:string)=>{
    const user=demoUsers.find(item=>item.role===role)??FALLBACK_DEMO_USERS.find(item=>item.role===role);
    if(!user)return;
-   try{localStorage.setItem('tadaruk-demo-session-user',JSON.stringify(user));}catch{}
+   setLoginNotice('');
    selectDemo.mutate({data:{userId:user.id}},{
-     onSuccess:()=>{void qc.invalidateQueries({queryKey:getGetDemoSessionQueryKey()});go('/workspace');},
-     onError:()=>go('/workspace')
+     onSuccess:async ()=>{await qc.invalidateQueries({queryKey:getGetDemoSessionQueryKey()});go('/workspace');},
+     onError:()=>setLoginNotice(tr(lang,'تعذر تسجيل الدخول. حاول مرة أخرى.','Could not sign in. Please try again.'))
    });
  };
  useEffect(()=>{setSignup(signupRoute)},[signupRoute]);
