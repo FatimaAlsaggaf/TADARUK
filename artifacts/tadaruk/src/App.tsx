@@ -12,7 +12,7 @@ import {
   CheckCircle2, ChevronDown, ClipboardList, Clock3, Filter, Languages, LayoutDashboard,
   MapPin, Menu, Phone, Plus, Search, Settings2, ShieldCheck, Users, Wrench, X, CircleAlert,
   LogOut, UserRound, RotateCcw, Repeat2, ChevronLeft, ChevronRight, LoaderCircle, MapPinned,
-  Mic, Square, Bell, SunMoon, ImageOff, Copy, MessageCircle, FileText, Maximize2
+  Mic, Square, Bell, SunMoon, ImageOff, Copy, MessageCircle, FileText, Maximize2, Trash2
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -46,6 +46,7 @@ import './technician-contact.css';
 import './technician-ticket.css';
 import './unified-workspace-header.css';
 import './timeline-one-side.css';
+import './technician-remove.css';
 
 const qc = new QueryClient();
 type Lang = 'ar' | 'en';
@@ -662,10 +663,8 @@ function WorkspaceShell({children,lang,setLang,dark,setDark,authenticatedUser}:{
   const {data:teamTechnicians,isSuccess:technicianListReady}=useListTechnicians({
     query:{enabled:user.role==='manager',queryKey:getListTechniciansQueryKey()}
   });
-  const needsTechnicians=user.role==='manager'&&(
-    (technicianListReady&&Array.isArray(teamTechnicians)&&teamTechnicians.length===0)||
-    (typeof window!=='undefined'&&localStorage.getItem('tadaruk-needs-technician-setup')==='1')
-  );
+  const needsTechnicians=user.role==='manager'&&technicianListReady&&
+    Array.isArray(teamTechnicians)&&teamTechnicians.length===0;
   const [showNotifications,setShowNotifications]=useState(false);
   const [demoReadIds,setDemoReadIds]=useState<string[]>([]);
   const notificationsRef=useRef<HTMLDivElement>(null);
@@ -1111,7 +1110,7 @@ function faultTerms(ticket:Ticket) {
 function buildFaultClusters(tickets:Ticket[]):FaultCluster[] {
   const now=Date.now();
   const cutoff=now-30*24*60*60*1000;
-  const eligible=tickets.filter(ticket=>{
+  const eligible=[...new Map<string,Ticket>(tickets.map(ticket=>[ticket.id,ticket] as const)).values()].filter(ticket=>{
     const createdAt=Date.parse(ticket.createdAt);
     return ticket.status!=='cancelled'&&Number.isFinite(createdAt)&&createdAt>=cutoff&&createdAt<=now;
   });
@@ -1175,7 +1174,7 @@ function OverviewPage({lang,user}:{lang:Lang;user:DemoUser}) {
   const {data:overview,isLoading,isError,refetch}=useGetOverview(); const {data:tickets,isLoading:ticketsLoading,isError:ticketsError,refetch:refetchTickets}=useListTickets();
   const manager=user.role==='manager',tech=user.role==='technician';
   const title=manager?tr(lang,'نظرة عامة','Overview'):tech?tr(lang,'مهامي اليوم','My work today'):tr(lang,'مرحباً، '+user.name.split(' ')[0],'Welcome, '+user.name.split(' ')[0]);
-  const safeTickets = Array.isArray(tickets) && tickets.length > 0 ? tickets : (FALLBACK_INITIAL_TICKETS as unknown as Ticket[]);
+  const safeTickets = Array.isArray(tickets) ? tickets : [];
   const userFilteredTickets = useMemo(() => {
     if (tech) return safeTickets.filter(t => t.technicianId === user.id);
     if (!manager) return safeTickets.filter(t => t.reporterId === user.id);
@@ -1197,7 +1196,7 @@ function TicketsPage({lang,user}:{lang:Lang;user:DemoUser}) {
   const params=useMemo(()=>({search:search||undefined,status:status||undefined,branchId:isManager?branchId||undefined:undefined}),[search,status,branchId,isManager]);
   const {data:tickets,isLoading,isError,refetch}=useListTickets(params);
   const safeBranches = Array.isArray(branches) && branches.length > 0 ? branches : (FALLBACK_BRANCHES as unknown as Branch[]);
-  const safeTickets = Array.isArray(tickets) && tickets.length > 0 ? tickets : (FALLBACK_INITIAL_TICKETS as unknown as Ticket[]);
+  const safeTickets = Array.isArray(tickets) ? tickets : [];
   const displayedTickets = useMemo(() => {
     if (user.role === 'technician') {
       return safeTickets.filter(t => t.technicianId === user.id);
@@ -1262,7 +1261,10 @@ function TicketDetail({lang,user}:{lang:Lang;user:DemoUser}) {
   const availableReplacementTechnicians = [...exactSpecialists,...otherSpecialists];
   const selectedDifferentSpecialty = Boolean(technicianId && branchAvailableTechnicians.some(t=>t.id===technicianId&&t.specialization!==rawTicket?.specialization));
 
-  const ticket = rawTicket || (FALLBACK_INITIAL_TICKETS as unknown as Ticket[]).find(t => t.id === id) || (FALLBACK_INITIAL_TICKETS[0] as unknown as Ticket);
+  // Real ticket pages must never silently display an unrelated demo ticket.
+  if (isLoading) return <State title={tr(lang,'جاري تحميل البلاغ','Loading ticket')} loading/>;
+  if (isError || !rawTicket) return <State title={tr(lang,'تعذر تحميل تفاصيل البلاغ','Could not load ticket details')} retry={()=>void refetch()}/>;
+  const ticket = rawTicket;
   const repairProofUrl = ticket.repairImageUrl || localRepairPhoto;
   // Only seed/demo tickets may display an illustrative image; it must never pretend
   // to be a photo taken or submitted by a technician.
@@ -1764,6 +1766,25 @@ function TechniciansPage({lang}:{lang:Lang}) {
   const query=useQueryClient();
   const [open,setOpen]=useState(false);
   const [edit,setEdit]=useState<Technician|null>(null);
+  const [deleting,setDeleting]=useState<Technician|null>(null);
+  const [deletePending,setDeletePending]=useState(false);
+  const [deleteError,setDeleteError]=useState('');
+  const removeTechnician=async()=>{
+    if(!deleting || deletePending || deleting.workload>0)return;
+    setDeletePending(true);
+    setDeleteError('');
+    try{
+      await customFetch<{removed:boolean;technicianId:string}>(`/api/technicians/${encodeURIComponent(deleting.id)}`,{method:'DELETE'});
+      setDeleting(null);
+      void Promise.all([
+        query.invalidateQueries({queryKey:getListTechniciansQueryKey()}),
+        query.invalidateQueries({queryKey:getGetOverviewQueryKey()}),
+        query.invalidateQueries({queryKey:getListBranchesQueryKey()}),
+      ]);
+    }catch{
+      setDeleteError(tr(lang,'تعذر حذف الفني. تأكد من عدم وجود بلاغات مفتوحة مسندة إليه ثم حاول مرة أخرى.','Could not remove technician. Reassign open tickets and try again.'));
+    }finally{setDeletePending(false);}
+  };
   const [branchId,setBranchId]=useState('');
   const [specialtyChoice,setSpecialtyChoice]=useState('');
   const [customSpecialty,setCustomSpecialty]=useState('');
@@ -1855,7 +1876,26 @@ function TechniciansPage({lang}:{lang:Lang}) {
 
   return <div className="page-enter">
     <PageTitle eyebrow={tr(lang,'الفريق الميداني','PEOPLE / FIELD TEAM')} title={tr(lang,'الفنيون','Technicians')} description={tr(lang,'توزيع واضح للمهارات والتوفر في كل فرع.','A clear view of skills and availability by branch.')} action={<div className="technician-invite-actions"><Button kind="outline" onClick={()=>{setInviteOpen(true);setInviteBranchId(safeBranches[0]?.id||'');setInviteSpecialty('');setInviteCopied(false);setInviteError('')}}><MessageCircle size={17}/>{tr(lang,'دعوة فني','Invite technician')}</Button><Button onClick={()=>begin(null)}><Plus size={17}/>{tr(lang,'إضافة فني','Add technician')}</Button></div>}/>
-    {isLoading?<State title={tr(lang,'جاري تحميل الفريق','Loading team')} loading/>:isError?<State title={tr(lang,'تعذر تحميل الفنيين','Could not load technicians')} retry={()=>void refetch()}/>:!safeTechs?.length?<div className="empty-panel" aria-live="polite"><Users size={26}/><h3>{tr(lang,'لا يوجد فنّيون مسجلون بعد','No technicians added yet')}</h3><p>{tr(lang,'أضف أعضاء فريق الصيانة لتسهيل إسناد البلاغات.','Add maintenance staff to make ticket assignment easier.')}</p><Button onClick={()=>begin(null)}><Plus size={17}/>{tr(lang,'إضافة أول فني','Add the first technician')}</Button></div>:<div className="people-grid">{safeTechs.map(t=><article className="person-card" key={t.id}><div className="person-card-head"><Avatar name={t.name} size="lg"/><button className="edit-button" onClick={()=>begin(t)} aria-label={`${tr(lang,'تعديل','Edit')} ${t.name}`}><Settings2 size={17}/></button></div><h3>{t.name}</h3><span className="specialization">{classificationText(t.specialization,lang)}</span><div className="person-card-meta">{t.phone?<a className="technician-phone" dir="rtl" href={`tel:${t.phone.replace(/[\s()-]/g,'')}`} aria-label={`${tr(lang,'اتصال بالفني','Call technician')} ${t.name}: ${t.phone}`} data-testid={`link-technician-phone-${t.id}`}><Phone size={15}/><b dir="ltr">{t.phone}</b></a>:<span className="technician-phone-missing"><Phone size={15}/>{tr(lang,'لم يضاف رقم الجوال','Phone not added')}</span>}<span><Building2 size={15}/>{t.branchName}</span><span><Activity size={15}/>{t.workload} {tr(lang,'مهام مفتوحة','open tasks')}</span></div><div className="person-card-bottom"><span className={`availability ${t.available&&t.active?'available':'unavailable'}`}><i/>{t.active?(t.available?tr(lang,'متاح','Available'):tr(lang,'غير متاح','Unavailable')):tr(lang,'غير نشط','Inactive')}</span><button onClick={()=>update.mutate({technicianId:t.id,data:{available:!t.available}},{onSuccess:()=>void query.invalidateQueries({queryKey:getListTechniciansQueryKey()})})} className="availability-toggle">{t.available?tr(lang,'تعيين غير متاح','Set unavailable'):tr(lang,'تعيين متاح','Set available')}</button></div></article>)}</div>}
+    {isLoading?<State title={tr(lang,'جاري تحميل الفريق','Loading team')} loading/>:isError?<State title={tr(lang,'تعذر تحميل الفنيين','Could not load technicians')} retry={()=>void refetch()}/>:!safeTechs?.length?<div className="empty-panel" aria-live="polite"><Users size={26}/><h3>{tr(lang,'لا يوجد فنّيون مسجلون بعد','No technicians added yet')}</h3><p>{tr(lang,'أضف أعضاء فريق الصيانة لتسهيل إسناد البلاغات.','Add maintenance staff to make ticket assignment easier.')}</p><Button onClick={()=>begin(null)}><Plus size={17}/>{tr(lang,'إضافة أول فني','Add the first technician')}</Button></div>:<div className="people-grid">{safeTechs.map(t=><article className="person-card" key={t.id}><div className="person-card-head"><Avatar name={t.name} size="lg"/><div className="person-card-controls"><button type="button" className="edit-button" onClick={()=>begin(t)} aria-label={`${tr(lang,'تعديل','Edit')} ${t.name}`}><Settings2 size={17}/></button><button type="button" className="edit-button remove-technician-button" onClick={()=>{setDeleting(t);setDeleteError('')}} aria-label={`${tr(lang,'حذف الفني','Remove technician')} ${t.name}`} title={tr(lang,'حذف الفني','Remove technician')} data-testid={`button-remove-technician-${t.id}`}><Trash2 size={17}/></button></div></div><h3>{t.name}</h3><span className="specialization">{classificationText(t.specialization,lang)}</span><div className="person-card-meta">{t.phone?<a className="technician-phone" dir="rtl" href={`tel:${t.phone.replace(/[\s()-]/g,'')}`} aria-label={`${tr(lang,'اتصال بالفني','Call technician')} ${t.name}: ${t.phone}`} data-testid={`link-technician-phone-${t.id}`}><Phone size={15}/><b dir="ltr">{t.phone}</b></a>:<span className="technician-phone-missing"><Phone size={15}/>{tr(lang,'لم يضاف رقم الجوال','Phone not added')}</span>}<span><Building2 size={15}/>{t.branchName}</span><span><Activity size={15}/>{t.workload} {tr(lang,'مهام مفتوحة','open tasks')}</span></div><div className="person-card-bottom"><span className={`availability ${t.available&&t.active?'available':'unavailable'}`}><i/>{t.active?(t.available?tr(lang,'متاح','Available'):tr(lang,'غير متاح','Unavailable')):tr(lang,'غير نشط','Inactive')}</span><button onClick={()=>update.mutate({technicianId:t.id,data:{available:!t.available}},{onSuccess:()=>void query.invalidateQueries({queryKey:getListTechniciansQueryKey()})})} className="availability-toggle">{t.available?tr(lang,'تعيين غير متاح','Set unavailable'):tr(lang,'تعيين متاح','Set available')}</button></div></article>)}</div>}
+    <AlertDialog open={Boolean(deleting)} onOpenChange={next=>{if(!next&&!deletePending){setDeleting(null);setDeleteError('')}}}>
+      <AlertDialogContent className="confirm-dialog" dir={lang==='ar'?'rtl':'ltr'}>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{tr(lang,'هل أنت متأكد من حذف الفني؟','Remove this technician?')}</AlertDialogTitle>
+          <AlertDialogDescription>{tr(lang,
+            `سيُزال «${deleting?.name||''}» من قائمة الفنيين ولن يستقبل بلاغات جديدة. ستظل سجلات الإصلاح السابقة محفوظة.`,
+            `Remove “${deleting?.name||''}” from active technicians. Previous ticket and repair history will be preserved.`
+          )}</AlertDialogDescription>
+        </AlertDialogHeader>
+        {Boolean(deleting?.workload)&&<p className="inline-error" role="status">{tr(lang,'لدى هذا الفني بلاغات مفتوحة. أعد إسنادها أو أغلقها قبل الحذف.','This technician has open tickets. Reassign or close them before removal.')}</p>}
+        {deleteError&&<p className="inline-error" role="alert">{deleteError}</p>}
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={deletePending}>{tr(lang,'إلغاء','Cancel')}</AlertDialogCancel>
+          <AlertDialogAction className="remove-technician-confirm" disabled={deletePending||Boolean(deleting?.workload)} onClick={event=>{event.preventDefault();void removeTechnician();}} data-testid="button-confirm-remove-technician">
+            {deletePending?tr(lang,'جارٍ الحذف…','Removing…'):tr(lang,'تأكيد الحذف','Confirm removal')}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     {inviteOpen&&<Modal title={tr(lang,'دعوة فني','Invite technician')} close={()=>setInviteOpen(false)}>
       <div className="technician-invite-modal" dir={lang==='ar'?'rtl':'ltr'}>
         <p>{tr(lang,'اختر الفرع والتخصص، والفني يعبّي بياناته بنفسه من رابط الدعوة.','Choose a branch and specialty. The technician fills out their own details via the invitation.')}</p>
