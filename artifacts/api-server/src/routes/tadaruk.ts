@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHmac, randomUUID } from "node:crypto";
 import { and, asc, desc, eq, inArray, isNull, ne } from "drizzle-orm";
 import { Router, type IRouter, type Request, type Response } from "express";
 import {
@@ -112,7 +112,6 @@ const demoCookieOptions = {
   httpOnly: true,
   sameSite: "lax" as const,
   secure: process.env.NODE_ENV === "production",
-  signed: true,
   path: "/",
   maxAge: 1000 * 60 * 60 * 24 * 14,
 };
@@ -246,6 +245,19 @@ router.get("/session", async (req, res): Promise<void> => {
   }
 });
 
+function signDemoSessionCookie(userId: string): string {
+  // cookie-parser verifies "s:value.signature" using the same SHA-256 HMAC.
+  // Explicit signing avoids relying on Express res.req.secret in Vercel's
+  // serverless response adapter, while keeping the cookie tamper-proof.
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) throw new Error("SESSION_SECRET is required");
+  const signature = createHmac("sha256", secret)
+    .update(userId)
+    .digest("base64")
+    .replace(/=+$/, "");
+  return `s:${userId}.${signature}`;
+}
+
 router.put("/session", async (req, res): Promise<void> => {
   const parsed = SelectDemoAccountBody.safeParse(req.body);
   if (!parsed.success) {
@@ -268,7 +280,7 @@ router.put("/session", async (req, res): Promise<void> => {
       branchName: branch?.name ?? null,
       specialization: member.specialization,
     };
-    res.cookie("tadarukDemoUser", member.id, demoCookieOptions);
+    res.cookie("tadarukDemoUser", signDemoSessionCookie(member.id), demoCookieOptions);
     res.json(SelectDemoAccountResponse.parse({ user }));
   } catch (error) {
     res.status(500).json({ error: errorMessage(error) });
@@ -280,7 +292,6 @@ router.delete("/session", (_req, res): void => {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
-    signed: true,
     path: "/",
   });
   res.json(GetDemoSessionResponse.parse({ user: null }));
