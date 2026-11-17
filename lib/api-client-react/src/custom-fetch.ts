@@ -341,13 +341,17 @@ export async function customFetch<T = unknown>(
 
   // Intercept all /api/ requests for SPA / Vercel static environments
   if (requestInfo.url.includes("/api/")) {
+    // Real deployments must never silently turn failed authentication or
+    // failed database requests into a simulated localStorage session.
+    const allowLocalFallback = typeof window !== "undefined" &&
+      /^(localhost|127\\.0\\.0\\.1)$/.test(window.location.hostname);
     try {
       const response = await fetch(input, { ...init, method, headers });
       const contentType = (response.headers.get("content-type") || "").toLowerCase();
 
       // If the response is HTML, it means Vercel or Vite SPA fallback served index.html instead of a real API endpoint!
       if (contentType.includes("text/html")) {
-        const fallback = tryHandleClientFallback<T>(requestInfo.url, method, init.body);
+        const fallback = (allowLocalFallback ? tryHandleClientFallback<T>(requestInfo.url, method, init.body) : undefined);
         if (fallback !== undefined) return fallback;
       }
 
@@ -361,13 +365,13 @@ export async function customFetch<T = unknown>(
           }
         }
         // If not JSON, try fallback
-        const fallback = tryHandleClientFallback<T>(requestInfo.url, method, init.body);
+        const fallback = (allowLocalFallback ? tryHandleClientFallback<T>(requestInfo.url, method, init.body) : undefined);
         if (fallback !== undefined) return fallback;
         return textContent as unknown as T;
       }
 
       // If !response.ok (404, 502, etc.), try fallback
-      const fallback = tryHandleClientFallback<T>(requestInfo.url, method, init.body);
+      const fallback = (allowLocalFallback ? tryHandleClientFallback<T>(requestInfo.url, method, init.body) : undefined);
       if (fallback !== undefined) {
         return fallback;
       }
@@ -375,7 +379,7 @@ export async function customFetch<T = unknown>(
       const errorData = await parseErrorBody(response, method);
       throw new ApiError(response, errorData, requestInfo);
     } catch (error) {
-      const fallback = tryHandleClientFallback<T>(requestInfo.url, method, init.body);
+      const fallback = (allowLocalFallback ? tryHandleClientFallback<T>(requestInfo.url, method, init.body) : undefined);
       if (fallback !== undefined) {
         return fallback;
       }
