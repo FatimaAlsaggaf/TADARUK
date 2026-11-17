@@ -21,6 +21,22 @@ router.get("/db-check", async (_req, res) => {
         (SELECT COUNT(*)::int FROM tadaruk_tickets) AS tickets,
         (SELECT COUNT(*)::int FROM tadaruk_tickets
           WHERE image_url IS NOT NULL AND TRIM(image_url) <> '') AS tickets_with_images,
+        (SELECT COUNT(*)::int FROM tadaruk_tickets
+          WHERE id LIKE 'ticket-demo-%') AS demo_tickets,
+        (SELECT COUNT(*)::int FROM tadaruk_tickets
+          WHERE id NOT LIKE 'ticket-demo-%') AS original_tickets,
+        (SELECT COUNT(*)::int FROM tadaruk_tickets
+          WHERE id NOT LIKE 'ticket-demo-%'
+          AND image_url IS NOT NULL AND TRIM(image_url) <> '') AS original_with_images,
+        (SELECT COUNT(*)::int FROM tadaruk_tickets
+          WHERE id NOT LIKE 'ticket-demo-%'
+          AND organization_id = 'restaurant-demo') AS visible_original_tickets,
+        (SELECT COUNT(*)::int FROM tadaruk_tickets
+          WHERE id NOT LIKE 'ticket-demo-%'
+          AND image_url LIKE 'data:image/%') AS original_embedded_images,
+        (SELECT COUNT(*)::int FROM tadaruk_tickets
+          WHERE id NOT LIKE 'ticket-demo-%'
+          AND image_url LIKE 'http%') AS original_remote_images,
         (SELECT COUNT(*)::int FROM tadaruk_branches) AS branches,
         (SELECT COUNT(*)::int FROM tadaruk_team_members) AS members`,
     );
