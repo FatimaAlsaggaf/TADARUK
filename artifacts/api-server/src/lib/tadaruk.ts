@@ -349,7 +349,7 @@ export async function toTicketView(ticket: TicketRecord) {
       eq(ticketEventsTable.organizationId, DEMO_ORGANIZATION),
     )).orderBy(asc(ticketEventsTable.createdAt)),
   ]);
-  const history = await Promise.all(events.map(async (event) => {
+  const recordedHistory = await Promise.all(events.map(async (event) => {
     const actor = await getMember(event.actorId);
     return {
       id: event.id,
@@ -359,6 +359,15 @@ export async function toTicketView(ticket: TicketRecord) {
       createdAt: event.createdAt.toISOString(),
     };
   }));
+  // Imported/legacy tickets can predate the event table. Derive only the
+  // provable creation entry from the ticket itself, not fictitious actions.
+  const history = recordedHistory.length ? recordedHistory : [{
+    id: `creation-${ticket.id}`,
+    label: "تم تسجيل البلاغ",
+    actorName: reporter?.name ?? "موظف الفرع",
+    note: "مستمد من تاريخ إنشاء البلاغ. لا توجد إجراءات متابعة مسجلة بعد.",
+    createdAt: ticket.createdAt.toISOString(),
+  }];
   return {
     id: ticket.id,
     number: ticket.number,
