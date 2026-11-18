@@ -45,6 +45,9 @@ import './unified-workspace-header.css';
 import './timeline-one-side.css';
 import './technician-remove.css';
 import './mobile-workspace.css';
+import './mobile-first-core.css';
+import './mobile-first-pages.css';
+import './mobile-first-technician.css';
 
 const ReporterHomePage = lazy(() => import('@/ReporterWorkspace').then(module => ({ default: module.ReporterHomePage })));
 const ReporterNewTicketPage = lazy(() => import('@/ReporterWorkspace').then(module => ({ default: module.ReporterNewTicketPage })));
