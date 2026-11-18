@@ -1,0 +1,375 @@
+/* Mobile page-specific layouts. No functionality or data model changes. */
+@media(max-width:900px){
+  /* Manager overview — readable compact KPIs */
+  .app-shell .overview-grid{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:10px!important;
+    margin-bottom:14px!important;
+  }
+  .app-shell .overview-grid>.metric-lead {
+    grid-column:1/-1!important;
+    padding:17px!important;
+    min-height:125px!important;
+    justify-content:space-between!important;
+    border-radius:16px!important;
+  }
+  .app-shell .overview-grid>.metric-card{
+    grid-column:auto!important;
+    padding:14px!important;
+    min-height:122px!important;
+    height:auto!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:space-between!important;
+    gap:6px!important;
+    border-radius:15px!important;
+  }
+  .app-shell .overview-grid .metric-card-head{
+    display:flex!important;align-items:flex-start!important;
+    justify-content:space-between!important;flex-wrap:nowrap!important;gap:7px!important;
+    width:100%!important;min-width:0!important;
+    font-size:11px!important;line-height:1.5!important;
+  }
+  .app-shell .overview-grid .metric-card-head>span:first-child{
+    flex:1 1 auto!important;min-width:0!important;
+    overflow-wrap:normal!important;white-space:normal!important;
+  }
+  .app-shell .overview-grid .metric-card-icon{
+    flex:0 0 33px!important;
+    width:33px!important;height:33px!important;
+    display:grid!important;place-items:center!important;
+  }
+  .app-shell .overview-grid>.metric-card strong{
+    font-size:28px!important;line-height:1.1!important;margin:0!important;
+  }
+  .app-shell .overview-grid>.metric-card small{
+    font-size:10px!important;line-height:1.45!important;
+    white-space:normal!important;margin:0!important;
+  }
+  .app-shell .metric-lead strong{font-size:36px!important;line-height:1.15!important}
+  .app-shell .metric-lead .metric-foot{font-size:11px!important}
+  .app-shell .dashboard-columns{
+    display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:13px!important;
+  }
+  .app-shell .dashboard-columns>.activity-panel,
+  .app-shell .dashboard-columns>.ops-aside{
+    grid-column:1/-1!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+  }
+  .app-shell .dashboard-columns>.ops-aside{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:12px!important;
+  }
+  .app-shell .dashboard-columns .resolved-callout{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    grid-template-rows:auto auto!important;
+    gap:4px 10px!important;
+    align-items:center!important;
+    min-height:0!important;
+    padding:15px!important;
+    width:100%!important;
+    border-radius:15px!important;
+  }
+  .app-shell .resolved-callout .callout-symbol{grid-row:1/3;grid-column:2;}
+  .app-shell .resolved-callout small,
+  .app-shell .resolved-callout strong,
+  .app-shell .resolved-callout b,
+  .app-shell .resolved-callout p{grid-column:1!important}
+  .app-shell .resolved-callout strong{font-size:29px!important;line-height:1.1!important}
+  .app-shell .resolved-callout p{
+    font-size:11px!important;line-height:1.55!important;margin:2px 0 0!important;
+  }
+  .app-shell .panel-heading{display:flex!important;gap:8px!important;align-items:center!important;justify-content:space-between!important}
+  .app-shell .panel-heading h2{font-size:18px!important;line-height:1.45!important;margin:0!important}
+  .app-shell .panel-heading .eyebrow{display:none!important}
+  .app-shell .panel-heading .text-link{font-size:12px!important;white-space:nowrap}
+
+  /* Ticket lists — cards, not six-column desktop table */
+  .app-shell .ticket-list{display:grid!important;gap:9px!important;min-width:0!important}
+  .app-shell .register-panel{
+    padding:0!important;background:transparent!important;
+    border:0!important;box-shadow:none!important;overflow:visible!important;
+  }
+  .app-shell .register-header{display:none!important}
+  .app-shell .ticket-row,
+  .app-shell .register-panel .ticket-row,
+  .app-shell .activity-panel .ticket-row,
+  .app-shell .dashboard-columns .activity-panel .ticket-row,
+  .app-shell .personal-tickets .ticket-row{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    grid-template-rows:auto auto auto!important;
+    grid-template-areas:"number status" "summary summary" "priority arrow"!important;
+    gap:6px 9px!important;
+    padding:12px 13px!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    margin:0!important;
+    background:hsl(var(--card))!important;
+    border:1px solid hsl(var(--border))!important;
+    border-radius:14px!important;
+    box-sizing:border-box!important;
+    align-items:start!important;
+    text-decoration:none!important;
+  }
+  .app-shell .ticket-row>.ticket-number {
+    grid-area:number!important;
+    justify-self:start!important;
+    display:inline-block!important;
+    font-size:10px!important;
+    line-height:1.5!important;
+    padding:2px 0!important;
+    white-space:normal!important;
+    overflow-wrap:anywhere!important;
+    color:#66839b!important;
+  }
+  .app-shell .ticket-row>.ticket-summary{
+    grid-area:summary!important;
+    display:flex!important;
+    flex-direction:column!important;
+    gap:3px!important;
+    min-width:0!important;
+    overflow:hidden!important;
+  }
+  .app-shell .ticket-row>.ticket-summary b{
+    display:block!important;
+    white-space:normal!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    font-size:13px!important;
+    line-height:1.58!important;
+    font-weight:750!important;
+    max-height:3.16em;
+  }
+  .app-shell .ticket-row>.ticket-summary small{
+    display:block!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    font-size:11px!important;
+    line-height:1.45!important;
+  }
+  .app-shell .ticket-row>.priority-badge{
+    grid-area:priority!important;
+    display:inline-flex!important;
+    justify-self:start!important;
+    align-items:center!important;
+    font-size:10px!important;
+    width:fit-content!important;
+    min-height:25px!important;
+  }
+  .app-shell .ticket-row>.status-pill{
+    grid-area:status!important;
+    display:inline-flex!important;
+    justify-self:end!important;
+    align-self:start!important;
+    width:fit-content!important;
+    min-height:25px!important;
+    padding:4px 7px!important;
+    font-size:10px!important;
+    line-height:1.3!important;
+    white-space:nowrap!important;
+  }
+  .app-shell .ticket-row>.ticket-date{display:none!important}
+  .app-shell .ticket-row>.row-arrow{
+    grid-area:arrow!important;
+    display:block!important;
+    justify-self:end!important;
+    align-self:center!important;
+    opacity:.65!important;
+  }
+  .app-shell .activity-panel,.app-shell .personal-tickets{
+    padding:14px!important;overflow:visible!important;
+  }
+  .app-shell .filter-bar{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:9px!important;margin:0 0 13px!important;
+  }
+  .app-shell .filter-bar>.search-field{grid-column:1/-1!important}
+  .app-shell .filter-bar>.filter-select{grid-column:auto!important}
+  .app-shell .filter-bar>.filter-select:last-child:nth-child(2){grid-column:1/-1!important}
+  .app-shell .filter-bar .search-field,
+  .app-shell .filter-bar .filter-select{
+    width:100%!important;max-width:100%!important;
+    min-width:0!important;min-height:46px!important;
+    padding-inline:10px!important;
+    border-radius:12px!important;
+  }
+  .app-shell .filter-bar .filter-select svg {flex:0 0 auto!important}
+  .app-shell .filter-bar button{max-width:100%;min-width:0}
+  .app-shell .personal-feature{
+    display:flex!important;align-items:center!important;gap:12px!important;
+    min-height:0!important;padding:17px!important;
+    border-radius:16px!important;
+  }
+  .app-shell .personal-feature-copy{flex:1;min-width:0!important}
+  .app-shell .personal-feature-copy h2{
+    margin:6px 0!important;font-size:20px!important;
+    line-height:1.5!important;
+  }
+  .app-shell .personal-feature-copy p{
+    font-size:12px!important;line-height:1.6!important;
+    margin:0 0 12px!important;
+  }
+  .app-shell .personal-feature .feature-mark{
+    display:none!important;
+  }
+  .app-shell .personal-feature-copy .btn{
+    min-height:43px!important;
+    font-size:12px!important;
+  }
+
+  /* Manager's people and locations — horizontal hierarchy, smaller surfaces */
+  .app-shell .people-grid,.app-shell .branches-grid,.app-shell .knowledge-list{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:11px!important;
+  }
+  .app-shell .person-card{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:8px!important;
+    padding:14px!important;
+    min-height:0!important;
+  }
+  .app-shell .person-card-head{
+    display:flex!important;align-items:center!important;justify-content:space-between!important;
+    gap:12px!important;margin:0!important;
+  }
+  .app-shell .person-card .avatar{width:44px!important;height:44px!important}
+  .app-shell .person-card h3{font-size:16px!important;margin:0!important;line-height:1.5!important}
+  .app-shell .person-card .specialization{
+    width:fit-content!important;max-width:100%!important;
+    font-size:11px!important;padding:4px 8px!important;
+  }
+  .app-shell .person-card-meta{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    gap:7px 10px!important;
+    padding:7px 0!important;
+    min-width:0!important;
+  }
+  .app-shell .person-card-meta>*{
+    min-width:0!important;
+    display:inline-flex!important;align-items:center!important;
+    gap:5px!important;
+    font-size:11px!important;
+    overflow-wrap:anywhere!important;
+  }
+  .app-shell .person-card-meta>*:first-child{grid-column:1/-1!important}
+  .app-shell .person-card-bottom{
+    display:flex!important;gap:8px!important;
+    justify-content:space-between!important;
+    align-items:center!important;
+    flex-wrap:wrap!important;
+    padding-top:9px!important;margin:0!important;
+  }
+  .app-shell .person-card-bottom .availability-toggle{min-height:38px!important;padding:7px 10px!important;font-size:11px!important}
+  .app-shell .page-title .technician-invite-actions{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:9px!important;
+    width:100%!important;
+  }
+  .app-shell .technician-invite-actions .btn{
+    width:100%!important;min-width:0!important;
+    justify-content:center!important;font-size:12px!important;
+    padding:8px!important;
+  }
+  .app-shell .branch-card{padding:14px!important;min-height:0!important}
+  .app-shell .branch-card-top{gap:8px!important;margin-bottom:9px!important}
+  .app-shell .branch-card h2{font-size:17px!important;line-height:1.4!important;margin:0 0 4px!important}
+  .app-shell .branch-location{font-size:11px!important;line-height:1.55!important}
+  .app-shell .branch-stats{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:9px!important;margin:12px 0!important;
+  }
+  .app-shell .branch-stats>div{padding:10px!important;min-width:0!important}
+  .app-shell .branch-stats strong{font-size:23px!important}
+  .app-shell .branch-stats span{font-size:10px!important;line-height:1.5!important}
+  .app-shell .branch-card-actions{
+    display:flex!important;flex-wrap:wrap!important;
+    align-items:center!important;justify-content:space-between!important;
+    gap:7px!important;
+  }
+  .app-shell .branch-card-actions>*{min-height:39px!important;font-size:11px!important}
+  .app-shell .branch-state-action{margin-top:10px!important}
+  .app-shell .branch-state-action button{min-height:39px!important}
+  .app-shell .knowledge-intro{
+    display:flex!important;min-height:0!important;
+    padding:13px!important;gap:9px!important;
+    border-radius:14px!important;
+  }
+  .app-shell .knowledge-intro .knowledge-count{font-size:23px!important}
+  .app-shell .knowledge-intro p{font-size:11px!important;line-height:1.6!important}
+  .app-shell .knowledge-entry{
+    display:flex!important;
+    gap:9px!important;
+    min-width:0!important;
+    padding:13px!important;
+    border-radius:15px!important;
+  }
+  .app-shell .knowledge-entry-content{
+    flex:1!important;
+    min-width:0!important;
+  }
+  .app-shell .knowledge-entry h3{font-size:14px!important;line-height:1.5!important}
+  .app-shell .entry-solution p{font-size:12px!important;line-height:1.7!important}
+  .app-shell .entry-foot{display:flex!important;flex-wrap:wrap!important;gap:8px!important;font-size:11px!important}
+
+  /* Manager/reporter ticket detail — one story in logical reading order */
+  .app-shell .detail-layout{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:12px!important;
+  }
+  .app-shell .detail-main,
+  .app-shell .detail-side{min-width:0!important;gap:12px!important}
+  .app-shell .detail-back{margin-bottom:11px!important}
+  .app-shell .detail-hero,
+  .app-shell .timeline-panel,
+  .app-shell .compact-timeline-panel,
+  .app-shell .repair-panel,
+  .app-shell .owner-panel,
+  .app-shell .resolution-panel{padding:15px!important}
+  .app-shell .detail-tags{gap:6px!important;flex-wrap:wrap!important}
+  .app-shell .detail-hero h1{
+    font-size:21px!important;line-height:1.55!important;
+    margin:12px 0 7px!important;
+  }
+  .app-shell .detail-description{font-size:13px!important;line-height:1.8!important}
+  .app-shell .detail-properties{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:9px!important;padding-top:12px!important;margin-top:12px!important;
+  }
+  .app-shell .detail-properties>span{
+    min-width:0!important;align-items:flex-start!important;
+    overflow-wrap:anywhere!important;font-size:11px!important;
+  }
+  .app-shell .detail-properties--labeled>span>span{min-width:0!important}
+  .app-shell .detail-properties b{font-size:12px!important;line-height:1.5!important}
+  .app-shell .detail-hero .ticket-image,
+  .app-shell .detail-hero img{max-width:100%!important;height:auto!important;max-height:230px!important;object-fit:contain!important}
+  .app-shell .detail-hero .detail-photo-unavailable{padding:11px!important;font-size:12px!important}
+  .app-shell .repair-actions,
+  .app-shell .manager-assignment-buttons{display:flex!important;gap:8px!important;flex-wrap:wrap!important}
+  .app-shell .repair-actions .btn,
+  .app-shell .manager-assignment-buttons .btn{flex:1 1 130px!important;justify-content:center!important}
+}
+
+@media(max-width:370px){
+  .app-shell .overview-grid>.metric-card {padding:11px!important;min-height:120px!important}
+  .app-shell .overview-grid .metric-card-head{font-size:10px!important}
+  .app-shell .filter-bar>.filter-select{grid-column:1/-1!important}
+  .app-shell .detail-properties{grid-template-columns:minmax(0,1fr)!important}
+}

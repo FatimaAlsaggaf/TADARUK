@@ -23,6 +23,7 @@ import {
 } from '@/services/reporter-demo-analysis';
 import Stepper, { Step } from '@/components/Stepper';
 import './reporter-workspace.css';
+import './mobile-first-reporter.css';
 
 type ReporterLang = 'ar' | 'en';
 type ReporterPageProps = { lang: ReporterLang; user: DemoUser };
