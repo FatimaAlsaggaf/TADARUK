@@ -19,6 +19,13 @@ import {
 export const DEMO_ORGANIZATION = "restaurant-demo";
 export const DEMO_ACCOUNT_IDS = ["demo-manager", "demo-reporter", "demo-tech"] as const;
 
+/** Demo account labels are static metadata; selecting a demo role must never
+ * require a live database query just to display a branch name. */
+export function getDemoBranchName(branchId: string | null | undefined): string | null {
+  return seedBranches.find(branch => branch.id === branchId)?.name ?? null;
+}
+
+
 const seedBranches = [
   { id: "branch-olaya", name: "فرع العليا", city: "الرياض", address: "شارع التحلية" },
   { id: "branch-nakheel", name: "فرع النخيل", city: "الرياض", address: "طريق الملك فهد" },
