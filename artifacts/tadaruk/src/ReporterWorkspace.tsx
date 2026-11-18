@@ -23,6 +23,7 @@ import {
 } from '@/services/reporter-demo-analysis';
 import Stepper, { Step } from '@/components/Stepper';
 import AiOrbitLoader from '@/components/AiOrbitLoader';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import './reporter-workspace.css';
 import './mobile-first-reporter.css';
 
@@ -513,15 +514,6 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
     // A not-yet-submitted draft is never a cancelled ticket or audit event.
     navigate('/workspace');
   };
-
-  useEffect(() => {
-    if (!showDiscardDialog) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setShowDiscardDialog(false);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [showDiscardDialog]);
 
   const submitReview = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -1325,23 +1317,26 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
           )}
         </Step>
       </Stepper>
-      {showDiscardDialog && <div className="rw-discard-backdrop" role="presentation"
-        onClick={() => setShowDiscardDialog(false)}>
-        <div role="dialog" aria-modal="true" aria-labelledby="rw-discard-title"
-          className="rw-discard-dialog" onClick={event => event.stopPropagation()}>
-          <div className="rw-discard-dialog-icon"><CircleAlert size={24}/></div>
-          <h2 id="rw-discard-title">{text(lang, 'إلغاء هذه المسودة؟', 'Discard this draft?')}</h2>
-          <p>{text(lang, 'لن يُرسل البلاغ، وستُفقد البيانات التي أدخلتها. لا يُسجّل هذا الإجراء كإلغاء بلاغ.', 'The report will not be sent and your unsaved details will be lost. No ticket cancellation is recorded.')}</p>
-          <div className="rw-discard-dialog-actions">
-            <button type="button" className="rw-button rw-button-quiet" onClick={() => setShowDiscardDialog(false)} data-testid="button-keep-draft">
+      <AlertDialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
+        <AlertDialogContent className="rw-discard-modal" dir={lang==='ar'?'rtl':'ltr'}>
+          <AlertDialogHeader>
+            <div className="rw-discard-dialog-icon" aria-hidden="true"><CircleAlert size={24}/></div>
+            <AlertDialogTitle>{text(lang, 'إلغاء هذه المسودة؟', 'Discard this draft?')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {text(lang, 'لن يُرسل البلاغ، وستُفقد البيانات التي أدخلتها. لا يُسجّل هذا الإجراء كإلغاء بلاغ.', 'The report will not be sent and your unsaved details will be lost. No ticket cancellation is recorded.')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="rw-discard-dialog-actions">
+            <AlertDialogCancel className="rw-button rw-button-quiet" data-testid="button-keep-draft">
               {text(lang, 'العودة للمراجعة', 'Keep reviewing')}
-            </button>
-            <button type="button" className="rw-button rw-discard-confirm" onClick={discardDraft} data-testid="button-confirm-discard">
+            </AlertDialogCancel>
+            <AlertDialogAction disabled={create.isPending} className="rw-button rw-discard-confirm"
+              onClick={event=>{event.preventDefault();discardDraft();}} data-testid="button-confirm-discard">
               <X size={16}/>{text(lang, 'إلغاء المسودة', 'Discard draft')}
-            </button>
-          </div>
-        </div>
-      </div>}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
