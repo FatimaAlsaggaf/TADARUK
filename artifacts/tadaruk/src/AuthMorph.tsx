@@ -8,6 +8,7 @@ import DarkVeil from './AuthDarkVeil';
 import OrganizationOnboarding from './OrganizationOnboarding';
 import './auth-morph.css';
 import './mobile-first-auth.css';
+import './auth-refinement.css';
 
 type Lang='ar'|'en';
 const tr=(lang:Lang,ar:string,en:string)=>lang==='ar'?ar:en;
@@ -111,7 +112,9 @@ export default function AuthMorph({lang,setLang,dark,setDark}:{lang:Lang;setLang
            <button type="button" className="auth-morph-forgot" onClick={resetRecovery}>{tr(lang,'رجوع لتسجيل الدخول','Back to sign in')}</button>
          </>}
        </>:<>
+         <div className="auth-mobile-welcome-icon" aria-hidden="true"><img src={`${import.meta.env.BASE_URL}brand-mark.png`} alt=""/></div>
          <h1>{tr(lang,'تسجيل الدخول','Sign in')}</h1>
+         <p className="auth-mobile-welcome-subtitle">{tr(lang,'أهلًا بعودتك، كل بلاغ أقرب للحل.','Welcome back — every report moves closer to resolution.')}</p>
          <label className="auth-morph-input"><Mail size={19}/><input type="email" required autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder={tr(lang,'البريد الإلكتروني','Email address')} tabIndex={signup?-1:0}/></label>
          <label className="auth-morph-input"><LockKeyhole size={19}/><input type={showPassword?'text':'password'} minLength={4} required autoComplete="current-password" placeholder={tr(lang,'كلمة المرور','Password')} value={password} onChange={e=>setPassword(e.target.value)} tabIndex={signup?-1:0}/><button type="button" aria-label={tr(lang,'إظهار أو إخفاء كلمة المرور','Toggle password visibility')} onClick={()=>setShowPassword(v=>!v)}>{showPassword?<EyeOff size={18}/>:<Eye size={18}/>}</button></label>
          <button type="submit" className="auth-morph-primary" tabIndex={signup?-1:0}>{tr(lang,'دخول','Sign in')}</button>
