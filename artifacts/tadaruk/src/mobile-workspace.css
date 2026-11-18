@@ -424,3 +424,160 @@
     gap: 6px !important;
   }
 }
+
+/* Landing: keep Amiri diacritics clear and make the hero comfortable on phones. */
+@media (max-width: 760px) {
+  .landing .hero {
+    min-width: 0 !important;
+    padding-inline: 5px !important;
+  }
+  .landing .hero-mark-stage {
+    width: min(100%, 250px) !important;
+    max-width: 250px !important;
+    margin: 0 auto 8px !important;
+    transform: none !important;
+  }
+  .landing .hero-mark {
+    display: block;
+    width: min(51vw, 205px) !important;
+    max-width: 205px !important;
+    height: auto !important;
+    margin-inline: auto !important;
+  }
+  .landing .hero h1,
+  .landing[dir="rtl"] .hero h1 {
+    font-size: clamp(31px, 8vw, 43px) !important;
+    line-height: 1.85 !important;
+    letter-spacing: 0 !important;
+    overflow: visible !important;
+    text-wrap: balance;
+    margin: 3px auto 10px !important;
+    padding: 0 8px 7px !important;
+  }
+  .landing .hero h1 .landing-headline-words,
+  .landing .hero h1 .landing-headline-words > span,
+  .landing .hero h1 .landing-headline-words > span > span {
+    overflow: visible !important;
+    line-height: 1.85 !important;
+    letter-spacing: 0 !important;
+  }
+  .landing .hero h1 .landing-headline-words {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    align-items: baseline !important;
+    gap: 0 .20em !important;
+  }
+  .landing .hero-sub {
+    margin-top: 0 !important;
+    font-size: clamp(16px, 4.6vw, 20px) !important;
+    line-height: 1.65 !important;
+  }
+
+  /* On phones place the workflow stroke and each icon on the center axis,
+     instead of pinning the stroke to the right edge in RTL. */
+  .landing .workflow-reveal {
+    width: min(100% - 28px, 500px) !important;
+    margin-inline: auto !important;
+  }
+  .landing .roadmap {
+    width: 100% !important;
+    max-width: 480px !important;
+    min-height: 530px !important;
+    margin: 18px auto 0 !important;
+    position: relative !important;
+  }
+  .landing .roadmap-path-mobile,
+  .landing[dir="rtl"] .roadmap-path-mobile,
+  .landing[dir="ltr"] .roadmap-path-mobile {
+    display: block !important;
+    position: absolute !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 50% !important;
+    right: auto !important;
+    width: 80px !important;
+    height: 100% !important;
+    transform: translateX(-50%) !important;
+    z-index: 0 !important;
+  }
+  .landing .workflow-steps {
+    position: absolute !important;
+    inset: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 0 !important;
+    padding: 0 !important;
+    z-index: 2 !important;
+  }
+  .landing .workflow-step,
+  .landing .workflow-step:nth-child(n),
+  .landing[dir="rtl"] .workflow-step:nth-child(n) {
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: min(100%, 255px) !important;
+    min-height: 120px !important;
+    gap: 1px !important;
+    padding: 3px 7px !important;
+    text-align: center !important;
+    transform: none !important;
+  }
+  .landing .workflow-step .workflow-node {
+    flex: 0 0 58px !important;
+    width: 58px !important;
+    height: 58px !important;
+    margin: 0 auto 3px !important;
+    position: relative !important;
+    z-index: 2;
+  }
+  .landing .workflow-step .workflow-index,
+  .landing .workflow-step .workflow-label {
+    position: relative !important;
+    z-index: 3 !important;
+    text-align: center !important;
+    align-self: center !important;
+    margin: 0 !important;
+  }
+  .landing .workflow-step .workflow-index {
+    background: #f7fafc;
+    padding: 0 7px;
+    min-height: 20px;
+    font-size: 12px !important;
+  }
+  .landing .workflow-step .workflow-label {
+    background: #f7fafc;
+    border-radius: 8px;
+    padding: 2px 10px;
+    font-size: 15px !important;
+    line-height: 1.45 !important;
+  }
+  .dark .landing .workflow-step .workflow-index,
+  .dark .landing .workflow-step .workflow-label {
+    background: #11253a;
+  }
+
+  .landing .landing-footer {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding-block: 15px 23px !important;
+    text-align: center !important;
+  }
+  .landing .landing-footer .footer-brand,
+  .landing .landing-footer .footer-meta {
+    width: auto !important;
+    justify-content: center !important;
+    margin: 0 !important;
+  }
+  .landing .landing-footer .footer-brand img,
+  .landing .landing-footer .footer-brand .brand-lockup { display: none !important; }
+}
