@@ -7,6 +7,7 @@ import SunMoonThemeToggle from './components/ui/sun-moon-theme-toggle';
 import DarkVeil from './AuthDarkVeil';
 import OrganizationOnboarding from './OrganizationOnboarding';
 import './auth-morph.css';
+import './mobile-first-auth.css';
 
 type Lang='ar'|'en';
 const tr=(lang:Lang,ar:string,en:string)=>lang==='ar'?ar:en;
