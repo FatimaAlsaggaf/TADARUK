@@ -1,0 +1,76 @@
+.td-ai-orbit {
+  --td-orbit-size: 126px;
+  width:var(--td-orbit-size);
+  height:var(--td-orbit-size);
+  position:relative;
+  margin-inline:auto;
+  display:grid;
+  place-items:center;
+  isolation:isolate;
+  border-radius:50%;
+  background:radial-gradient(circle at 37% 28%,#2f638e 0,#1b3d69 48%,#112b51 100%);
+  box-shadow:0 14px 35px rgba(23,75,125,.20),inset 0 2px 7px rgba(255,255,255,.12);
+}
+.td-ai-orbit-halo {
+  position:absolute;
+  inset:8px;
+  border-radius:50%;
+  z-index:1;
+  pointer-events:none;
+  border:1px solid rgba(151,228,244,.25);
+  box-shadow:inset 0 2px 13px rgba(19,91,159,.24);
+}
+.td-ai-orbit-ring {
+  position:absolute;
+  z-index:2;
+  inset:-5px;
+  border-radius:50%;
+  pointer-events:none;
+  background:conic-gradient(from 0deg,transparent 0deg,rgba(59,176,246,.06) 75deg,#7be4ef 145deg,#2d85f5 200deg,transparent 258deg,transparent 360deg);
+  box-shadow:inset 0 0 4px rgba(78,185,239,.25);
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 7px),#000 calc(100% - 6px));
+  mask:radial-gradient(farthest-side,transparent calc(100% - 7px),#000 calc(100% - 6px));
+  animation:td-ai-orbit-spin 3.5s linear infinite;
+}
+.td-ai-orbit-ring::after {
+  content:'';
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  box-shadow:0 0 15px 2px rgba(89,199,250,.48);
+}
+.td-ai-orbit-word {
+  position:relative;
+  z-index:3;
+  display:flex;
+  gap:1px;
+  align-items:center;
+  justify-content:center;
+  color:#e8fcff;
+  font-family:'IBM Plex Sans Arabic',sans-serif;
+  font-size:22px;
+  line-height:1;
+  font-weight:800;
+  letter-spacing:.1px;
+  text-shadow:0 0 9px rgba(123,233,245,.25);
+}
+.td-ai-orbit-word span {
+  display:inline-block;
+  opacity:.5;
+  animation:td-ai-orbit-letter 2.6s ease-in-out infinite;
+  animation-delay:calc(var(--letter-index) * .17s);
+}
+@keyframes td-ai-orbit-spin {to{transform:rotate(360deg)}}
+@keyframes td-ai-orbit-letter {
+  0%,100% {opacity:.45;transform:translateY(0) scale(1)}
+  30% {opacity:1;transform:translateY(-3px) scale(1.1)}
+  55% {opacity:.73;transform:translateY(0) scale(1)}
+}
+.dark .td-ai-orbit {background:radial-gradient(circle at 37% 28%,#244d7f,#112d51 62%,#09203c)}
+@media(max-width:640px){
+  .td-ai-orbit {--td-orbit-size:104px;}
+  .td-ai-orbit-word {font-size:19px}
+}
+@media(prefers-reduced-motion:reduce){
+  .td-ai-orbit-ring,.td-ai-orbit-word span {animation:none!important;opacity:1!important}
+}
