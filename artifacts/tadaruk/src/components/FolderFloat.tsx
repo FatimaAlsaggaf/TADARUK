@@ -278,7 +278,7 @@ export default function FolderFloat({
     const tick = (now: number) => {
       const s = world.current;
       if (!s.engine) return;
-      const dt = s.last ? Math.min(32, now - s.last) : 16;
+      const dt = s.last ? Math.max(1, Math.min(16.667, now - s.last)) : 16.667;
       s.last = now;
       const t = (now - s.t0) / 1000;
       const k = latest.current.drift * 0.00004 * Math.min(1, t / 2);

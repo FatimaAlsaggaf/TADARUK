@@ -1,0 +1,183 @@
+/* Nimbus Waterline look, optimized for mobile (no WebGL loop).
+   The original component reference supplied translucent glass, a moving
+   pill-shaped water drop, ripples and small per-icon interactions. */
+.td-liquid-dock { display: none; }
+@media (max-width: 900px) {
+  .td-liquid-dock {
+    display: flex;
+    justify-content: center;
+    position: fixed;
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    left: 0;
+    right: 0;
+    z-index: 70;
+    padding-inline: 10px;
+    direction: inherit;
+    pointer-events: none;
+  }
+  .td-liquid-nav {
+    --td-water-fg: #112b43;
+    --td-water-muted: #60778b;
+    --td-water-rim: rgba(255,255,255,.94);
+    width: min(100%, 430px);
+    min-width: 0;
+    min-height: 65px;
+    max-width: 100%;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-around;
+    gap: 3px;
+    position: relative;
+    isolation: isolate;
+    border-radius: 999px;
+    padding: 7px;
+    font-family: 'IBM Plex Sans Arabic', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    pointer-events: auto;
+    box-shadow: 0 16px 33px -17px rgba(16,58,93,.41);
+  }
+  .td-liquid-glass {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    overflow: hidden;
+    border-radius: inherit;
+    border: 1px solid rgba(224,237,246,.82);
+    background: rgba(244,250,255,.83);
+    -webkit-backdrop-filter: blur(15px) saturate(1.4);
+    backdrop-filter: blur(15px) saturate(1.4);
+    box-shadow:
+      inset 0 1.5px 1px var(--td-water-rim),
+      inset 0 0 0 1px rgba(255,255,255,.3),
+      0 12px 29px -14px rgba(20,70,110,.36);
+  }
+  .td-liquid-item {
+    position: relative;
+    min-width: 0;
+    flex: 1 1 0;
+    min-height: 49px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 3px;
+    border-radius: 999px;
+    padding: 4px 3px;
+    color: var(--td-water-muted);
+    text-decoration: none;
+    font-size: 11px;
+    line-height: 1.2;
+    font-weight: 600;
+    text-align: center;
+    user-select: none;
+    touch-action: manipulation;
+    transition: color .22s ease;
+  }
+  .td-liquid-item.is-selected { color: var(--td-water-fg); font-weight: 750; }
+  .td-liquid-item:focus-visible { outline: 2px solid #2088b2; outline-offset: -2px; }
+  .td-liquid-active {
+    position: absolute;
+    inset: 1px 0;
+    border-radius: 999px;
+    pointer-events: none;
+    z-index: -1;
+    background:
+      radial-gradient(110% 110% at 26% 2%,rgba(255,255,255,.95),rgba(255,255,255,0) 62%),
+      linear-gradient(165deg,rgba(199,234,249,.92),rgba(147,212,235,.56));
+    border: 1px solid rgba(255,255,255,.93);
+    box-shadow:
+      inset 0 1px 2px rgba(255,255,255,.95),
+      inset 0 -3px 8px rgba(18,142,192,.15),
+      0 6px 17px -8px rgba(12,85,127,.3);
+    overflow: hidden;
+  }
+  .td-liquid-active::after {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    border-radius: inherit;
+    border-top: 1px solid rgba(255,255,255,.75);
+  }
+  .td-liquid-shine {
+    position: absolute;
+    top: -24%;
+    left: 20%;
+    width: 42%;
+    height: 120%;
+    pointer-events: none;
+    transform: rotate(22deg);
+    background: linear-gradient(90deg,transparent,rgba(255,255,255,.52),transparent);
+  }
+  .td-liquid-icon {
+    display: grid;
+    place-items: center;
+    position: relative;
+    z-index: 1;
+    flex: 0 0 22px;
+    width: 25px;
+    height: 24px;
+    color: inherit;
+  }
+  .td-liquid-icon svg {
+    width: 20px;
+    height: 20px;
+    transition: transform .28s cubic-bezier(.2,1.4,.35,1);
+  }
+  .td-liquid-item.is-selected .td-liquid-icon svg { transform: translateY(-1px) scale(1.08); }
+  .td-liquid-icon.is-playing svg { animation: td-water-hop .65s cubic-bezier(.32,1.45,.47,1) both; }
+  @keyframes td-water-hop {
+    0% { transform: translateY(0) scale(.9); }
+    34% { transform: translateY(-5px) scale(1.1,.93); }
+    68% { transform: translateY(1px) scale(.97,1.09); }
+    100% { transform: translateY(-1px) scale(1.08); }
+  }
+  .td-liquid-ripple {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border: 1px solid rgba(66,167,210,.45);
+    border-radius: 999px;
+    animation: td-water-ripple .62s ease-out both;
+  }
+  @keyframes td-water-ripple {
+    0% { transform: scale(.65); opacity: .8; }
+    100% { transform: scale(1.25); opacity: 0; }
+  }
+  .td-liquid-label {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: clamp(9px, 2.45vw, 10.5px);
+    font-family: 'IBM Plex Sans Arabic',sans-serif;
+    line-height: 1.35;
+  }
+  .td-liquid-nav[data-tone="dark"] {
+    --td-water-fg: #eefaff;
+    --td-water-muted: #aac4d6;
+    --td-water-rim: rgba(196,230,246,.33);
+  }
+  .td-liquid-nav[data-tone="dark"] .td-liquid-glass {
+    background: rgba(20,40,58,.88);
+    border-color: rgba(88,137,161,.48);
+    box-shadow: inset 0 1px 1px rgba(215,246,255,.26), 0 16px 30px -14px rgba(0,0,0,.65);
+  }
+  .td-liquid-nav[data-tone="dark"] .td-liquid-active {
+    background: radial-gradient(110% 110% at 25% 0%,rgba(146,211,235,.25),transparent 70%), rgba(51,105,139,.65);
+    border-color: rgba(153,220,245,.46);
+    box-shadow: inset 0 1px 2px rgba(200,238,251,.32), 0 6px 16px -8px rgba(0,0,0,.65);
+  }
+}
+@media (max-width: 390px) {
+  .td-liquid-nav { padding: 6px 5px; gap: 1px; min-height: 62px; }
+  .td-liquid-item { padding: 3px 1px; }
+  .td-liquid-label { font-size: 9px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .td-liquid-icon.is-playing svg, .td-liquid-ripple { animation: none !important; }
+  .td-liquid-icon svg { transition: none !important; }
+}

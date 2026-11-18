@@ -1,13 +1,17 @@
 import { randomUUID } from "node:crypto";
-import { and, asc, count, desc, eq, isNotNull, isNull, ne } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, isNotNull, isNull, ne } from "drizzle-orm";
 import {
   branchesTable,
   db,
+  retryRead,
   pool,
   teamMembersTable,
   ticketEventsTable,
   ticketsTable,
   type TicketRecord,
+  type TeamMemberRecord,
+  type BranchRecord,
+  type TicketEventRecord,
 } from "@workspace/db";
 import type { Request } from "express";
 import {
@@ -299,19 +303,19 @@ export async function getDemoMember(userId?: string): Promise<DemoMember | undef
 
 export async function getMember(userId: string) {
   await ensureDemoData();
-  const [member] = await db.select().from(teamMembersTable).where(and(
+  const [member] = await retryRead(() => db.select().from(teamMembersTable).where(and(
     eq(teamMembersTable.id, userId),
     eq(teamMembersTable.organizationId, DEMO_ORGANIZATION),
-  )).limit(1);
+  )).limit(1));
   return member;
 }
 
 export async function getBranch(branchId: string) {
   await ensureDemoData();
-  const [branch] = await db.select().from(branchesTable).where(and(
+  const [branch] = await retryRead(() => db.select().from(branchesTable).where(and(
     eq(branchesTable.id, branchId),
     eq(branchesTable.organizationId, DEMO_ORGANIZATION),
-  )).limit(1);
+  )).limit(1));
   return branch;
 }
 
@@ -336,7 +340,7 @@ export async function getVisibleTickets(
   }
   if (member.role === "reporter") filters.push(eq(ticketsTable.reporterId, member.id));
   if (member.role === "technician") filters.push(eq(ticketsTable.technicianId, member.id));
-  return db.select().from(ticketsTable).where(and(...filters)).orderBy(desc(ticketsTable.createdAt));
+  return retryRead(() => db.select().from(ticketsTable).where(and(...filters)).orderBy(desc(ticketsTable.createdAt)));
 }
 
 export async function canSeeTicket(member: AuthenticatedDemoMember, ticket: TicketRecord): Promise<boolean> {
@@ -346,28 +350,23 @@ export async function canSeeTicket(member: AuthenticatedDemoMember, ticket: Tick
   return ticket.technicianId === member.id;
 }
 
-export async function toTicketView(ticket: TicketRecord) {
-  const [reporter, branch, technician, events] = await Promise.all([
-    getMember(ticket.reporterId),
-    getBranch(ticket.branchId),
-    ticket.technicianId ? getMember(ticket.technicianId) : Promise.resolve(undefined),
-    db.select().from(ticketEventsTable).where(and(
-      eq(ticketEventsTable.ticketId, ticket.id),
-      eq(ticketEventsTable.organizationId, DEMO_ORGANIZATION),
-    )).orderBy(asc(ticketEventsTable.createdAt)),
-  ]);
-  const recordedHistory = await Promise.all(events.map(async (event) => {
-    const actor = await getMember(event.actorId);
-    return {
-      id: event.id,
-      label: event.label,
-      actorName: actor?.name ?? "فريق تدارك",
-      note: event.note,
-      createdAt: event.createdAt.toISOString(),
-    };
+/** Render all ticket views with bounded, batched DB reads rather than an N+1
+ * query per reporter/technician/branch/event. Keeps exact API response shape. */
+function makeTicketView(
+  ticket: TicketRecord,
+  reporter: TeamMemberRecord | undefined,
+  branch: BranchRecord | undefined,
+  technician: TeamMemberRecord | undefined,
+  events: TicketEventRecord[],
+  memberNames: Map<string,string>,
+) {
+  const recordedHistory = events.map(event => ({
+    id: event.id,
+    label: event.label,
+    actorName: memberNames.get(event.actorId) ?? "فريق تدارك",
+    note: event.note,
+    createdAt: event.createdAt.toISOString(),
   }));
-  // Imported/legacy tickets can predate the event table. Derive only the
-  // provable creation entry from the ticket itself, not fictitious actions.
   const history = recordedHistory.length ? recordedHistory : [{
     id: `creation-${ticket.id}`,
     label: "تم تسجيل البلاغ",
@@ -407,6 +406,51 @@ export async function toTicketView(ticket: TicketRecord) {
     updatedAt: ticket.updatedAt.toISOString(),
     history,
   };
+}
+export async function toTicketViews(tickets: TicketRecord[]) {
+  if (!tickets.length) return [];
+  const ids = tickets.map(ticket => ticket.id);
+  const branchIds = [...new Set(tickets.map(ticket => ticket.branchId))];
+  const [events, branches] = await retryRead(() => Promise.all([
+    db.select().from(ticketEventsTable).where(and(
+      eq(ticketEventsTable.organizationId, DEMO_ORGANIZATION),
+      inArray(ticketEventsTable.ticketId, ids),
+    )).orderBy(asc(ticketEventsTable.createdAt)),
+    db.select().from(branchesTable).where(and(
+      eq(branchesTable.organizationId, DEMO_ORGANIZATION),
+      inArray(branchesTable.id, branchIds),
+    )),
+  ]));
+  const memberIds = [...new Set([
+    ...tickets.map(ticket => ticket.reporterId),
+    ...tickets.map(ticket => ticket.technicianId).filter((id): id is string => Boolean(id)),
+    ...events.map(event => event.actorId),
+  ])];
+  const members = memberIds.length ? await retryRead(() => db.select().from(teamMembersTable).where(and(
+    eq(teamMembersTable.organizationId, DEMO_ORGANIZATION),
+    inArray(teamMembersTable.id, memberIds),
+  ))) : [];
+  const memberMap = new Map(members.map(member => [member.id, member]));
+  const branchMap = new Map(branches.map(branch => [branch.id, branch]));
+  const nameMap = new Map(members.map(member => [member.id, member.name]));
+  const eventMap = new Map<string,TicketEventRecord[]>();
+  for (const event of events) {
+    const list = eventMap.get(event.ticketId) ?? [];
+    list.push(event);
+    eventMap.set(event.ticketId, list);
+  }
+  return tickets.map(ticket => makeTicketView(
+    ticket,
+    memberMap.get(ticket.reporterId),
+    branchMap.get(ticket.branchId),
+    ticket.technicianId ? memberMap.get(ticket.technicianId) : undefined,
+    eventMap.get(ticket.id) ?? [],
+    nameMap,
+  ));
+}
+export async function toTicketView(ticket: TicketRecord) {
+  const [view] = await toTicketViews([ticket]);
+  return view;
 }
 
 export async function getVisibleTicket(member: AuthenticatedDemoMember, ticketId: string) {
