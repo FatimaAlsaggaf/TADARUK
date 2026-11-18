@@ -290,3 +290,44 @@
     max-height:calc(100dvh - 14px) !important;
   }
 }
+
+/* Persistent close in the sticky title row (particularly important with
+   QR invites taller than a small phone viewport). */
+[data-slot="dialog-content"].modal-card.modal-radix .modal-head-line {
+  display:flex !important;
+  flex-direction:row !important;
+  justify-content:space-between !important;
+  align-items:center !important;
+  gap:12px !important;
+  min-height:38px !important;
+  width:100% !important;
+}
+[data-slot="dialog-content"].modal-card.modal-radix .modal-head-line [data-slot="dialog-title"] {
+  flex:1 1 auto;
+  min-width:0;
+  font-size:17px !important;
+  line-height:1.5 !important;
+  padding:0;
+}
+[data-slot="dialog-content"].modal-card.modal-radix .modal-top-close {
+  display:grid !important;
+  place-items:center !important;
+  flex:0 0 38px !important;
+  width:38px !important;
+  height:38px !important;
+  min-width:38px !important;
+  border-radius:10px !important;
+  border:1px solid hsl(var(--border)) !important;
+  background:hsl(var(--card)) !important;
+  color:hsl(var(--foreground)) !important;
+  cursor:pointer;
+  touch-action:manipulation;
+  box-shadow:0 2px 8px rgba(20,63,94,.06);
+}
+[data-slot="dialog-content"].modal-card.modal-radix .modal-top-close:focus-visible {
+  outline:2px solid #429cbb !important;
+  outline-offset:2px !important;
+}
+[data-slot="dialog-content"].modal-card.modal-radix > button:last-child {
+  display:none !important;
+}
