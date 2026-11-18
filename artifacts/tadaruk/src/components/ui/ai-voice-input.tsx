@@ -518,7 +518,7 @@ export function AiVoiceInput({
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent
-          className="overflow-hidden rounded-2xl border border-cyan-500/20 bg-gradient-to-b from-white via-slate-50 to-[#56F4EF]/5 p-6 shadow-2xl backdrop-blur sm:max-w-md dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-[#1F3363]/40 dark:text-slate-100"
+          className="tadaruk-voice-dialog overflow-hidden rounded-2xl border border-cyan-500/20 bg-gradient-to-b from-white via-slate-50 to-[#56F4EF]/5 p-6 shadow-2xl backdrop-blur sm:max-w-md dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-[#1F3363]/40 dark:text-slate-100"
           dir={lang === "ar" ? "rtl" : "ltr"}
         >
           <DialogHeader className="items-center text-center sm:text-center [&_h2]:text-center [&_p]:text-center">
