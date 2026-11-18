@@ -935,3 +935,231 @@
  .auth-morph-login-form{gap:11px !important;}
  .auth-morph-login-form h1{margin-bottom:5px !important;}
 }
+
+/* Mobile judging pass: one compact auth card with usable controls.
+   The desktop two-panel morph stays unchanged. */
+@media (max-width: 850px) {
+  .auth-morph-page {
+    padding: 10px 12px 26px !important;
+    min-height: 100dvh !important;
+    overflow-x: clip !important;
+    background:
+      radial-gradient(ellipse at 85% 10%, #cdeaf7 0%, transparent 48%),
+      linear-gradient(165deg, #f2f9fd, #eaf3fa) !important;
+  }
+  .dark .auth-morph-page {
+    background: radial-gradient(circle at 80% 5%, #214a6b, transparent 54%), #0b2032 !important;
+  }
+  .auth-morph-header {
+    width: 100% !important;
+    min-height: 54px !important;
+    height: auto !important;
+    margin-bottom: 8px !important;
+    padding: 4px 2px !important;
+    gap: 7px !important;
+    align-items: center !important;
+  }
+  .auth-morph-brand img { width: min(25vw, 115px) !important; }
+  .auth-morph-card {
+    width: min(100%, 530px) !important;
+    margin: 7px auto 22px !important;
+    border-radius: 19px !important;
+    max-width: 530px !important;
+    box-shadow: 0 12px 36px rgba(20, 55, 84, .14) !important;
+  }
+  .auth-morph-card:not(.auth-morph-signup) {
+    min-height: 0 !important;
+    height: auto !important;
+    overflow: hidden !important;
+  }
+  .auth-morph-card:not(.auth-morph-signup)::before {
+    display: block !important;
+    top: 0 !important;
+    bottom: auto !important;
+    left: 0 !important;
+    right: auto !important;
+    width: 100% !important;
+    height: 139px !important;
+    border-radius: 0 0 18px 18px !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .auth-morph-card:not(.auth-morph-signup) .auth-morph-panels {
+    position: absolute !important;
+    inset: 0 0 auto 0 !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: 139px !important;
+    height: 139px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: none;
+  }
+  .auth-morph-card:not(.auth-morph-signup) .auth-morph-left {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    padding: 8px 16px !important;
+    transform: none !important;
+  }
+  .auth-morph-card:not(.auth-morph-signup) .auth-morph-right {
+    display: none !important;
+  }
+  .auth-morph-card:not(.auth-morph-signup) .auth-morph-left .auth-morph-panel-content {
+    gap: 5px !important;
+    width: 100% !important;
+    max-width: 330px !important;
+  }
+  .auth-morph-card:not(.auth-morph-signup) .auth-morph-left h2 {
+    font-size: 22px !important;
+    line-height: 1.25 !important;
+  }
+  .auth-morph-card:not(.auth-morph-signup) .auth-morph-left p {
+    display: none !important;
+  }
+  .auth-morph-card:not(.auth-morph-signup) .auth-morph-left button {
+    min-height: 38px !important;
+    padding: 6px 15px !important;
+    font-size: 13px !important;
+  }
+  .auth-morph-card:not(.auth-morph-signup) .auth-morph-form-area {
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+  .auth-morph-card:not(.auth-morph-signup) .auth-morph-login {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 143px 12px 16px !important;
+    transform: none !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+  }
+  .auth-morph-card:not(.auth-morph-signup) .auth-morph-login-form {
+    display: flex !important;
+    width: min(100%, 390px) !important;
+    max-width: 390px !important;
+    padding: 7px 6px 11px !important;
+    gap: 11px !important;
+    margin-inline: auto !important;
+  }
+  .auth-morph-login-form h1 {
+    font-size: 30px !important;
+    line-height: 1.4 !important;
+  }
+  .auth-morph-input {
+    min-height: 48px !important;
+    border-radius: 14px !important;
+    gap: 8px !important;
+    padding: 0 12px !important;
+  }
+  .auth-morph-input input {
+    min-height: 46px !important;
+    height: 46px !important;
+    font-size: 16px !important;
+  }
+  .auth-morph-primary {
+    width: 100% !important;
+    max-width: 270px !important;
+    min-height: 45px !important;
+    padding: 9px 16px !important;
+    font-size: 16px !important;
+  }
+  .auth-morph-demo {
+    width: 100% !important;
+    margin-top: 3px !important;
+    gap: 8px !important;
+  }
+  .auth-morph-demo > small { font-size: 13px !important; }
+  .auth-morph-roles {
+    display: grid !important;
+    width: 100% !important;
+    grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+    gap: 7px !important;
+  }
+  .auth-morph-role {
+    min-width: 0 !important;
+    width: auto !important;
+    flex-basis: auto !important;
+    gap: 5px !important;
+    padding: 4px 1px !important;
+  }
+  .auth-morph-role > span {
+    width: 46px !important;
+    height: 46px !important;
+    border-radius: 14px !important;
+  }
+  .auth-morph-role b { font-size: 13px !important; white-space: nowrap !important; }
+  .auth-morph-role small {
+    max-width: 100%;
+    font-size: 10px !important;
+    line-height: 1.4 !important;
+    text-align: center !important;
+    white-space: normal !important;
+  }
+
+  .auth-morph-card.auth-morph-signup,
+  .auth-morph-signup .auth-morph-form-area,
+  .auth-morph-signup .auth-morph-register {
+    min-height: 0 !important;
+    height: auto !important;
+  }
+  .auth-morph-signup .auth-morph-register-content {
+    padding: 67px 15px 28px !important;
+  }
+  .auth-morph-register .org-form { gap: 13px !important; }
+  .auth-morph-register .org-form h2 {
+    font-size: clamp(23px, 5.8vw, 30px) !important;
+    line-height: 1.45 !important;
+  }
+  .auth-morph-register .org-eyebrow {
+    font-size: 13px !important;
+    margin: 0 !important;
+  }
+  .auth-morph-register .org-step-hint,
+  .auth-morph-register .org-site-step .org-muted {
+    font-size: 13px !important;
+    line-height: 1.65 !important;
+  }
+  .auth-morph-register .org-fields {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px !important;
+  }
+  .auth-morph-register .org-steps {
+    width: 100% !important;
+    gap: 2px !important;
+    padding-bottom: 12px !important;
+    margin-bottom: 0 !important;
+  }
+  .auth-morph-register .org-steps > div small {
+    font-size: 10px !important;
+    line-height: 1.35 !important;
+    overflow-wrap: anywhere;
+  }
+  .auth-morph-register .org-field { font-size: 14px !important; }
+  .auth-morph-register .org-field input,
+  .auth-morph-register .org-field select {
+    min-height: 46px !important;
+    font-size: 16px !important;
+  }
+  .auth-morph-register .org-wizard-back-circle {
+    top: 16px !important;
+    right: 16px !important;
+  }
+}
+@media (max-width: 360px) {
+  .auth-morph-page { padding-inline: 7px !important; }
+  .auth-morph-header-actions .nav-lang { font-size: 10px !important; }
+  .auth-morph-card:not(.auth-morph-signup) .auth-morph-login { padding-inline: 8px !important; }
+  .auth-morph-role b { font-size: 12px !important; }
+}

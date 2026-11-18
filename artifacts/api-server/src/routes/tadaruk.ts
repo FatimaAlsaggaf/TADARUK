@@ -72,6 +72,7 @@ import {
   findSimilarSolutions,
   getAuthorizedBranchIds,
   getBranch,
+  getDemoBranchName,
   getDemoMember,
   getDemoUserFromRequest,
   getMember,
@@ -144,6 +145,30 @@ function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : "Request could not be completed.";
 }
 
+/** Log a redacted failure category (never SQL parameters, credentials, or request data).
+ * These diagnostics distinguish missing Supabase tables from connection problems. */
+const loggedFailures = new Set<string>();
+function reportServerError(error: unknown) {
+  const withCause = error as { cause?: unknown } | null;
+  const underlying = withCause?.cause ?? error;
+  const item = (underlying ?? {}) as { code?: unknown; message?: unknown; name?: unknown };
+  const code = typeof item.code === 'string' ? item.code.slice(0, 24) : 'unknown';
+  const message = typeof item.message === 'string' ? item.message : '';
+  const category = /relation .+ does not exist/i.test(message) ? 'missing_table'
+    : /column .+ does not exist/i.test(message) ? 'missing_column'
+    : /password authentication failed/i.test(message) ? 'database_authentication'
+    : /permission denied/i.test(message) ? 'database_permissions'
+    : /SSL|certificate/i.test(message) ? 'database_tls'
+    : /ENOTFOUND|getaddrinfo/i.test(message) ? 'database_hostname'
+    : /ECONNRESET|ECONNREFUSED/i.test(message) ? 'database_connection'
+    : /timeout|ETIMEDOUT/i.test(message) ? 'database_timeout'
+    : 'unclassified';
+  const signature = code + ':' + category;
+  if (loggedFailures.has(signature)) return;
+  loggedFailures.add(signature);
+  console.error('[TADARUK API diagnostic]', JSON.stringify({ code, category }));
+}
+
 async function branchView(branch: BranchRecord) {
   const branchTickets = await db.select().from(ticketsTable).where(and(
     eq(ticketsTable.organizationId, DEMO_ORGANIZATION),
@@ -209,19 +234,20 @@ router.get("/demo/users", async (_req, res): Promise<void> => {
     await ensureDemoData();
     const users = await Promise.all(DEMO_ACCOUNT_IDS.map((id) => getDemoMember(id)));
     const views = await Promise.all(users.filter((member) => member !== undefined).map(async (member) => {
-      const branch = member.branchId ? await getBranch(member.branchId) : undefined;
+      const branchName = getDemoBranchName(member.branchId);
       return {
         id: member.id,
         name: member.name,
         role: member.role,
         initials: member.initials,
         branchId: member.branchId,
-        branchName: branch?.name ?? null,
+        branchName,
         specialization: member.specialization,
       };
     }));
     res.json(ListDemoUsersResponse.parse(views));
   } catch (error) {
+    reportServerError(error);
     res.status(500).json({ error: errorMessage(error) });
   }
 });
@@ -229,18 +255,19 @@ router.get("/demo/users", async (_req, res): Promise<void> => {
 router.get("/session", async (req, res): Promise<void> => {
   try {
     const member = await getDemoUserFromRequest(req);
-    const branch = member?.branchId ? await getBranch(member.branchId) : undefined;
+    const branchName = getDemoBranchName(member?.branchId);
     const user = member ? {
       id: member.id,
       name: member.name,
       role: member.role,
       initials: member.initials,
       branchId: member.branchId,
-      branchName: branch?.name ?? null,
+      branchName,
       specialization: member.specialization,
     } : null;
     res.json(GetDemoSessionResponse.parse({ user }));
   } catch (error) {
+    reportServerError(error);
     res.status(500).json({ error: errorMessage(error) });
   }
 });
@@ -270,19 +297,20 @@ router.put("/session", async (req, res): Promise<void> => {
       res.status(400).json({ error: "Unknown demo account." });
       return;
     }
-    const branch = member.branchId ? await getBranch(member.branchId) : undefined;
+    const branchName = getDemoBranchName(member.branchId);
     const user = {
       id: member.id,
       name: member.name,
       role: member.role,
       initials: member.initials,
       branchId: member.branchId,
-      branchName: branch?.name ?? null,
+      branchName,
       specialization: member.specialization,
     };
     res.cookie("tadarukDemoUser", signDemoSessionCookie(member.id), demoCookieOptions);
     res.json(SelectDemoAccountResponse.parse({ user }));
   } catch (error) {
+    reportServerError(error);
     res.status(500).json({ error: errorMessage(error) });
   }
 });
@@ -317,6 +345,7 @@ router.get("/overview", async (req, res): Promise<void> => {
     };
     res.json(GetOverviewResponse.parse(overview));
   } catch (error) {
+    reportServerError(error);
     res.status(500).json({ error: errorMessage(error) });
   }
 });
@@ -339,6 +368,7 @@ router.get("/reporter/branches", async (req, res): Promise<void> => {
       : [];
     res.json(ListReporterBranchesResponse.parse(branches.map(({ id, name, city }) => ({ id, name, city }))));
   } catch (error) {
+    reportServerError(error);
     res.status(500).json({ error: errorMessage(error) });
   }
 });
@@ -357,6 +387,7 @@ router.get("/reporter-access", async (req, res): Promise<void> => {
       branchIds: getAuthorizedBranchIds(reporter),
     }))));
   } catch (error) {
+    reportServerError(error);
     res.status(500).json({ error: errorMessage(error) });
   }
 });
@@ -400,6 +431,7 @@ router.put("/reporter-access/:reporterId", async (req, res): Promise<void> => {
       branchIds: getAuthorizedBranchIds(updated),
     }));
   } catch (error) {
+    reportServerError(error);
     res.status(500).json({ error: errorMessage(error) });
   }
 });
@@ -512,7 +544,8 @@ router.get("/notifications", async (req, res): Promise<void> => {
       description: n.description, createdAt: n.createdAt.toISOString(),
       readAt: n.readAt?.toISOString() ?? null,
     })));
-  } catch (error) { res.status(500).json({ error: errorMessage(error) }); }
+  } catch (error) { reportServerError(error);
+    res.status(500).json({ error: errorMessage(error) }); }
 });
 router.post("/notifications/read", async (req, res): Promise<void> => {
   try {
@@ -529,7 +562,7 @@ router.post("/notifications/read", async (req, res): Promise<void> => {
       ));
     }
     res.json({success:true});
-  } catch (error) { res.status(500).json({error:errorMessage(error)}); }
+  } catch (error) { reportServerError(error); res.status(500).json({error:errorMessage(error)}); }
 });
 
 router.get("/tickets", async (req, res): Promise<void> => {
@@ -562,6 +595,7 @@ router.get("/tickets", async (req, res): Promise<void> => {
     }
     res.json(ListTicketsResponse.parse(await Promise.all(tickets.map(toTicketView))));
   } catch (error) {
+    reportServerError(error);
     res.status(500).json({ error: errorMessage(error) });
   }
 });
@@ -626,6 +660,7 @@ router.post("/tickets", async (req, res): Promise<void> => {
     }
     res.status(201).json(CreateTicketResponse.parse(await toTicketView(ticket)));
   } catch (error) {
+    reportServerError(error);
     res.status(500).json({ error: errorMessage(error) });
   }
 });
@@ -652,6 +687,7 @@ router.get("/tickets/:ticketId/3d", async (req, res): Promise<void> => {
     // independent GLB + correspondence validation are configured.
     res.json({ status: "unavailable" });
   } catch (error) {
+    reportServerError(error);
     res.status(500).json({ error: errorMessage(error) });
   }
 });
@@ -672,6 +708,7 @@ router.get("/tickets/:ticketId", async (req, res): Promise<void> => {
     }
     res.json(GetTicketResponse.parse(await toTicketView(ticket)));
   } catch (error) {
+    reportServerError(error);
     res.status(500).json({ error: errorMessage(error) });
   }
 });
@@ -952,6 +989,7 @@ router.post("/tickets/:ticketId/actions", async (req, res): Promise<void> => {
     }
     res.json(PerformTicketActionResponse.parse(await toTicketView(updated)));
   } catch (error) {
+    reportServerError(error);
     res.status(500).json({ error: errorMessage(error) });
   }
 });
@@ -977,6 +1015,7 @@ router.get("/tickets/:ticketId/similar-solutions", async (req, res): Promise<voi
     });
     res.json(ListSimilarSolutionsResponse.parse(solutions));
   } catch (error) {
+    reportServerError(error);
     res.status(500).json({ error: errorMessage(error) });
   }
 });
@@ -1010,6 +1049,7 @@ router.post("/tickets/:ticketId/ai-suggestion", async (req, res): Promise<void> 
       ? { available: true, ...suggestion }
       : { available: false, summary: "", likelyCause: "", steps: [], safetyNote: "", basedOn: [] }));
   } catch (error) {
+    reportServerError(error);
     res.status(500).json({ error: errorMessage(error) });
   }
 });
@@ -1047,6 +1087,7 @@ router.get("/assignment/preview", async (req, res): Promise<void> => {
       reason: decision.reason.ar,
     }));
   } catch (error) {
+    reportServerError(error);
     res.status(500).json({ error: errorMessage(error) });
   }
 });
@@ -1062,6 +1103,7 @@ router.get("/branches", async (req, res): Promise<void> => {
     )).orderBy(asc(branchesTable.name));
     res.json(ListBranchesResponse.parse(await Promise.all(branches.map(branchView))));
   } catch (error) {
+    reportServerError(error);
     res.status(500).json({ error: errorMessage(error) });
   }
 });
@@ -1087,6 +1129,7 @@ router.post("/branches", async (req, res): Promise<void> => {
     }).returning();
     res.status(201).json(CreateBranchResponse.parse(await branchView(branch)));
   } catch (error) {
+    reportServerError(error);
     res.status(500).json({ error: errorMessage(error) });
   }
 });
@@ -1115,6 +1158,7 @@ router.patch("/branches/:branchId", async (req, res): Promise<void> => {
     }
     res.json(UpdateBranchResponse.parse(await branchView(branch)));
   } catch (error) {
+    reportServerError(error);
     res.status(500).json({ error: errorMessage(error) });
   }
 });
@@ -1131,6 +1175,7 @@ router.get("/technicians", async (req, res): Promise<void> => {
     )).orderBy(asc(teamMembersTable.name));
     res.json(ListTechniciansResponse.parse(await Promise.all(technicians.map(technicianView))));
   } catch (error) {
+    reportServerError(error);
     res.status(500).json({ error: errorMessage(error) });
   }
 });
@@ -1164,6 +1209,7 @@ router.post("/technicians", async (req, res): Promise<void> => {
     }).returning();
     res.status(201).json(CreateTechnicianResponse.parse(await technicianView(technician)));
   } catch (error) {
+    reportServerError(error);
     res.status(500).json({ error: errorMessage(error) });
   }
 });
@@ -1200,6 +1246,7 @@ router.patch("/technicians/:technicianId", async (req, res): Promise<void> => {
     }
     res.json(UpdateTechnicianResponse.parse(await technicianView(technician)));
   } catch (error) {
+    reportServerError(error);
     res.status(500).json({ error: errorMessage(error) });
   }
 });
@@ -1248,6 +1295,7 @@ router.delete("/technicians/:technicianId", async (req, res): Promise<void> => {
     res.setHeader("Cache-Control", "no-store");
     res.json({ removed: true, technicianId });
   } catch (error) {
+    reportServerError(error);
     res.status(500).json({ error: errorMessage(error) });
   }
 });
@@ -1291,6 +1339,7 @@ router.get("/knowledge", async (req, res): Promise<void> => {
     }));
     res.json(ListKnowledgeResponse.parse(entries));
   } catch (error) {
+    reportServerError(error);
     res.status(500).json({ error: errorMessage(error) });
   }
 });

@@ -650,7 +650,6 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
     </section>
     <footer className="landing-footer wrap">
       <div className="footer-brand">
-        <Brand darkMode={dark}/>
         <span className="footer-signature">{tr(lang,'بلاغات أوضح، متابعة أسهل.','Clear reports. Easier follow-up.')}</span>
       </div>
       <div className="footer-meta"><span>© {new Date().getFullYear()} TADARUK</span></div>
