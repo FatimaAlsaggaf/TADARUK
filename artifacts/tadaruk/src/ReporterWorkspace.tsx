@@ -22,6 +22,7 @@ import {
   type ReporterDemoAnalysisRequest
 } from '@/services/reporter-demo-analysis';
 import Stepper, { Step } from '@/components/Stepper';
+import AiOrbitLoader from '@/components/AiOrbitLoader';
 import './reporter-workspace.css';
 import './mobile-first-reporter.css';
 
@@ -834,12 +835,7 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
               className="rw-analysis-stage"
               data-testid="status-ai-analyzing"
             >
-              <div className="rw-ai-orb-wrap">
-                <div className="rw-ai-orb-pulse" />
-                <div className="rw-ai-orb">
-                  <Sparkles className="h-8 w-8 text-[#307190] dark:text-[#93c5fd] animate-pulse" />
-                </div>
-              </div>
+              <AiOrbitLoader lang={lang} />
               <div className="rw-ai-heading">
                 <h3>{text(lang, 'تدارك يجهّز بلاغك بالذكاء الاصطناعي...', 'TADARUK AI is preparing your report...')}</h3>
                 <p>

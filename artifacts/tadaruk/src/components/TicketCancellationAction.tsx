@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { MouseEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import {
   getGetOverviewQueryKey,
   getGetTicketQueryKey,
@@ -52,6 +53,16 @@ export function TicketCancellationAction({
       onSuccess: () => {
         invalidate();
         setOpen(false);
+        toast.success(tr(lang, "تم إلغاء البلاغ وحفظه في السجل.", "Report cancelled and kept in history."), {
+          id: `cancel-ticket-${ticketId}`,
+          duration: 4000,
+        });
+      },
+      onError: () => {
+        toast.error(tr(lang, "تعذر إلغاء البلاغ. ربما بدأ العمل عليه.", "Could not cancel report. Work may have started."), {
+          id: `cancel-ticket-${ticketId}`,
+          duration: 5500,
+        });
       },
     });
   };
