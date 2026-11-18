@@ -2132,7 +2132,13 @@ function KnowledgePage({lang}:{lang:Lang}) {
   </div>;
 }
 function Modal({title,children,close,description,dir}:{title:string;children:ReactNode;close:()=>void;description?:string;dir?:'rtl'|'ltr'}) {
-  return <Dialog open onOpenChange={open=>{if(!open)close();}}><DialogContent className="modal-card modal-radix" dir={dir}><DialogHeader className="modal-head"><DialogTitle>{title}</DialogTitle>{description&&<DialogDescription>{description}</DialogDescription>}</DialogHeader>{children}</DialogContent></Dialog>;
+  return <Dialog open onOpenChange={open=>{if(!open)close();}}><DialogContent className="modal-card modal-radix" dir={dir}>
+    <DialogHeader className="modal-head">
+      <div className="modal-head-line"><DialogTitle>{title}</DialogTitle><button type="button" className="modal-top-close" aria-label="إغلاق النافذة / Close dialog" onClick={close}><X size={18}/></button></div>
+      {description&&<DialogDescription>{description}</DialogDescription>}
+    </DialogHeader>
+    {children}
+  </DialogContent></Dialog>;
 }
 function WorkspaceRouter({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;dark:boolean;setDark:(x:boolean)=>void}) {
   const {data:session,isLoading:sessionLoading,isError:sessionError,refetch:refetchSession}=useGetDemoSession();const user=session?.user;const [location,go]=useLocation();
