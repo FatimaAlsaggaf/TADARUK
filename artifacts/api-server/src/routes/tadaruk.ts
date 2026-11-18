@@ -48,6 +48,7 @@ import {
   branchesTable,
   db,
   pool,
+  retryRead,
   ticketNotificationsTable,
   teamMembersTable,
   ticketEventsTable,
@@ -79,6 +80,7 @@ import {
   getVisibleTicket,
   getVisibleTickets,
   toTicketView,
+  toTicketViews,
 } from "../lib/tadaruk";
 
 const router: IRouter = Router();
@@ -162,6 +164,7 @@ function reportServerError(error: unknown) {
     : /ENOTFOUND|getaddrinfo/i.test(message) ? 'database_hostname'
     : /ECONNRESET|ECONNREFUSED/i.test(message) ? 'database_connection'
     : /timeout|ETIMEDOUT/i.test(message) ? 'database_timeout'
+    : code === 'XX000' ? 'pooler_internal'
     : 'unclassified';
   const signature = code + ':' + category;
   if (loggedFailures.has(signature)) return;
@@ -170,13 +173,13 @@ function reportServerError(error: unknown) {
 }
 
 async function branchView(branch: BranchRecord) {
-  const branchTickets = await db.select().from(ticketsTable).where(and(
+  const branchTickets = await retryRead(() => db.select().from(ticketsTable).where(and(
     eq(ticketsTable.organizationId, DEMO_ORGANIZATION),
     eq(ticketsTable.branchId, branch.id),
     ne(ticketsTable.status, "closed"),
     ne(ticketsTable.status, "cancelled"),
     isNull(ticketsTable.cancelledAt),
-  ));
+  )));
   return {
     id: branch.id,
     name: branch.name,
@@ -205,7 +208,7 @@ function isGoogleMapsUrl(value: string): boolean {
 }
 
 async function technicianView(member: TeamMemberRecord) {
-  const [branch, assigned] = await Promise.all([
+  const [branch, assigned] = await retryRead(() => Promise.all([
     member.branchId ? getBranch(member.branchId) : Promise.resolve(undefined),
     db.select().from(ticketsTable).where(and(
       eq(ticketsTable.organizationId, DEMO_ORGANIZATION),
@@ -214,7 +217,7 @@ async function technicianView(member: TeamMemberRecord) {
       ne(ticketsTable.status, "cancelled"),
       isNull(ticketsTable.cancelledAt),
     )),
-  ]);
+  ]));
   return {
     id: member.id,
     name: member.name,
@@ -341,7 +344,7 @@ router.get("/overview", async (req, res): Promise<void> => {
         ticket.updatedAt.getMonth() === now.getMonth() &&
         ticket.updatedAt.getFullYear() === now.getFullYear(),
       ).length,
-      recentTickets: await Promise.all(tickets.slice(0, 5).map(toTicketView)),
+      recentTickets: await toTicketViews(tickets.slice(0, 5)),
     };
     res.json(GetOverviewResponse.parse(overview));
   } catch (error) {
@@ -360,11 +363,11 @@ router.get("/reporter/branches", async (req, res): Promise<void> => {
     }
     const branchIds = getAuthorizedBranchIds(member);
     const branches = branchIds.length
-      ? await db.select().from(branchesTable).where(and(
+      ? await retryRead(() => db.select().from(branchesTable).where(and(
           eq(branchesTable.organizationId, DEMO_ORGANIZATION),
           eq(branchesTable.active, true),
           inArray(branchesTable.id, branchIds),
-        )).orderBy(asc(branchesTable.name))
+        )).orderBy(asc(branchesTable.name)))
       : [];
     res.json(ListReporterBranchesResponse.parse(branches.map(({ id, name, city }) => ({ id, name, city }))));
   } catch (error) {
@@ -535,10 +538,10 @@ router.get("/notifications", async (req, res): Promise<void> => {
     const member = await requireMember(req, res);
     if (!member) return;
     await ensureNotificationsStorage();
-    const rows = await db.select().from(ticketNotificationsTable).where(and(
+    const rows = await retryRead(() => db.select().from(ticketNotificationsTable).where(and(
       eq(ticketNotificationsTable.organizationId, DEMO_ORGANIZATION),
       eq(ticketNotificationsTable.recipientId, member.id),
-    )).orderBy(desc(ticketNotificationsTable.createdAt)).limit(40);
+    )).orderBy(desc(ticketNotificationsTable.createdAt)).limit(40));
     res.json(rows.map(n => ({
       id: n.id, ticketId: n.ticketId, kind: n.kind, title: n.title,
       description: n.description, createdAt: n.createdAt.toISOString(),
@@ -593,7 +596,7 @@ router.get("/tickets", async (req, res): Promise<void> => {
           .some((value) => value.toLocaleLowerCase().includes(term)),
       );
     }
-    res.json(ListTicketsResponse.parse(await Promise.all(tickets.map(toTicketView))));
+    res.json(ListTicketsResponse.parse(await toTicketViews(tickets)));
   } catch (error) {
     reportServerError(error);
     res.status(500).json({ error: errorMessage(error) });
@@ -1097,10 +1100,10 @@ router.get("/branches", async (req, res): Promise<void> => {
     const manager = await requireManager(req, res);
     if (!manager) return;
     await ensureDemoData();
-    const branches = await db.select().from(branchesTable).where(eq(
+    const branches = await retryRead(() => db.select().from(branchesTable).where(eq(
       branchesTable.organizationId,
       DEMO_ORGANIZATION,
-    )).orderBy(asc(branchesTable.name));
+    )).orderBy(asc(branchesTable.name)));
     res.json(ListBranchesResponse.parse(await Promise.all(branches.map(branchView))));
   } catch (error) {
     reportServerError(error);
@@ -1168,11 +1171,11 @@ router.get("/technicians", async (req, res): Promise<void> => {
     const manager = await requireManager(req, res);
     if (!manager) return;
     await ensureDemoData();
-    const technicians = await db.select().from(teamMembersTable).where(and(
+    const technicians = await retryRead(() => db.select().from(teamMembersTable).where(and(
       eq(teamMembersTable.organizationId, DEMO_ORGANIZATION),
       eq(teamMembersTable.role, "technician"),
       eq(teamMembersTable.active, true),
-    )).orderBy(asc(teamMembersTable.name));
+    )).orderBy(asc(teamMembersTable.name)));
     res.json(ListTechniciansResponse.parse(await Promise.all(technicians.map(technicianView))));
   } catch (error) {
     reportServerError(error);
