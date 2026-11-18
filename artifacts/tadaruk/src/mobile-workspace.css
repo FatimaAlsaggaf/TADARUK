@@ -205,3 +205,222 @@
 @media (prefers-reduced-motion: reduce) {
   .workspace-mobile-nav-link { transition: none; }
 }
+
+/* Mobile judging pass: stop desktop dashboard columns squeezing into phone width. */
+@media (max-width: 900px) {
+  .app-shell .overview-grid {
+    display: grid !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    align-items: stretch !important;
+    margin-inline: 0 !important;
+  }
+  .app-shell .overview-grid > .metric-lead {
+    grid-column: 1 / -1 !important;
+    min-width: 0 !important;
+  }
+  .app-shell .overview-grid > .metric-card,
+  .app-shell .overview-grid > .metric-lead {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 134px !important;
+    height: auto !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 14px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    gap: 9px !important;
+  }
+  .app-shell .overview-grid > .metric-card .metric-card-head {
+    width: 100%;
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px !important;
+    font-size: 12px !important;
+    line-height: 1.55 !important;
+  }
+  .app-shell .overview-grid > .metric-card .metric-card-head > span:first-child {
+    flex: 1 1 80px;
+    min-width: 0;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+  }
+  .app-shell .overview-grid > .metric-card strong,
+  .app-shell .overview-grid > .metric-lead strong {
+    display: block;
+    font-size: clamp(29px, 8vw, 37px) !important;
+    line-height: 1.2 !important;
+  }
+  .app-shell .overview-grid > .metric-card small,
+  .app-shell .overview-grid > .metric-lead .metric-foot {
+    font-size: 11px !important;
+    line-height: 1.55 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+  }
+
+  /* Existing desktop layout was still forcing a 270px aside at 390px viewport. */
+  .app-shell .dashboard-columns {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 16px !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+  .app-shell .dashboard-columns > .activity-panel,
+  .app-shell .dashboard-columns > .ops-aside {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+  .app-shell .dashboard-columns > .ops-aside {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 14px !important;
+    align-items: stretch !important;
+  }
+  .app-shell .dashboard-columns .resolved-callout,
+  .app-shell .dashboard-columns .frequent-faults,
+  .app-shell .dashboard-columns .activity-panel {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: hidden;
+    box-sizing: border-box !important;
+  }
+  .app-shell .dashboard-columns .resolved-callout {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch;
+    padding: 18px !important;
+    gap: 8px;
+  }
+  .app-shell .dashboard-columns .resolved-callout > strong {
+    font-size: 36px !important;
+    line-height: 1.1 !important;
+  }
+  .app-shell .dashboard-columns .resolved-callout p {
+    max-width: 100%;
+    line-height: 1.6 !important;
+  }
+  .app-shell .activity-panel {
+    padding: 14px 12px !important;
+  }
+  .app-shell .activity-panel .panel-heading {
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: flex-start !important;
+    gap: 7px !important;
+  }
+  .app-shell .activity-panel .panel-heading > div {
+    min-width: 0;
+    flex: 1 1 150px;
+  }
+  .app-shell .activity-panel .panel-heading h2 {
+    margin-top: 4px !important;
+    font-size: 23px !important;
+    line-height: 1.3 !important;
+  }
+  .app-shell .activity-panel .ticket-list {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .app-shell .activity-panel .ticket-row {
+    display: grid !important;
+    grid-template-columns: 76px minmax(0, 1fr) 15px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    gap: 8px !important;
+    padding: 12px 1px !important;
+    align-items: center !important;
+  }
+  .app-shell .activity-panel .ticket-row > .ticket-number {
+    font-size: 10px !important;
+    line-height: 1.35 !important;
+    overflow-wrap: anywhere;
+  }
+  .app-shell .activity-panel .ticket-row > .ticket-summary {
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+  .app-shell .activity-panel .ticket-row .ticket-summary b {
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    text-overflow: ellipsis !important;
+  }
+  .app-shell .activity-panel .ticket-row .ticket-summary small {
+    font-size: 10px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  .app-shell .activity-panel .ticket-row > .priority-badge,
+  .app-shell .activity-panel .ticket-row > .status-pill,
+  .app-shell .activity-panel .ticket-row > .ticket-date {
+    display: none !important;
+  }
+  .app-shell .activity-panel .ticket-row > .row-arrow {
+    display: block !important;
+  }
+
+  /* Shared safety for other role workspaces and cards. */
+  .app-shell .personal-layout,
+  .app-shell .personal-feature,
+  .app-shell .dashboard-grid,
+  .app-shell .stats-grid,
+  .app-shell .branch-grid,
+  .app-shell .technicians-grid,
+  .app-shell .detail-layout,
+  .reporter-shell .reporter-view {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+  .app-shell .dashboard-grid,
+  .app-shell .stats-grid,
+  .app-shell .branch-grid,
+  .app-shell .technicians-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .app-shell .page-title h1,
+  .reporter-shell .rw-heading h1 {
+    font-size: clamp(27px, 7vw, 36px) !important;
+    line-height: 1.42 !important;
+    overflow-wrap: anywhere;
+  }
+  .app-shell .detail-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .app-shell .detail-side {
+    min-width: 0 !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+@media (max-width: 420px) {
+  .app-shell .overview-grid { gap: 9px !important; }
+  .app-shell .overview-grid > .metric-card { padding: 13px 12px !important; }
+  .app-shell .overview-grid > .metric-card .metric-card-head {
+    font-size: 11.5px !important;
+  }
+  .app-shell .activity-panel .ticket-row {
+    grid-template-columns: 70px minmax(0, 1fr) 13px !important;
+    gap: 6px !important;
+  }
+}
