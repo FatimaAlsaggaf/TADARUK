@@ -96,6 +96,30 @@
       0 0 6px 1.8px rgba(156,163,175,.2);
   }
 }
+/* Keep the supplied loader animation, but use an unobtrusive size in the
+   narrow reporter wizard rather than the desktop 180px ball. */
+@media (min-width:641px) and (max-width:900px) {
+  .td-ai-orbit {
+    width:122px;
+    height:122px;
+    font-size:16px;
+  }
+}
+@media (max-width:640px) {
+  .td-ai-orbit {
+    width:104px;
+    height:104px;
+    font-size:14px;
+    line-height:1.1;
+  }
+}
+@media (max-width:360px) {
+  .td-ai-orbit {
+    width:96px;
+    height:96px;
+    font-size:13px;
+  }
+}
 @media(prefers-reduced-motion:reduce){
   .td-ai-orbit-circle,.td-ai-orbit-letter {animation:none!important;opacity:1!important;}
   .td-ai-orbit-circle {box-shadow:inset 0 20px 28px #005dff,inset 0 36px 36px #1e40af;}
