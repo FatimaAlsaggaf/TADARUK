@@ -1,4 +1,4 @@
-import { type ReactNode, type FormEvent, createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, type FormEvent, createContext, lazy, Suspense, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Route, Switch, Link, useLocation, useParams } from 'wouter';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
@@ -30,15 +30,10 @@ import {
   FALLBACK_BRANCHES, FALLBACK_TECHNICIANS, FALLBACK_KNOWLEDGE, FALLBACK_INITIAL_TICKETS, FALLBACK_REPORTER_BRANCHES
 } from '@workspace/api-client-react';
 import NotFound from '@/pages/not-found';
-import { ReporterHomePage, ReporterNewTicketPage, ReporterTicketsPage } from '@/ReporterWorkspace';
 import ReporterAccessPanel from '@/ReporterAccessPanel';
-import OrganizationOnboarding from '@/OrganizationOnboarding';
-import OrganizationJoin from './OrganizationJoin';
-import AuthMorph from './AuthMorph';
 import InvitationQRCode from './components/InvitationQRCode';
 import {createInvitationLink} from './invitation-link';
 import { TicketCancellationAction } from '@/components/TicketCancellationAction';
-import { TechnicianTicketDetail } from '@/components/TechnicianTicketDetail';
 import SunMoonThemeToggle from '@/components/ui/sun-moon-theme-toggle';
 import './tadaruk.css';
 import './tadaruk-interactions.css';
@@ -47,8 +42,25 @@ import './technician-ticket.css';
 import './unified-workspace-header.css';
 import './timeline-one-side.css';
 import './technician-remove.css';
+import './mobile-workspace.css';
 
-const qc = new QueryClient();
+const ReporterHomePage = lazy(() => import('@/ReporterWorkspace').then(module => ({ default: module.ReporterHomePage })));
+const ReporterNewTicketPage = lazy(() => import('@/ReporterWorkspace').then(module => ({ default: module.ReporterNewTicketPage })));
+const ReporterTicketsPage = lazy(() => import('@/ReporterWorkspace').then(module => ({ default: module.ReporterTicketsPage })));
+const OrganizationOnboarding = lazy(() => import('@/OrganizationOnboarding'));
+const OrganizationJoin = lazy(() => import('./OrganizationJoin'));
+const AuthMorph = lazy(() => import('./AuthMorph'));
+const TechnicianTicketDetail = lazy(() => import('@/components/TechnicianTicketDetail').then(module => ({ default: module.TechnicianTicketDetail })));
+
+const qc = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 type Lang = 'ar' | 'en';
 type ReporterBranchContextValue = {
   branches: ReporterBranch[];
@@ -673,8 +685,8 @@ function WorkspaceShell({children,lang,setLang,dark,setDark,authenticatedUser}:{
   const {data:storedNotifications=[],isError:notificationsError}=useQuery<UserNotification[]>({
     queryKey:['tadaruk-notifications',user.id],
     queryFn:()=>customFetch<UserNotification[]>('/api/notifications'),
-    refetchInterval:15000,
-    refetchOnWindowFocus:true,
+    refetchInterval:30000,
+    refetchOnWindowFocus:false,
     retry:1,
   });
   // Reporter sees only updates that require a decision or confirm a final outcome.
@@ -789,6 +801,23 @@ function WorkspaceShell({children,lang,setLang,dark,setDark,authenticatedUser}:{
   const matchingLink=links.map(([path])=>path as string)
     .filter(path=>path==='/workspace'?location===path:location===path||location.startsWith(`${path}/`))
     .sort((left,right)=>right.length-left.length)[0];
+  const mobileBottomNav = (
+    <nav className="workspace-mobile-nav" aria-label={tr(lang,'التنقل بين صفحات تدارك','TADARUK mobile navigation')}>
+      {links.map(([path, ar, en, Icon]) => {
+        const selected = matchingLink === path;
+        return <Link
+          key={path as string}
+          href={path as string}
+          className={`workspace-mobile-nav-link ${selected ? 'is-current' : ''}`}
+          aria-current={selected ? 'page' : undefined}
+          data-testid={`mobile-nav-${(path as string).replaceAll('/', '-').replace(/^-/, 'root')}`}
+        >
+          <Icon size={20} aria-hidden="true" strokeWidth={selected ? 2.3 : 1.8}/>
+          <span>{tr(lang, ar as string, en as string)}</span>
+        </Link>;
+      })}
+    </nav>
+  );
   const reporterBranches=branchContext?.branches||[];
   const selectedBranch=reporterBranches.find(branch=>branch.id===branchContext?.selectedBranchId)
     ||reporterBranches.find(branch=>branch.id===user.branchId)
@@ -1048,12 +1077,26 @@ function WorkspaceShell({children,lang,setLang,dark,setDark,authenticatedUser}:{
             </div>
           </header>
 
+          <div className="reporter-mobile-location" data-testid="reporter-mobile-branch">
+            <Building2 size={17} aria-hidden="true"/>
+            <span className="reporter-mobile-location-label">{tr(lang,'الموقع الحالي','Current location')}</span>
+            {reporterBranches.length > 1
+              ? <TadarukSelect value={branchContext?.selectedBranchId||selectedBranch?.id||reporterBranches[0]?.id||''}
+                  onValueChange={value=>branchContext?.selectBranch(value)}
+                  ariaLabel={tr(lang,'اختيار الفرع المصرح به','Select authorized branch')}
+                  dir={lang==='ar'?'rtl':'ltr'}
+                  options={reporterBranches.map(branch=>({value:branch.id,label:branch.name}))}
+                  testId="select-mobile-branch"/>
+              : <strong>{branchLabel}</strong>}
+          </div>
+
           {/* Main Workspace Content */}
           <main className="workspace-content reporter-workspace-content">
             {children}
           </main>
         </div>
 
+        {mobileBottomNav}
         {profileDialogElement}
       </div>
     );
@@ -1085,11 +1128,13 @@ function WorkspaceShell({children,lang,setLang,dark,setDark,authenticatedUser}:{
     <AnimatePresence>{mobile&&<motion.button type="button" className="mobile-scrim" onClick={()=>setMobile(false)} aria-label={tr(lang,'إغلاق القائمة','Close navigation')} initial={reduced?false:{opacity:0}} animate={{opacity:1}} exit={reduced?{opacity:1}:{opacity:0}} transition={{duration:reduced?0:.16}}/>}</AnimatePresence>
     <div className={`main-frame unified-account-frame ${user.role==='technician'?'technician-frame':''}`}><header className="topbar workspace-compact-topbar">
       <button className="mobile-menu" type="button" onClick={()=>setMobile(true)} aria-label={tr(lang,'فتح القائمة','Open menu')}><Menu size={20}/></button>
+      <Link href="/workspace" className="workspace-mobile-brand" aria-label={tr(lang,'العودة إلى الرئيسية','Go to home')}><Brand darkMode={dark}/></Link>
       {headerAccountControls}
       <div className="top-controls workspace-unified-controls technician-notifications-cluster">
         {notificationsHeaderControls}
       </div>
     </header><main className="workspace-content">{children}</main></div>
+    {mobileBottomNav}
 
     {profileDialogElement}
   </div>;
@@ -2128,6 +2173,7 @@ function WorkspaceRouter({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)
   />;
   return <ReporterBranchContext.Provider value={{branches:reporterBranches,selectedBranchId,selectBranch,status:branchStatus}}>
     <WorkspaceShell title={title} lang={lang} setLang={setLang} dark={dark} setDark={setDark} authenticatedUser={user}>
+      <Suspense fallback={<State title={tr(lang,'جاري تجهيز الصفحة','Preparing page')} loading/>}>
       <Switch>
         <Route path="/workspace">{user?user.role==='reporter'?<ReporterHomePage lang={lang} user={user}/>:<OverviewPage lang={lang} user={user}/>:<State title={tr(lang,'جاري استعادة الحساب','Restoring account')} loading/>}</Route>
         <Route path="/workspace/tickets/new">{user?.role==='reporter'?<ReporterNewTicketPage lang={lang} user={user} selectedBranchId={selectedBranchId}/>:user?<State title={tr(lang,'إنشاء البلاغات متاح للمبلّغ فقط','Only reporters can create tickets')}/>:<State title={tr(lang,'جاري استعادة الحساب','Restoring account')} loading/>}</Route>
@@ -2138,6 +2184,7 @@ function WorkspaceRouter({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)
         <Route path="/workspace/knowledge">{user?.role==='manager'?<KnowledgePage lang={lang}/>:<State title={tr(lang,'متاح لمدير العمليات فقط','Only available for operations manager')}/>}</Route>
         <Route component={NotFound}/>
       </Switch>
+      </Suspense>
     </WorkspaceShell>
   </ReporterBranchContext.Provider>;
 }
@@ -2205,5 +2252,5 @@ function AppRoutes() {
   if(path==='/login'||path==='/signup'||path==='/demo')return <AuthMorph lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/>;
   return <Switch><Route path="/"><Landing lang={prefs.lang} setLang={prefs.setLang} dark={prefs.dark} setDark={prefs.setDark}/></Route><Route path="/signup"><OrganizationOnboarding lang={prefs.lang} mode="signup"/></Route><Route path="/join"><OrganizationJoin lang={prefs.lang}/></Route><Route path="/login"><OrganizationOnboarding lang={prefs.lang} mode="login"/></Route><Route component={NotFound}/></Switch>;
 }
-function App() { return <QueryClientProvider client={qc}><AppRoutes/></QueryClientProvider>; }
+function App() { return <QueryClientProvider client={qc}><Suspense fallback={<div className="workspace-loading" role="status"><div className="skeleton-bar"/><div className="skeleton-card"/></div>}><AppRoutes/></Suspense></QueryClientProvider>; }
 export default App;
