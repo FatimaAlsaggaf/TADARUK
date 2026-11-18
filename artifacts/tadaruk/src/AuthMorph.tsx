@@ -18,6 +18,14 @@ const FALLBACK_DEMO_USERS:DemoUser[]=[
 
 export default function AuthMorph({lang,setLang,dark,setDark}:{lang:Lang;setLang:(v:Lang)=>void;dark:boolean;setDark:(v:boolean)=>void}){
  const [path,go]=useLocation();
+ const [mobileLite,setMobileLite]=useState(()=>typeof window!=='undefined'&&window.matchMedia('(max-width: 850px), (prefers-reduced-motion: reduce)').matches);
+ useEffect(()=>{
+   const media=window.matchMedia('(max-width: 850px), (prefers-reduced-motion: reduce)');
+   const update=()=>setMobileLite(media.matches);
+   update();
+   media.addEventListener('change',update);
+   return ()=>media.removeEventListener('change',update);
+ },[]);
  const signupRoute=path.startsWith('/signup');
  const [signup,setSignup]=useState(signupRoute);
  const [email,setEmail]=useState('');
@@ -71,10 +79,10 @@ export default function AuthMorph({lang,setLang,dark,setDark}:{lang:Lang;setLang
  ];
  return <main className="auth-morph-page" dir={lang==='ar'?'rtl':'ltr'}>
   <div className="auth-veiled-background" aria-hidden="true">
-    <DarkVeil lightMode={!dark} color={dark?'#4ba7c7':'#245c82'}
+    {!mobileLite&&<DarkVeil lightMode={!dark} color={dark?'#4ba7c7':'#245c82'}
       speed={0.5} scale={1} dpr={1.5} flow={1} warp={0} sheen={0.58} glow={0.52}
       brightness={dark?1.2:1.5} grain={0.02} quality={0.5} mouseInteraction mouseStrength={0.65}
-      fade={0.12} opacity={dark?0.9:0.92} className="auth-morph-dark-veil"/>
+      fade={0.12} opacity={dark?0.9:0.92} className="auth-morph-dark-veil"/>}
   </div>
   <header className="auth-morph-header">
     <div className="nav-actions auth-morph-header-actions">
