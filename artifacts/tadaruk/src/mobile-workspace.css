@@ -477,7 +477,7 @@
   /* On phones place the workflow stroke and each icon on the center axis,
      instead of pinning the stroke to the right edge in RTL. */
   .landing .workflow-reveal {
-    width: min(100% - 28px, 500px) !important;
+    width: min(calc(100% - 28px), 500px) !important;
     margin-inline: auto !important;
   }
   .landing .roadmap {
