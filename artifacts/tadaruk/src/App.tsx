@@ -36,6 +36,7 @@ import {createInvitationLink} from './invitation-link';
 import { TicketCancellationAction } from '@/components/TicketCancellationAction';
 import SunMoonThemeToggle from '@/components/ui/sun-moon-theme-toggle';
 import LiquidWorkspaceNav from '@/components/LiquidWorkspaceNav';
+import type { LucideIcon } from 'lucide-react';
 import './tadaruk.css';
 import './tadaruk-interactions.css';
 import './technician-contact.css';
@@ -806,7 +807,7 @@ function WorkspaceShell({children,lang,setLang,dark,setDark,authenticatedUser}:{
       items={links.map(([path, ar, en, Icon]) => ({
         href: path as string,
         label: tr(lang, ar as string, en as string),
-        icon: Icon,
+        icon: Icon as LucideIcon,
       }))}
       activeHref={matchingLink}
       dark={dark}
