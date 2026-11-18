@@ -331,3 +331,116 @@
 [data-slot="dialog-content"].modal-card.modal-radix > button:last-child {
   display:none !important;
 }
+
+/* Physical order requested: at the far LEFT is the account; immediately
+   to its RIGHT is the bell; brand stays at the far RIGHT.
+   direction:ltr is applied only to the two-control group, not Arabic content. */
+.app-shell .unified-account-frame .workspace-mobile-header-controls,
+.app-shell.reporter-shell .reporter-header-controls.workspace-mobile-header-controls {
+  display:flex !important;
+  flex-direction:row !important;
+  direction:ltr !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+}
+.app-shell .unified-account-frame .workspace-mobile-header-controls > .technician-header-account,
+.app-shell.reporter-shell .reporter-header-controls.workspace-mobile-header-controls > .technician-header-account {
+  order:0 !important;
+  flex:0 1 auto !important;
+}
+.app-shell .unified-account-frame .workspace-mobile-header-controls > .technician-notifications-cluster,
+.app-shell .unified-account-frame .workspace-mobile-header-controls > .workspace-header-notifications,
+.app-shell.reporter-shell .reporter-header-controls.workspace-mobile-header-controls > .workspace-header-notifications {
+  order:1 !important;
+  flex:0 0 auto !important;
+}
+/* Respect RTL labels and menus even though physical icon order is LTR. */
+.app-shell .workspace-mobile-header-controls .technician-header-account-button,
+.app-shell .workspace-mobile-header-controls .technician-header-menu,
+.app-shell .workspace-mobile-header-controls .workspace-header-notifications-popover {
+  direction:rtl !important;
+}
+
+/* "Cancel draft" opens an accessible Radix portal: always centered in the
+   actual viewport, focused and above the app header and bottom navigation. */
+[data-slot="alert-dialog-content"].rw-discard-modal {
+  position:fixed !important;
+  top:50% !important;
+  left:50% !important;
+  transform:translate(-50%,-50%) !important;
+  width:min(440px,calc(100vw - 28px)) !important;
+  max-width:calc(100vw - 28px) !important;
+  max-height:calc(100dvh - 28px) !important;
+  padding:22px 20px !important;
+  display:grid !important;
+  gap:14px !important;
+  background:hsl(var(--card)) !important;
+  color:hsl(var(--foreground)) !important;
+  border:1px solid hsl(var(--border)) !important;
+  border-radius:18px !important;
+  box-shadow:0 25px 75px rgba(9,29,53,.35) !important;
+  overflow-y:auto !important;
+  overscroll-behavior:contain;
+  z-index:1601 !important;
+  direction:rtl;
+}
+.rw-discard-modal [data-slot="alert-dialog-header"] {
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-start !important;
+  gap:10px !important;
+  text-align:start !important;
+}
+.rw-discard-modal .rw-discard-dialog-icon {
+  display:grid;
+  place-items:center;
+  width:48px;
+  height:48px;
+  border-radius:14px;
+  background:#ffeaed;
+  color:#ae334a;
+}
+.rw-discard-modal [data-slot="alert-dialog-title"] {
+  font:750 19px/1.5 'IBM Plex Sans Arabic',sans-serif !important;
+  margin:0 !important;
+}
+.rw-discard-modal [data-slot="alert-dialog-description"] {
+  font:500 13px/1.8 'IBM Plex Sans Arabic',sans-serif !important;
+  text-align:start !important;
+}
+.rw-discard-modal .rw-discard-dialog-actions {
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:10px !important;
+  margin-top:2px !important;
+}
+.rw-discard-modal .rw-discard-dialog-actions .rw-button {
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:5px !important;
+  width:100% !important;
+  min-width:0 !important;
+  min-height:44px !important;
+  margin:0 !important;
+  border-radius:11px !important;
+  font-size:12px !important;
+  line-height:1.45 !important;
+  padding:9px 7px !important;
+  text-align:center !important;
+}
+.rw-discard-modal .rw-discard-confirm {
+  color:#fff !important;
+  background:#bd3647 !important;
+  border-color:#bd3647 !important;
+}
+@media(max-width:900px) {
+  /* More specific mobile rules previously reset the control group to RTL. */
+  .app-shell .unified-account-frame .workspace-compact-topbar .workspace-mobile-header-controls,
+  .app-shell.reporter-shell .reporter-header .reporter-header-controls.workspace-mobile-header-controls {
+    direction:ltr !important;
+  }
+}
+@media(max-width:390px){
+  [data-slot="alert-dialog-content"].rw-discard-modal {padding:18px 14px !important;}
+}
