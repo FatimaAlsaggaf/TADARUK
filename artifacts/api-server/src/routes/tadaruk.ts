@@ -72,6 +72,7 @@ import {
   findSimilarSolutions,
   getAuthorizedBranchIds,
   getBranch,
+  getDemoBranchName,
   getDemoMember,
   getDemoUserFromRequest,
   getMember,
@@ -233,14 +234,14 @@ router.get("/demo/users", async (_req, res): Promise<void> => {
     await ensureDemoData();
     const users = await Promise.all(DEMO_ACCOUNT_IDS.map((id) => getDemoMember(id)));
     const views = await Promise.all(users.filter((member) => member !== undefined).map(async (member) => {
-      const branch = member.branchId ? await getBranch(member.branchId) : undefined;
+      const branchName = getDemoBranchName(member.branchId);
       return {
         id: member.id,
         name: member.name,
         role: member.role,
         initials: member.initials,
         branchId: member.branchId,
-        branchName: branch?.name ?? null,
+        branchName,
         specialization: member.specialization,
       };
     }));
@@ -254,14 +255,14 @@ router.get("/demo/users", async (_req, res): Promise<void> => {
 router.get("/session", async (req, res): Promise<void> => {
   try {
     const member = await getDemoUserFromRequest(req);
-    const branch = member?.branchId ? await getBranch(member.branchId) : undefined;
+    const branchName = getDemoBranchName(member?.branchId);
     const user = member ? {
       id: member.id,
       name: member.name,
       role: member.role,
       initials: member.initials,
       branchId: member.branchId,
-      branchName: branch?.name ?? null,
+      branchName,
       specialization: member.specialization,
     } : null;
     res.json(GetDemoSessionResponse.parse({ user }));
@@ -296,14 +297,14 @@ router.put("/session", async (req, res): Promise<void> => {
       res.status(400).json({ error: "Unknown demo account." });
       return;
     }
-    const branch = member.branchId ? await getBranch(member.branchId) : undefined;
+    const branchName = getDemoBranchName(member.branchId);
     const user = {
       id: member.id,
       name: member.name,
       role: member.role,
       initials: member.initials,
       branchId: member.branchId,
-      branchName: branch?.name ?? null,
+      branchName,
       specialization: member.specialization,
     };
     res.cookie("tadarukDemoUser", signDemoSessionCookie(member.id), demoCookieOptions);
