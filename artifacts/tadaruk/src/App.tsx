@@ -35,6 +35,7 @@ import InvitationQRCode from './components/InvitationQRCode';
 import {createInvitationLink} from './invitation-link';
 import { TicketCancellationAction } from '@/components/TicketCancellationAction';
 import SunMoonThemeToggle from '@/components/ui/sun-moon-theme-toggle';
+import LiquidWorkspaceNav from '@/components/LiquidWorkspaceNav';
 import './tadaruk.css';
 import './tadaruk-interactions.css';
 import './technician-contact.css';
@@ -801,21 +802,16 @@ function WorkspaceShell({children,lang,setLang,dark,setDark,authenticatedUser}:{
     .filter(path=>path==='/workspace'?location===path:location===path||location.startsWith(`${path}/`))
     .sort((left,right)=>right.length-left.length)[0];
   const mobileBottomNav = (
-    <nav className="workspace-mobile-nav" aria-label={tr(lang,'التنقل بين صفحات تدارك','TADARUK mobile navigation')}>
-      {links.map(([path, ar, en, Icon]) => {
-        const selected = matchingLink === path;
-        return <Link
-          key={path as string}
-          href={path as string}
-          className={`workspace-mobile-nav-link ${selected ? 'is-current' : ''}`}
-          aria-current={selected ? 'page' : undefined}
-          data-testid={`mobile-nav-${(path as string).replaceAll('/', '-').replace(/^-/, 'root')}`}
-        >
-          <Icon size={20} aria-hidden="true" strokeWidth={selected ? 2.3 : 1.8}/>
-          <span>{tr(lang, ar as string, en as string)}</span>
-        </Link>;
-      })}
-    </nav>
+    <LiquidWorkspaceNav
+      items={links.map(([path, ar, en, Icon]) => ({
+        href: path as string,
+        label: tr(lang, ar as string, en as string),
+        icon: Icon,
+      }))}
+      activeHref={matchingLink}
+      dark={dark}
+      lang={lang}
+    />
   );
   const reporterBranches=branchContext?.branches||[];
   const selectedBranch=reporterBranches.find(branch=>branch.id===branchContext?.selectedBranchId)
@@ -1056,9 +1052,9 @@ function WorkspaceShell({children,lang,setLang,dark,setDark,authenticatedUser}:{
             </Link>
 
             {/* Controls Cluster: Aligned cleanly to the LEFT in RTL */}
-            <div className="reporter-header-controls unified-account-controls">
-              {notificationsHeaderControls}
+            <div className="reporter-header-controls unified-account-controls workspace-mobile-header-controls">
               {headerAccountControls}
+              {notificationsHeaderControls}
             </div>
 
             {/* Subtle Structural Rounded Inside Corner Junction (Fillet) */}
@@ -1128,9 +1124,11 @@ function WorkspaceShell({children,lang,setLang,dark,setDark,authenticatedUser}:{
     <div className={`main-frame unified-account-frame ${user.role==='technician'?'technician-frame':''}`}><header className="topbar workspace-compact-topbar">
       <button className="mobile-menu" type="button" onClick={()=>setMobile(true)} aria-label={tr(lang,'فتح القائمة','Open menu')}><Menu size={20}/></button>
       <Link href="/workspace" className="workspace-mobile-brand" aria-label={tr(lang,'العودة إلى الرئيسية','Go to home')}><Brand darkMode={dark}/></Link>
-      {headerAccountControls}
-      <div className="top-controls workspace-unified-controls technician-notifications-cluster">
-        {notificationsHeaderControls}
+      <div className="workspace-mobile-header-controls">
+        {headerAccountControls}
+        <div className="top-controls workspace-unified-controls technician-notifications-cluster">
+          {notificationsHeaderControls}
+        </div>
       </div>
     </header><main className="workspace-content">{children}</main></div>
     {mobileBottomNav}
