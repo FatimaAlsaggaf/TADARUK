@@ -404,9 +404,8 @@
   max-width:none !important;
   image-rendering:pixelated;
 }
-.tadaruk-invite-qr-image:has(img) canvas{
-  display:none !important;
-}
+/* Let QRCode.js toggle canvas when its image is actually ready. 
+   Hiding it merely because an <img> exists made the invitation QR blank while image loads. */
 .tadaruk-invite-qr-logo{
   position:absolute;
   top:50%;left:50%;
