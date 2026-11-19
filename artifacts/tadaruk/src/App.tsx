@@ -54,6 +54,7 @@ import './mobile-form-polish.css';
 import './mobile-ticket-detail-polish.css';
 import './technician-ux-polish.css';
 import './reporter-header-align.css';
+import './landing-nav-mobile-stability.css';
 
 const ReporterHomePage = lazy(() => import('@/ReporterWorkspace').then(module => ({ default: module.ReporterHomePage })));
 const ReporterNewTicketPage = lazy(() => import('@/ReporterWorkspace').then(module => ({ default: module.ReporterNewTicketPage })));
@@ -441,8 +442,8 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
       icon: ClipboardList
     },
     {
-      title: 'تنظيم ذكي للبلاغ',
-      copy: 'اقتراح عنوان وتصنيف وأولوية للبلاغ قبل تأكيده.',
+      title: 'تحليل البلاغ بالذكاء الاصطناعي',
+      copy: 'يحلّل تدارك وصف العطل صوتيًا أو نصيًا، ويحدد نوعه وأولويته، ثم يحوّله إلى بلاغ منظّم ويوجّهه تلقائيًا للفني المناسب بعد تأكيدك.',
       icon: Activity
     },
     {
@@ -462,8 +463,8 @@ function Landing({lang,setLang,dark,setDark}:{lang:Lang;setLang:(x:Lang)=>void;d
       icon: ClipboardList
     },
     {
-      title: 'Assisted ticket preparation',
-      copy: 'Suggested title, category and priority before the report is confirmed.',
+      title: 'AI-powered issue analysis',
+      copy: 'Tadaruk analyzes spoken or written issue descriptions, identifies the issue type and priority, then prepares a structured report and automatically routes it to the right technician after you confirm.',
       icon: Activity
     },
     {
