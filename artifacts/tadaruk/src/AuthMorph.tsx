@@ -91,7 +91,7 @@ export default function AuthMorph({lang,setLang,dark,setDark}:{lang:Lang;setLang
     <div className="nav-actions auth-morph-header-actions">
       <SunMoonThemeToggle className="landing-theme-toggle" theme={dark?'dark':'light'} onThemeChange={theme=>setDark(theme==='dark')} aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')} data-testid="theme-toggle-auth" size={40} duration={860}/>
       <button className="nav-lang" type="button" onClick={()=>setLang(lang==='ar'?'en':'ar')} aria-label={tr(lang,'التبديل إلى الإنجليزية','Switch to Arabic')}><Languages size={16}/><span>{lang==='ar'?'English':'العربية'}</span></button>
-      {/* Header back button is at the far right, replacing the logo. */}}
+      {/* Header back button is at the far right, replacing the logo. */}
     </div>
     <Link href={signup?'/login':'/'} className="auth-morph-header-back"
       aria-label={signup?tr(lang,'العودة إلى تسجيل الدخول','Back to sign in'):tr(lang,'الرجوع للصفحة الرئيسية','Back to home')}
