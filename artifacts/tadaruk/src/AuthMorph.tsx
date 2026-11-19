@@ -9,6 +9,7 @@ import OrganizationOnboarding from './OrganizationOnboarding';
 import './auth-morph.css';
 import './mobile-first-auth.css';
 import './auth-refinement.css';
+import './auth-header-back.css';
 
 type Lang='ar'|'en';
 const tr=(lang:Lang,ar:string,en:string)=>lang==='ar'?ar:en;
@@ -90,9 +91,14 @@ export default function AuthMorph({lang,setLang,dark,setDark}:{lang:Lang;setLang
     <div className="nav-actions auth-morph-header-actions">
       <SunMoonThemeToggle className="landing-theme-toggle" theme={dark?'dark':'light'} onThemeChange={theme=>setDark(theme==='dark')} aria-label={dark?tr(lang,'تفعيل الوضع الفاتح','Switch to light mode'):tr(lang,'تفعيل الوضع الداكن','Switch to dark mode')} data-testid="theme-toggle-auth" size={40} duration={860}/>
       <button className="nav-lang" type="button" onClick={()=>setLang(lang==='ar'?'en':'ar')} aria-label={tr(lang,'التبديل إلى الإنجليزية','Switch to Arabic')}><Languages size={16}/><span>{lang==='ar'?'English':'العربية'}</span></button>
-      {!signup&&<Link href="/" className="auth-morph-home">{lang==='ar'?<ArrowRight size={17}/>:<ArrowLeft size={17}/>} {tr(lang,'رجوع','Back')}</Link>}
+      {/* Header back button is at the far right, replacing the logo. */}
     </div>
-    <div className="auth-morph-brand" aria-label={tr(lang,'شعار تدارك','Tadaruk logo')}><img src={`${import.meta.env.BASE_URL}${dark?'brand-logo-dark.png':'brand-logo.png'}`} alt="تدارك TADARUK" /></div>
+    <Link href={signup?'/login':'/'} className="auth-morph-header-back"
+      aria-label={signup?tr(lang,'العودة إلى تسجيل الدخول','Back to sign in'):tr(lang,'الرجوع للصفحة الرئيسية','Back to home')}
+      data-testid="auth-header-back">
+      {lang==='ar'?<ArrowRight size={18}/>:<ArrowLeft size={18}/>}
+      <span>{tr(lang,'رجوع','Back')}</span>
+    </Link>
   </header>
   <section className={`auth-morph-card ${signup?'auth-morph-signup':''}`} aria-label={tr(lang,'الدخول وإنشاء الحساب','Sign in and registration')}>
     <div className="auth-morph-form-area">

@@ -1,0 +1,63 @@
+/* Reporter header only. Place profile at the physical far LEFT and the bell
+   immediately to its RIGHT, on mobile and desktop. Do not flip their content. */
+.app-shell.reporter-shell .reporter-header {
+  display:flex !important;
+  flex-direction:row !important;
+  direction:rtl !important; /* logo stays on physical right */
+  justify-content:space-between !important;
+  align-items:center !important;
+}
+.app-shell.reporter-shell .reporter-header .reporter-header-controls.unified-account-controls.workspace-mobile-header-controls {
+  display:inline-flex !important;
+  flex-direction:row !important;
+  direction:ltr !important; /* account FIRST -> bell SECOND left to right */
+  justify-content:flex-start !important;
+  align-items:center !important;
+  flex:0 0 auto !important;
+  width:auto !important;
+  max-width:calc(100vw - 125px) !important;
+  min-width:0 !important;
+  margin:0 0 0 0 !important;
+  margin-right:auto !important; /* push all controls to the physical left */
+  padding:0 !important;
+  gap:7px !important;
+  order:2 !important;
+}
+.app-shell.reporter-shell .reporter-header .reporter-header-controls > .technician-header-account {
+  order:0 !important;
+  flex:0 1 auto !important;
+  min-width:0 !important;
+  margin:0 !important;
+}
+.app-shell.reporter-shell .reporter-header .reporter-header-controls > .workspace-header-notifications {
+  order:1 !important;
+  flex:0 0 auto !important;
+  margin:0 !important;
+}
+.app-shell.reporter-shell .reporter-header .reporter-header-controls .technician-header-account-button,
+.app-shell.reporter-shell .reporter-header .reporter-header-controls .technician-header-menu,
+.app-shell.reporter-shell .reporter-header .reporter-header-controls .workspace-header-notifications-popover {
+  direction:rtl !important; /* Arabic menus and account names still read normally */
+}
+.app-shell.reporter-shell[dir="ltr"] .reporter-header .reporter-header-controls .technician-header-account-button,
+.app-shell.reporter-shell[dir="ltr"] .reporter-header .reporter-header-controls .technician-header-menu,
+.app-shell.reporter-shell[dir="ltr"] .reporter-header .reporter-header-controls .workspace-header-notifications-popover {
+  direction:ltr !important;
+}
+.app-shell.reporter-shell .reporter-header .reporter-mobile-brand {
+  order:0 !important;
+  margin:0 !important;
+  flex:0 0 auto !important;
+}
+@media(max-width:900px){
+  .app-shell.reporter-shell .reporter-header .reporter-header-controls.unified-account-controls.workspace-mobile-header-controls{
+    gap:5px !important;
+    max-width:calc(100vw - 118px) !important;
+    margin-right:auto !important;
+  }
+  .app-shell.reporter-shell .reporter-header .reporter-header-controls .technician-header-account-button,
+  .app-shell.reporter-shell .reporter-header .reporter-header-controls .workspace-header-bell {
+    min-width:40px !important;
+    min-height:40px !important;
+  }
+}
