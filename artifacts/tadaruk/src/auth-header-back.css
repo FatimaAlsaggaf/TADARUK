@@ -1,0 +1,86 @@
+/* Auth header — remove old logo and place an actual back action at its
+   physical right position. The rest of the login/registration UI is unchanged. */
+.auth-morph-page .auth-morph-header {
+  direction:ltr !important;
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  flex-wrap:nowrap !important;
+  gap:12px !important;
+}
+.auth-morph-page .auth-morph-header-actions.nav-actions {
+  order:0 !important;
+  direction:ltr !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  flex-wrap:nowrap !important;
+  min-width:0 !important;
+  margin:0 !important;
+  gap:10px !important;
+}
+.auth-morph-page .auth-morph-header-back {
+  order:1 !important;
+  flex:0 0 auto !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:7px !important;
+  min-height:43px !important;
+  padding:9px 14px !important;
+  margin:0 0 0 auto !important;
+  border:1px solid rgba(152,189,212,.6) !important;
+  border-radius:12px !important;
+  background:rgba(255,255,255,.72) !important;
+  color:#285878 !important;
+  font:700 13px/1.5 'IBM Plex Sans Arabic',sans-serif !important;
+  text-decoration:none !important;
+  white-space:nowrap !important;
+  box-shadow:0 3px 12px rgba(24,80,120,.055) !important;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+  transition:background .2s ease,border-color .2s ease !important;
+}
+.auth-morph-page .auth-morph-header-back:hover {
+  background:#e7f4fa !important;
+  border-color:#9bc6dc !important;
+}
+.auth-morph-page .auth-morph-header-back:focus-visible {
+  outline:2px solid #328fbd !important;
+  outline-offset:3px !important;
+}
+.auth-morph-page[dir="rtl"] .auth-morph-header-back {direction:rtl !important;}
+.auth-morph-page[dir="ltr"] .auth-morph-header-back {direction:ltr !important;}
+.dark .auth-morph-page .auth-morph-header-back {
+  color:#e2f3fb !important;
+  border-color:#48667d !important;
+  background:rgba(25,50,70,.75) !important;
+}
+.dark .auth-morph-page .auth-morph-header-back:hover {
+  background:#264b67 !important;
+}
+@media(max-width:850px){
+  .auth-morph-page .auth-morph-header {
+    gap:7px !important;
+  }
+  .auth-morph-page .auth-morph-header-actions.nav-actions {
+    gap:5px !important;
+  }
+  .auth-morph-page .auth-morph-header-back {
+    min-height:40px !important;
+    padding:8px 11px !important;
+    font-size:12px !important;
+    border-radius:11px !important;
+    gap:5px !important;
+  }
+  .auth-morph-page .auth-morph-header-back svg {
+    width:16px;
+    height:16px;
+    flex:0 0 16px;
+  }
+}
+@media(max-width:350px){
+  .auth-morph-page .auth-morph-header-back {padding:7px 8px !important;}
+  .auth-morph-page .auth-morph-header-actions.nav-actions {gap:3px !important;}
+}
