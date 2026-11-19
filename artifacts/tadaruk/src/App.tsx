@@ -18,7 +18,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { TadarukSelect } from '@/components/TadarukSelect';
 import {
-  customFetch, useHealthCheck, useGetDemoSession, useClearDemoSession, useGetOverview,
+  customFetch, useHealthCheck, useGetDemoSession, useClearDemoSession,
   useListTickets, useGetTicket, usePerformTicketAction,
   useListBranches, useCreateBranch, useUpdateBranch, useListTechnicians, useCreateTechnician,
   useUpdateTechnician, useListKnowledge, useListReporterBranches, getListReporterBranchesQueryKey,
@@ -1223,18 +1223,31 @@ function FrequentFaults({tickets,isLoading,isError,retry,lang}:{tickets:Ticket[]
   </section>;
 }
 function OverviewPage({lang,user}:{lang:Lang;user:DemoUser}) {
-  const {data:overview,isLoading,isError,refetch}=useGetOverview(); const {data:tickets,isLoading:ticketsLoading,isError:ticketsError,refetch:refetchTickets}=useListTickets();
+  // The same role-scoped tickets already contain everything this dashboard
+  // needs. Avoid the extra /overview call which reread the tickets and history.
+  const {data:tickets,isLoading:ticketsLoading,isError:ticketsError,refetch:refetchTickets}=useListTickets();
   const manager=user.role==='manager',tech=user.role==='technician';
   const title=manager?tr(lang,'نظرة عامة','Overview'):tech?tr(lang,'مهامي اليوم','My work today'):tr(lang,'مرحباً، '+user.name.split(' ')[0],'Welcome, '+user.name.split(' ')[0]);
-  const safeTickets = Array.isArray(tickets) ? tickets : [];
+  const safeTickets = useMemo(() => Array.isArray(tickets) ? tickets : [], [tickets]);
   const userFilteredTickets = useMemo(() => {
     if (tech) return safeTickets.filter(t => t.technicianId === user.id);
     if (!manager) return safeTickets.filter(t => t.reporterId === user.id);
     return safeTickets;
   }, [safeTickets, tech, manager, user.id]);
-  const safeRecent = (overview?.recentTickets && Array.isArray(overview.recentTickets) && overview.recentTickets.length > 0)
-    ? (tech ? overview.recentTickets.filter(t => t.technicianId === user.id) : !manager ? overview.recentTickets.filter(t => t.reporterId === user.id) : overview.recentTickets)
-    : userFilteredTickets.slice(0, 4);
+  const overview = useMemo(() => {
+    const now = new Date();
+    return {
+      openTickets: safeTickets.filter(t => t.status !== 'closed').length,
+      urgentTickets: safeTickets.filter(t => t.priority === 'urgent' && t.status !== 'closed').length,
+      pendingAssignment: safeTickets.filter(t => !t.technicianId && t.status !== 'closed').length,
+      awaitingConfirmation: safeTickets.filter(t => t.status === 'awaiting_confirmation').length,
+      resolvedThisMonth: safeTickets.filter(t => {
+        const updated = new Date(t.updatedAt);
+        return t.status === 'closed' && updated.getMonth() === now.getMonth() && updated.getFullYear() === now.getFullYear();
+      }).length,
+    };
+  }, [safeTickets]);
+  const safeRecent = userFilteredTickets.slice(0, manager ? 5 : 4);
   const own=userFilteredTickets.slice(0,4);
   return <div className="page-enter"><PageTitle eyebrow={manager?tr(lang,'العمليات · ٠١','OPERATIONS / 01'):tr(lang,'مساحة العمل','YOUR WORKSPACE')} title={title} description={manager?tr(lang,'كل بلاغ واضح، وكل خطوة لها صاحب.','Every report has an owner and a clear next step.'):tech?tr(lang,'ابدأ بالأولوية، وسجّل ما أصلحته للفريق.','Start with the highest priority and record the repair.'):tr(lang,'أخبرنا بما يحتاج إلى عناية. سنبقيك على اطلاع حتى يكتمل الإصلاح.','Tell us what needs attention. We will keep you updated through resolution.')}/>
      {manager?<><div className="overview-grid"><div className="metric-lead metric-open"><div className="metric-lead-head"><span className="metric-label">{tr(lang,'البلاغات المفتوحة','Open tickets')}</span><span className="metric-lead-icon" aria-hidden="true"><Activity size={21}/></span></div><strong>{overview?.openTickets??0}</strong><span className="metric-foot"><Building2 size={16}/>{tr(lang,'عبر جميع الفروع','Across all branches')}</span></div><div className="metric-card metric-urgent"><div className="metric-card-head"><span>{tr(lang,'طارئة','Urgent')}</span><span className="metric-card-icon" aria-hidden="true"><CircleAlert size={20}/></span></div><strong>{overview?.urgentTickets??0}</strong><small>{tr(lang,'تحتاج إلى متابعة سريعة','Needs prompt follow-up')}</small></div><div className="metric-card metric-pending"><div className="metric-card-head"><span>{tr(lang,'بانتظار الإسناد','Awaiting assignment')}</span><span className="metric-card-icon" aria-hidden="true"><Users size={20}/></span></div><strong>{overview?.pendingAssignment??0}</strong><small>{tr(lang,'تحتاج إلى توجيه','Needs routing')}</small></div><div className="metric-card metric-confirm"><div className="metric-card-head"><span>{tr(lang,'بانتظار التأكيد','Awaiting confirmation')}</span><span className="metric-card-icon" aria-hidden="true"><Clock3 size={20}/></span></div><strong>{overview?.awaitingConfirmation??0}</strong><small>{tr(lang,'تنتظر المبلّغ','Waiting on reporter')}</small></div></div>
