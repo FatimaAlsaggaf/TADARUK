@@ -1,0 +1,101 @@
+/* Landing page only: give both logo variants the same measured box.
+   This prevents the taller dark-mode artwork from moving the mobile header
+   below its divider when the theme switches. Hero/logo elsewhere unaffected. */
+@media (max-width: 780px) {
+  .landing .landing-nav.wrap,
+  .dark .landing .landing-nav.wrap {
+    height: 68px !important;
+    min-height: 68px !important;
+    max-height: 68px !important;
+    box-sizing: border-box !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    align-content: center !important;
+    column-gap: 8px !important;
+    padding-block: 0 !important;
+    margin-block: 0 !important;
+    top: 0 !important;
+    transform: none !important;
+  }
+
+  .landing .landing-nav > .landing-brand {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    align-self: center !important;
+    justify-self: start !important;
+    flex: none !important;
+    width: 102px !important;
+    max-width: 28vw !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+  }
+
+  .landing .landing-nav > .landing-brand .brand-lockup,
+  .dark .landing .landing-nav > .landing-brand .brand-lockup {
+    width: 100% !important;
+    height: 40px !important;
+    max-height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .landing .landing-nav > .landing-brand img.brand-logo,
+  .dark .landing .landing-nav > .landing-brand img.brand-logo {
+    display: block !important;
+    width: 102px !important;
+    max-width: 100% !important;
+    height: 36px !important;
+    max-height: 36px !important;
+    object-fit: contain !important;
+    object-position: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex: 0 1 auto !important;
+  }
+
+  .landing .landing-nav > .nav-actions,
+  .dark .landing .landing-nav > .nav-actions {
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    align-self: center !important;
+    justify-self: end !important;
+    flex-wrap: nowrap !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 3px !important;
+  }
+
+  .landing .landing-nav > .nav-actions > * {
+    align-self: center !important;
+    margin-block: 0 !important;
+  }
+
+  .landing .landing-nav > .landing-nav-divider {
+    bottom: 0 !important;
+    margin: 0 !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .landing .landing-nav > .landing-brand {
+    width: 92px !important;
+    max-width: 26vw !important;
+  }
+  .landing .landing-nav > .landing-brand img.brand-logo,
+  .dark .landing .landing-nav > .landing-brand img.brand-logo {
+    width: 92px !important;
+  }
+}
