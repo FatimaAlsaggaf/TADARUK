@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import {
   getGetOverviewQueryKey, getListTicketsQueryKey, useCreateTicket, useListReporterBranches,
-  useListTickets, usePreviewAssignment, getPreviewAssignmentQueryKey, analyzeTicket,
+  useListTickets, usePreviewAssignment, getPreviewAssignmentQueryKey, getListReporterBranchesQueryKey, analyzeTicket,
   type DemoUser, type ReporterBranch, type Ticket, type TicketAnalysis, type TicketInput, type TicketPriority,
   FALLBACK_REPORTER_BRANCHES
 } from '@workspace/api-client-react';
@@ -281,7 +281,7 @@ async function fileToPreview(file: File, lang: ReporterLang): Promise<string> {
 }
 
 export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicketPageProps) {
-  const { data: reporterBranches, isLoading: branchesLoading, isError: branchesError, refetch: refetchBranches } = useListReporterBranches({ query: { staleTime: 300_000, refetchOnWindowFocus: false } });
+  const { data: reporterBranches, isLoading: branchesLoading, isError: branchesError, refetch: refetchBranches } = useListReporterBranches({ query: { queryKey: getListReporterBranchesQueryKey(), staleTime: 300_000, refetchOnWindowFocus: false } });
   const allowedBranches = useMemo(() => {
     if (Array.isArray(reporterBranches) && reporterBranches.length > 0) return reporterBranches;
     return (FALLBACK_REPORTER_BRANCHES as unknown as ReporterBranch[]);
