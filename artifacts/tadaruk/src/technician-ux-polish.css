@@ -1,0 +1,508 @@
+/* TADARUK technician experience polish
+   Mobile: one concise task at a time, no overlapping text or oversized cards.
+   Desktop: consistent physical-left account+notification and a connected history rail.
+   Presentation only; status changes, buttons, permissions and backend stay untouched. */
+
+/* The technician's older topbar override anchored the controls to the opposite side.
+   Anchor the shared cluster at the physical LEFT on all desktop directions. */
+@media (min-width:901px) {
+  .app-shell .technician-frame .workspace-compact-topbar {
+    direction:ltr !important;
+    display:flex !important;
+    justify-content:flex-start !important;
+    align-items:center !important;
+    min-width:0 !important;
+    gap:10px !important;
+  }
+  .app-shell .technician-frame .workspace-compact-topbar > .workspace-mobile-header-controls {
+    display:inline-flex !important;
+    flex:0 0 auto !important;
+    flex-direction:row !important;
+    direction:ltr !important;
+    order:0 !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    gap:10px !important;
+    margin:0 !important;
+    padding:0 !important;
+  }
+  .app-shell .technician-frame .workspace-mobile-header-controls > .technician-header-account {
+    order:0 !important;
+    flex:0 0 auto !important;
+    margin:0 !important;
+  }
+  .app-shell .technician-frame .workspace-mobile-header-controls > .technician-notifications-cluster {
+    order:1 !important;
+    flex:0 0 auto !important;
+    margin:0 !important;
+    display:flex !important;
+    align-items:center !important;
+  }
+  .app-shell .technician-frame .technician-header-account-button,
+  .app-shell .technician-frame .workspace-header-notifications-popover,
+  .app-shell .technician-frame .technician-header-menu {
+    direction:rtl !important;
+  }
+  .app-shell[dir="ltr"] .technician-frame .technician-header-account-button,
+  .app-shell[dir="ltr"] .technician-frame .workspace-header-notifications-popover,
+  .app-shell[dir="ltr"] .technician-frame .technician-header-menu {direction:ltr !important;}
+
+  /* Desktop history: a neat uninterrupted rail, rather than detached markers.
+     Retain the actual timeline sequence; only the visual treatment changes. */
+  .app-shell .compact-timeline-panel:has(.tadaruk-vertical-history) {
+    padding:22px 24px !important;
+    border-radius:17px !important;
+  }
+  .app-shell .compact-timeline-panel:has(.tadaruk-vertical-history) .compact-timeline-head {
+    display:flex !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+    gap:12px !important;
+    padding-bottom:14px !important;
+    margin-bottom:8px !important;
+    border-bottom:1px solid #e5edf4 !important;
+  }
+  .app-shell .tadaruk-vertical-history {
+    position:relative !important;
+    padding:8px 0 5px !important;
+    gap:0 !important;
+  }
+  .app-shell .tadaruk-vertical-history:has(.tadaruk-history-row)::before {
+    content:"" !important;
+    position:absolute !important;
+    top:30px !important;
+    bottom:29px !important;
+    inset-inline-start:11px !important;
+    inset-inline-end:auto !important;
+    width:2px !important;
+    height:auto !important;
+    border-radius:999px !important;
+    background:linear-gradient(180deg,#68a9c9,#b4d3e4 50%,#dae6ee) !important;
+    z-index:0 !important;
+    pointer-events:none;
+  }
+  .app-shell .tadaruk-history-row {
+    position:relative !important;
+    display:grid !important;
+    grid-template-columns:24px minmax(0,1fr) !important;
+    gap:14px !important;
+    align-items:start !important;
+    padding:10px 0 !important;
+    min-width:0 !important;
+    z-index:1 !important;
+  }
+  .app-shell .tadaruk-history-dot {
+    position:relative !important;
+    display:grid !important;
+    place-items:center !important;
+    width:15px !important;
+    height:15px !important;
+    margin:13px auto 0 !important;
+    border:2px solid #78aec9 !important;
+    background:#fff !important;
+    border-radius:50% !important;
+    box-shadow:0 0 0 4px #fff !important;
+    z-index:2 !important;
+  }
+  .app-shell .tadaruk-history-row.is-current .tadaruk-history-dot {
+    background:#236388 !important;
+    border-color:#236388 !important;
+    box-shadow:0 0 0 4px #e8f4fa !important;
+  }
+  .app-shell .tadaruk-history-detail {
+    min-width:0 !important;
+    padding:12px 15px !important;
+    border:1px solid #e8eef4 !important;
+    border-radius:13px !important;
+    background:#f9fbfd !important;
+    box-shadow:0 2px 8px rgba(23,66,102,.025) !important;
+    text-align:start !important;
+    gap:4px !important;
+  }
+  .app-shell .tadaruk-history-row.is-current .tadaruk-history-detail {
+    background:#f0f8fd !important;
+    border-color:#cde5f2 !important;
+  }
+  .app-shell .tadaruk-history-detail time {
+    font-size:11px !important;
+    line-height:1.5 !important;
+    color:#768ba0 !important;
+    font-weight:550 !important;
+  }
+  .app-shell .tadaruk-history-detail strong {
+    font-size:14px !important;
+    line-height:1.55 !important;
+    color:#203f67 !important;
+    font-weight:750 !important;
+  }
+  .app-shell .tadaruk-history-detail small {
+    font-size:11px !important;
+    line-height:1.55 !important;
+    color:#6d8297 !important;
+  }
+  .app-shell .tadaruk-history-detail p {
+    margin:2px 0 0 !important;
+    font-size:12px !important;
+    line-height:1.7 !important;
+    color:#667c91 !important;
+  }
+}
+
+/* Phone-specific technician flow. The nav and the modal controls keep their
+   existing components/behaviour; this changes spacing, hierarchy and wrapping. */
+@media (max-width:900px) {
+  .app-shell .technician-frame .workspace-compact-topbar {
+    direction:rtl !important;
+    justify-content:space-between !important;
+  }
+  .app-shell .technician-frame .workspace-compact-topbar > .workspace-mobile-header-controls {
+    display:inline-flex !important;
+    flex-direction:row !important;
+    direction:ltr !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    gap:8px !important;
+    margin:0 !important;
+    order:1 !important;
+  }
+  .app-shell .technician-frame .workspace-mobile-header-controls > .technician-header-account {
+    order:0 !important;
+    margin:0 !important;
+  }
+  .app-shell .technician-frame .workspace-mobile-header-controls > .technician-notifications-cluster {
+    order:1 !important;
+    margin:0 !important;
+    display:flex !important;
+    align-items:center !important;
+  }
+  .app-shell .technician-frame .workspace-mobile-brand {
+    order:0 !important;
+    flex:0 0 auto !important;
+  }
+
+  .app-shell .technician-frame .workspace-content {
+    padding:13px 13px calc(103px + env(safe-area-inset-bottom,0px)) !important;
+  }
+  .app-shell .tech-detail-page {
+    display:flex !important;
+    flex-direction:column !important;
+    gap:11px !important;
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    padding:0 0 8px !important;
+  }
+  .app-shell .tech-detail-back {
+    display:flex !important;
+    flex-wrap:wrap !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+    gap:7px 9px !important;
+    padding:1px 0 0 !important;
+    margin:0 !important;
+  }
+  .app-shell .tech-detail-back .tech-back-link {
+    display:inline-flex !important;
+    align-items:center !important;
+    flex:0 1 auto !important;
+    min-width:0 !important;
+    min-height:39px !important;
+    gap:5px !important;
+    padding:7px 9px !important;
+    border-radius:10px !important;
+    font-size:11px !important;
+    line-height:1.5 !important;
+    white-space:normal !important;
+    text-align:start !important;
+  }
+  .app-shell .tech-header-meta {
+    display:flex !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    flex-wrap:wrap !important;
+    gap:6px !important;
+    min-width:0 !important;
+  }
+  .app-shell .tech-map-pill {
+    min-height:37px !important;
+    padding:7px 9px !important;
+    border-radius:10px !important;
+    font-size:10.5px !important;
+    line-height:1.4 !important;
+    white-space:normal !important;
+    gap:5px !important;
+  }
+  .app-shell .tech-ticket-id-pill {
+    font-size:10px !important;
+    font-weight:700 !important;
+    min-height:33px !important;
+    padding:7px 8px !important;
+    display:inline-flex !important;
+    align-items:center !important;
+    border-radius:9px !important;
+  }
+
+  /* Ticket summary: short badges, human-readable title and detail rows. */
+  .app-shell .tech-hero-card {
+    padding:15px 14px !important;
+    margin:0 !important;
+    gap:0 !important;
+    min-height:0 !important;
+    border-radius:16px !important;
+  }
+  .app-shell .tech-hero-badges {
+    display:flex !important;
+    align-items:center !important;
+    flex-wrap:wrap !important;
+    gap:6px !important;
+    margin:0 0 10px !important;
+  }
+  .app-shell .tech-hero-badges > span {
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    min-height:26px !important;
+    max-width:100% !important;
+    padding:4px 9px !important;
+    border-radius:999px !important;
+    font-size:11px !important;
+    line-height:1.4 !important;
+    white-space:normal !important;
+  }
+  .app-shell .tech-hero-title {
+    font-family:'IBM Plex Sans Arabic',sans-serif !important;
+    font-size:clamp(19px,5.1vw,22px) !important;
+    font-weight:750 !important;
+    line-height:1.65 !important;
+    margin:0 0 11px !important;
+    padding:0 0 10px !important;
+    overflow-wrap:break-word !important;
+  }
+  .app-shell .tech-meta-strip {
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    grid-auto-rows:auto !important;
+    gap:8px !important;
+    padding:0 !important;
+    margin:0 !important;
+    min-width:0 !important;
+  }
+  .app-shell .tech-meta-item {
+    display:flex !important;
+    align-items:flex-start !important;
+    justify-content:flex-start !important;
+    min-width:0 !important;
+    min-height:43px !important;
+    padding:9px 10px !important;
+    gap:6px !important;
+    border-radius:11px !important;
+    font-size:11px !important;
+    line-height:1.6 !important;
+    white-space:normal !important;
+    overflow-wrap:break-word !important;
+    word-break:normal !important;
+  }
+  .app-shell .tech-meta-item svg {
+    flex:0 0 15px !important;
+    margin-top:2px !important;
+  }
+  .app-shell .tech-meta-item > b,
+  .app-shell .tech-meta-item > span,
+  .app-shell .tech-meta-item > time {
+    display:block !important;
+    flex:1 1 auto !important;
+    min-width:0 !important;
+    max-width:100% !important;
+    font-size:11px !important;
+    line-height:1.55 !important;
+    overflow-wrap:break-word !important;
+    word-break:normal !important;
+  }
+
+  /* Four stages remain all visible but the connecting rail no longer crowds text. */
+  .app-shell .tech-action-hub {
+    padding:13px 12px !important;
+    border-radius:16px !important;
+    min-height:0 !important;
+    margin:0 !important;
+  }
+  .app-shell .tech-stages-bar {
+    display:grid !important;
+    grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+    gap:0 !important;
+    width:100% !important;
+    margin:0 0 15px !important;
+    padding:0 0 3px !important;
+  }
+  .app-shell .tech-stage-step {
+    position:relative !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    gap:7px !important;
+    min-width:0 !important;
+    max-width:100% !important;
+    padding:0 3px !important;
+    text-align:center !important;
+  }
+  .app-shell .tech-stage-step:not(:last-child)::after {
+    top:15px !important;
+    inset-inline-start:calc(50% + 17px) !important;
+    width:calc(100% - 34px) !important;
+    height:2px !important;
+    z-index:0 !important;
+  }
+  .app-shell .tech-stage-dot {
+    display:grid !important;
+    place-items:center !important;
+    width:30px !important;
+    height:30px !important;
+    flex:0 0 30px !important;
+    font-size:11px !important;
+    line-height:1 !important;
+    margin:0 !important;
+    z-index:2 !important;
+  }
+  .app-shell .tech-stage-label {
+    display:block !important;
+    width:100% !important;
+    font-size:10px !important;
+    line-height:1.5 !important;
+    font-weight:550 !important;
+    white-space:normal !important;
+    overflow-wrap:normal !important;
+    word-break:normal !important;
+    text-align:center !important;
+  }
+  .app-shell .tech-stage-step.is-current .tech-stage-label {
+    color:#234f7b !important;
+    font-weight:750 !important;
+  }
+
+  /* One clearly recognizable action, not a card nested inside another large card. */
+  .app-shell .tech-action-box {
+    display:flex !important;
+    flex-direction:column !important;
+    width:100% !important;
+    min-width:0 !important;
+    max-width:100% !important;
+    min-height:0 !important;
+    gap:11px !important;
+    padding:13px !important;
+    margin:0 !important;
+    border-radius:13px !important;
+    box-sizing:border-box !important;
+  }
+  .app-shell .tech-action-intro {
+    display:grid !important;
+    grid-template-columns:36px minmax(0,1fr) !important;
+    align-items:start !important;
+    gap:9px !important;
+    margin:0 !important;
+    min-width:0 !important;
+  }
+  .app-shell .tech-action-icon-circle {
+    display:grid !important;
+    place-items:center !important;
+    width:36px !important;
+    height:36px !important;
+    flex:0 0 36px !important;
+    margin:0 !important;
+    border-radius:11px !important;
+  }
+  .app-shell .tech-action-intro > div:last-child {
+    display:flex !important;
+    flex-direction:column !important;
+    gap:3px !important;
+    min-width:0 !important;
+    max-width:100% !important;
+  }
+  .app-shell .tech-action-intro h3 {
+    font-family:'IBM Plex Sans Arabic',sans-serif !important;
+    font-size:14px !important;
+    line-height:1.55 !important;
+    font-weight:750 !important;
+    margin:0 !important;
+    white-space:normal !important;
+    overflow-wrap:normal !important;
+  }
+  .app-shell .tech-action-intro p {
+    font-size:11px !important;
+    line-height:1.7 !important;
+    font-weight:450 !important;
+    margin:0 !important;
+    white-space:normal !important;
+  }
+  .app-shell .tech-primary-action-btn {
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:8px !important;
+    width:100% !important;
+    min-width:0 !important;
+    min-height:46px !important;
+    padding:10px 12px !important;
+    margin:0 !important;
+    border-radius:11px !important;
+    font-family:'IBM Plex Sans Arabic',sans-serif !important;
+    font-size:12px !important;
+    font-weight:750 !important;
+    line-height:1.5 !important;
+    white-space:normal !important;
+    text-align:center !important;
+  }
+  .app-shell .tech-primary-action-btn svg {flex:0 0 17px !important;}
+
+  .app-shell .tech-info-card {
+    padding:13px !important;
+    margin:0 !important;
+    border-radius:14px !important;
+  }
+  .app-shell .tech-info-header {
+    margin-bottom:8px !important;
+    padding-bottom:9px !important;
+  }
+  .app-shell .tech-info-header h3 {
+    font-size:14px !important;
+    line-height:1.5 !important;
+  }
+  .app-shell .tech-issue-description {
+    font-size:12px !important;
+    line-height:1.75 !important;
+    margin:0 0 8px !important;
+    overflow-wrap:break-word !important;
+  }
+}
+@media(max-width:375px){
+  .app-shell .technician-frame .workspace-content {padding-inline:10px !important;}
+  .app-shell .tech-detail-back .tech-back-link {font-size:10.5px !important;padding-inline:7px !important;}
+  .app-shell .tech-hero-title {font-size:19px !important;}
+  .app-shell .tech-meta-strip {
+    grid-template-columns:1fr !important;
+    gap:7px !important;
+  }
+  .app-shell .tech-meta-item {min-height:38px !important;padding:8px 10px !important;}
+  .app-shell .tech-stage-label {font-size:9px !important;}
+  .app-shell .tech-action-hub {padding:12px 9px !important;}
+  .app-shell .tech-action-box {padding:11px !important;}
+}
+/* The connected history uses the same style in both themes. */
+.dark .app-shell .compact-timeline-panel:has(.tadaruk-vertical-history) .compact-timeline-head {
+  border-color:#35506a !important;
+}
+.dark .app-shell .tadaruk-vertical-history:has(.tadaruk-history-row)::before {
+  background:linear-gradient(180deg,#69a5c7,#466984) !important;
+}
+.dark .app-shell .tadaruk-history-detail {
+  background:#1d344a !important;
+  border-color:#345269 !important;
+}
+.dark .app-shell .tadaruk-history-row.is-current .tadaruk-history-detail {
+  background:#25455c !important;
+  border-color:#4b7996 !important;
+}
+.dark .app-shell .tadaruk-history-detail strong {color:#e3f2fd !important;}
+.dark .app-shell .tadaruk-history-detail time,
+.dark .app-shell .tadaruk-history-detail small,
+.dark .app-shell .tadaruk-history-detail p {color:#b4c9dc !important;}
