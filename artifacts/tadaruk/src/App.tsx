@@ -51,6 +51,7 @@ import './mobile-first-pages.css';
 import './mobile-first-technician.css';
 import './ux-polish.css';
 import './mobile-form-polish.css';
+import './mobile-ticket-detail-polish.css';
 
 const ReporterHomePage = lazy(() => import('@/ReporterWorkspace').then(module => ({ default: module.ReporterHomePage })));
 const ReporterNewTicketPage = lazy(() => import('@/ReporterWorkspace').then(module => ({ default: module.ReporterNewTicketPage })));
