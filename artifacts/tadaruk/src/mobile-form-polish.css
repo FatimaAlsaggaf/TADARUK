@@ -1,0 +1,242 @@
+/* TADARUK forms: compact, usable dialogs and phone-sized actions. */
+
+/* Radix Select renders to a portal outside its parent dialog. A z-index of
+   100 placed branch/specialty/city menus BEHIND dialog z-index 1601. */
+.tadaruk-dropdown-surface.tadaruk-select-content,
+[data-radix-popper-content-wrapper]:has(> .tadaruk-select-content) {
+  z-index: 1800 !important;
+}
+.tadaruk-dropdown-surface.tadaruk-select-content {
+  max-height: min(var(--radix-select-content-available-height, 320px), 320px, calc(100dvh - 44px)) !important;
+  overflow-y: auto !important;
+  background: hsl(var(--popover)) !important;
+  border:1px solid hsl(var(--border)) !important;
+  box-shadow:0 16px 40px rgba(20,45,76,.2) !important;
+}
+
+/* One dedicated scope: do not alter other full-size information dialogs. */
+[data-slot="dialog-content"].branch-editor-dialog {
+  width: min(480px, calc(100vw - 28px)) !important;
+  max-width:480px !important;
+  max-height:min(88dvh, 760px) !important;
+  padding:18px 20px 0 !important;
+  gap:0 !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  overscroll-behavior:contain;
+  box-sizing:border-box;
+}
+.branch-editor-dialog .modal-head {
+  position:relative !important;
+  top:auto !important;
+  padding:0 0 10px !important;
+  margin:0 0 11px !important;
+  min-height:0 !important;
+  flex:0 0 auto;
+  border-bottom:1px solid hsl(var(--border));
+}
+.branch-editor-dialog .modal-head .modal-head-line {
+  display:flex !important;
+  min-height:38px !important;
+  align-items:center !important;
+}
+.branch-editor-dialog .modal-head [data-slot="dialog-title"] {
+  font-family:'IBM Plex Sans Arabic',sans-serif !important;
+  font-size:19px !important;
+  font-weight:750 !important;
+  line-height:1.5 !important;
+}
+.branch-editor-dialog .modal-head [data-slot="dialog-description"] {
+  position:static !important;
+  display:block !important;
+  margin:0 !important;
+  padding:0 !important;
+  font-size:11px !important;
+  line-height:1.55 !important;
+  text-align:start !important;
+  max-width:100% !important;
+}
+.branch-editor-dialog .branch-editor-form {
+  display:flex !important;
+  flex-direction:column !important;
+  gap:10px !important;
+  width:100% !important;
+  min-width:0 !important;
+  padding:0 !important;
+  margin:0 !important;
+}
+.branch-editor-dialog .branch-editor-form .field-label {
+  position:static !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:stretch !important;
+  gap:5px !important;
+  width:100% !important;
+  min-width:0 !important;
+  padding:0 !important;
+  margin:0 !important;
+  font-family:'IBM Plex Sans Arabic',sans-serif !important;
+  font-size:12px !important;
+  font-weight:650 !important;
+  line-height:1.5 !important;
+  color:hsl(var(--foreground)) !important;
+}
+.branch-editor-dialog .branch-editor-form .field-label-caption {
+  position:static !important;
+  display:block !important;
+  font-size:12px !important;
+  font-weight:650 !important;
+  line-height:1.5 !important;
+  margin:0 !important;
+  padding:0 !important;
+}
+.branch-editor-dialog .branch-editor-form .form-two {
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  width:100% !important;
+  gap:10px !important;
+  min-width:0 !important;
+  margin:0 !important;
+}
+.branch-editor-dialog .branch-editor-form input:not([type="checkbox"]),
+.branch-editor-dialog .branch-editor-form .tadaruk-select-trigger {
+  display:flex !important;
+  align-items:center !important;
+  width:100% !important;
+  min-width:0 !important;
+  height:43px !important;
+  min-height:43px !important;
+  max-height:43px !important;
+  margin:0 !important;
+  padding-inline:11px !important;
+  border-radius:11px !important;
+  font-family:'IBM Plex Sans Arabic',sans-serif !important;
+  font-size:14px !important;
+  font-weight:450 !important;
+  line-height:1.4 !important;
+  box-sizing:border-box !important;
+}
+.branch-editor-dialog .branch-editor-form input::placeholder {font-size:13px !important;}
+.branch-editor-dialog .branch-editor-form .branch-maps-field {
+  gap:6px !important;
+}
+.branch-editor-dialog .branch-editor-form .branch-map-help {
+  position:static !important;
+  display:block !important;
+  margin:0 !important;
+  padding:0 !important;
+  font-size:10px !important;
+  font-weight:400 !important;
+  line-height:1.5 !important;
+  color:hsl(var(--muted-foreground)) !important;
+}
+.branch-editor-dialog .branch-editor-form .branch-map-picker {
+  display:inline-flex !important;
+  flex:0 0 auto !important;
+  align-items:center !important;
+  justify-content:center !important;
+  align-self:flex-start !important;
+  max-width:100% !important;
+  width:auto !important;
+  min-height:37px !important;
+  padding:6px 11px !important;
+  margin:1px 0 0 !important;
+  font-size:11px !important;
+  font-weight:650 !important;
+  line-height:1.45 !important;
+  border-radius:10px !important;
+  white-space:normal !important;
+}
+.branch-editor-dialog .branch-editor-form .branch-map-picker svg {flex-shrink:0;}
+.branch-editor-dialog .branch-editor-form .premium-checkbox {
+  display:flex !important;
+  align-items:center !important;
+  min-height:44px !important;
+  padding:8px 11px !important;
+  margin:0 !important;
+  gap:9px !important;
+  border-radius:11px !important;
+  font-size:12px !important;
+}
+.branch-editor-dialog .branch-editor-form .modal-primary-actions {
+  position:sticky !important;
+  bottom:0 !important;
+  z-index:4 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  flex-wrap:nowrap !important;
+  gap:8px !important;
+  width:100% !important;
+  min-height:64px !important;
+  margin:1px 0 0 !important;
+  padding:10px 0 12px !important;
+  background:hsl(var(--card)) !important;
+  border-top:1px solid hsl(var(--border)) !important;
+}
+.branch-editor-dialog .branch-editor-form .modal-primary-actions button {
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:auto !important;
+  min-width:128px !important;
+  min-height:43px !important;
+  max-width:100% !important;
+  padding:9px 15px !important;
+  border-radius:11px !important;
+  font-size:12px !important;
+  line-height:1.3 !important;
+}
+
+/* Call-to-action buttons are compact, but retain 42px+ touch targets. */
+@media(max-width:900px) {
+  [data-slot="dialog-content"].branch-editor-dialog {
+    width:calc(100vw - 26px) !important;
+    max-width:450px !important;
+    max-height:calc(100dvh - 42px) !important;
+    padding:15px 15px 0 !important;
+    border-radius:18px !important;
+  }
+  .branch-editor-dialog .modal-head {
+    margin-bottom:9px !important;
+    padding-bottom:8px !important;
+  }
+  .branch-editor-dialog .modal-head [data-slot="dialog-title"] {font-size:18px !important;}
+  .branch-editor-dialog .branch-editor-form {gap:9px !important;}
+  .branch-editor-dialog .branch-editor-form .form-two {
+    grid-template-columns:minmax(0,1fr) !important;
+    gap:9px !important;
+  }
+  .branch-editor-dialog .branch-editor-form input:not([type="checkbox"]),
+  .branch-editor-dialog .branch-editor-form .tadaruk-select-trigger {
+    min-height:42px !important;
+    height:42px !important;
+    max-height:42px !important;
+    font-size:16px !important; /* prevent Safari input zoom */
+  }
+  .branch-editor-dialog .branch-editor-form .modal-primary-actions {
+    padding-bottom:calc(12px + env(safe-area-inset-bottom,0px)) !important;
+  }
+  .app-shell .page-title-action:has(.mobile-page-cta) {
+    align-self:flex-start !important;
+    width:auto !important;
+    max-width:100% !important;
+  }
+  .app-shell .page-title-action .mobile-page-cta {
+    width:auto !important;
+    min-width:0 !important;
+    min-height:42px !important;
+    max-width:100% !important;
+    padding:9px 13px !important;
+    font-size:12px !important;
+    border-radius:11px !important;
+    gap:6px !important;
+  }
+  .app-shell .page-title-action .btn,
+  .app-shell .technician-invite-actions .btn {
+    min-height:42px !important;
+    font-size:12px !important;
+    line-height:1.4 !important;
+    padding:9px 12px !important;
+  }
+}

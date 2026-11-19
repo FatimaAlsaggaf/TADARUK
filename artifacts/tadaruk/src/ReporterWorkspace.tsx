@@ -1,4 +1,4 @@
-import { type FormEvent, type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { type FormEvent, type ReactNode, lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useLocation } from 'wouter';
 import { motion, useReducedMotion } from 'motion/react';
@@ -10,11 +10,11 @@ import {
 } from 'lucide-react';
 import {
   getGetOverviewQueryKey, getListTicketsQueryKey, useCreateTicket, useListReporterBranches,
-  useListTickets, usePreviewAssignment, getPreviewAssignmentQueryKey, analyzeTicket,
+  useListTickets, usePreviewAssignment, getPreviewAssignmentQueryKey, getListReporterBranchesQueryKey, analyzeTicket,
   type DemoUser, type ReporterBranch, type Ticket, type TicketAnalysis, type TicketInput, type TicketPriority,
   FALLBACK_REPORTER_BRANCHES
 } from '@workspace/api-client-react';
-import { AiVoiceInput } from '@/components/ui/ai-voice-input';
+const AiVoiceInput = lazy(() => import('@/components/ui/ai-voice-input').then(module => ({ default: module.AiVoiceInput })));
 import { TadarukSelect } from '@/components/TadarukSelect';
 import {
   reporterDemoAnalysisAdapter,
@@ -281,7 +281,7 @@ async function fileToPreview(file: File, lang: ReporterLang): Promise<string> {
 }
 
 export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicketPageProps) {
-  const { data: reporterBranches, isLoading: branchesLoading, isError: branchesError, refetch: refetchBranches } = useListReporterBranches();
+  const { data: reporterBranches, isLoading: branchesLoading, isError: branchesError, refetch: refetchBranches } = useListReporterBranches({ query: { queryKey: getListReporterBranchesQueryKey(), staleTime: 300_000, refetchOnWindowFocus: false } });
   const allowedBranches = useMemo(() => {
     if (Array.isArray(reporterBranches) && reporterBranches.length > 0) return reporterBranches;
     return (FALLBACK_REPORTER_BRANCHES as unknown as ReporterBranch[]);
@@ -671,10 +671,12 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
 
             {/* Voice Input Section */}
             <div className="rw-input-options rw-voice-inline" aria-label={text(lang, 'تسجيل صوتي للمشكلة', 'Record an issue voice note')}>
-              <AiVoiceInput
-                lang={lang}
-                onTranscript={appendTranscript}
-              />
+              <Suspense fallback={<span className="rw-voice-loading" role="status">{text(lang,'جاري تجهيز التسجيل الصوتي…','Preparing voice recording…')}</span>}>
+                <AiVoiceInput
+                  lang={lang}
+                  onTranscript={appendTranscript}
+                />
+              </Suspense>
               <span className="rw-voice-helper">{text(lang, 'سجّل صوتك وسنضيف الكلام إلى وصف المشكلة تلقائيًا', 'Record your voice to add the words to the description automatically')}</span>
             </div>
 

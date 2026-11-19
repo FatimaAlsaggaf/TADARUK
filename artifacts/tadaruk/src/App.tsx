@@ -50,6 +50,7 @@ import './mobile-first-core.css';
 import './mobile-first-pages.css';
 import './mobile-first-technician.css';
 import './ux-polish.css';
+import './mobile-form-polish.css';
 
 const ReporterHomePage = lazy(() => import('@/ReporterWorkspace').then(module => ({ default: module.ReporterHomePage })));
 const ReporterNewTicketPage = lazy(() => import('@/ReporterWorkspace').then(module => ({ default: module.ReporterNewTicketPage })));
@@ -2081,7 +2082,7 @@ function BranchesPage({lang}:{lang:Lang}) {
   const toggleActive=(branch:Branch,active:boolean)=>update.mutate({branchId:branch.id,data:{active}},{onSuccess:()=>{setDeactivating(null);invalidate();}});
 
   return <div className="page-enter">
-    <PageTitle eyebrow={tr(lang,'المواقع والفروع','LOCATIONS / NETWORK')} title={tr(lang,'الفروع','Branches')} description={tr(lang,'سجل الفروع وحجم الصيانة والفريق النشط في كل موقع.','Branch records, open maintenance, and active field staff at each location.')} action={<Button onClick={()=>begin(null)} data-testid="button-add-branch"><Plus size={17}/>{tr(lang,'إضافة فرع','Add branch')}</Button>}/>
+    <PageTitle eyebrow={tr(lang,'المواقع والفروع','LOCATIONS / NETWORK')} title={tr(lang,'الفروع','Branches')} description={tr(lang,'سجل الفروع وحجم الصيانة والفريق النشط في كل موقع.','Branch records, open maintenance, and active field staff at each location.')} action={<Button className="mobile-page-cta" onClick={()=>begin(null)} data-testid="button-add-branch"><Plus size={17}/>{tr(lang,'إضافة فرع','Add branch')}</Button>}/>
     {isLoading?<State title={tr(lang,'جاري تحميل الفروع','Loading branches')} loading/>:isError?<State title={tr(lang,'تعذر تحميل الفروع','Could not load branches')} retry={()=>void refetch()}/>:!safeBranches?.length?<div className="empty-panel" aria-live="polite"><Building2 size={25}/><h3>{tr(lang,'لا توجد فروع مسجلة بعد','No branches added yet')}</h3><p>{tr(lang,'أضف أول فرع لبدء تنظيم سجل الصيانة.','Add a branch to organize its maintenance record.')}</p><Button onClick={()=>begin(null)}><Plus size={17}/>{tr(lang,'إضافة فرع','Add branch')}</Button></div>:<div className="branches-grid">{safeBranches.map((branch,index)=>{
       const activeTechs=safeTechs.filter(technician=>technician.branchId===branch.id&&technician.active).length;
       const mapUrl=branchMapUrl(branch.latitude,branch.longitude,branch.address,branch.city,branch.googleMapsUrl);
@@ -2095,8 +2096,8 @@ function BranchesPage({lang}:{lang:Lang}) {
     })}</div>}
     <ReporterAccessPanel lang={lang} branches={safeBranches}/>
     {update.isError&&!deactivating&&<p className="inline-error branch-action-error" role="alert">{tr(lang,'تعذر تحديث حالة الفرع. حاول مرة أخرى.','Could not update the branch status. Try again.')}</p>}
-    {modal&&<Modal key={editing?.id||'new-branch'} title={editing?tr(lang,'تعديل الفرع','Edit branch'):tr(lang,'إضافة فرع','Add branch')} close={closeEditor} dir={lang==='ar'?'rtl':'ltr'} description={tr(lang,'بيانات الفرع وموقعه من خرائط Google.','Branch details and its Google Maps location.')}>
-       <form noValidate onSubmit={save}>
+    {modal&&<Modal dialogClassName="branch-editor-dialog" key={editing?.id||'new-branch'} title={editing?tr(lang,'تعديل الفرع','Edit branch'):tr(lang,'إضافة فرع','Add branch')} close={closeEditor} dir={lang==='ar'?'rtl':'ltr'} description={tr(lang,'بيانات الفرع وموقعه من خرائط Google.','Branch details and its Google Maps location.')}>
+       <form className="branch-editor-form" noValidate onSubmit={save}>
          <label className="field-label">{tr(lang,'اسم الفرع','Branch name')}<input name="name" required minLength={2} defaultValue={editing?.name||''} placeholder={tr(lang,'مثال: فرع الروضة','Example: Al Rawdah Branch')} aria-invalid={!!fieldErrors.name} onChange={()=>setFieldErrors(current=>({...current,name:''}))} data-testid="input-branch-name"/><FieldMessage message={fieldErrors.name}/></label>
         <div className="form-two">
            <div className="field-label"><span className="field-label-caption">{tr(lang,'المدينة','City')}</span><TadarukSelect name="city" required value={cityChoice} onValueChange={value=>{setCityChoice(value);setFieldErrors(current=>({...current,city:'',cityOther:''}));if(value!==OTHER_CITY)setCustomCity('');}} ariaLabel={tr(lang,'المدينة','City')} dir={lang==='ar'?'rtl':'ltr'} placeholder={tr(lang,'اختر المدينة','Choose a city')} testId="input-branch-city" options={cityOptions}/><FieldMessage message={fieldErrors.city}/>{cityChoice===OTHER_CITY&&<><input name="cityOther" required minLength={2} value={customCity} onChange={event=>{setCustomCity(event.target.value);setFieldErrors(current=>({...current,cityOther:''}));}} placeholder={tr(lang,'مثال: مدينة الملك عبدالله الاقتصادية','Example: King Abdullah Economic City')} data-testid="input-branch-city-other"/><FieldMessage message={fieldErrors.cityOther}/></>}</div>
@@ -2131,8 +2132,8 @@ function KnowledgePage({lang}:{lang:Lang}) {
     {isLoading?<State title={tr(lang,'جاري تحميل المعرفة','Loading knowledge base')} loading/>:isError?<State title={tr(lang,'تعذر تحميل قاعدة المعرفة','Could not load knowledge base')} retry={()=>void refetch()}/>:filtered.length?<div className="knowledge-list">{filtered.map((entry:KnowledgeEntry,i)=><article className="knowledge-entry" key={entry.id}><span className="knowledge-index">{String(i+1).padStart(2,'0')}</span><div className="knowledge-entry-content"><div className="entry-tags"><span>{classificationText(entry.category,lang)}</span><span>{entry.branchName}</span></div><h3>{entry.title}</h3><div className="entry-solution">{entry.cause&&<p><b>{tr(lang,'السبب','Cause')}</b>{entry.cause}</p>}{entry.resolution&&<p><b>{tr(lang,'الإجراء','Action taken')}</b>{entry.resolution}</p>}</div><div className="entry-foot"><span><UserRound size={14}/>{entry.technicianName}</span><span>{entry.createdAt ? dateText(entry.createdAt,lang) : tr(lang, 'مؤخراً', 'Recently')}</span><Link href={`/workspace/tickets/${entry.ticketId}`}>{tr(lang,'البلاغ','Ticket')} {entry.ticketNumber}<ArrowUpRight size={14}/></Link></div></div><CheckCircle2 className="knowledge-check" size={20}/></article>)}</div>:<div className="empty-panel" aria-live="polite"><BookOpen size={25}/><h3>{entries?.length?tr(lang,'لا توجد نتائج مطابقة','No matching results'):tr(lang,'لا توجد حلول مؤكدة بعد','No confirmed fixes yet')}</h3><p>{tr(lang,'تُضاف الحلول تلقائياً عند تأكيد إغلاق البلاغ.','Solutions are added when a reporter confirms a repair.')}</p></div>}
   </div>;
 }
-function Modal({title,children,close,description,dir}:{title:string;children:ReactNode;close:()=>void;description?:string;dir?:'rtl'|'ltr'}) {
-  return <Dialog open onOpenChange={open=>{if(!open)close();}}><DialogContent className="modal-card modal-radix" dir={dir}>
+function Modal({title,children,close,description,dir,dialogClassName}:{title:string;children:ReactNode;close:()=>void;description?:string;dir?:'rtl'|'ltr';dialogClassName?:string}) {
+  return <Dialog open onOpenChange={open=>{if(!open)close();}}><DialogContent className={`modal-card modal-radix ${dialogClassName||''}`} dir={dir}>
     <DialogHeader className="modal-head">
       <div className="modal-head-line"><DialogTitle>{title}</DialogTitle><button type="button" className="modal-top-close" aria-label="إغلاق النافذة / Close dialog" onClick={close}><X size={18}/></button></div>
       {description&&<DialogDescription>{description}</DialogDescription>}

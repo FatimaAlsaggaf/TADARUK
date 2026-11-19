@@ -107,17 +107,39 @@
 }
 @media (max-width:640px) {
   .td-ai-orbit {
-    width:104px;
-    height:104px;
-    font-size:14px;
+    width:88px;
+    height:88px;
+    font-size:12px;
     line-height:1.1;
+    margin:0 auto 12px;
+  }
+  .reporter-view .rw-analysis-stage {
+    margin:8px 0 !important;
+    padding:19px 14px !important;
+  }
+  .reporter-view .rw-analysis-stage > .td-ai-orbit {
+    margin-bottom:14px !important;
+  }
+  .reporter-view .rw-analysis-stage .rw-ai-heading {
+    margin-top:0 !important;
+    padding-top:0 !important;
+  }
+  .reporter-view .rw-analysis-stage .rw-ai-heading h3 {
+    font-size:20px !important;
+    line-height:1.5 !important;
+    margin:0 0 6px !important;
+  }
+  .reporter-view .rw-analysis-stage .rw-ai-heading p {
+    font-size:12px !important;
+    line-height:1.65 !important;
+    margin:0 auto 16px !important;
   }
 }
 @media (max-width:360px) {
   .td-ai-orbit {
-    width:96px;
-    height:96px;
-    font-size:13px;
+    width:80px;
+    height:80px;
+    font-size:11px;
   }
 }
 @media(prefers-reduced-motion:reduce){
