@@ -534,12 +534,12 @@ export async function findSimilarSolutions(query: {
   limit?: number;
 }) {
   await ensureDemoData();
-  const resolved = await db.select().from(ticketsTable).where(and(
+  const resolved = await retryRead(() => db.select().from(ticketsTable).where(and(
     eq(ticketsTable.organizationId, DEMO_ORGANIZATION),
     eq(ticketsTable.status, "closed"),
     isNull(ticketsTable.cancelledAt),
     isNotNull(ticketsTable.resolution),
-  ));
+  )));
   const ranked = rankSimilarSolutions(
     { text: query.text, specialization: query.specialization, excludeId: query.excludeTicketId },
     resolved.map((ticket) => ({
@@ -550,22 +550,42 @@ export async function findSimilarSolutions(query: {
     })),
     { limit: query.limit ?? 3 },
   );
-  return Promise.all(ranked.map(async ({ ticket, score }) => {
-    const [branch, technician] = await Promise.all([
-      getBranch(ticket.branchId),
-      ticket.technicianId ? getMember(ticket.technicianId) : Promise.resolve(undefined),
-    ]);
-    return {
-      ticketId: ticket.id,
-      ticketNumber: ticket.number,
-      title: ticket.title,
-      specialization: ticket.specialization,
-      branchName: branch?.name ?? "",
-      technicianName: technician?.name ?? "",
-      cause: ticket.cause,
-      resolution: ticket.resolution ?? "",
-      score: Math.round(score * 100),
-      resolvedAt: ticket.updatedAt.toISOString(),
-    };
+  if (!ranked.length) return [];
+
+  // Avoid two extra round trips per matching ticket. Fetch only the branch and
+  // technician labels required for the returned results, in parallel.
+  const branchIds = [...new Set(ranked.map(({ ticket }) => ticket.branchId))];
+  const technicianIds = [...new Set(ranked
+    .map(({ ticket }) => ticket.technicianId)
+    .filter((id): id is string => Boolean(id)))];
+
+  const [branches, technicians] = await Promise.all([
+    branchIds.length
+      ? retryRead(() => db.select().from(branchesTable).where(and(
+          eq(branchesTable.organizationId, DEMO_ORGANIZATION),
+          inArray(branchesTable.id, branchIds),
+        )))
+      : Promise.resolve([]),
+    technicianIds.length
+      ? retryRead(() => db.select().from(teamMembersTable).where(and(
+          eq(teamMembersTable.organizationId, DEMO_ORGANIZATION),
+          inArray(teamMembersTable.id, technicianIds),
+        )))
+      : Promise.resolve([]),
+  ]);
+  const branchNames = new Map(branches.map(branch => [branch.id, branch.name]));
+  const technicianNames = new Map(technicians.map(member => [member.id, member.name]));
+
+  return ranked.map(({ ticket, score }) => ({
+    ticketId: ticket.id,
+    ticketNumber: ticket.number,
+    title: ticket.title,
+    specialization: ticket.specialization,
+    branchName: branchNames.get(ticket.branchId) ?? "",
+    technicianName: ticket.technicianId ? (technicianNames.get(ticket.technicianId) ?? "") : "",
+    cause: ticket.cause,
+    resolution: ticket.resolution ?? "",
+    score: Math.round(score * 100),
+    resolvedAt: ticket.updatedAt.toISOString(),
   }));
 }

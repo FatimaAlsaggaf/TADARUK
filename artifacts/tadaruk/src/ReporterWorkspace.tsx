@@ -18,7 +18,6 @@ const AiVoiceInput = lazy(() => import('@/components/ui/ai-voice-input').then(mo
 import { TadarukSelect } from '@/components/TadarukSelect';
 import {
   reporterDemoAnalysisAdapter,
-  PRESET_DEMO_SCENARIOS,
   type ReporterDemoAnalysisRequest
 } from '@/services/reporter-demo-analysis';
 import Stepper, { Step } from '@/components/Stepper';
@@ -312,6 +311,12 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
   const [previewPreparedAt, setPreviewPreparedAt] = useState<Date | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiStage, setAiStage] = useState<number>(0);
+  const analysisStageTimers = useRef<number[]>([]);
+  useEffect(() => () => analysisStageTimers.current.forEach(window.clearTimeout), []);
+  const clearAnalysisStageTimers = () => {
+    analysisStageTimers.current.forEach(window.clearTimeout);
+    analysisStageTimers.current = [];
+  };
   const reduced = useReducedMotion() === true;
   const analyze = useMutation({
     // Real AI on the server when it is configured; otherwise the labeled demo analysis.
@@ -403,44 +408,38 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
     setIsAnalyzing(true);
     setAiStage(1);
 
-    // Staged progressive AI animation:
-    // Stage 1: فهم المشكلة (0-600ms)
-    // Stage 2: تحديد نوع العطل (600-1200ms)
-    // Stage 3: تجهيز التذكرة (1200-1800ms)
-    const t1 = window.setTimeout(() => setAiStage(2), 600);
-    const t2 = window.setTimeout(() => setAiStage(3), 1200);
-    const t3 = window.setTimeout(() => {
-      analyze.mutate({
-        description: rawDescription,
-        locale: lang,
-        ...(suppliedLocation ? { location: suppliedLocation } : {})
-      }, {
-        onSuccess: suggestion => {
-          setIsAnalyzing(false);
-          setAiStage(0);
-          setAnswerHistory([]);
-          if (askAiQuestions(suggestion)) return;
-          if ((suggestion.needsClarification || !suggestion.location) && !suppliedLocation) {
-            setSelectedLocation('');
-            setOtherLocation('');
-            setNeedsLocation(true);
-            setAnalysis(suggestion);
-            return;
-          }
-          beginReview(suggestion, suppliedLocation || suggestion.location);
-        },
-        onError: () => {
-          setIsAnalyzing(false);
-          setAiStage(0);
+    // Start analysis now: the progress animation must not delay the API.
+    clearAnalysisStageTimers();
+    analysisStageTimers.current = [
+      window.setTimeout(() => setAiStage(2), 450),
+      window.setTimeout(() => setAiStage(3), 1050),
+    ];
+    analyze.mutate({
+      description: rawDescription,
+      locale: lang,
+      ...(suppliedLocation ? { location: suppliedLocation } : {})
+    }, {
+      onSuccess: suggestion => {
+        clearAnalysisStageTimers();
+        setIsAnalyzing(false);
+        setAiStage(0);
+        setAnswerHistory([]);
+        if (askAiQuestions(suggestion)) return;
+        if ((suggestion.needsClarification || !suggestion.location) && !suppliedLocation) {
+          setSelectedLocation('');
+          setOtherLocation('');
+          setNeedsLocation(true);
+          setAnalysis(suggestion);
+          return;
         }
-      });
-    }, 1800);
-
-    return () => {
-      window.clearTimeout(t1);
-      window.clearTimeout(t2);
-      window.clearTimeout(t3);
-    };
+        beginReview(suggestion, suppliedLocation || suggestion.location);
+      },
+      onError: () => {
+        clearAnalysisStageTimers();
+        setIsAnalyzing(false);
+        setAiStage(0);
+      }
+    });
   };
 
   /** When the AI still needs details, show its questions instead of the review. */
@@ -626,33 +625,6 @@ export function ReporterNewTicketPage({ lang, user, selectedBranchId }: NewTicke
             </div>
 
             {renderBranchChoice()}
-
-            {/* Quick Preset Demo Scenarios */}
-            <div className="rw-preset-bar">
-              <span className="rw-preset-hint">
-                <Sparkles size={14} />
-                {text(lang, 'أمثلة جاهزة للتجربة السريعة:', 'Quick demo presets:')}
-              </span>
-              <div className="rw-preset-chips">
-                {PRESET_DEMO_SCENARIOS.map(preset => (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    className="rw-preset-chip"
-                    onClick={() => {
-                      setDescription(preset.description[lang]);
-                      setLocation(preset.location[lang]);
-                      setPhoto(preset.photoUrl);
-                      setPhotoError('');
-                    }}
-                    data-testid={`preset-scenario-${preset.id}`}
-                  >
-                    <span>{preset.emoji}</span>
-                    <span>{preset.label[lang]}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
 
             {/* Description Textarea */}
             <label className="rw-field">
