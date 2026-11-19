@@ -407,15 +407,17 @@ function makeTicketView(
     history,
   };
 }
-export async function toTicketViews(tickets: TicketRecord[]) {
+export async function toTicketViews(tickets: TicketRecord[], options: { summaryOnly?: boolean } = {}) {
   if (!tickets.length) return [];
   const ids = tickets.map(ticket => ticket.id);
   const branchIds = [...new Set(tickets.map(ticket => ticket.branchId))];
   const [events, branches] = await retryRead(() => Promise.all([
-    db.select().from(ticketEventsTable).where(and(
-      eq(ticketEventsTable.organizationId, DEMO_ORGANIZATION),
-      inArray(ticketEventsTable.ticketId, ids),
-    )).orderBy(asc(ticketEventsTable.createdAt)),
+    options.summaryOnly
+      ? Promise.resolve([] as TicketEventRecord[])
+      : db.select().from(ticketEventsTable).where(and(
+          eq(ticketEventsTable.organizationId, DEMO_ORGANIZATION),
+          inArray(ticketEventsTable.ticketId, ids),
+        )).orderBy(asc(ticketEventsTable.createdAt)),
     db.select().from(branchesTable).where(and(
       eq(branchesTable.organizationId, DEMO_ORGANIZATION),
       inArray(branchesTable.id, branchIds),
@@ -439,14 +441,22 @@ export async function toTicketViews(tickets: TicketRecord[]) {
     list.push(event);
     eventMap.set(event.ticketId, list);
   }
-  return tickets.map(ticket => makeTicketView(
-    ticket,
-    memberMap.get(ticket.reporterId),
-    branchMap.get(ticket.branchId),
-    ticket.technicianId ? memberMap.get(ticket.technicianId) : undefined,
-    eventMap.get(ticket.id) ?? [],
-    nameMap,
-  ));
+  return tickets.map(ticket => {
+    const view = makeTicketView(
+      ticket,
+      memberMap.get(ticket.reporterId),
+      branchMap.get(ticket.branchId),
+      ticket.technicianId ? memberMap.get(ticket.technicianId) : undefined,
+      eventMap.get(ticket.id) ?? [],
+      nameMap,
+    );
+    // The dashboard/register use only labels, status and timestamps. Loading
+    // original base64 photos and entire event histories for every row used
+    // excessive bandwidth on mobile; /tickets/:id still returns everything.
+    return options.summaryOnly
+      ? { ...view, imageUrl: null, repairImageUrl: null, history: [] }
+      : view;
+  });
 }
 export async function toTicketView(ticket: TicketRecord) {
   const [view] = await toTicketViews([ticket]);

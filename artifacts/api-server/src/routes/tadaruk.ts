@@ -596,7 +596,7 @@ router.get("/tickets", async (req, res): Promise<void> => {
           .some((value) => value.toLocaleLowerCase().includes(term)),
       );
     }
-    res.json(ListTicketsResponse.parse(await toTicketViews(tickets)));
+    res.json(ListTicketsResponse.parse(await toTicketViews(tickets, { summaryOnly: true })));
   } catch (error) {
     reportServerError(error);
     res.status(500).json({ error: errorMessage(error) });
