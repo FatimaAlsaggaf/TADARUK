@@ -49,8 +49,15 @@ export default function AuthMorph({lang,setLang,dark,setDark}:{lang:Lang;setLang
    const user=demoUsers.find(item=>item.role===role)??FALLBACK_DEMO_USERS.find(item=>item.role===role);
    if(!user)return;
    setLoginNotice('');
+   // Preload reporter UI alongside the sign-in request; manager UI is already bundled.
+   if(role==='reporter')void import('@/ReporterWorkspace');
    selectDemo.mutate({data:{userId:user.id}},{
-     onSuccess:async ()=>{await qc.invalidateQueries({queryKey:getGetDemoSessionQueryKey()});go('/workspace');},
+     onSuccess:session=>{
+       // The server verified this user in the successful sign-in response.
+       // Reuse it instead of blocking navigation on a second /session request.
+       qc.setQueryData(getGetDemoSessionQueryKey(),{user:session.user});
+       go('/workspace');
+     },
      onError:()=>setLoginNotice(tr(lang,'تعذر تسجيل الدخول. حاول مرة أخرى.','Could not sign in. Please try again.'))
    });
  };
